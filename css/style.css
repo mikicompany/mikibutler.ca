@@ -434,6 +434,7 @@ main {
   position: sticky;
   top: 60px;
   align-self: flex-start;
+  margin-top: 50px;
 }
 
 .gp-stage {
