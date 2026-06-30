@@ -91,7 +91,7 @@
 
       items.forEach((item, i) => {
         const div = document.createElement('div');
-        div.className = 'masonry-item';
+        div.className = `masonry-item size-${item.size || 'small'}`;
         div.dataset.category = item.category || '';
         div.dataset.index = i;
         div.innerHTML = `
