@@ -60,12 +60,13 @@
             <li data-img="https://picsum.photos/seed/yourshape/600/900" data-role="3D Artist" data-platform="Wii / PC">Your Shape Feat Jenny McCarthy</li>
           </ul>
 
-          <div class="gameography-preview" id="gameography-preview">
-            <div class="gp-stack" id="gp-stack">
-              <div class="gp-card" id="gp-card-2"><img src="" alt="" /></div>
-              <div class="gp-card" id="gp-card-1"><img src="" alt="" /></div>
-              <div class="gp-card" id="gp-card-0">
-                <img src="" alt="" />
+          <div class="gameography-preview">
+            <div class="gp-stage" id="gp-stage">
+              <div class="gp-card" id="gp-c0"><img src="" alt="" /></div>
+              <div class="gp-card" id="gp-c1"><img src="" alt="" /></div>
+              <div class="gp-card" id="gp-c2"><img src="" alt="" /></div>
+              <!-- overlay always sits on top of center card -->
+              <div class="gp-overlay" id="gp-overlay">
                 <div class="gp-gradient"></div>
                 <div class="gp-meta" id="gp-meta">
                   <div class="gp-meta-role" id="gp-role"></div>
@@ -74,7 +75,7 @@
                 </div>
               </div>
             </div>
-            <div class="gp-placeholder" id="gp-placeholder"><span>Hover a title</span></div>
+            <div class="gp-placeholder" id="gp-placeholder">Hover a title</div>
           </div>
         </div>
       </div>
@@ -199,69 +200,102 @@
 
   <script src="js/sidebar.js"></script>
   <script>
-    const items = document.querySelectorAll('#gameography-list li');
+    const listItems  = Array.from(document.querySelectorAll('#gameography-list li'));
+    const cards      = [document.getElementById('gp-c0'), document.getElementById('gp-c1'), document.getElementById('gp-c2')];
     const placeholder = document.getElementById('gp-placeholder');
-    const gpTitle = document.getElementById('gp-title');
-    const gpRole  = document.getElementById('gp-role');
+    const gpTitle    = document.getElementById('gp-title');
+    const gpRole     = document.getElementById('gp-role');
     const gpPlatform = document.getElementById('gp-platform');
-    const gpMeta  = document.getElementById('gp-meta');
-    const cards   = [
-      document.getElementById('gp-card-0'),
-      document.getElementById('gp-card-1'),
-      document.getElementById('gp-card-2'),
-    ];
+    const gpMeta     = document.getElementById('gp-meta');
+    const gpOverlay  = document.getElementById('gp-overlay');
 
-    // Stack of last 3 urls shown — index 0 = front
-    const stack = ['', '', ''];
+    // slot[0]=center, slot[1]=left, slot[2]=right — value = index into cards[]
+    let slots = [0, 1, 2];
+    let currentIdx = -1;
 
-    // Position transforms: front → back
-    const positions = [
-      'translate(0px,  0px) rotate(0deg)   scale(1)',
-      'translate(32px, 8px) rotate(4deg)   scale(0.9)',
-      'translate(-22px,14px) rotate(-5deg) scale(0.82)',
-    ];
-    const opacities = ['1', '0.6', '0.4'];
+    const POS = {
+      center:    { x:   0, scale: 1.00, rot:  0, op: 1,    z: 5 },
+      left:      { x:-115, scale: 0.78, rot: -7, op: 0.55, z: 3 },
+      right:     { x: 115, scale: 0.78, rot:  7, op: 0.55, z: 3 },
+      exitLeft:  { x:-240, scale: 0.62, rot:-12, op: 0,    z: 1 },
+      exitRight: { x: 240, scale: 0.62, rot: 12, op: 0,    z: 1 },
+    };
 
-    function applyPositions() {
-      cards.forEach((card, i) => {
-        card.style.transform = positions[i];
-        card.style.opacity   = stack[i] ? opacities[i] : '0';
-        card.style.zIndex    = 3 - i;
-      });
+    function place(cardEl, posName, instant) {
+      const p = POS[posName];
+      if (instant) { cardEl.style.transition = 'none'; cardEl.offsetHeight; }
+      cardEl.style.transform = `translateX(${p.x}px) scale(${p.scale}) rotate(${p.rot}deg)`;
+      cardEl.style.opacity   = p.op;
+      cardEl.style.zIndex    = p.z;
+      if (instant) { cardEl.offsetHeight; cardEl.style.transition = ''; }
     }
 
-    function loadCard(card, url) {
-      const img = card.querySelector('img');
-      if (!url || img.src.endsWith(url)) return;
-      img.src = url;
+    function imgUrl(i) {
+      if (i < 0 || i >= listItems.length) return '';
+      return listItems[i].dataset.img || '';
     }
 
-    // Preload all
-    items.forEach(li => { if (li.dataset.img) { const p = new Image(); p.src = li.dataset.img; } });
+    function setImg(cardEl, url) {
+      const img = cardEl.querySelector('img');
+      if (img.src !== url) img.src = url;
+    }
 
-    items.forEach(li => {
+    // Preload all images
+    listItems.forEach(li => { if (li.dataset.img) { const p = new Image(); p.src = li.dataset.img; } });
+
+    function navigate(newIdx) {
+      if (newIdx === currentIdx) return;
+      const goRight = currentIdx === -1 ? true : newIdx > currentIdx;
+      const prevIdx = currentIdx;
+      currentIdx = newIdx;
+
+      const centerCard = cards[slots[0]];
+      const leftCard   = cards[slots[1]];
+      const rightCard  = cards[slots[2]];
+
+      if (currentIdx === 0 && prevIdx === -1) {
+        // First ever hover — snap all into place instantly
+        setImg(centerCard, imgUrl(newIdx));
+        setImg(leftCard,   imgUrl(newIdx - 1));
+        setImg(rightCard,  imgUrl(newIdx + 1));
+        place(centerCard, 'center', true);
+        place(leftCard,   imgUrl(newIdx - 1) ? 'left' : 'exitLeft', true);
+        place(rightCard,  imgUrl(newIdx + 1) ? 'right' : 'exitRight', true);
+      } else if (goRight) {
+        // Recycle leftCard: snap to exitRight, load next-right image, animate to right
+        setImg(leftCard, imgUrl(newIdx + 1));
+        place(leftCard, 'exitRight', true);
+        requestAnimationFrame(() => {
+          place(centerCard, 'left');
+          place(rightCard,  'center');
+          place(leftCard,   imgUrl(newIdx + 1) ? 'right' : 'exitRight');
+        });
+        slots = [slots[2], slots[0], slots[1]];
+      } else {
+        // Recycle rightCard: snap to exitLeft, load prev-left image, animate to left
+        setImg(rightCard, imgUrl(newIdx - 1));
+        place(rightCard, 'exitLeft', true);
+        requestAnimationFrame(() => {
+          place(centerCard, 'right');
+          place(leftCard,   'center');
+          place(rightCard,  imgUrl(newIdx - 1) ? 'left' : 'exitLeft');
+        });
+        slots = [slots[1], slots[2], slots[0]];
+      }
+
+      // Update meta
+      gpTitle.textContent    = listItems[newIdx].textContent.trim();
+      gpRole.textContent     = listItems[newIdx].dataset.role || '';
+      gpPlatform.textContent = listItems[newIdx].dataset.platform || '';
+      placeholder.style.opacity = '0';
+      gpOverlay.style.opacity = '1';
+    }
+
+    listItems.forEach((li, i) => {
       li.addEventListener('mouseenter', () => {
-        items.forEach(i => i.classList.remove('active'));
+        listItems.forEach(l => l.classList.remove('active'));
         li.classList.add('active');
-
-        const url = li.dataset.img || '';
-
-        // Shift stack
-        stack[2] = stack[1];
-        stack[1] = stack[0];
-        stack[0] = url;
-
-        loadCard(cards[0], stack[0]);
-        loadCard(cards[1], stack[1]);
-        loadCard(cards[2], stack[2]);
-        applyPositions();
-
-        gpTitle.textContent    = li.textContent.trim();
-        gpRole.textContent     = li.dataset.role || '';
-        gpPlatform.textContent = li.dataset.platform || '';
-
-        placeholder.style.opacity = '0';
-        gpMeta.style.opacity = url ? '1' : '0';
+        navigate(i);
       });
     });
   </script>
