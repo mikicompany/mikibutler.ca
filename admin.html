@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Site Admin — mikibutler.ca</title>
+  <style>
+    :root {
+      --bg: #111;
+      --surface: #1a1a1a;
+      --border: #2a2a2a;
+      --accent: #a0ff00;
+      --text: #fff;
+      --muted: #666;
+      --danger: #ff4444;
+      --row-hover: #222;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: #0d0d0d;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo {
+      width: 32px;
+      height: 32px;
+    }
+
+    .header h1 {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .header h1 span {
+      color: var(--accent);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 8px 18px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      border-radius: 2px;
+      cursor: pointer;
+      border: none;
+      text-transform: uppercase;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .btn-primary:hover { opacity: 0.85; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover { color: var(--text); border-color: #444; }
+
+    .save-status {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .save-status.saved { color: var(--accent); }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      background: #0d0d0d;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 14px 20px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      margin-bottom: -1px;
+    }
+
+    .tab-btn:hover { color: var(--text); }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      display: none;
+      padding: 24px;
+    }
+
+    .panel.active { display: block; }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .sheet-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .sheet-table thead tr {
+      background: #161616;
+    }
+
+    .sheet-table th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .sheet-table th.col-drag { width: 36px; }
+    .sheet-table th.col-num  { width: 40px; color: #333; }
+    .sheet-table th.col-del  { width: 40px; }
+    .sheet-table th.col-prev { width: 56px; }
+
+    .sheet-table tbody tr {
+      border-bottom: 1px solid #1e1e1e;
+      transition: background 0.1s;
+    }
+
+    .sheet-table tbody tr:last-child { border-bottom: none; }
+    .sheet-table tbody tr:hover { background: var(--row-hover); }
+    .sheet-table tbody tr.dragging { opacity: 0.4; }
+    .sheet-table tbody tr.drag-over { border-top: 2px solid var(--accent); }
+
+    .sheet-table td {
+      padding: 8px 14px;
+      vertical-align: middle;
+    }
+
+    .drag-handle {
+      cursor: grab;
+      color: #333;
+      font-size: 16px;
+      user-select: none;
+      padding: 0 4px;
+      transition: color 0.15s;
+    }
+
+    .drag-handle:hover { color: var(--accent); }
+    .drag-handle:active { cursor: grabbing; }
+
+    .row-num {
+      color: #333;
+      font-size: 11px;
+      text-align: right;
+    }
+
+    .cell-input {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      width: 100%;
+      padding: 5px 8px;
+      border-radius: 2px;
+      transition: border-color 0.15s, background 0.15s;
+      outline: none;
+    }
+
+    .cell-input:focus {
+      border-color: var(--accent);
+      background: #111;
+    }
+
+    .cell-select {
+      background: #161616;
+      border: 1px solid transparent;
+      color: var(--text);
+      font-size: 12px;
+      font-family: inherit;
+      padding: 5px 8px;
+      border-radius: 2px;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .cell-select:focus { border-color: var(--accent); }
+
+    .thumb {
+      width: 48px;
+      height: 32px;
+      object-fit: cover;
+      border-radius: 2px;
+      background: #222;
+      display: block;
+    }
+
+    .thumb-placeholder {
+      width: 48px;
+      height: 32px;
+      background: #222;
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      font-size: 16px;
+    }
+
+    .btn-del {
+      background: none;
+      border: none;
+      color: #333;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 2px;
+      transition: color 0.15s;
+      line-height: 1;
+    }
+
+    .btn-del:hover { color: var(--danger); }
+
+    /* ── ADD ROW ── */
+    .add-row-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      background: none;
+      border: 1px dashed #333;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 10px 16px;
+      border-radius: 2px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.15s;
+    }
+
+    .add-row-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+      margin-top: 28px;
+    }
+
+    .section-label:first-child { margin-top: 0; }
+
+    /* ── JSON OUTPUT ── */
+    .json-output {
+      background: #0d0d0d;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 12px;
+      color: #7ec8a0;
+      white-space: pre;
+      overflow: auto;
+      max-height: 400px;
+      line-height: 1.6;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--accent);
+      color: #000;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 10px 20px;
+      border-radius: 2px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.2s;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── MENU PANEL ── */
+    .menu-list {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .menu-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-bottom: 1px solid #1e1e1e;
+      transition: background 0.1s;
+    }
+
+    .menu-row:last-child { border-bottom: none; }
+    .menu-row:hover { background: var(--row-hover); }
+    .menu-row.dragging { opacity: 0.4; }
+    .menu-row.drag-over { border-top: 2px solid var(--accent); }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <svg class="header-logo" viewBox="0 0 60 60" fill="none">
+      <circle cx="30" cy="30" r="28" stroke="#a0ff00" stroke-width="3"/>
+      <text x="30" y="38" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="26" fill="#a0ff00">M</text>
+    </svg>
+    <h1>mikibutler<span>.ca</span> — Admin</h1>
+  </div>
+  <div class="header-actions">
+    <span class="save-status" id="save-status">Unsaved changes</span>
+    <button class="btn btn-ghost" onclick="loadFromFile()">Load data.json</button>
+    <button class="btn btn-primary" onclick="exportJSON()">Download data.json</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="work">Work</button>
+  <button class="tab-btn" data-tab="carousel">Carousel</button>
+  <button class="tab-btn" data-tab="menu">Menu</button>
+  <button class="tab-btn" data-tab="socials">Socials</button>
+  <button class="tab-btn" data-tab="export">JSON Preview</button>
+</div>
+
+<!-- WORK TAB -->
+<div class="panel active" id="panel-work">
+  <p class="section-label">Work Grid — drag rows to reorder</p>
+  <div class="table-wrap">
+    <table class="sheet-table" id="work-table">
+      <thead>
+        <tr>
+          <th class="col-drag"></th>
+          <th class="col-num">#</th>
+          <th class="col-prev">Preview</th>
+          <th>Title</th>
+          <th>Image URL / Path</th>
+          <th>Category</th>
+          <th class="col-del"></th>
+        </tr>
+      </thead>
+      <tbody id="work-body"></tbody>
+    </table>
+  </div>
+  <button class="add-row-btn" onclick="addWorkRow()">+ Add Row</button>
+</div>
+
+<!-- CAROUSEL TAB -->
+<div class="panel" id="panel-carousel">
+  <p class="section-label">Homepage Carousel — drag rows to reorder</p>
+  <div class="table-wrap">
+    <table class="sheet-table" id="carousel-table">
+      <thead>
+        <tr>
+          <th class="col-drag"></th>
+          <th class="col-num">#</th>
+          <th class="col-prev">Preview</th>
+          <th>Title</th>
+          <th>Image URL / Path</th>
+          <th class="col-del"></th>
+        </tr>
+      </thead>
+      <tbody id="carousel-body"></tbody>
+    </table>
+  </div>
+  <button class="add-row-btn" onclick="addCarouselRow()">+ Add Row</button>
+</div>
+
+<!-- MENU TAB -->
+<div class="panel" id="panel-menu">
+  <p class="section-label">Navigation — drag to reorder</p>
+  <div class="menu-list" id="menu-list"></div>
+  <button class="add-row-btn" onclick="addMenuRow()">+ Add Item</button>
+</div>
+
+<!-- SOCIALS TAB -->
+<div class="panel" id="panel-socials">
+  <p class="section-label">Social Links — drag to reorder</p>
+  <div class="table-wrap">
+    <table class="sheet-table" id="socials-table">
+      <thead>
+        <tr>
+          <th class="col-drag"></th>
+          <th class="col-num">#</th>
+          <th>Label</th>
+          <th>URL</th>
+          <th>Icon</th>
+          <th class="col-del"></th>
+        </tr>
+      </thead>
+      <tbody id="socials-body"></tbody>
+    </table>
+  </div>
+  <button class="add-row-btn" onclick="addSocialsRow()">+ Add Social</button>
+</div>
+
+<!-- JSON PREVIEW TAB -->
+<div class="panel" id="panel-export">
+  <p class="section-label">Live JSON Preview</p>
+  <div class="json-output" id="json-output"></div>
+  <div style="display:flex;gap:10px;margin-top:12px">
+    <button class="btn btn-primary" onclick="copyJSON()">Copy to Clipboard</button>
+    <button class="btn btn-ghost" onclick="exportJSON()">Download data.json</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="file-input" accept=".json" style="display:none" onchange="handleFileLoad(event)" />
+
+<script>
+let data = { menu: [], work: [], carousel: [] };
+let dragSrc = null;
+
+// ── INIT ──
+fetch('data.json')
+  .then(r => r.json())
+  .then(d => { data = d; render(); })
+  .catch(() => render());
+
+// ── TABS ──
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const panel = document.getElementById('panel-' + btn.dataset.tab);
+    panel.classList.add('active');
+    if (btn.dataset.tab === 'export') updateJSONPreview();
+  });
+});
+
+// ── RENDER ──
+function render() {
+  renderWork();
+  renderCarousel();
+  renderMenu();
+  renderSocials();
+  markUnsaved();
+}
+
+function renderWork() {
+  const tbody = document.getElementById('work-body');
+  tbody.innerHTML = '';
+  data.work.forEach((item, i) => {
+    const tr = document.createElement('tr');
+    tr.draggable = true;
+    tr.dataset.idx = i;
+    tr.dataset.list = 'work';
+    tr.innerHTML = `
+      <td><span class="drag-handle" title="Drag to reorder">⠿</span></td>
+      <td class="row-num">${i + 1}</td>
+      <td>${thumbCell(item.img)}</td>
+      <td><input class="cell-input" value="${esc(item.title)}" oninput="data.work[${i}].title=this.value;markUnsaved()" placeholder="Title" /></td>
+      <td><input class="cell-input" value="${esc(item.img)}" oninput="data.work[${i}].img=this.value;updateThumb(this);markUnsaved()" placeholder="images/work/filename.jpg" /></td>
+      <td>
+        <select class="cell-select" onchange="data.work[${i}].category=this.value;markUnsaved()">
+          ${categoryOptions(item.category)}
+        </select>
+      </td>
+      <td><button class="btn-del" onclick="deleteRow('work',${i})" title="Delete">×</button></td>
+    `;
+    addDragEvents(tr);
+    tbody.appendChild(tr);
+  });
+}
+
+function renderCarousel() {
+  const tbody = document.getElementById('carousel-body');
+  tbody.innerHTML = '';
+  data.carousel.forEach((item, i) => {
+    const tr = document.createElement('tr');
+    tr.draggable = true;
+    tr.dataset.idx = i;
+    tr.dataset.list = 'carousel';
+    tr.innerHTML = `
+      <td><span class="drag-handle" title="Drag to reorder">⠿</span></td>
+      <td class="row-num">${i + 1}</td>
+      <td>${thumbCell(item.img)}</td>
+      <td><input class="cell-input" value="${esc(item.title)}" oninput="data.carousel[${i}].title=this.value;markUnsaved()" placeholder="Title" /></td>
+      <td><input class="cell-input" value="${esc(item.img)}" oninput="data.carousel[${i}].img=this.value;updateThumb(this);markUnsaved()" placeholder="images/work/filename.jpg" /></td>
+      <td><button class="btn-del" onclick="deleteRow('carousel',${i})" title="Delete">×</button></td>
+    `;
+    addDragEvents(tr);
+    tbody.appendChild(tr);
+  });
+}
+
+function renderMenu() {
+  const list = document.getElementById('menu-list');
+  list.innerHTML = '';
+  data.menu.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'menu-row';
+    row.draggable = true;
+    row.dataset.idx = i;
+    row.dataset.list = 'menu';
+    row.innerHTML = `
+      <span class="drag-handle" title="Drag to reorder">⠿</span>
+      <span style="color:#333;font-size:11px;width:20px;text-align:right">${i + 1}</span>
+      <input class="cell-input" style="flex:1" value="${esc(item.label)}" oninput="data.menu[${i}].label=this.value;markUnsaved()" placeholder="Label" />
+      <input class="cell-input" style="flex:1" value="${esc(item.href)}" oninput="data.menu[${i}].href=this.value;markUnsaved()" placeholder="page.html" />
+      <button class="btn-del" onclick="deleteRow('menu',${i})" title="Delete">×</button>
+    `;
+    addDragEvents(row);
+    list.appendChild(row);
+  });
+}
+
+// ── HELPERS ──
+function thumbCell(src) {
+  if (!src) return `<div class="thumb-placeholder">🖼</div>`;
+  return `<img class="thumb" src="${esc(src)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="thumb-placeholder" style="display:none">?</div>`;
+}
+
+function updateThumb(input) {
+  const td = input.closest('tr, .menu-row');
+  if (!td) return;
+  const prevTd = td.querySelector('.thumb, .thumb-placeholder');
+  if (!prevTd) return;
+  const parent = prevTd.closest('td');
+  if (parent) parent.innerHTML = thumbCell(input.value);
+}
+
+function categoryOptions(selected) {
+  const cats = [
+    ['starship-troopers', 'Starship Troopers'],
+    ['dead-rising', 'Dead Rising'],
+    ['pvz', 'Plants vs Zombies'],
+    ['other', 'Other']
+  ];
+  return cats.map(([v, l]) => `<option value="${v}"${selected === v ? ' selected' : ''}>${l}</option>`).join('');
+}
+
+function esc(s) {
+  return (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+// ── ADD / DELETE ──
+function addWorkRow() {
+  data.work.push({ title: '', img: '', category: 'other' });
+  renderWork();
+  const tbody = document.getElementById('work-body');
+  const last = tbody.lastElementChild;
+  if (last) last.querySelector('.cell-input').focus();
+}
+
+function addCarouselRow() {
+  data.carousel.push({ title: '', img: '' });
+  renderCarousel();
+  const tbody = document.getElementById('carousel-body');
+  const last = tbody.lastElementChild;
+  if (last) last.querySelector('.cell-input').focus();
+}
+
+function renderSocials() {
+  const tbody = document.getElementById('socials-body');
+  tbody.innerHTML = '';
+  (data.socials || []).forEach((item, i) => {
+    const tr = document.createElement('tr');
+    tr.draggable = true;
+    tr.dataset.idx = i;
+    tr.dataset.list = 'socials';
+    tr.innerHTML = `
+      <td><span class="drag-handle" title="Drag to reorder">⠿</span></td>
+      <td class="row-num">${i + 1}</td>
+      <td><input class="cell-input" value="${esc(item.label)}" oninput="data.socials[${i}].label=this.value;markUnsaved()" placeholder="Label" /></td>
+      <td><input class="cell-input" value="${esc(item.href)}" oninput="data.socials[${i}].href=this.value;markUnsaved()" placeholder="https://..." /></td>
+      <td>
+        <select class="cell-select" onchange="data.socials[${i}].icon=this.value;markUnsaved()">
+          ${['artstation','instagram','youtube','linkedin','x'].map(v =>
+            `<option value="${v}"${item.icon===v?' selected':''}>${v}</option>`
+          ).join('')}
+        </select>
+      </td>
+      <td><button class="btn-del" onclick="deleteRow('socials',${i})" title="Delete">×</button></td>
+    `;
+    addDragEvents(tr);
+    tbody.appendChild(tr);
+  });
+}
+
+function addSocialsRow() {
+  if (!data.socials) data.socials = [];
+  data.socials.push({ label: '', href: '', icon: 'artstation' });
+  renderSocials();
+  markUnsaved();
+}
+
+function addMenuRow() {
+  data.menu.push({ label: '', href: '' });
+  renderMenu();
+  const list = document.getElementById('menu-list');
+  const last = list.lastElementChild;
+  if (last) last.querySelector('.cell-input').focus();
+}
+
+function deleteRow(list, idx) {
+  data[list].splice(idx, 1);
+  if (list === 'work') renderWork();
+  else if (list === 'carousel') renderCarousel();
+  else if (list === 'socials') renderSocials();
+  else renderMenu();
+  markUnsaved();
+}
+
+// ── DRAG & DROP ──
+function addDragEvents(el) {
+  el.addEventListener('dragstart', e => {
+    dragSrc = el;
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  el.addEventListener('dragend', () => {
+    el.classList.remove('dragging');
+    document.querySelectorAll('.drag-over').forEach(e => e.classList.remove('drag-over'));
+  });
+  el.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (el !== dragSrc) {
+      document.querySelectorAll('.drag-over').forEach(e => e.classList.remove('drag-over'));
+      el.classList.add('drag-over');
+    }
+  });
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    if (!dragSrc || dragSrc === el) return;
+    const list = dragSrc.dataset.list;
+    const from = parseInt(dragSrc.dataset.idx);
+    const to = parseInt(el.dataset.idx);
+    const arr = data[list];
+    const [moved] = arr.splice(from, 1);
+    arr.splice(to, 0, moved);
+    if (list === 'work') renderWork();
+    else if (list === 'carousel') renderCarousel();
+    else if (list === 'socials') renderSocials();
+    else renderMenu();
+    markUnsaved();
+  });
+}
+
+// ── SAVE STATUS ──
+function markUnsaved() {
+  const el = document.getElementById('save-status');
+  el.textContent = 'Unsaved changes';
+  el.classList.remove('saved');
+}
+
+// ── JSON ──
+function buildJSON() {
+  return JSON.stringify(data, null, 2);
+}
+
+function updateJSONPreview() {
+  document.getElementById('json-output').textContent = buildJSON();
+}
+
+function copyJSON() {
+  navigator.clipboard.writeText(buildJSON()).then(() => showToast('Copied to clipboard!'));
+}
+
+function exportJSON() {
+  const blob = new Blob([buildJSON()], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'data.json';
+  a.click();
+  const el = document.getElementById('save-status');
+  el.textContent = 'Downloaded ✓';
+  el.classList.add('saved');
+  showToast('data.json downloaded!');
+}
+
+function loadFromFile() {
+  document.getElementById('file-input').click();
+}
+
+function handleFileLoad(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      data = JSON.parse(ev.target.result);
+      render();
+      showToast('Loaded ' + file.name);
+    } catch {
+      showToast('Invalid JSON file');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>

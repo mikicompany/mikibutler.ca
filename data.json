@@ -1,0 +1,43 @@
+{
+  "menu": [
+    { "label": "Home Page", "href": "index.html" },
+    { "label": "Work", "href": "work.html" },
+    { "label": "Work (Protected)", "href": "protected.html" },
+    { "label": "Resume", "href": "resume.html" },
+    { "label": "Contact", "href": "contact.html" }
+  ],
+  "work": [
+    { "title": "Desert Outpost", "img": "images/work/ste-01.jpg", "category": "starship-troopers" },
+    { "title": "Industrial Zone", "img": "images/work/ste-02.jpg", "category": "starship-troopers" },
+    { "title": "Base Camp", "img": "images/work/ste-03.jpg", "category": "starship-troopers" },
+    { "title": "Command Center", "img": "images/work/ste-04.jpg", "category": "starship-troopers" },
+    { "title": "Vehicle Bay", "img": "images/work/ste-05.jpg", "category": "starship-troopers" },
+    { "title": "Crystal Field", "img": "images/work/ste-06.jpg", "category": "starship-troopers" },
+    { "title": "Military Convoy", "img": "images/work/ste-07.jpg", "category": "starship-troopers" },
+    { "title": "Alien Terrain", "img": "images/work/ste-08.jpg", "category": "starship-troopers" },
+    { "title": "Control Panel", "img": "images/work/ste-09.jpg", "category": "starship-troopers" },
+    { "title": "Metal Grate", "img": "images/work/ste-10.jpg", "category": "starship-troopers" },
+    { "title": "Rock Formation", "img": "images/work/ste-11.jpg", "category": "starship-troopers" },
+    { "title": "Lava Flow", "img": "images/work/ste-12.jpg", "category": "starship-troopers" },
+    { "title": "Turret", "img": "images/work/ste-13.jpg", "category": "starship-troopers" },
+    { "title": "Retro Diner", "img": "images/work/dr-01.jpg", "category": "dead-rising" },
+    { "title": "Jukebox", "img": "images/work/dr-02.jpg", "category": "dead-rising" },
+    { "title": "Local Call Sign", "img": "images/work/dr-03.jpg", "category": "dead-rising" },
+    { "title": "Battle for Neighborville", "img": "images/work/pvz-01.jpg", "category": "pvz" },
+    { "title": "Pizza Props", "img": "images/work/other-01.jpg", "category": "other" },
+    { "title": "Organic Creature", "img": "images/work/other-02.jpg", "category": "other" },
+    { "title": "Sci-Fi Turret", "img": "images/work/other-03.jpg", "category": "other" }
+  ],
+  "socials": [
+    { "label": "ArtStation", "href": "https://mikicompany.artstation.com/", "icon": "artstation" },
+    { "label": "Instagram",  "href": "https://instagram.com/",              "icon": "instagram"  },
+    { "label": "YouTube",    "href": "https://youtube.com/",                "icon": "youtube"    },
+    { "label": "LinkedIn",   "href": "https://linkedin.com/",               "icon": "linkedin"   },
+    { "label": "X",          "href": "https://x.com/",                      "icon": "x"          }
+  ],
+  "carousel": [
+    { "title": "Starship Troopers — Desert Outpost", "img": "images/work/ste-01.jpg" },
+    { "title": "Dead Rising 4 — Retro Diner", "img": "images/work/dr-01.jpg" },
+    { "title": "Plants vs Zombies — Neighborville", "img": "images/work/pvz-01.jpg" }
+  ]
+}
