@@ -409,6 +409,7 @@
           <th>Title</th>
           <th>Image URL / Path</th>
           <th>Category</th>
+          <th style="width:60px">Home</th>
           <th class="col-del"></th>
         </tr>
       </thead>
@@ -530,6 +531,7 @@ function renderWork() {
           ${categoryOptions(item.category)}
         </select>
       </td>
+      <td style="text-align:center"><input type="checkbox" ${item.home !== false ? 'checked' : ''} onchange="data.work[${i}].home=this.checked;markUnsaved()" title="Show on homepage" style="width:16px;height:16px;accent-color:#a0ff00;cursor:pointer" /></td>
       <td><button class="btn-del" onclick="deleteRow('work',${i})" title="Delete">×</button></td>
     `;
     addDragEvents(tr);
