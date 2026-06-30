@@ -192,6 +192,11 @@
     let current = imgA;
     let next = imgB;
 
+    // Preload all game images immediately
+    items.forEach(li => {
+      if (li.dataset.img) new Image().src = li.dataset.img;
+    });
+
     items.forEach(li => {
       li.addEventListener('mouseenter', () => {
         const url = li.dataset.img;
