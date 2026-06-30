@@ -23,7 +23,14 @@
     { "title": "STE Cave Road — 06", "size": "wide",  "img": "https://cdnb.artstation.com/p/assets/images/images/063/425/771/4k/miki-butler-ste-showcase-mikibutler-caverox-06.jpg?1685504008", "category": "starship-troopers" },
     { "title": "STE Cave Road — 07", "size": "small", "img": "https://cdnb.artstation.com/p/assets/images/images/063/425/775/4k/miki-butler-ste-showcase-mikibutler-caverox-07.jpg?1685504014", "category": "starship-troopers" },
     { "title": "STE Cave Road — 08", "size": "small", "img": "https://cdna.artstation.com/p/assets/images/images/063/425/778/4k/miki-butler-ste-showcase-mikibutler-caverox-08.jpg?1685504021", "category": "starship-troopers" },
-    { "title": "STE Cave Road — 09", "size": "small", "img": "https://cdnb.artstation.com/p/assets/images/images/063/425/779/4k/miki-butler-ste-showcase-mikibutler-caverox-09.jpg?1685504026", "category": "starship-troopers" }
+    { "title": "STE Cave Road — 09", "size": "small", "img": "https://cdnb.artstation.com/p/assets/images/images/063/425/779/4k/miki-butler-ste-showcase-mikibutler-caverox-09.jpg?1685504026", "category": "starship-troopers" },
+    { "title": "STE Armory — 01", "size": "large", "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/719/4k/miki-butler-starshiptroopers-extermination-armory-miki-butler-01.jpg?1684570283", "category": "starship-troopers" },
+    { "title": "STE Armory — 02", "size": "wide",  "img": "https://cdna.artstation.com/p/assets/images/images/063/045/722/4k/miki-butler-starshiptroopers-extermination-armory-miki-butler-02.jpg?1684570291", "category": "starship-troopers" },
+    { "title": "STE Hangar",       "size": "wide",  "img": "https://cdna.artstation.com/p/assets/images/images/063/045/998/4k/miki-butler-hangar.jpg?1684571042", "category": "starship-troopers" },
+    { "title": "STE Armory Overview", "size": "small", "img": "https://cdna.artstation.com/p/assets/images/images/063/210/720/4k/miki-butler-highresscreenshot00010-large.jpg?1684977936", "category": "starship-troopers" },
+    { "title": "STE Ore Clusters", "size": "large", "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/519/4k/miki-butler-oreclusters.jpg?1684569539", "category": "starship-troopers" },
+    { "title": "STE Ore — 03",     "size": "wide",  "img": "https://cdna.artstation.com/p/assets/images/images/063/045/566/4k/miki-butler-starshiptroopers-extermination-ore-miki-butler-03.jpg?1684569724", "category": "starship-troopers" },
+    { "title": "STE Ore Detail",   "size": "small", "img": "https://cdnb.artstation.com/p/assets/images/images/063/210/679/4k/miki-butler-miki-butler-ste-ore.jpg?1684977824", "category": "starship-troopers" }
   ],
   "socials": [
     { "label": "ArtStation", "href": "https://mikicompany.artstation.com/", "icon": "artstation" },
