@@ -14,6 +14,147 @@
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .slideshow {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 0;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 1.2s ease-in-out;
+    }
+
+    .slide.active { opacity: 1; }
+
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      transform: scale(1.05);
+      transition: transform 8s ease-out;
+    }
+
+    .slide.active img { transform: scale(1); }
+
+    .slide-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        rgba(0,0,0,0.55) 0%,
+        rgba(0,0,0,0.1) 50%,
+        transparent 100%
+      );
+    }
+
+    /* Title caption bottom-right */
+    .slide-caption {
+      position: absolute;
+      bottom: 32px;
+      right: 32px;
+      text-align: right;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.6s ease 0.8s, transform 0.6s ease 0.8s;
+    }
+
+    .slide.active .slide-caption {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .slide-caption .cap-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #a0ff00;
+      margin-bottom: 4px;
+    }
+
+    .slide-caption .cap-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.04em;
+    }
+
+    /* Dot indicators */
+    .slide-dots {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .slide-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+      border: none;
+      padding: 0;
+    }
+
+    .slide-dot.active {
+      background: #a0ff00;
+      transform: scale(1.4);
+    }
+
+    /* Prev/Next arrows */
+    .slide-prev,
+    .slide-next {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.3);
+      font-size: 40px;
+      cursor: pointer;
+      z-index: 10;
+      padding: 20px 16px;
+      transition: color 0.2s;
+      line-height: 1;
+    }
+
+    .slide-prev { left: 170px; }
+    .slide-next { right: 16px; }
+    .slide-prev:hover, .slide-next:hover { color: rgba(255,255,255,0.9); }
+
+    /* Sidebar sits above slideshow */
+    .sidebar { z-index: 20; }
+
+    /* Progress bar */
+    .slide-progress {
+      position: fixed;
+      bottom: 0;
+      left: var(--sidebar-width);
+      right: 0;
+      height: 2px;
+      background: rgba(255,255,255,0.1);
+      z-index: 10;
+    }
+
+    .slide-progress-bar {
+      height: 100%;
+      background: #a0ff00;
+      width: 0%;
+      transition: width linear;
+    }
+  </style>
 </head>
 <body>
 
@@ -24,13 +165,94 @@
     <p class="sidebar-copy">© All rights reserved<br>Miki Butler</p>
   </aside>
 
-  <main>
-    <section class="hero">
-      <img src="images/hero.jpg" alt="Environment art by Miki Butler — lush jungle ruins" />
-      <div class="hero-overlay"></div>
-    </section>
-  </main>
+  <div class="slideshow" id="slideshow"></div>
+  <div class="slide-dots" id="slide-dots"></div>
+  <button class="slide-prev" id="slide-prev">&#8249;</button>
+  <button class="slide-next" id="slide-next">&#8250;</button>
+  <div class="slide-progress"><div class="slide-progress-bar" id="progress-bar"></div></div>
 
   <script src="js/sidebar.js"></script>
+  <script>
+    const INTERVAL = 6000;
+    const CATEGORY_LABELS = {
+      'starship-troopers': 'Starship Troopers',
+      'dead-rising': 'Dead Rising',
+      'pvz': 'Plants vs Zombies',
+      'other': 'Other'
+    };
+
+    let slides = [];
+    let current = 0;
+    let timer = null;
+    let progressTimer = null;
+
+    fetch('data.json').then(r => r.json()).then(data => {
+      // Filter out items with home: false
+      slides = data.work.filter(item => item.home !== false);
+      buildSlideshow();
+      goTo(0);
+    });
+
+    function buildSlideshow() {
+      const ss = document.getElementById('slideshow');
+      const dots = document.getElementById('slide-dots');
+
+      slides.forEach((item, i) => {
+        const slide = document.createElement('div');
+        slide.className = 'slide';
+        slide.innerHTML = `
+          <img src="${item.img}" alt="${item.title}" />
+          <div class="slide-overlay"></div>
+          <div class="slide-caption">
+            <div class="cap-tag">${CATEGORY_LABELS[item.category] || item.category || ''}</div>
+            <div class="cap-title">${item.title}</div>
+          </div>
+        `;
+        ss.appendChild(slide);
+
+        const dot = document.createElement('button');
+        dot.className = 'slide-dot';
+        dot.addEventListener('click', () => goTo(i));
+        dots.appendChild(dot);
+      });
+    }
+
+    function goTo(index) {
+      const allSlides = document.querySelectorAll('.slide');
+      const allDots = document.querySelectorAll('.slide-dot');
+
+      allSlides[current]?.classList.remove('active');
+      allDots[current]?.classList.remove('active');
+
+      current = (index + slides.length) % slides.length;
+
+      allSlides[current]?.classList.add('active');
+      allDots[current]?.classList.add('active');
+
+      startProgress();
+      clearInterval(timer);
+      timer = setInterval(() => goTo(current + 1), INTERVAL);
+    }
+
+    function startProgress() {
+      const bar = document.getElementById('progress-bar');
+      bar.style.transition = 'none';
+      bar.style.width = '0%';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          bar.style.transition = `width ${INTERVAL}ms linear`;
+          bar.style.width = '100%';
+        });
+      });
+    }
+
+    document.getElementById('slide-prev').addEventListener('click', () => goTo(current - 1));
+    document.getElementById('slide-next').addEventListener('click', () => goTo(current + 1));
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') goTo(current - 1);
+      if (e.key === 'ArrowRight') goTo(current + 1);
+    });
+  </script>
 </body>
 </html>
