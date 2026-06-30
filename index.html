@@ -38,10 +38,14 @@
       object-position: center;
       display: block;
       transform: scale(1.05);
-      transition: transform 8s ease-out;
+      filter: brightness(0.35);
+      transition: transform 8s ease-out, filter 1.2s ease-in-out;
     }
 
-    .slide.active img { transform: scale(1); }
+    .slide.active img {
+      transform: scale(1);
+      filter: brightness(1);
+    }
 
     .slide-overlay {
       position: absolute;
