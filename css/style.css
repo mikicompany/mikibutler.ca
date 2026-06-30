@@ -783,9 +783,60 @@ main {
   body { flex-direction: column; }
   main { margin-left: 0; }
 
-  .masonry-grid { padding: 16px; columns: 2 160px; }
-  .resume-page { padding: 32px 24px; }
-  .resume-top { flex-direction: column; gap: 24px; }
-  .contact-page { padding: 32px 24px; }
+  /* Work grid */
+  .masonry-grid {
+    padding: 12px;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 140px;
+    gap: 4px;
+  }
+  .masonry-item.size-large,
+  .masonry-item.size-wide { grid-column: span 2; }
+  .masonry-item.size-tall { grid-row: span 2; }
+
   .work-header { padding: 24px 16px 16px; }
+
+  /* Resume / About */
+  .resume-page { padding: 28px 20px 60px; }
+  .resume-top { flex-direction: column; gap: 20px; }
+  .resume-avatar { width: 80px; height: 80px; }
+
+  /* Gameography: stack list then carousel */
+  .gameography-layout {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .gameography-preview {
+    width: 100%;
+    justify-content: center;
+    order: -1; /* carousel above list on mobile */
+  }
+
+  .gp-stage {
+    width: 120px;
+    height: 180px;
+  }
+
+  .gp-card {
+    width: 120px;
+    height: 180px;
+  }
+
+  /* Skills */
+  .skills-cloud { gap: 6px; }
+  .skill-tag { font-size: 10px; padding: 4px 10px; }
+
+  /* Software grid */
+  .software-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .software-item { font-size: 11px; padding: 10px 12px; gap: 8px; }
+  .software-icon { width: 28px; height: 28px; }
+
+  /* Contact */
+  .contact-page { padding: 32px 24px; }
+
+  /* Home slideshow arrows */
+  .slide-prev { left: 8px; font-size: 28px; }
+  .slide-next { right: 8px; font-size: 28px; }
+  .slide-caption { bottom: 48px; right: 16px; }
 }
