@@ -425,25 +425,28 @@ main {
 }
 
 .gameography-preview {
-  width: 260px;
+  width: 340px;
   flex-shrink: 0;
   overflow: visible;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: sticky;
+  top: 60px;
+  align-self: flex-start;
 }
 
 .gp-stage {
   position: relative;
-  width: 110px;
-  height: 165px;
+  width: 220px;
+  height: 330px;
   overflow: visible;
 }
 
 .gp-card {
   position: absolute;
-  width: 110px;
-  height: 165px;
+  width: 220px;
+  height: 330px;
   border-radius: 10px;
   overflow: hidden;
   background: #111;
