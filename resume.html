@@ -206,38 +206,58 @@
     const gpRole = document.getElementById('gp-role');
     const gpPlatform = document.getElementById('gp-platform');
     const gpMeta = document.getElementById('gp-meta');
-    let current = imgA;
-    let next = imgB;
 
-    // Preload all game images immediately
+    // Preload all images into a cache map
+    const cache = {};
     items.forEach(li => {
-      if (li.dataset.img) new Image().src = li.dataset.img;
+      const url = li.dataset.img;
+      if (!url) return;
+      const img = new Image();
+      img.src = url;
+      cache[url] = img;
     });
+
+    let activeUrl = null;
+
+    function showImage(url, title, role, platform) {
+      gpTitle.textContent = title;
+      gpRole.textContent = role;
+      gpPlatform.textContent = platform;
+
+      if (!url) {
+        imgA.classList.remove('visible');
+        imgB.classList.remove('visible');
+        placeholder.style.opacity = '1';
+        gpMeta.style.opacity = '0';
+        return;
+      }
+
+      placeholder.style.opacity = '0';
+      gpMeta.style.opacity = '1';
+
+      // Figure out which img element is currently showing
+      const showing = imgA.classList.contains('visible') ? imgA : imgB;
+      const hidden  = showing === imgA ? imgB : imgA;
+
+      const doSwap = () => {
+        hidden.classList.add('visible');
+        showing.classList.remove('visible');
+      };
+
+      hidden.src = url;
+      if (hidden.complete && hidden.naturalWidth > 0) {
+        doSwap();
+      } else {
+        hidden.onload = doSwap;
+        hidden.onerror = doSwap; // show even on error so something happens
+      }
+    }
 
     items.forEach(li => {
       li.addEventListener('mouseenter', () => {
         items.forEach(i => i.classList.remove('active'));
         li.classList.add('active');
-
-        const url = li.dataset.img;
-        gpTitle.textContent = li.dataset.title || li.textContent.trim();
-        gpRole.textContent = li.dataset.role || '';
-        gpPlatform.textContent = li.dataset.platform || '';
-
-        if (!url) {
-          imgA.classList.remove('visible');
-          imgB.classList.remove('visible');
-          placeholder.style.opacity = '1';
-          gpMeta.style.opacity = '0';
-          return;
-        }
-
-        placeholder.style.opacity = '0';
-        gpMeta.style.opacity = '1';
-        next.src = url;
-        next.classList.add('visible');
-        current.classList.remove('visible');
-        [current, next] = [next, current];
+        showImage(li.dataset.img, li.textContent.trim(), li.dataset.role || '', li.dataset.platform || '');
       });
     });
   </script>
