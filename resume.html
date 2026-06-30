@@ -43,21 +43,32 @@
 
       <div class="resume-section">
         <h3>Gameography</h3>
-        <ul class="gameography">
-          <li>Starship Troopers Extermination — Environment Artist</li>
-          <li>Squad — Environment Artist</li>
-          <li>Star Trek Legends — Environment Artist (mobile)</li>
-          <li>Tomb Raider Reloaded — Environment Artist (mobile)</li>
-          <li>Mad Streets (Steam)</li>
-          <li>Plants VS Zombies: Battle for Neighborville — Environment Artist</li>
-          <li>Dead Rising 4 (XONE/PS4/PC) — Environment Artist</li>
-          <li>Skara the Blade Remains (PC/Steam) — Environment Artist</li>
-          <li>ESPN Sports Connection (WiiU) — Environment Artist</li>
-          <li>The Adventures of Tintin: The Secret of the Unicorn (X360) — 3D Artist, UI</li>
-          <li>The Adventures of Tintin: The Secret of the Unicorn (3DS) — 3D Artist</li>
-          <li>Motion Sports (X360 Kinect) — 3D Artist</li>
-          <li>Your Shape Feat Jenny McCarthy (Wii/PC) — 3D Artist</li>
-        </ul>
+        <div class="gameography-layout">
+          <ul class="gameography" id="gameography-list">
+            <li data-img="https://cdnb.artstation.com/p/assets/images/images/063/045/491/4k/miki-butler-l1.jpg?1684569438">Starship Troopers Extermination — Environment Artist</li>
+            <li data-img="">Squad — Environment Artist</li>
+            <li data-img="">Star Trek Legends — Environment Artist (mobile)</li>
+            <li data-img="">Tomb Raider Reloaded — Environment Artist (mobile)</li>
+            <li data-img="">Mad Streets (Steam)</li>
+            <li data-img="">Plants VS Zombies: Battle for Neighborville — Environment Artist</li>
+            <li data-img="">Dead Rising 4 (XONE/PS4/PC) — Environment Artist</li>
+            <li data-img="">Skara the Blade Remains (PC/Steam) — Environment Artist</li>
+            <li data-img="">ESPN Sports Connection (WiiU) — Environment Artist</li>
+            <li data-img="">The Adventures of Tintin: The Secret of the Unicorn (X360) — 3D Artist, UI</li>
+            <li data-img="">The Adventures of Tintin: The Secret of the Unicorn (3DS) — 3D Artist</li>
+            <li data-img="">Motion Sports (X360 Kinect) — 3D Artist</li>
+            <li data-img="">Your Shape Feat Jenny McCarthy (Wii/PC) — 3D Artist</li>
+          </ul>
+          <div class="gameography-preview" id="gameography-preview">
+            <div class="gp-inner">
+              <img id="gp-img-a" src="" alt="" />
+              <img id="gp-img-b" src="" alt="" class="hidden" />
+              <div class="gp-placeholder">
+                <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="40" height="40" opacity="0.2"><circle cx="30" cy="30" r="28" stroke="#fff" stroke-width="2"/><path d="M20 30 Q30 18 40 30 Q30 42 20 30Z" fill="#fff"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="resume-section">
@@ -173,5 +184,36 @@
   </main>
 
   <script src="js/sidebar.js"></script>
+  <script>
+    const items = document.querySelectorAll('#gameography-list li');
+    const imgA = document.getElementById('gp-img-a');
+    const imgB = document.getElementById('gp-img-b');
+    const placeholder = document.querySelector('.gp-placeholder');
+    let current = imgA;
+    let next = imgB;
+
+    items.forEach(li => {
+      li.addEventListener('mouseenter', () => {
+        const url = li.dataset.img;
+        items.forEach(i => i.classList.remove('active'));
+        li.classList.add('active');
+
+        if (!url) {
+          current.classList.remove('visible');
+          next.classList.remove('visible');
+          placeholder.style.opacity = '1';
+          return;
+        }
+
+        placeholder.style.opacity = '0';
+        next.src = url;
+        next.onload = () => {
+          next.classList.add('visible');
+          current.classList.remove('visible');
+          [current, next] = [next, current];
+        };
+      });
+    });
+  </script>
 </body>
 </html>
