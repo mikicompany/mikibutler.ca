@@ -466,11 +466,14 @@ main {
   padding: 12px 16px;
   border-radius: 2px;
   font-size: 13px;
-  transition: border-color 0.2s;
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
 }
 
 .software-item:hover {
-  border-color: #333;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .software-icon {
