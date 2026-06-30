@@ -471,9 +471,9 @@ main {
 }
 
 .software-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -481,6 +481,13 @@ main {
   font-weight: 800;
   flex-shrink: 0;
   color: #fff;
+}
+
+.software-icon img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
 }
 
 .reel-embed {
