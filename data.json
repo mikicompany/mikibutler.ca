@@ -3,7 +3,7 @@
     { "label": "Home Page", "href": "index.html" },
     { "label": "Work", "href": "work.html" },
     { "label": "Work (Protected)", "href": "protected.html" },
-    { "label": "Resume", "href": "resume.html" },
+    { "label": "About", "href": "resume.html" },
     { "label": "Contact", "href": "contact.html" }
   ],
   "work": [
