@@ -45,26 +45,33 @@
         <h3>Gameography</h3>
         <div class="gameography-layout">
           <ul class="gameography" id="gameography-list">
-            <li data-img="https://cdnb.artstation.com/p/assets/images/images/063/045/491/4k/miki-butler-l1.jpg?1684569438">Starship Troopers Extermination — Environment Artist</li>
-            <li data-img="">Squad — Environment Artist</li>
-            <li data-img="">Star Trek Legends — Environment Artist (mobile)</li>
-            <li data-img="">Tomb Raider Reloaded — Environment Artist (mobile)</li>
-            <li data-img="">Mad Streets (Steam)</li>
-            <li data-img="">Plants VS Zombies: Battle for Neighborville — Environment Artist</li>
-            <li data-img="">Dead Rising 4 (XONE/PS4/PC) — Environment Artist</li>
-            <li data-img="">Skara the Blade Remains (PC/Steam) — Environment Artist</li>
-            <li data-img="">ESPN Sports Connection (WiiU) — Environment Artist</li>
-            <li data-img="">The Adventures of Tintin: The Secret of the Unicorn (X360) — 3D Artist, UI</li>
-            <li data-img="">The Adventures of Tintin: The Secret of the Unicorn (3DS) — 3D Artist</li>
-            <li data-img="">Motion Sports (X360 Kinect) — 3D Artist</li>
-            <li data-img="">Your Shape Feat Jenny McCarthy (Wii/PC) — 3D Artist</li>
+            <li data-img="https://cdnb.artstation.com/p/assets/images/images/063/045/491/4k/miki-butler-l1.jpg?1684569438" data-role="Environment Artist" data-platform="PC">Starship Troopers Extermination</li>
+            <li data-img="" data-role="Environment Artist" data-platform="PC">Squad</li>
+            <li data-img="" data-role="Environment Artist" data-platform="iOS / Android">Star Trek Legends</li>
+            <li data-img="" data-role="Environment Artist" data-platform="iOS / Android">Tomb Raider Reloaded</li>
+            <li data-img="" data-role="Environment Artist" data-platform="PC">Mad Streets</li>
+            <li data-img="" data-role="Environment Artist" data-platform="PS4 / XOne / PC">Plants VS Zombies: Battle for Neighborville</li>
+            <li data-img="" data-role="Environment Artist" data-platform="XOne / PS4 / PC">Dead Rising 4</li>
+            <li data-img="" data-role="Environment Artist" data-platform="PC">Skara: The Blade Remains</li>
+            <li data-img="" data-role="Environment Artist" data-platform="WiiU">ESPN Sports Connection</li>
+            <li data-img="" data-role="3D Artist, UI" data-platform="X360">The Adventures of Tintin (X360)</li>
+            <li data-img="" data-role="3D Artist" data-platform="3DS">The Adventures of Tintin (3DS)</li>
+            <li data-img="" data-role="3D Artist" data-platform="X360 Kinect">Motion Sports</li>
+            <li data-img="" data-role="3D Artist" data-platform="Wii / PC">Your Shape Feat Jenny McCarthy</li>
           </ul>
+
           <div class="gameography-preview" id="gameography-preview">
-            <div class="gp-inner">
+            <div class="gp-card">
               <img id="gp-img-a" src="" alt="" />
-              <img id="gp-img-b" src="" alt="" class="hidden" />
-              <div class="gp-placeholder">
-                <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="40" height="40" opacity="0.2"><circle cx="30" cy="30" r="28" stroke="#fff" stroke-width="2"/><path d="M20 30 Q30 18 40 30 Q30 42 20 30Z" fill="#fff"/></svg>
+              <img id="gp-img-b" src="" alt="" />
+              <div class="gp-gradient"></div>
+              <div class="gp-meta" id="gp-meta">
+                <div class="gp-meta-role" id="gp-role"></div>
+                <div class="gp-meta-title" id="gp-title"></div>
+                <div class="gp-meta-platform" id="gp-platform"></div>
+              </div>
+              <div class="gp-placeholder" id="gp-placeholder">
+                <span>Hover a title</span>
               </div>
             </div>
           </div>
@@ -194,7 +201,11 @@
     const items = document.querySelectorAll('#gameography-list li');
     const imgA = document.getElementById('gp-img-a');
     const imgB = document.getElementById('gp-img-b');
-    const placeholder = document.querySelector('.gp-placeholder');
+    const placeholder = document.getElementById('gp-placeholder');
+    const gpTitle = document.getElementById('gp-title');
+    const gpRole = document.getElementById('gp-role');
+    const gpPlatform = document.getElementById('gp-platform');
+    const gpMeta = document.getElementById('gp-meta');
     let current = imgA;
     let next = imgB;
 
@@ -205,24 +216,28 @@
 
     items.forEach(li => {
       li.addEventListener('mouseenter', () => {
-        const url = li.dataset.img;
         items.forEach(i => i.classList.remove('active'));
         li.classList.add('active');
 
+        const url = li.dataset.img;
+        gpTitle.textContent = li.dataset.title || li.textContent.trim();
+        gpRole.textContent = li.dataset.role || '';
+        gpPlatform.textContent = li.dataset.platform || '';
+
         if (!url) {
-          current.classList.remove('visible');
-          next.classList.remove('visible');
+          imgA.classList.remove('visible');
+          imgB.classList.remove('visible');
           placeholder.style.opacity = '1';
+          gpMeta.style.opacity = '0';
           return;
         }
 
         placeholder.style.opacity = '0';
+        gpMeta.style.opacity = '1';
         next.src = url;
-        next.onload = () => {
-          next.classList.add('visible');
-          current.classList.remove('visible');
-          [current, next] = [next, current];
-        };
+        next.classList.add('visible');
+        current.classList.remove('visible');
+        [current, next] = [next, current];
       });
     });
   </script>

@@ -425,32 +425,79 @@ main {
 }
 
 .gameography-preview {
-  width: 320px;
+  width: 340px;
   flex-shrink: 0;
   position: sticky;
   top: 40px;
 }
 
-.gp-inner {
+.gp-card {
   width: 100%;
-  aspect-ratio: 16/10;
+  aspect-ratio: 2/3;
   position: relative;
-  background: #111;
-  border-radius: 3px;
+  background: #0d0d0d;
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
 }
 
-.gp-inner img {
+.gp-card img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.35s ease;
 }
 
-.gp-inner img.visible { opacity: 1; }
+.gp-card img.visible { opacity: 1; }
+
+.gp-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 30%,
+    rgba(0,0,0,0.4) 60%,
+    rgba(0,0,0,0.95) 100%
+  );
+  z-index: 1;
+}
+
+.gp-meta {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 22px;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.gp-meta-role {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.gp-meta-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+
+.gp-meta-platform {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.06em;
+}
 
 .gp-placeholder {
   position: absolute;
@@ -458,7 +505,12 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2;
   transition: opacity 0.3s ease;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #333;
 }
 
 .gameography li {
