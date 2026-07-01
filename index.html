@@ -47,6 +47,33 @@
       filter: brightness(1);
     }
 
+    .slide-video {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      transform: scale(1.05);
+      filter: brightness(0.35);
+      transition: transform 8s ease-out, filter 1.2s ease-in-out;
+    }
+
+    .slide.active .slide-video {
+      transform: scale(1);
+      filter: brightness(1);
+    }
+
+    .slide-video-frame {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 177.78vh;
+      height: 100vh;
+      min-width: 100%;
+      min-height: 56.25vw;
+      transform: translate(-50%, -50%);
+      border: 0;
+      pointer-events: none;
+    }
+
     .slide-overlay {
       position: absolute;
       inset: 0;
@@ -182,7 +209,8 @@
       'starship-troopers': 'Starship Troopers',
       'dead-rising': 'Dead Rising',
       'pvz': 'Plants vs Zombies',
-      'other': 'Other'
+      'other': 'Other',
+      'reel': 'Reel'
     };
 
     let slides = [];
@@ -192,7 +220,9 @@
 
     fetch('data.json').then(r => r.json()).then(data => {
       // Filter out items with home: false
-      slides = data.work.filter(item => item.home !== false);
+      const workSlides = data.work.filter(item => item.home !== false);
+      const videoSlides = (data.carousel || []).filter(item => item.video);
+      slides = [...workSlides, ...videoSlides];
       buildSlideshow();
       goTo(0);
     });
@@ -204,8 +234,11 @@
       slides.forEach((item, i) => {
         const slide = document.createElement('div');
         slide.className = 'slide';
+        const media = item.video
+          ? `<div class="slide-video"><iframe class="slide-video-frame" src="https://www.youtube.com/embed/${item.video}?autoplay=1&mute=1&loop=1&playlist=${item.video}&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1" title="${item.title}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>`
+          : `<img src="${item.img}" alt="${item.title}" />`;
         slide.innerHTML = `
-          <img src="${item.img}" alt="${item.title}" />
+          ${media}
           <div class="slide-overlay"></div>
           <div class="slide-caption">
             <div class="cap-tag">${CATEGORY_LABELS[item.category] || item.category || ''}</div>
