@@ -712,13 +712,31 @@ main {
 .contact-socials svg { width: 20px; height: 20px; }
 
 /* ── PROTECTED ── */
+.matrix-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: #000;
+}
+
 .protected-page {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
   padding: 60px;
   text-align: center;
+}
+
+.protected-inner {
+  max-width: 380px;
+  padding: 40px 36px;
+  background: rgba(10, 12, 10, 0.72);
+  border: 1px solid rgba(160, 255, 0, 0.18);
+  border-radius: 8px;
+  backdrop-filter: blur(6px);
 }
 
 .protected-inner h1 {
