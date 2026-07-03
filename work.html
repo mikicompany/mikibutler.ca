@@ -52,15 +52,21 @@
     };
 
     let allItems = [];
+    let currentFilter = 'all';
+    let currentGroup = null;
     let lightboxItems = [];
     let lightboxIndex = 0;
+
+    const grid = document.getElementById('work-grid');
+    const workHeader = document.querySelector('.work-header');
 
     fetch('data.json')
       .then(r => r.json())
       .then(data => {
-        buildFilters(data.work);
-        buildGrid(data.work);
         allItems = data.work;
+        allItems.forEach(i => { if (!i.group) i.group = i.title.split(' — ')[0]; });
+        buildFilters(allItems);
+        render();
       });
 
     function buildFilters(items) {
@@ -79,23 +85,98 @@
         if (!btn) return;
         container.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        filterGrid(btn.dataset.filter);
+        currentFilter = btn.dataset.filter;
+        currentGroup = null;
+        render();
       });
     }
 
-    function buildGrid(items) {
-      const grid = document.getElementById('work-grid');
+    function getGroups() {
+      const items = currentFilter === 'all'
+        ? allItems
+        : allItems.filter(i => i.category === currentFilter);
+      const map = new Map();
+      items.forEach(i => {
+        if (!map.has(i.group)) map.set(i.group, { name: i.group, category: i.category, items: [] });
+        map.get(i.group).items.push(i);
+      });
+      return [...map.values()];
+    }
+
+    function render() {
+      updateGroupBar();
+      if (currentGroup) buildItemGrid(currentGroup.items);
+      else buildGroupGrid(getGroups());
+    }
+
+    function updateGroupBar() {
+      let bar = document.getElementById('group-bar');
+      if (currentGroup) {
+        if (!bar) {
+          bar = document.createElement('div');
+          bar.id = 'group-bar';
+          bar.className = 'group-bar';
+          workHeader.appendChild(bar);
+        }
+        bar.innerHTML = `
+          <button class="back-btn">&#8249; Back</button>
+          <span class="group-bar-title">${currentGroup.name}</span>
+          <span class="group-bar-count">${currentGroup.items.length} items</span>
+        `;
+        bar.querySelector('.back-btn').addEventListener('click', closeGroup);
+      } else if (bar) {
+        bar.remove();
+      }
+    }
+
+    function closeGroup() {
+      currentGroup = null;
+      render();
+    }
+
+    function mediaBadge(item) {
+      return (item.video || item.mp4 || item.embed)
+        ? '<span class="play-badge" aria-hidden="true"></span>' : '';
+    }
+
+    function buildGroupGrid(groups) {
+      grid.innerHTML = '';
+      groups.forEach(g => {
+        const cover = g.items[0];
+        const multi = g.items.length > 1;
+        const div = document.createElement('div');
+        div.className = `masonry-item size-${cover.size || 'small'}`;
+        div.innerHTML = `
+          <img src="${cover.img}" alt="${g.name}" loading="lazy" />
+          ${multi ? `<span class="item-count">${g.items.length}</span>` : mediaBadge(cover)}
+          <div class="item-overlay">
+            <span class="item-tag">${CATEGORY_LABELS[g.category] || g.category || ''}</span>
+            <span class="item-title">${multi ? g.name : cover.title}</span>
+          </div>
+        `;
+        div.addEventListener('click', () => {
+          if (multi) {
+            currentGroup = g;
+            render();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            lightboxItems = g.items;
+            openLightbox(0);
+          }
+        });
+        grid.appendChild(div);
+      });
+    }
+
+    function buildItemGrid(items) {
       grid.innerHTML = '';
       lightboxItems = items;
-
       items.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = `masonry-item size-${item.size || 'small'}`;
-        div.dataset.category = item.category || '';
-        div.dataset.index = i;
         div.innerHTML = `
           <img src="${item.img}" alt="${item.title}" loading="lazy" />
-          ${(item.video || item.mp4 || item.embed) ? '<span class="play-badge" aria-hidden="true"></span>' : ''}
+          ${mediaBadge(item)}
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[item.category] || item.category || ''}</span>
             <span class="item-title">${item.title}</span>
@@ -104,14 +185,6 @@
         div.addEventListener('click', () => openLightbox(i));
         grid.appendChild(div);
       });
-    }
-
-    function filterGrid(filter) {
-      const visibleItems = filter === 'all'
-        ? allItems
-        : allItems.filter(i => i.category === filter);
-
-      buildGrid(visibleItems);
     }
 
     // Lightbox
@@ -174,10 +247,13 @@
     lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
 
     document.addEventListener('keydown', e => {
-      if (!lightbox.classList.contains('open')) return;
-      if (e.key === 'Escape') closeLightbox();
-      if (e.key === 'ArrowLeft') navigate(-1);
-      if (e.key === 'ArrowRight') navigate(1);
+      if (lightbox.classList.contains('open')) {
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') navigate(-1);
+        if (e.key === 'ArrowRight') navigate(1);
+      } else if (e.key === 'Escape' && currentGroup) {
+        closeGroup();
+      }
     });
   </script>
 </body>
