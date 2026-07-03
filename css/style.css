@@ -293,6 +293,49 @@ main {
   border-radius: 2px;
 }
 
+.lightbox .lb-video {
+  display: none;
+  width: min(90vw, 1280px);
+  aspect-ratio: 16 / 9;
+  max-height: 88vh;
+  border: none;
+  border-radius: 2px;
+  background: #000;
+}
+
+.lightbox .lb-vid {
+  display: none;
+  max-width: 90vw;
+  max-height: 88vh;
+  border-radius: 2px;
+  background: #000;
+}
+
+.masonry-item .play-badge {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.55);
+  pointer-events: none;
+  transition: background 0.2s;
+}
+
+.masonry-item .play-badge::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-40%, -50%);
+  border-style: solid;
+  border-width: 10px 0 10px 16px;
+  border-color: transparent transparent transparent #fff;
+}
+
+.masonry-item:hover .play-badge {
+  background: rgba(0,0,0,0.8);
+}
+
 .lightbox-close {
   position: absolute;
   top: 20px; right: 28px;

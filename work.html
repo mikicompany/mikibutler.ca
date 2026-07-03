@@ -34,6 +34,8 @@
     <span class="lightbox-close" aria-label="Close">&times;</span>
     <button class="lightbox-prev" aria-label="Previous">&#8249;</button>
     <img class="lb-img" src="" alt="" />
+    <iframe class="lb-video" src="" title="" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    <video class="lb-vid" controls playsinline loop></video>
     <button class="lightbox-next" aria-label="Next">&#8250;</button>
     <div class="lightbox-caption"></div>
   </div>
@@ -44,6 +46,7 @@
       'starship-troopers': 'Starship Troopers',
       'dead-rising': 'Dead Rising',
       'pvz': 'Plants vs Zombies',
+      'personal': 'Personal',
       'other': 'Other'
     };
 
@@ -91,6 +94,7 @@
         div.dataset.index = i;
         div.innerHTML = `
           <img src="${item.img}" alt="${item.title}" loading="lazy" />
+          ${(item.video || item.mp4 || item.embed) ? '<span class="play-badge" aria-hidden="true"></span>' : ''}
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[item.category] || item.category || ''}</span>
             <span class="item-title">${item.title}</span>
@@ -112,19 +116,49 @@
     // Lightbox
     const lightbox = document.getElementById('lightbox');
     const lbImg = lightbox.querySelector('.lb-img');
+    const lbVideo = lightbox.querySelector('.lb-video');
+    const lbVid = lightbox.querySelector('.lb-vid');
     const lbCaption = lightbox.querySelector('.lightbox-caption');
+
+    function resetLightboxMedia() {
+      lbImg.style.display = 'none';
+      lbImg.src = '';
+      lbVideo.style.display = 'none';
+      lbVideo.src = '';
+      lbVid.style.display = 'none';
+      lbVid.pause();
+      lbVid.removeAttribute('src');
+    }
 
     function openLightbox(index) {
       lightboxIndex = index;
-      lbImg.src = lightboxItems[index].img;
-      lbImg.alt = lightboxItems[index].title;
-      lbCaption.textContent = lightboxItems[index].title;
+      const item = lightboxItems[index];
+      lbCaption.textContent = item.title;
+      resetLightboxMedia();
+      if (item.video) {
+        lbVideo.title = item.title;
+        lbVideo.src = `https://www.youtube.com/embed/${item.video}?autoplay=1&rel=0`;
+        lbVideo.style.display = 'block';
+      } else if (item.embed) {
+        lbVideo.title = item.title;
+        lbVideo.src = item.embed;
+        lbVideo.style.display = 'block';
+      } else if (item.mp4) {
+        lbVid.src = item.mp4;
+        lbVid.style.display = 'block';
+        lbVid.play();
+      } else {
+        lbImg.src = item.img;
+        lbImg.alt = item.title;
+        lbImg.style.display = '';
+      }
       lightbox.classList.add('open');
       document.body.style.overflow = 'hidden';
     }
 
     function closeLightbox() {
       lightbox.classList.remove('open');
+      resetLightboxMedia();
       document.body.style.overflow = '';
     }
 
