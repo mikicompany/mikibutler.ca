@@ -140,14 +140,20 @@
         ? '<span class="play-badge" aria-hidden="true"></span>' : '';
     }
 
+    // Repeating size pattern that always fills complete rows (2+1+1+4 = 8
+    // cells = two full rows of 4), so the grid can never leave holes no
+    // matter how tiles are ordered.
+    const SIZE_PATTERN = ['wide', 'small', 'small', 'large'];
+    const sizeFor = i => SIZE_PATTERN[i % SIZE_PATTERN.length];
+
     function buildGroupGrid(groups) {
       grid.innerHTML = '';
-      groups.forEach(g => {
+      groups.forEach((g, gi) => {
         const cover = g.items[0];
         const multi = g.items.length > 1;
         const desc = (g.items.find(i => i.description) || {}).description || '';
         const div = document.createElement('div');
-        div.className = `masonry-item size-${cover.size || 'small'}`;
+        div.className = `masonry-item size-${sizeFor(gi)}`;
         div.innerHTML = `
           <img src="${cover.img}" alt="${g.name}" loading="lazy" />
           ${multi ? `<span class="item-count">${g.items.length}</span>` : mediaBadge(cover)}
@@ -176,7 +182,7 @@
       lightboxItems = items;
       items.forEach((item, i) => {
         const div = document.createElement('div');
-        div.className = `masonry-item size-${item.size || 'small'}`;
+        div.className = `masonry-item size-${sizeFor(i)}`;
         div.innerHTML = `
           <img src="${item.img}" alt="${item.title}" loading="lazy" />
           ${mediaBadge(item)}
