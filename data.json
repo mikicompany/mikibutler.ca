@@ -734,7 +734,7 @@
       "category": "pvz"
     },
     {
-      "title": "PvZ Social Hub — Video 01",
+      "title": "PvZ Social Hub — Balloon Video",
       "size": "wide",
       "img": "https://i.ytimg.com/vi/h-ubmKwdpbI/maxresdefault.jpg",
       "video": "h-ubmKwdpbI",
@@ -746,14 +746,6 @@
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/610/217/large/miki-butler-winer-pod.jpg?1572324326",
       "category": "pvz"
-    },
-    {
-      "title": "PvZ Social Hub — Video 02",
-      "size": "wide",
-      "img": "https://i.ytimg.com/vi/e_JSp0F6PX8/maxresdefault.jpg",
-      "video": "e_JSp0F6PX8",
-      "category": "pvz",
-      "home": false
     },
     {
       "title": "PvZ Neighborville — TV Hi-Poly WIP",
@@ -834,18 +826,10 @@
       "category": "pvz"
     },
     {
-      "title": "PvZ Neighborville — Video 01",
+      "title": "PvZ Neighborville — Gate Video",
       "size": "wide",
       "img": "https://i.ytimg.com/vi/HPPA2h18tpA/maxresdefault.jpg",
       "video": "HPPA2h18tpA",
-      "category": "pvz",
-      "home": false
-    },
-    {
-      "title": "PvZ Neighborville — Video 02",
-      "size": "wide",
-      "img": "https://i.ytimg.com/vi/RwYjx4VPzx0/maxresdefault.jpg",
-      "video": "RwYjx4VPzx0",
       "category": "pvz",
       "home": false
     },
