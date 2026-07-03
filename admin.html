@@ -384,7 +384,8 @@
   <div class="header-actions">
     <span class="save-status" id="save-status">Unsaved changes</span>
     <button class="btn btn-ghost" onclick="loadFromFile()">Load data.json</button>
-    <button class="btn btn-primary" onclick="exportJSON()">Download data.json</button>
+    <button class="btn btn-ghost" onclick="exportJSON()">Download</button>
+    <button class="btn btn-primary" onclick="saveToDisk()">Save</button>
   </div>
 </header>
 
@@ -790,6 +791,20 @@ function updateJSONPreview() {
 
 function copyJSON() {
   navigator.clipboard.writeText(buildJSON()).then(() => showToast('Copied to clipboard!'));
+}
+
+function saveToDisk() {
+  fetch('/save-data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: buildJSON() })
+    .then(r => { if (!r.ok) throw new Error(r.status); })
+    .then(() => {
+      const el = document.getElementById('save-status');
+      el.textContent = 'Saved to data.json ✓';
+      el.classList.add('saved');
+      showToast('Saved to data.json!');
+    })
+    .catch(() => {
+      showToast('No save endpoint — run "python serve.py" locally, or use Download');
+    });
 }
 
 function exportJSON() {

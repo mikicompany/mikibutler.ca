@@ -617,26 +617,6 @@
       "group": "Tumi Knife"
     },
     {
-      "title": "It Is Not Brocoly! — Marmoset Viewer",
-      "size": "wide",
-      "img": "https://cdnb.artstation.com/p/assets/marmosets/images/003/608/235/large/miki-c-butler-mview-image20161003-19792-1j27fle.jpg?1475552179",
-      "embed": "https://www.artstation.com/embed/3608235",
-      "category": "personal",
-      "home": false,
-      "group": "It Is Not Brocoly!",
-      "description": "Stylized alien tree study - interactive Marmoset viewer."
-    },
-    {
-      "title": "Avatar: The Last Airbender (UE5)",
-      "size": "wide",
-      "img": "https://i.ytimg.com/vi/Fzs2S3AZSEo/maxresdefault.jpg",
-      "video": "Fzs2S3AZSEo",
-      "category": "personal",
-      "home": false,
-      "group": "Avatar: The Last Airbender (UE5)",
-      "description": "Avatar-inspired environment built in UE5 (video)."
-    },
-    {
       "title": "Meet Mat — 01",
       "size": "large",
       "img": "https://cdnb.artstation.com/p/assets/images/images/019/408/057/large/miki-butler-dsc00011.jpg?1563354945",
@@ -1160,6 +1140,26 @@
       "home": false,
       "group": "Squad 4.0 Menu",
       "description": "Squad 4.0 main menu scene (video)."
+    },
+    {
+      "title": "It Is Not Brocoly! — Marmoset Viewer",
+      "size": "wide",
+      "img": "https://cdnb.artstation.com/p/assets/marmosets/images/003/608/235/large/miki-c-butler-mview-image20161003-19792-1j27fle.jpg?1475552179",
+      "embed": "https://www.artstation.com/embed/3608235",
+      "category": "personal",
+      "home": false,
+      "group": "It Is Not Brocoly!",
+      "description": "Stylized alien tree study - interactive Marmoset viewer."
+    },
+    {
+      "title": "Avatar: The Last Airbender (UE5)",
+      "size": "wide",
+      "img": "https://i.ytimg.com/vi/Fzs2S3AZSEo/maxresdefault.jpg",
+      "video": "Fzs2S3AZSEo",
+      "category": "personal",
+      "home": false,
+      "group": "Avatar: The Last Airbender (UE5)",
+      "description": "Avatar-inspired environment built in UE5 (video)."
     }
   ],
   "socials": [
