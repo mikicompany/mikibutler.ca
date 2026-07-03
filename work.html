@@ -155,7 +155,7 @@
         const div = document.createElement('div');
         div.className = `masonry-item size-${sizeFor(gi)}`;
         div.innerHTML = `
-          <img src="${cover.img}" alt="${g.name}" loading="lazy" />
+          <img src="${cover.img}" alt="${g.name}" loading="lazy"${cover.focus ? ` style="object-position:${cover.focus}"` : ''} />
           ${multi ? `<span class="item-count">${g.items.length}</span>` : mediaBadge(cover)}
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[g.category] || g.category || ''}</span>
@@ -184,7 +184,7 @@
         const div = document.createElement('div');
         div.className = `masonry-item size-${sizeFor(i)}`;
         div.innerHTML = `
-          <img src="${item.img}" alt="${item.title}" loading="lazy" />
+          <img src="${item.img}" alt="${item.title}" loading="lazy"${item.focus ? ` style="object-position:${item.focus}"` : ''} />
           ${mediaBadge(item)}
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[item.category] || item.category || ''}</span>

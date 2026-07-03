@@ -369,6 +369,98 @@
     .menu-row:hover { background: var(--row-hover); }
     .menu-row.dragging { opacity: 0.4; }
     .menu-row.drag-over { border-top: 2px solid var(--accent); }
+
+    /* ── GROUP PREVIEW EDITOR ── */
+    .btn-expand {
+      background: none;
+      border: 1px solid #333;
+      color: var(--muted);
+      width: 26px;
+      height: 26px;
+      border-radius: 2px;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.15s;
+    }
+
+    .btn-expand:hover,
+    .btn-expand.open {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .group-editor {
+      background: #141414;
+      border-bottom: 1px solid #1e1e1e;
+      padding: 16px;
+    }
+
+    .editor-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .cover-strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .cover-thumb {
+      width: 96px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 2px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      opacity: 0.65;
+      transition: all 0.15s;
+    }
+
+    .cover-thumb:hover { opacity: 1; }
+
+    .cover-thumb.active {
+      border-color: var(--accent);
+      opacity: 1;
+    }
+
+    .editor-controls {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    .tile-preview {
+      width: 240px;
+      height: 160px;
+      flex: none;
+      border-radius: 2px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .tile-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .editor-fields {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .editor-fields input[type="range"] {
+      width: 100%;
+      max-width: 320px;
+      accent-color: var(--accent);
+    }
   </style>
 </head>
 <body>
@@ -528,12 +620,15 @@ function groupBlocks() {
   return { order, map };
 }
 
+let expandedGroup = null;
+
 function renderGroups() {
   const list = document.getElementById('groups-list');
   list.innerHTML = '';
   const { order, map } = groupBlocks();
   order.forEach((name, i) => {
     const items = map.get(name);
+    const open = expandedGroup === name;
     const row = document.createElement('div');
     row.className = 'menu-row';
     row.draggable = true;
@@ -545,10 +640,69 @@ function renderGroups() {
       ${thumbCell(items[0].img)}
       <span style="flex:1;font-weight:600">${esc(name)}</span>
       <span style="color:var(--muted);font-size:11px">${items.length} item${items.length > 1 ? 's' : ''}</span>
+      <button class="btn-expand${open ? ' open' : ''}" title="Choose / edit preview">${open ? '▾' : '▸'}</button>
     `;
+    row.querySelector('.btn-expand').addEventListener('click', e => {
+      e.stopPropagation();
+      expandedGroup = open ? null : name;
+      renderGroups();
+    });
     addDragEvents(row);
     list.appendChild(row);
+    if (open) list.appendChild(buildGroupEditor(name, items));
   });
+}
+
+function buildGroupEditor(name, items) {
+  const cover = items[0];
+  const m = /^(\d+)% (\d+)%$/.exec(cover.focus || '');
+  const fx = m ? +m[1] : 50, fy = m ? +m[2] : 50;
+  const desc = (items.find(i => i.description) || {}).description || '';
+  const wrap = document.createElement('div');
+  wrap.className = 'group-editor';
+  wrap.innerHTML = `
+    <p class="editor-hint">Click an image to make it the album cover:</p>
+    <div class="cover-strip">
+      ${items.map((it, idx) => `<img class="cover-thumb${idx === 0 ? ' active' : ''}" src="${esc(it.img)}" title="${esc(it.title)}" data-idx="${idx}" loading="lazy" />`).join('')}
+    </div>
+    <div class="editor-controls">
+      <div class="tile-preview"><img src="${esc(cover.img)}" style="object-position:${fx}% ${fy}%" alt="" /></div>
+      <div class="editor-fields">
+        <label>Hover description<br/><input class="cell-input ed-desc" value="${esc(desc)}" placeholder="Shown on tile hover" /></label>
+        <label>Crop focus — horizontal <span class="fx-val">${fx}%</span><br/><input type="range" class="ed-fx" min="0" max="100" value="${fx}" /></label>
+        <label>Crop focus — vertical <span class="fy-val">${fy}%</span><br/><input type="range" class="ed-fy" min="0" max="100" value="${fy}" /></label>
+      </div>
+    </div>
+  `;
+  wrap.querySelectorAll('.cover-thumb').forEach(img => {
+    img.addEventListener('click', () => {
+      const it = items[+img.dataset.idx];
+      if (it === items[0]) return;
+      const insertAt = data.work.indexOf(items[0]);
+      data.work.splice(data.work.indexOf(it), 1);
+      data.work.splice(insertAt, 0, it);
+      markUnsaved();
+      renderWork();
+    });
+  });
+  wrap.querySelector('.ed-desc').addEventListener('input', e => {
+    items.forEach(it => { if (it !== items[0]) delete it.description; });
+    items[0].description = e.target.value;
+    markUnsaved();
+  });
+  const prevImg = wrap.querySelector('.tile-preview img');
+  const updFocus = () => {
+    const x = wrap.querySelector('.ed-fx').value;
+    const y = wrap.querySelector('.ed-fy').value;
+    wrap.querySelector('.fx-val').textContent = x + '%';
+    wrap.querySelector('.fy-val').textContent = y + '%';
+    items[0].focus = `${x}% ${y}%`;
+    prevImg.style.objectPosition = `${x}% ${y}%`;
+    markUnsaved();
+  };
+  wrap.querySelector('.ed-fx').addEventListener('input', updFocus);
+  wrap.querySelector('.ed-fy').addEventListener('input', updFocus);
+  return wrap;
 }
 
 function renderWork() {
