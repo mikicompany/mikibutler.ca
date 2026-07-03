@@ -78,8 +78,8 @@ nav a.active {
 
 .sidebar-socials {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-wrap: nowrap;
+  gap: 7px;
   margin-top: auto;
   padding-top: 24px;
 }
@@ -94,8 +94,8 @@ nav a.active {
 .sidebar-socials a:hover { color: var(--accent); }
 
 .sidebar-socials svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 
 .sidebar-copy {
