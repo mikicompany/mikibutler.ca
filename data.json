@@ -1187,6 +1187,11 @@
       "label": "X",
       "href": "https://x.com/",
       "icon": "x"
+    },
+    {
+      "label": "Steam",
+      "href": "https://steamcommunity.com/id/mikicompany",
+      "icon": "steam"
     }
   ],
   "carousel": [
