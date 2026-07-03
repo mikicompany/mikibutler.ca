@@ -144,6 +144,7 @@
       groups.forEach(g => {
         const cover = g.items[0];
         const multi = g.items.length > 1;
+        const desc = (g.items.find(i => i.description) || {}).description || '';
         const div = document.createElement('div');
         div.className = `masonry-item size-${cover.size || 'small'}`;
         div.innerHTML = `
@@ -152,6 +153,7 @@
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[g.category] || g.category || ''}</span>
             <span class="item-title">${multi ? g.name : cover.title}</span>
+            ${desc ? `<span class="item-desc">${desc}</span>` : ''}
           </div>
         `;
         div.addEventListener('click', () => {
@@ -180,6 +182,7 @@
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[item.category] || item.category || ''}</span>
             <span class="item-title">${item.title}</span>
+            ${item.description ? `<span class="item-desc">${item.description}</span>` : ''}
           </div>
         `;
         div.addEventListener('click', () => openLightbox(i));
