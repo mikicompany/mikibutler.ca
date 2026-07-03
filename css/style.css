@@ -217,7 +217,7 @@ main {
   height: 100%;
   object-fit: cover;
   display: block;
-  filter: brightness(0.55) saturate(0.9);
+  filter: brightness(0.38) saturate(0.8);
   transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
               filter 0.35s ease;
 }
@@ -230,7 +230,7 @@ main {
 
 .masonry-item:hover img {
   transform: scale(1.06);
-  filter: brightness(1) saturate(1);
+  filter: brightness(0.9) saturate(1);
 }
 
 .masonry-item .item-overlay {
