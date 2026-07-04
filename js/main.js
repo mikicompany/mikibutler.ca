@@ -32,12 +32,18 @@ if (lightbox) {
     openLightbox(current);
   }
 
-  document.querySelectorAll('.masonry-item').forEach((el, i) => {
-    const img = el.querySelector('img');
-    const title = el.dataset.title || '';
-    items.push({ src: img.src, title });
-    el.addEventListener('click', () => openLightbox(i));
-  });
+  // Re-scannable so pages that render tiles dynamically (protected.html)
+  // can hook newly added items into the lightbox.
+  window.refreshLightbox = function () {
+    items = [];
+    document.querySelectorAll('.masonry-item').forEach((el, i) => {
+      const img = el.querySelector('img');
+      const title = el.dataset.title || '';
+      items.push({ src: img.src, title });
+      el.onclick = () => openLightbox(i);
+    });
+  };
+  window.refreshLightbox();
 
   lightbox.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
   lightbox.querySelector('.lightbox-prev').addEventListener('click', () => navigate(-1));
@@ -65,20 +71,5 @@ if (filterBtns.length) {
         item.style.display = show ? 'block' : 'none';
       });
     });
-  });
-}
-
-// Protected page password check
-const pwForm = document.getElementById('pw-form');
-if (pwForm) {
-  pwForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const val = document.getElementById('pw-input').value;
-    if (val === 'miki2024') {
-      document.getElementById('protected-content').style.display = 'block';
-      document.getElementById('pw-gate').style.display = 'none';
-    } else {
-      document.getElementById('pw-error').textContent = 'Incorrect password.';
-    }
   });
 }
