@@ -947,18 +947,88 @@ function copyJSON() {
   navigator.clipboard.writeText(buildJSON()).then(() => showToast('Copied to clipboard!'));
 }
 
+function markSaved(msg) {
+  const el = document.getElementById('save-status');
+  el.textContent = msg;
+  el.classList.add('saved');
+}
+
 function saveToDisk() {
-  fetch('/save-data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: buildJSON() })
-    .then(r => { if (!r.ok) throw new Error(r.status); })
-    .then(() => {
-      const el = document.getElementById('save-status');
-      el.textContent = 'Saved to data.json ✓';
-      el.classList.add('saved');
-      showToast('Saved to data.json!');
+  const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
+  if (isLocal) {
+    fetch('/save-data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: buildJSON() })
+      .then(r => { if (!r.ok) throw new Error(r.status); })
+      .then(() => {
+        markSaved('Saved to data.json ✓');
+        showToast('Saved to data.json!');
+      })
+      .catch(() => showToast('Save endpoint not responding — is this "python serve.py"?'));
+  } else {
+    saveViaGitHub().catch(err => showToast('Save failed: ' + err.message));
+  }
+}
+
+// ── SAVE VIA GITHUB API (live site) ──
+// GitHub Pages can't run server code, so on the live site Save commits
+// data.json to the repo through the GitHub API. Requires a fine-grained
+// personal access token (Contents: read & write on this repo), asked for
+// once and kept in this browser's localStorage only.
+const GH_API = 'https://api.github.com/repos/mikicompany/mikibutler.ca/contents/data.json';
+
+function ghToken(forceAsk) {
+  let token = forceAsk ? null : localStorage.getItem('gh-token');
+  if (!token) {
+    token = prompt(
+      'To save from the live site, paste a GitHub personal access token.\n\n' +
+      'Create one at github.com/settings/personal-access-tokens (fine-grained), ' +
+      'scoped to mikicompany/mikibutler.ca with "Contents: Read and write".\n\n' +
+      'It is stored only in this browser.'
+    );
+    if (!token) return null;
+    token = token.trim();
+    localStorage.setItem('gh-token', token);
+  }
+  return token;
+}
+
+function b64utf8(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(bin);
+}
+
+async function saveViaGitHub(retrying) {
+  const token = ghToken(retrying);
+  if (!token) { showToast('Save cancelled — no token provided'); return; }
+  const headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+  showToast('Committing data.json…');
+  const cur = await fetch(`${GH_API}?ref=master&t=${Date.now()}`, { headers });
+  if (cur.status === 401 || cur.status === 403) {
+    localStorage.removeItem('gh-token');
+    if (!retrying) return saveViaGitHub(true);
+    throw new Error('token rejected (needs Contents: Read and write on this repo)');
+  }
+  if (!cur.ok) throw new Error('could not read current data.json (HTTP ' + cur.status + ')');
+  const { sha } = await cur.json();
+  const res = await fetch(GH_API, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify({
+      message: 'Update data.json from admin',
+      content: b64utf8(buildJSON() + '\n'),
+      sha,
+      branch: 'master'
     })
-    .catch(() => {
-      showToast('No save endpoint — run "python serve.py" locally, or use Download');
-    });
+  });
+  if (!res.ok) {
+    const detail = (await res.json().catch(() => ({}))).message || 'HTTP ' + res.status;
+    throw new Error(detail);
+  }
+  markSaved('Committed ✓ — site updates in ~1 min');
+  showToast('Committed to GitHub! Pages will redeploy in about a minute.');
 }
 
 function exportJSON() {
