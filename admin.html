@@ -1009,8 +1009,18 @@ function b64utf8(str) {
 }
 
 async function saveViaGitHub(retrying) {
-  if (!localStorage.getItem('gh-token') && !retrying) return saveViaWebEditor();
-  const token = ghToken(retrying);
+  let token = retrying ? null : localStorage.getItem('gh-token');
+  if (!token) {
+    if (!retrying) {
+      const quick = confirm(
+        'Save data.json to GitHub:\n\n' +
+        'OK — quick save: copies the JSON and opens GitHub’s file editor; paste and commit there.\n\n' +
+        'Cancel — one-click save: paste a GitHub access token once, then Save commits data.json directly from here.'
+      );
+      if (quick) return saveViaWebEditor();
+    }
+    token = ghToken(true);
+  }
   if (!token) { showToast('Save cancelled — no token provided'); return; }
   const headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
   showToast('Committing data.json…');
