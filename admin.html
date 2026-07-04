@@ -974,11 +974,20 @@ function saveToDisk() {
 // once and kept in this browser's localStorage only.
 const GH_API = 'https://api.github.com/repos/mikicompany/mikibutler.ca/contents/data.json';
 
+// No-token save: copy the JSON and hand off to GitHub's own editor, which
+// uses the owner's existing GitHub login — nothing is stored in the browser.
+async function saveViaWebEditor() {
+  await navigator.clipboard.writeText(buildJSON() + '\n');
+  window.open('https://github.com/mikicompany/mikibutler.ca/edit/master/data.json', '_blank');
+  showToast('JSON copied! In the GitHub tab: select all, paste, then "Commit changes".');
+  markSaved('Pasted to GitHub? Site updates ~1 min after commit');
+}
+
 function ghToken(forceAsk) {
   let token = forceAsk ? null : localStorage.getItem('gh-token');
   if (!token) {
     token = prompt(
-      'To save from the live site, paste a GitHub personal access token.\n\n' +
+      'Paste a GitHub personal access token for one-click saves.\n\n' +
       'Create one at github.com/settings/personal-access-tokens (fine-grained), ' +
       'scoped to mikicompany/mikibutler.ca with "Contents: Read and write".\n\n' +
       'It is stored only in this browser.'
@@ -1000,6 +1009,7 @@ function b64utf8(str) {
 }
 
 async function saveViaGitHub(retrying) {
+  if (!localStorage.getItem('gh-token') && !retrying) return saveViaWebEditor();
   const token = ghToken(retrying);
   if (!token) { showToast('Save cancelled — no token provided'); return; }
   const headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
