@@ -463,6 +463,59 @@
       max-width: 320px;
       accent-color: var(--accent);
     }
+
+    /* ── TOKEN MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      padding: 24px;
+      width: 460px;
+      max-width: 92vw;
+    }
+
+    .modal h2 {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 0 0 10px;
+    }
+
+    .modal p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0 0 6px;
+    }
+
+    .modal .cell-input {
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .modal-error {
+      color: #ff4444;
+      min-height: 16px;
+      margin-top: 6px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
   </style>
 </head>
 <body>
@@ -571,6 +624,23 @@
   <div style="display:flex;gap:10px;margin-top:12px">
     <button class="btn btn-primary" onclick="copyJSON()">Copy to Clipboard</button>
     <button class="btn btn-ghost" onclick="exportJSON()">Download data.json</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="token-modal">
+  <div class="modal">
+    <h2>Set up one-click save</h2>
+    <p>Connect this browser to GitHub once, and Save will commit
+    <b>data.json</b> straight from here — no more steps, ever.</p>
+    <button class="btn btn-ghost" style="margin-top:10px" onclick="window.open('https://github.com/settings/tokens/new?scopes=repo&amp;description=mikibutler.ca%20admin%20save','_blank')">1 · Open GitHub (pre-filled)</button>
+    <p style="margin-top:8px">On that page just scroll down, press <b>Generate token</b>, copy it, and paste here:</p>
+    <input class="cell-input" id="token-input" placeholder="ghp_…" autocomplete="off" spellcheck="false" />
+    <p class="modal-error" id="token-error"></p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="submitToken()">2 · Connect &amp; Save</button>
+      <button class="btn btn-ghost" onclick="closeTokenModal();saveViaWebEditor()">Skip — paste into GitHub instead</button>
+      <button class="btn btn-ghost" onclick="closeTokenModal()">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -983,20 +1053,26 @@ async function saveViaWebEditor() {
   markSaved('Pasted to GitHub? Site updates ~1 min after commit');
 }
 
-function ghToken(forceAsk) {
-  let token = forceAsk ? null : localStorage.getItem('gh-token');
-  if (!token) {
-    token = prompt(
-      'Paste a GitHub personal access token for one-click saves.\n\n' +
-      'Create one at github.com/settings/personal-access-tokens (fine-grained), ' +
-      'scoped to mikicompany/mikibutler.ca with "Contents: Read and write".\n\n' +
-      'It is stored only in this browser.'
-    );
-    if (!token) return null;
-    token = token.trim();
-    localStorage.setItem('gh-token', token);
+function openTokenModal(msg) {
+  document.getElementById('token-error').textContent = msg || '';
+  document.getElementById('token-modal').classList.add('open');
+  document.getElementById('token-input').focus();
+}
+
+function closeTokenModal() {
+  document.getElementById('token-modal').classList.remove('open');
+}
+
+function submitToken() {
+  const t = document.getElementById('token-input').value.trim();
+  if (!t) {
+    document.getElementById('token-error').textContent = 'Paste the token first.';
+    return;
   }
-  return token;
+  localStorage.setItem('gh-token', t);
+  document.getElementById('token-input').value = '';
+  closeTokenModal();
+  saveViaGitHub().catch(err => showToast('Save failed: ' + err.message));
 }
 
 function b64utf8(str) {
@@ -1008,27 +1084,16 @@ function b64utf8(str) {
   return btoa(bin);
 }
 
-async function saveViaGitHub(retrying) {
-  let token = retrying ? null : localStorage.getItem('gh-token');
-  if (!token) {
-    if (!retrying) {
-      const quick = confirm(
-        'Save data.json to GitHub:\n\n' +
-        'OK — quick save: copies the JSON and opens GitHub’s file editor; paste and commit there.\n\n' +
-        'Cancel — one-click save: paste a GitHub access token once, then Save commits data.json directly from here.'
-      );
-      if (quick) return saveViaWebEditor();
-    }
-    token = ghToken(true);
-  }
-  if (!token) { showToast('Save cancelled — no token provided'); return; }
+async function saveViaGitHub() {
+  const token = localStorage.getItem('gh-token');
+  if (!token) { openTokenModal(); return; }
   const headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
   showToast('Committing data.json…');
   const cur = await fetch(`${GH_API}?ref=master&t=${Date.now()}`, { headers });
   if (cur.status === 401 || cur.status === 403) {
     localStorage.removeItem('gh-token');
-    if (!retrying) return saveViaGitHub(true);
-    throw new Error('token rejected (needs Contents: Read and write on this repo)');
+    openTokenModal('That token was rejected — generate a fresh one and paste it here.');
+    return;
   }
   if (!cur.ok) throw new Error('could not read current data.json (HTTP ' + cur.status + ')');
   const { sha } = await cur.json();
