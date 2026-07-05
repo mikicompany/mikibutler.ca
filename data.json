@@ -1084,7 +1084,9 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/611/large/miki-butler-cactu.jpg?1571279582",
       "category": "pvz",
       "group": "PvZ Cheese Mines",
-      "description": "Cheese Mines props - mine carts, pickaxes, cactus."
+      "description": "Cheese Mines props - mine carts, pickaxes, cactus.",
+      "zoom": 1.35,
+      "focus": "8% 43%"
     },
     {
       "title": "PvZ Cheese Mines — Pickaxe",
