@@ -176,6 +176,14 @@
       "description": "Hangar bay environment overview."
     },
     {
+      "title": "STE Ore Detail",
+      "size": "small",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/063/210/679/4k/miki-butler-miki-butler-ste-ore.jpg?1684977824",
+      "category": "starship-troopers",
+      "home": false,
+      "group": "STE Ore"
+    },
+    {
       "title": "STE Ore Clusters",
       "size": "large",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/519/4k/miki-butler-oreclusters.jpg?1684569539",
@@ -188,14 +196,6 @@
       "title": "STE Ore — 03",
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/566/4k/miki-butler-starshiptroopers-extermination-ore-miki-butler-03.jpg?1684569724",
-      "category": "starship-troopers",
-      "home": false,
-      "group": "STE Ore"
-    },
-    {
-      "title": "STE Ore Detail",
-      "size": "small",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/063/210/679/4k/miki-butler-miki-butler-ste-ore.jpg?1684977824",
       "category": "starship-troopers",
       "home": false,
       "group": "STE Ore"
