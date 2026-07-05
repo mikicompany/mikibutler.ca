@@ -241,8 +241,8 @@
     .cell-select:focus { border-color: var(--accent); }
 
     .thumb {
-      width: 48px;
-      height: 32px;
+      width: 72px;
+      height: 48px;
       object-fit: cover;
       border-radius: 2px;
       background: #222;
@@ -250,15 +250,15 @@
     }
 
     .thumb-placeholder {
-      width: 48px;
-      height: 32px;
+      width: 72px;
+      height: 48px;
       background: #222;
       border-radius: 2px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #333;
-      font-size: 16px;
+      font-size: 20px;
     }
 
     .btn-del {
@@ -434,19 +434,56 @@
       align-items: flex-start;
     }
 
+    .preview-col { flex: none; }
+
     .tile-preview {
       width: 240px;
       height: 160px;
-      flex: none;
       border-radius: 2px;
       overflow: hidden;
       background: #000;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
     }
+
+    .tile-preview.grabbing { cursor: grabbing; }
 
     .tile-preview img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+
+    .drag-hint {
+      font-size: 10px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    .preview-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .preview-frame-wrap {
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #0d0d0d;
+    }
+
+    #preview-frame {
+      width: 100%;
+      height: 78vh;
+      border: 0;
+      display: block;
     }
 
     .editor-fields {
@@ -535,6 +572,7 @@
 
 <div class="tabs">
   <button class="tab-btn active" data-tab="work">Work</button>
+  <button class="tab-btn" data-tab="preview">Live Preview</button>
   <button class="tab-btn" data-tab="carousel">Carousel</button>
   <button class="tab-btn" data-tab="menu">Menu</button>
   <button class="tab-btn" data-tab="socials">Socials</button>
@@ -545,6 +583,7 @@
 <div class="panel active" id="panel-work">
   <p class="section-label">Album order — drag a group to move it (and all its items)</p>
   <div class="menu-list" id="groups-list"></div>
+  <datalist id="group-options"></datalist>
   <p class="section-label">Work Grid — drag rows to reorder items</p>
   <div class="table-wrap">
     <table class="sheet-table" id="work-table">
@@ -566,6 +605,17 @@
     </table>
   </div>
   <button class="add-row-btn" onclick="addWorkRow()">+ Add Row</button>
+</div>
+
+<!-- LIVE PREVIEW TAB -->
+<div class="panel" id="panel-preview">
+  <div class="preview-bar">
+    <p class="section-label" style="margin:0">Live Preview — exactly how the Work page will look, including unsaved edits</p>
+    <button class="btn btn-ghost" onclick="refreshPreview()">↻ Refresh</button>
+  </div>
+  <div class="preview-frame-wrap">
+    <iframe id="preview-frame" title="Work page preview"></iframe>
+  </div>
 </div>
 
 <!-- CAROUSEL TAB -->
@@ -666,7 +716,25 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     const panel = document.getElementById('panel-' + btn.dataset.tab);
     panel.classList.add('active');
     if (btn.dataset.tab === 'export') updateJSONPreview();
+    if (btn.dataset.tab === 'preview') refreshPreview();
   });
+});
+
+// ── LIVE PREVIEW ──
+// Feed the current (possibly unsaved) data to a real work.html rendered in
+// an iframe, so the preview matches the live page exactly.
+function refreshPreview() {
+  try { sessionStorage.setItem('mb-preview', buildJSON()); } catch (_) {}
+  const frame = document.getElementById('preview-frame');
+  frame.src = 'work.html?preview=1&t=' + Date.now();
+}
+
+// ── KEYBOARD: Ctrl/Cmd+S to save ──
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+    e.preventDefault();
+    saveToDisk();
+  }
 });
 
 // ── RENDER ──
@@ -695,6 +763,8 @@ function renderGroups() {
   const list = document.getElementById('groups-list');
   list.innerHTML = '';
   const { order, map } = groupBlocks();
+  const dl = document.getElementById('group-options');
+  if (dl) dl.innerHTML = order.map(g => `<option value="${esc(g)}"></option>`).join('');
   order.forEach((name, i) => {
     const items = map.get(name);
     const open = expandedGroup === name;
@@ -711,8 +781,8 @@ function renderGroups() {
       <span style="color:var(--muted);font-size:11px">${items.length} item${items.length > 1 ? 's' : ''}</span>
       <button class="btn-expand${open ? ' open' : ''}" title="Choose / edit preview">${open ? '▾' : '▸'}</button>
     `;
-    row.querySelector('.btn-expand').addEventListener('click', e => {
-      e.stopPropagation();
+    row.addEventListener('click', e => {
+      if (e.target.closest('.drag-handle')) return;
       expandedGroup = open ? null : name;
       renderGroups();
     });
@@ -736,8 +806,12 @@ function buildGroupEditor(name, items) {
       ${items.map((it, idx) => `<img class="cover-thumb${idx === 0 ? ' active' : ''}" src="${esc(it.img)}" title="${esc(it.title)}" data-idx="${idx}" loading="lazy" />`).join('')}
     </div>
     <div class="editor-controls">
-      <div class="tile-preview"><img src="${esc(cover.img)}" style="object-position:${fx}% ${fy}%;transform:scale(${fz});transform-origin:${fx}% ${fy}%" alt="" /></div>
+      <div class="preview-col">
+        <div class="tile-preview" title="Drag to reposition"><img src="${esc(cover.img)}" style="object-position:${fx}% ${fy}%;transform:scale(${fz});transform-origin:${fx}% ${fy}%" alt="" /></div>
+        <p class="drag-hint">Drag the preview to reposition</p>
+      </div>
       <div class="editor-fields">
+        <label>Group name — rename to move all items; match another name to merge<br/><input class="cell-input ed-group" value="${esc(name)}" placeholder="Album / group name" list="group-options" /></label>
         <label>Hover description<br/><input class="cell-input ed-desc" value="${esc(desc)}" placeholder="Shown on tile hover" /></label>
         <label>Zoom <span class="fz-val">${fz.toFixed(2)}×</span><br/><input type="range" class="ed-fz" min="1" max="3" step="0.05" value="${fz}" /></label>
         <label>Crop focus — horizontal <span class="fx-val">${fx}%</span><br/><input type="range" class="ed-fx" min="0" max="100" value="${fx}" /></label>
@@ -755,6 +829,14 @@ function buildGroupEditor(name, items) {
       markUnsaved();
       renderWork();
     });
+  });
+  wrap.querySelector('.ed-group').addEventListener('change', e => {
+    const newName = e.target.value.trim();
+    if (!newName || newName === name) { e.target.value = name; return; }
+    items.forEach(it => { it.group = newName; });
+    expandedGroup = newName;
+    markUnsaved();
+    renderWork();
   });
   wrap.querySelector('.ed-desc').addEventListener('input', e => {
     items.forEach(it => { if (it !== items[0]) delete it.description; });
@@ -781,6 +863,39 @@ function buildGroupEditor(name, items) {
   wrap.querySelector('.ed-fx').addEventListener('input', updPreview);
   wrap.querySelector('.ed-fy').addEventListener('input', updPreview);
   wrap.querySelector('.ed-fz').addEventListener('input', updPreview);
+
+  // Drag the preview to reposition the crop focus (keeps the sliders in sync).
+  const tile = wrap.querySelector('.tile-preview');
+  const clamp = v => Math.max(0, Math.min(100, v));
+  let drag = null;
+  tile.addEventListener('pointerdown', e => {
+    drag = {
+      px: e.clientX, py: e.clientY,
+      sx: +wrap.querySelector('.ed-fx').value,
+      sy: +wrap.querySelector('.ed-fy').value,
+      w: tile.clientWidth, h: tile.clientHeight,
+    };
+    tile.classList.add('grabbing');
+    tile.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  tile.addEventListener('pointermove', e => {
+    if (!drag) return;
+    // Grab-and-pan feel: dragging the image one way shifts the crop the other.
+    const nx = clamp(drag.sx - (e.clientX - drag.px) / drag.w * 100);
+    const ny = clamp(drag.sy - (e.clientY - drag.py) / drag.h * 100);
+    wrap.querySelector('.ed-fx').value = Math.round(nx);
+    wrap.querySelector('.ed-fy').value = Math.round(ny);
+    updPreview();
+  });
+  const endDrag = e => {
+    if (!drag) return;
+    drag = null;
+    tile.classList.remove('grabbing');
+    try { tile.releasePointerCapture(e.pointerId); } catch (_) {}
+  };
+  tile.addEventListener('pointerup', endDrag);
+  tile.addEventListener('pointercancel', endDrag);
   return wrap;
 }
 
@@ -798,7 +913,7 @@ function renderWork() {
       <td class="row-num">${i + 1}</td>
       <td>${thumbCell(item.img)}</td>
       <td><input class="cell-input" value="${esc(item.title)}" oninput="data.work[${i}].title=this.value;markUnsaved()" placeholder="Title" /></td>
-      <td><input class="cell-input" style="min-width:120px" value="${esc(item.group)}" onchange="data.work[${i}].group=this.value;renderWork();markUnsaved()" placeholder="Group" /></td>
+      <td><input class="cell-input" style="min-width:120px" list="group-options" value="${esc(item.group)}" onchange="data.work[${i}].group=this.value;renderWork();markUnsaved()" placeholder="Group" /></td>
       <td><input class="cell-input" style="min-width:220px" value="${esc(item.img)}" oninput="data.work[${i}].img=this.value;updateThumb(this);markUnsaved()" placeholder="images/work/filename.jpg" /></td>
       <td>
         <select class="cell-select" onchange="data.work[${i}].category=this.value;markUnsaved()">

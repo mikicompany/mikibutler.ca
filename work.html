@@ -60,14 +60,27 @@
     const grid = document.getElementById('work-grid');
     const workHeader = document.querySelector('.work-header');
 
-    fetch('data.json')
-      .then(r => r.json())
-      .then(data => {
-        allItems = data.work;
-        allItems.forEach(i => { if (!i.group) i.group = i.title.split(' — ')[0]; });
-        buildFilters(allItems);
-        render();
-      });
+    function boot(data) {
+      allItems = data.work;
+      allItems.forEach(i => { if (!i.group) i.group = i.title.split(' — ')[0]; });
+      buildFilters(allItems);
+      render();
+    }
+
+    // When opened from the admin Live Preview tab, render the in-memory
+    // (possibly unsaved) data handed over via sessionStorage instead of the
+    // committed data.json.
+    let previewData = null;
+    if (new URLSearchParams(location.search).has('preview')) {
+      try { previewData = JSON.parse(sessionStorage.getItem('mb-preview')); } catch (_) {}
+    }
+    if (previewData) {
+      // Defer to a microtask so the rest of this script (e.g. sizeFor) is
+      // initialized before render() runs.
+      Promise.resolve().then(() => boot(previewData));
+    } else {
+      fetch('data.json').then(r => r.json()).then(boot);
+    }
 
     function buildFilters(items) {
       const cats = [...new Set(items.map(i => i.category).filter(Boolean))];
