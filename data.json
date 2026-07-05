@@ -23,6 +23,15 @@
   ],
   "work": [
     {
+      "title": "Showreel",
+      "size": "wide",
+      "img": "https://img.youtube.com/vi/2o7dkmIlLDA/hqdefault.jpg",
+      "category": "personal",
+      "home": false,
+      "group": "Showreel",
+      "video": "2o7dkmIlLDA"
+    },
+    {
       "title": "STE Lookout — 01",
       "size": "large",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/491/4k/miki-butler-l1.jpg?1684569438",
