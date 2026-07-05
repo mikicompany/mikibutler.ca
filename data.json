@@ -241,6 +241,14 @@
       "description": "Beacon prop for base building."
     },
     {
+      "title": "STE Computer Starport",
+      "size": "small",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/063/210/693/large/miki-butler-miki-butler-ste-computerstarport.jpg?1684977865",
+      "category": "starship-troopers",
+      "group": "STE Computer",
+      "zoom": 1.45
+    },
+    {
       "title": "STE Computer — 01",
       "size": "wide",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/743/4k/miki-butler-starshiptroopers-extermination-computer-miki-butler-01.jpg?1684570337",
@@ -262,13 +270,6 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/044/514/773/4k/miki-butler-ccunit-02.jpg?1640224121",
       "category": "starship-troopers",
       "group": "STE CC Unit"
-    },
-    {
-      "title": "STE Computer Starport",
-      "size": "small",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/063/210/693/large/miki-butler-miki-butler-ste-computerstarport.jpg?1684977865",
-      "category": "starship-troopers",
-      "group": "STE Computer"
     },
     {
       "title": "STE Tents — 02",
