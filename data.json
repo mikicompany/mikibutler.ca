@@ -300,6 +300,14 @@
       "group": "STE Tents"
     },
     {
+      "title": "STE Bug Goo — 04",
+      "size": "small",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/911/4k/miki-butler-n-buggoo-miki-butler-04.jpg?1684570814",
+      "category": "starship-troopers",
+      "group": "STE Bug Goo",
+      "focus": "42% 7%"
+    },
+    {
       "title": "STE Bug Goo — 02",
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/906/4k/miki-butler-n-buggoo-miki-butler-02.jpg?1684570803",
@@ -311,13 +319,6 @@
       "title": "STE Bug Goo — 03",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/907/4k/miki-butler-n-buggoo-miki-butler-03.jpg?1684570810",
-      "category": "starship-troopers",
-      "group": "STE Bug Goo"
-    },
-    {
-      "title": "STE Bug Goo — 04",
-      "size": "small",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/911/4k/miki-butler-n-buggoo-miki-butler-04.jpg?1684570814",
       "category": "starship-troopers",
       "group": "STE Bug Goo"
     },
