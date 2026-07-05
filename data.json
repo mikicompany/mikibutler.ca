@@ -1202,7 +1202,9 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/033/047/399/4k/miki-butler-sm-eastasia-prop-well-01.jpg?1608433929",
       "category": "squad",
       "group": "Squad East Asia",
-      "description": "East Asia map props for Squad - well, truck, and lantern."
+      "description": "East Asia map props for Squad - well, truck, and lantern.",
+      "focus": "0% 34%",
+      "zoom": 1.4
     },
     {
       "title": "Squad East Asia — Truck",
