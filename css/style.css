@@ -10,6 +10,11 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   background: var(--bg);
@@ -17,6 +22,7 @@ body {
   display: flex;
   min-height: 100vh;
   overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* ── SIDEBAR ── */
@@ -193,6 +199,18 @@ main {
               box-shadow 0.35s ease,
               z-index 0s;
   z-index: 1;
+  animation: tile-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Subtle fade-and-rise when tiles (re)render — entering an album,
+   switching projects, or changing filters. */
+@keyframes tile-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .masonry-item { animation: none; }
 }
 
 /* Size variants */
@@ -374,6 +392,7 @@ main {
 .group-bar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 14px;
   margin-top: 16px;
 }
@@ -408,6 +427,40 @@ main {
   font-size: 11px;
   color: var(--text-muted);
   letter-spacing: 0.06em;
+}
+
+.group-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.group-nav-btn {
+  background: transparent;
+  border: 1px solid #333;
+  color: var(--text-muted);
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+
+.group-nav-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.group-pos {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  min-width: 44px;
+  text-align: center;
 }
 
 .lightbox-close {
@@ -927,7 +980,8 @@ main {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 12px 20px;
-    flex: none;
+    flex: 1 1 100%;
+    min-width: 0;
   }
 
   .sidebar-socials { padding-top: 0; }

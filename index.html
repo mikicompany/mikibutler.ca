@@ -124,6 +124,9 @@
       left: 50%;
       transform: translateX(-50%);
       display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 90vw;
       gap: 8px;
       z-index: 10;
     }
@@ -184,6 +187,20 @@
       background: #a0ff00;
       width: 0%;
       transition: width linear;
+    }
+
+    /* Slides are tappable — go to that piece on the Work page */
+    .slide { cursor: pointer; }
+
+    /* Smooth fade when leaving the home page for a piece */
+    body { transition: opacity 0.28s ease; }
+    body.leaving { opacity: 0; }
+
+    @media (max-width: 768px) {
+      .slide-prev { left: 8px; padding: 20px 10px; }
+      .slide-next { right: 8px; padding: 20px 10px; }
+      .slide-caption { bottom: 20px; right: 20px; }
+      .slide-dots { bottom: 18px; }
     }
   </style>
 </head>
@@ -247,6 +264,8 @@
             <div class="cap-title">${item.title}</div>
           </div>
         `;
+        // Tap a slide to open that piece on the Work page (with a fade-out).
+        slide.addEventListener('click', () => goToWork(item));
         ss.appendChild(slide);
 
         const dot = document.createElement('button');
@@ -254,6 +273,14 @@
         dot.addEventListener('click', () => goTo(i));
         dots.appendChild(dot);
       });
+    }
+
+    function goToWork(item) {
+      const dest = item && item.group
+        ? 'work.html?group=' + encodeURIComponent(item.group)
+        : 'work.html';
+      document.body.classList.add('leaving');
+      setTimeout(() => { window.location.href = dest; }, 260);
     }
 
     function goTo(index) {

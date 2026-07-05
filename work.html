@@ -61,15 +61,18 @@
     const workHeader = document.querySelector('.work-header');
 
     function boot(data) {
-      allItems = data.work;
+      allItems = data.work || [];
       allItems.forEach(i => { if (!i.group) i.group = i.title.split(' — ')[0]; });
-      buildFilters(allItems);
+      rebuildFilters();
+      // Deep-link: work.html?group=NAME opens that album directly.
+      const target = new URLSearchParams(location.search).get('group');
+      if (target) currentGroup = getGroups().find(g => g.name === target) || null;
       render();
     }
 
-    // When opened from the admin Live Preview tab, render the in-memory
-    // (possibly unsaved) data handed over via sessionStorage instead of the
-    // committed data.json.
+    // When opened from the admin (Live Preview tab or docked preview), render
+    // the in-memory (possibly unsaved) data handed over via sessionStorage
+    // instead of the committed data.json.
     let previewData = null;
     if (new URLSearchParams(location.search).has('preview')) {
       try { previewData = JSON.parse(sessionStorage.getItem('mb-preview')); } catch (_) {}
@@ -82,9 +85,23 @@
       fetch('data.json').then(r => r.json()).then(boot);
     }
 
-    function buildFilters(items) {
-      const cats = [...new Set(items.map(i => i.category).filter(Boolean))];
+    // Live updates from the admin's docked preview: re-render in place while
+    // preserving the viewer's current filter and open album.
+    window.addEventListener('message', e => {
+      if (!e.data || e.data.type !== 'mb-preview' || !e.data.data) return;
+      const prevFilter = currentFilter;
+      const prevGroup = currentGroup && currentGroup.name;
+      allItems = e.data.data.work || [];
+      allItems.forEach(i => { if (!i.group) i.group = i.title.split(' — ')[0]; });
+      rebuildFilters();
+      currentGroup = prevGroup ? (getGroups().find(g => g.name === prevGroup) || null) : null;
+      render();
+    });
+
+    function rebuildFilters() {
       const container = document.getElementById('filters');
+      container.querySelectorAll('.filter-btn:not([data-filter="all"])').forEach(b => b.remove());
+      const cats = [...new Set(allItems.map(i => i.category).filter(Boolean))];
       cats.forEach(cat => {
         const btn = document.createElement('button');
         btn.className = 'filter-btn';
@@ -92,17 +109,19 @@
         btn.textContent = CATEGORY_LABELS[cat] || cat;
         container.appendChild(btn);
       });
-
-      container.addEventListener('click', e => {
-        const btn = e.target.closest('.filter-btn');
-        if (!btn) return;
-        container.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFilter = btn.dataset.filter;
-        currentGroup = null;
-        render();
-      });
+      container.querySelectorAll('.filter-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.filter === currentFilter));
     }
+
+    // Filter clicks (listener attached once; buttons are rebuilt on data change).
+    document.getElementById('filters').addEventListener('click', e => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      currentFilter = btn.dataset.filter;
+      currentGroup = null;
+      rebuildFilters();
+      render();
+    });
 
     function getGroups() {
       const items = currentFilter === 'all'
@@ -132,15 +151,35 @@
           bar.className = 'group-bar';
           workHeader.appendChild(bar);
         }
+        const groups = getGroups();
+        const pos = groups.findIndex(g => g.name === currentGroup.name);
         bar.innerHTML = `
           <button class="back-btn">&#8249; Back</button>
           <span class="group-bar-title">${currentGroup.name}</span>
           <span class="group-bar-count">${currentGroup.items.length} items</span>
+          <span class="group-nav">
+            <button class="group-nav-btn group-prev" title="Previous project">&#8249; Prev</button>
+            <span class="group-pos">${pos + 1} / ${groups.length}</span>
+            <button class="group-nav-btn group-next" title="Next project">Next &#8250;</button>
+          </span>
         `;
         bar.querySelector('.back-btn').addEventListener('click', closeGroup);
+        bar.querySelector('.group-prev').addEventListener('click', () => navigateGroup(-1));
+        bar.querySelector('.group-next').addEventListener('click', () => navigateGroup(1));
       } else if (bar) {
         bar.remove();
       }
+    }
+
+    // Move to the previous/next project (album) in the current filtered list,
+    // wrapping around at the ends.
+    function navigateGroup(dir) {
+      const groups = getGroups();
+      if (!groups.length) return;
+      const idx = groups.findIndex(g => g.name === currentGroup.name);
+      currentGroup = groups[(idx + dir + groups.length) % groups.length];
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function closeGroup() {
@@ -284,8 +323,10 @@
         if (e.key === 'Escape') closeLightbox();
         if (e.key === 'ArrowLeft') navigate(-1);
         if (e.key === 'ArrowRight') navigate(1);
-      } else if (e.key === 'Escape' && currentGroup) {
-        closeGroup();
+      } else if (currentGroup) {
+        if (e.key === 'Escape') closeGroup();
+        if (e.key === 'ArrowLeft') navigateGroup(-1);
+        if (e.key === 'ArrowRight') navigateGroup(1);
       }
     });
   </script>

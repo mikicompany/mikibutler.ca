@@ -499,6 +499,66 @@
       display: block;
     }
 
+    /* ── DOCKED LIVE PREVIEW (Work tab) ── */
+    .work-layout { display: flex; gap: 20px; align-items: flex-start; }
+    .work-main { flex: 1; min-width: 0; }
+
+    .work-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+
+    .work-dock {
+      display: none;
+      flex: 0 0 42%;
+      max-width: 620px;
+      position: sticky;
+      top: 88px;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #0d0d0d;
+    }
+
+    .work-layout.docked .work-dock { display: block; }
+
+    .work-dock-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #141414;
+      border-bottom: 1px solid #2a2a2a;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .work-dock-head em { color: var(--accent); font-style: normal; text-transform: none; letter-spacing: 0; }
+
+    .dock-icon {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 6px;
+    }
+
+    .dock-icon:hover { color: var(--accent); }
+
+    #dock-frame {
+      width: 100%;
+      height: calc(100vh - 140px);
+      border: 0;
+      display: block;
+    }
+
+    @media (max-width: 1100px) {
+      /* Not enough width to edit and preview side by side */
+      .work-layout.docked { flex-direction: column; }
+      .work-dock { flex-basis: auto; max-width: none; width: 100%; position: static; }
+      #dock-frame { height: 70vh; }
+    }
+
     .editor-fields {
       flex: 1;
       display: flex;
@@ -595,6 +655,11 @@
 
 <!-- WORK TAB -->
 <div class="panel active" id="panel-work">
+ <div class="work-layout" id="work-layout">
+  <div class="work-main">
+  <div class="work-toolbar">
+    <button class="btn btn-ghost" id="dock-toggle" onclick="toggleDock()">▐ Show live preview</button>
+  </div>
   <p class="section-label">Album order — drag a group to move it (and all its items)</p>
   <div class="menu-list" id="groups-list"></div>
   <datalist id="group-options"></datalist>
@@ -619,6 +684,18 @@
     </table>
   </div>
   <button class="add-row-btn" onclick="addWorkRow()">+ Add Row</button>
+  </div>
+  <aside class="work-dock" id="work-dock">
+    <div class="work-dock-head">
+      <span>Live preview <em id="dock-status"></em></span>
+      <div>
+        <button class="dock-icon" onclick="popOutDock()" title="Open full screen">⤢</button>
+        <button class="dock-icon" onclick="toggleDock()" title="Hide preview">✕</button>
+      </div>
+    </div>
+    <iframe id="dock-frame" title="Live preview"></iframe>
+  </aside>
+ </div>
 </div>
 
 <!-- LIVE PREVIEW TAB -->
@@ -718,7 +795,7 @@ let dragSrc = null;
 // ── INIT ──
 fetch('data.json')
   .then(r => r.json())
-  .then(d => { data = d; render(); })
+  .then(d => { data = d; render(); restoreDock(); })
   .catch(() => render());
 
 // ── TABS ──
@@ -741,6 +818,60 @@ function refreshPreview() {
   try { sessionStorage.setItem('mb-preview', buildJSON()); } catch (_) {}
   const frame = document.getElementById('preview-frame');
   frame.src = 'work.html?preview=1&t=' + Date.now();
+}
+
+// ── DOCKED LIVE PREVIEW (Work tab) ──
+// A preview pane beside the editor that re-renders in place as you edit.
+let dockTimer = null;
+
+function dockOpen() {
+  return document.getElementById('work-layout').classList.contains('docked');
+}
+
+function setDockStatus(t) {
+  const el = document.getElementById('dock-status');
+  if (el) el.textContent = t ? '· ' + t : '';
+}
+
+function loadDock() {
+  try { sessionStorage.setItem('mb-preview', buildJSON()); } catch (_) {}
+  document.getElementById('dock-frame').src = 'work.html?preview=1&t=' + Date.now();
+  setDockStatus('up to date');
+}
+
+function toggleDock() {
+  const layout = document.getElementById('work-layout');
+  const open = layout.classList.toggle('docked');
+  localStorage.setItem('dock-open', open ? '1' : '0');
+  document.getElementById('dock-toggle').textContent =
+    open ? '▐ Hide live preview' : '▐ Show live preview';
+  if (open) loadDock();
+}
+
+function restoreDock() {
+  if (localStorage.getItem('dock-open') === '1') {
+    document.getElementById('work-layout').classList.add('docked');
+    document.getElementById('dock-toggle').textContent = '▐ Hide live preview';
+    loadDock();
+  }
+}
+
+// Debounced in-place push to the docked preview as edits happen.
+function pushDockPreview() {
+  if (!dockOpen()) return;
+  setDockStatus('updating…');
+  clearTimeout(dockTimer);
+  dockTimer = setTimeout(() => {
+    try { sessionStorage.setItem('mb-preview', buildJSON()); } catch (_) {}
+    const f = document.getElementById('dock-frame');
+    if (f && f.contentWindow) f.contentWindow.postMessage({ type: 'mb-preview', data }, location.origin);
+    setDockStatus('up to date');
+  }, 500);
+}
+
+function popOutDock() {
+  try { sessionStorage.setItem('mb-preview', buildJSON()); } catch (_) {}
+  window.open('work.html?preview=1&t=' + Date.now(), '_blank');
 }
 
 // ── KEYBOARD: Ctrl/Cmd+S to save ──
@@ -1140,6 +1271,7 @@ function markUnsaved() {
   const el = document.getElementById('save-status');
   el.textContent = 'Unsaved changes';
   el.classList.remove('saved');
+  pushDockPreview();
 }
 
 // ── JSON ──
