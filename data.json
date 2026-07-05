@@ -547,7 +547,8 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/033/611/249/4k/miki-butler-miki-pizza-1.jpg?1610086831",
       "category": "personal",
       "group": "Buon Appetito",
-      "description": "Procedural pizza material built in Substance Designer."
+      "description": "Procedural pizza material built in Substance Designer.",
+      "zoom": 1.9
     },
     {
       "title": "Buon Appetito — Video 01",
