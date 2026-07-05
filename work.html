@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
   <title>Work — Miki Butler</title>
   <meta name="description" content="Portfolio of environment art by Miki Butler — Starship Troopers Extermination, Dead Rising 4, Plants vs Zombies, and more." />
   <meta name="keywords" content="environment art portfolio, game art, 3D environments, Starship Troopers, Dead Rising, Miki Butler" />
   <link rel="canonical" href="https://mikibutler.ca/work.html" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=20260705b" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 </head>
@@ -64,10 +65,17 @@
       allItems = data.work || [];
       allItems.forEach(i => { if (!i.group) i.group = i.title.split(' — ')[0]; });
       rebuildFilters();
-      // Deep-link: work.html?group=NAME opens that album directly.
-      const target = new URLSearchParams(location.search).get('group');
+      // Deep-link: work.html?group=NAME opens that album; &item=TITLE opens
+      // that exact piece in the lightbox (used by the homepage slides).
+      const params = new URLSearchParams(location.search);
+      const target = params.get('group');
       if (target) currentGroup = getGroups().find(g => g.name === target) || null;
       render();
+      const targetItem = params.get('item');
+      if (currentGroup && targetItem) {
+        const idx = currentGroup.items.findIndex(it => it.title === targetItem);
+        if (idx >= 0) { lightboxItems = currentGroup.items; openLightbox(idx); }
+      }
     }
 
     // When opened from the admin (Live Preview tab or docked preview), render

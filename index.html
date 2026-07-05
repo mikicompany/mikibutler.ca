@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
   <title>Miki Butler — Environment Artist</title>
   <meta name="description" content="Miki Butler is a Lead Environment Artist based in Vancouver, Canada. 15+ years of experience crafting game worlds for Capcom, EA, and more." />
   <meta name="keywords" content="Miki Butler, environment artist, game art, 3D artist, Vancouver, Starship Troopers, Dead Rising, Plants vs Zombies" />
@@ -11,7 +12,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://mikibutler.ca/" />
   <link rel="canonical" href="https://mikibutler.ca/" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=20260705b" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -276,9 +277,11 @@
     }
 
     function goToWork(item) {
-      const dest = item && item.group
-        ? 'work.html?group=' + encodeURIComponent(item.group)
-        : 'work.html';
+      let dest = 'work.html';
+      if (item && item.group) {
+        dest += '?group=' + encodeURIComponent(item.group);
+        if (item.title) dest += '&item=' + encodeURIComponent(item.title);
+      }
       document.body.classList.add('leaving');
       setTimeout(() => { window.location.href = dest; }, 260);
     }
