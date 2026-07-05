@@ -250,8 +250,8 @@
       "category": "starship-troopers",
       "group": "STE Beacon",
       "description": "Beacon prop for base building.",
-      "zoom": 1.3,
-      "focus": "0% 31%"
+      "zoom": 2.35,
+      "focus": "72% 80%"
     },
     {
       "title": "STE Computer Starport",
@@ -305,8 +305,7 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/911/4k/miki-butler-n-buggoo-miki-butler-04.jpg?1684570814",
       "category": "starship-troopers",
       "group": "STE Bug Goo",
-      "focus": "9% 14%",
-      "zoom": 1.25
+      "focus": "42% 7%"
     },
     {
       "title": "STE Bug Goo — 02",
@@ -331,7 +330,7 @@
       "group": "STE Foliage",
       "description": "Alien foliage set for planet environments.",
       "zoom": 1.35,
-      "focus": "5% 37%"
+      "focus": "5% 39%"
     },
     {
       "title": "STE Foliage — 02",
