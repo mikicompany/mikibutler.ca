@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="robots" content="noindex, nofollow" />
   <title>Site Admin — mikibutler.ca</title>
   <style>
     :root {
@@ -50,6 +54,15 @@
       height: 32px;
       border-radius: 50%;
       object-fit: contain;
+    }
+
+    .build-tag {
+      font-size: 10px;
+      color: #555;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 2px 8px;
+      letter-spacing: 0.02em;
     }
 
     .header h1 {
@@ -561,6 +574,7 @@
   <div class="header-left">
     <img class="header-logo" src="images/logo512.jpg" alt="Miki Butler" />
     <h1>mikibutler<span>.ca</span> — Admin</h1>
+    <span class="build-tag" title="Admin build date — confirms you have the latest version">build 2026-07-05</span>
   </div>
   <div class="header-actions">
     <span class="save-status" id="save-status">Unsaved changes</span>
