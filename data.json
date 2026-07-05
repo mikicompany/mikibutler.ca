@@ -87,24 +87,27 @@
       "group": "STE Lookout"
     },
     {
-      "title": "STE Cave Road — 02",
-      "size": "large",
-      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/760/4k/miki-butler-ste-showcase-mikibutler-caverox-02.jpg?1685503982",
+      "title": "STE Cave Road — 08",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/778/4k/miki-butler-ste-showcase-mikibutler-caverox-08.jpg?1685504021",
       "category": "starship-troopers",
       "group": "STE Cave Road",
-      "description": "Canyon cave road environment - rock formations and roadway dressing."
+      "zoom": 1.3,
+      "focus": "50% 42%"
     },
     {
-      "title": "STE Cave Road — 03",
-      "size": "wide",
-      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/762/4k/miki-butler-ste-showcase-mikibutler-caverox-03.jpg?1685503991",
-      "category": "starship-troopers",
-      "group": "STE Cave Road"
-    },
-    {
-      "title": "STE Cave Road — 04",
+      "title": "STE Cave Road — 07",
       "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/764/4k/miki-butler-ste-showcase-mikibutler-caverox-04.jpg?1685503997",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/063/425/775/4k/miki-butler-ste-showcase-mikibutler-caverox-07.jpg?1685504014",
+      "category": "starship-troopers",
+      "group": "STE Cave Road",
+      "focus": "64% 31%",
+      "zoom": 1.35
+    },
+    {
+      "title": "STE Cave Road — 06",
+      "size": "wide",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/063/425/771/4k/miki-butler-ste-showcase-mikibutler-caverox-06.jpg?1685504008",
       "category": "starship-troopers",
       "group": "STE Cave Road"
     },
@@ -116,25 +119,26 @@
       "group": "STE Cave Road"
     },
     {
-      "title": "STE Cave Road — 06",
+      "title": "STE Cave Road — 04",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/764/4k/miki-butler-ste-showcase-mikibutler-caverox-04.jpg?1685503997",
+      "category": "starship-troopers",
+      "group": "STE Cave Road"
+    },
+    {
+      "title": "STE Cave Road — 03",
       "size": "wide",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/063/425/771/4k/miki-butler-ste-showcase-mikibutler-caverox-06.jpg?1685504008",
+      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/762/4k/miki-butler-ste-showcase-mikibutler-caverox-03.jpg?1685503991",
       "category": "starship-troopers",
       "group": "STE Cave Road"
     },
     {
-      "title": "STE Cave Road — 07",
-      "size": "small",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/063/425/775/4k/miki-butler-ste-showcase-mikibutler-caverox-07.jpg?1685504014",
+      "title": "STE Cave Road — 02",
+      "size": "large",
+      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/760/4k/miki-butler-ste-showcase-mikibutler-caverox-02.jpg?1685503982",
       "category": "starship-troopers",
-      "group": "STE Cave Road"
-    },
-    {
-      "title": "STE Cave Road — 08",
-      "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/778/4k/miki-butler-ste-showcase-mikibutler-caverox-08.jpg?1685504021",
-      "category": "starship-troopers",
-      "group": "STE Cave Road"
+      "group": "STE Cave Road",
+      "description": "Canyon cave road environment - rock formations and roadway dressing."
     },
     {
       "title": "STE Cave Road — 09",
