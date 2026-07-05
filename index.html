@@ -149,25 +149,41 @@
     }
 
     /* Prev/Next arrows */
+    /* Logo-style circular accent arrows */
     .slide-prev,
     .slide-next {
       position: fixed;
       top: 50%;
       transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: rgba(255,255,255,0.3);
-      font-size: 40px;
+      width: 46px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.3);
+      border: 2px solid rgba(160,255,0,0.55);
+      border-radius: 50%;
+      color: #a0ff00;
+      font-size: 22px;
       cursor: pointer;
       z-index: 10;
-      padding: 20px 16px;
-      transition: color 0.2s;
       line-height: 1;
+      box-shadow: 0 0 16px rgba(160,255,0,0.15);
+      transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s;
     }
 
     .slide-prev { left: 170px; }
     .slide-next { right: 16px; }
-    .slide-prev:hover, .slide-next:hover { color: rgba(255,255,255,0.9); }
+    .slide-prev:hover, .slide-next:hover {
+      background: #a0ff00;
+      color: #000;
+      border-color: #a0ff00;
+      box-shadow: 0 0 22px rgba(160,255,0,0.5);
+    }
+    .slide-prev:active, .slide-next:active { transform: translateY(-50%) scale(0.92); }
+
+    /* Compact slide counter (shown on mobile instead of many dots) */
+    .slide-counter { display: none; }
 
     /* Sidebar sits above slideshow */
     .sidebar { z-index: 20; }
@@ -198,10 +214,26 @@
     body.leaving { opacity: 0; }
 
     @media (max-width: 768px) {
-      .slide-prev { left: 8px; padding: 20px 10px; }
-      .slide-next { right: 8px; padding: 20px 10px; }
+      .slide-prev { left: 10px; }
+      .slide-next { right: 10px; }
       .slide-caption { bottom: 20px; right: 20px; }
-      .slide-dots { bottom: 18px; }
+      /* Too many slides to show a dot each on a phone — use a counter */
+      .slide-dots { display: none; }
+      .slide-counter {
+        display: block;
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        color: rgba(255,255,255,0.75);
+        background: rgba(0,0,0,0.45);
+        padding: 5px 12px;
+        border-radius: 12px;
+        font-variant-numeric: tabular-nums;
+      }
     }
   </style>
 </head>
@@ -216,6 +248,7 @@
 
   <div class="slideshow" id="slideshow"></div>
   <div class="slide-dots" id="slide-dots"></div>
+  <div class="slide-counter" id="slide-counter"></div>
   <button class="slide-prev" id="slide-prev">&#8249;</button>
   <button class="slide-next" id="slide-next">&#8250;</button>
   <div class="slide-progress"><div class="slide-progress-bar" id="progress-bar"></div></div>
@@ -297,6 +330,9 @@
 
       allSlides[current]?.classList.add('active');
       allDots[current]?.classList.add('active');
+
+      const counter = document.getElementById('slide-counter');
+      if (counter) counter.textContent = (current + 1) + ' / ' + slides.length;
 
       startProgress();
       clearInterval(timer);
