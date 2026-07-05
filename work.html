@@ -153,14 +153,16 @@
         }
         const groups = getGroups();
         const pos = groups.findIndex(g => g.name === currentGroup.name);
+        const prevName = groups.length > 1 ? groups[(pos - 1 + groups.length) % groups.length].name : '';
+        const nextName = groups.length > 1 ? groups[(pos + 1) % groups.length].name : '';
         bar.innerHTML = `
           <button class="back-btn">&#8249; Back</button>
           <span class="group-bar-title">${currentGroup.name}</span>
           <span class="group-bar-count">${currentGroup.items.length} items</span>
           <span class="group-nav">
-            <button class="group-nav-btn group-prev" title="Previous project">&#8249; Prev</button>
-            <span class="group-pos">${pos + 1} / ${groups.length}</span>
-            <button class="group-nav-btn group-next" title="Next project">Next &#8250;</button>
+            <button class="group-nav-btn group-prev" title="Previous: ${prevName}" aria-label="Previous project">&#8249;</button>
+            <span class="group-pos"><span class="cur">${pos + 1}</span> / ${groups.length}</span>
+            <button class="group-nav-btn group-next" title="Next: ${nextName}" aria-label="Next project">&#8250;</button>
           </span>
         `;
         bar.querySelector('.back-btn').addEventListener('click', closeGroup);
