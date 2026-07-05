@@ -159,19 +159,19 @@
       "group": "STE Armory"
     },
     {
+      "title": "STE Armory Overview",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/063/210/720/4k/miki-butler-highresscreenshot00010-large.jpg?1684977936",
+      "category": "starship-troopers",
+      "group": "STE Armory"
+    },
+    {
       "title": "STE Hangar",
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/998/4k/miki-butler-hangar.jpg?1684571042",
       "category": "starship-troopers",
       "group": "STE Hangar",
       "description": "Hangar bay environment overview."
-    },
-    {
-      "title": "STE Armory Overview",
-      "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/063/210/720/4k/miki-butler-highresscreenshot00010-large.jpg?1684977936",
-      "category": "starship-troopers",
-      "group": "STE Armory"
     },
     {
       "title": "STE Ore Clusters",
@@ -876,19 +876,19 @@
       "group": "PvZ Social Hub"
     },
     {
+      "title": "PvZ Neighborville — TV Preview",
+      "size": "wide",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/667/large/miki-butler-tvpreview.jpg?1571279850",
+      "category": "pvz",
+      "group": "PvZ Neighborville"
+    },
+    {
       "title": "PvZ Neighborville — TV Hi-Poly WIP",
       "size": "wide",
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/687/large/miki-butler-tvhipolywip.jpg?1571279925",
       "category": "pvz",
       "group": "PvZ Neighborville",
       "description": "Neighborville town content - gates, planters, signage, TVs."
-    },
-    {
-      "title": "PvZ Neighborville — TV Preview",
-      "size": "wide",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/667/large/miki-butler-tvpreview.jpg?1571279850",
-      "category": "pvz",
-      "group": "PvZ Neighborville"
     },
     {
       "title": "PvZ Neighborville — Misc Signs",
@@ -1147,16 +1147,6 @@
       "description": "Squad 4.0 main menu scene (video)."
     },
     {
-      "title": "It Is Not Brocoly! — Marmoset Viewer",
-      "size": "wide",
-      "img": "https://cdnb.artstation.com/p/assets/marmosets/images/003/608/235/large/miki-c-butler-mview-image20161003-19792-1j27fle.jpg?1475552179",
-      "embed": "https://www.artstation.com/embed/3608235",
-      "category": "personal",
-      "home": false,
-      "group": "It Is Not Brocoly!",
-      "description": "Stylized alien tree study - interactive Marmoset viewer."
-    },
-    {
       "title": "Avatar: The Last Airbender (UE5)",
       "size": "wide",
       "img": "https://i.ytimg.com/vi/Fzs2S3AZSEo/maxresdefault.jpg",
@@ -1165,6 +1155,16 @@
       "home": false,
       "group": "Avatar: The Last Airbender (UE5)",
       "description": "Avatar-inspired environment built in UE5 (video)."
+    },
+    {
+      "title": "It Is Not Brocoly! — Marmoset Viewer",
+      "size": "wide",
+      "img": "https://cdnb.artstation.com/p/assets/marmosets/images/003/608/235/large/miki-c-butler-mview-image20161003-19792-1j27fle.jpg?1475552179",
+      "embed": "https://www.artstation.com/embed/3608235",
+      "category": "personal",
+      "home": false,
+      "group": "It Is Not Brocoly!",
+      "description": "Stylized alien tree study - interactive Marmoset viewer."
     }
   ],
   "socials": [
