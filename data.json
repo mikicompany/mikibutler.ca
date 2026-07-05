@@ -164,7 +164,8 @@
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/722/4k/miki-butler-starshiptroopers-extermination-armory-miki-butler-02.jpg?1684570291",
       "category": "starship-troopers",
-      "group": "STE Armory"
+      "group": "STE Armory",
+      "home": false
     },
     {
       "title": "STE Armory Overview",
