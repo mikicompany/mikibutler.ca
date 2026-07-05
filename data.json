@@ -149,7 +149,9 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/719/4k/miki-butler-starshiptroopers-extermination-armory-miki-butler-01.jpg?1684570283",
       "category": "starship-troopers",
       "group": "STE Armory",
-      "description": "Armory building - modular exterior kit, hi-poly and in-game views."
+      "description": "Armory building - modular exterior kit, hi-poly and in-game views.",
+      "focus": "16% 30%",
+      "zoom": 1.5
     },
     {
       "title": "STE Armory — 02",
