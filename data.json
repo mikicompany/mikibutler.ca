@@ -1150,7 +1150,9 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/022/328/313/large/miki-butler-hamsterwheel.jpg?1575002389",
       "category": "pvz",
       "group": "PvZ Hamster Wheel",
-      "description": "Hamster wheel artifact prop with texture breakdowns."
+      "description": "Hamster wheel artifact prop with texture breakdowns.",
+      "zoom": 1.35,
+      "focus": "2% 45%"
     },
     {
       "title": "PvZ Hamster Wheel — Hi-Poly",
