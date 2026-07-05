@@ -503,7 +503,7 @@
     .work-layout { display: flex; gap: 20px; align-items: flex-start; }
     .work-main { flex: 1; min-width: 0; }
 
-    .work-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+    .work-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
 
     .work-dock {
       display: none;
@@ -658,6 +658,7 @@
  <div class="work-layout" id="work-layout">
   <div class="work-main">
   <div class="work-toolbar">
+    <button class="btn btn-primary" onclick="addWorkRow()">+ Add work</button>
     <button class="btn btn-ghost" id="dock-toggle" onclick="toggleDock()">▐ Show live preview</button>
   </div>
   <p class="section-label">Album order — drag a group to move it (and all its items)</p>
@@ -1059,7 +1060,7 @@ function renderWork() {
       <td>${thumbCell(item.img)}</td>
       <td><input class="cell-input" value="${esc(item.title)}" oninput="data.work[${i}].title=this.value;markUnsaved()" placeholder="Title" /></td>
       <td><input class="cell-input" style="min-width:120px" list="group-options" value="${esc(item.group)}" onchange="data.work[${i}].group=this.value;renderWork();markUnsaved()" placeholder="Group" /></td>
-      <td><input class="cell-input" style="min-width:220px" value="${esc(item.img)}" oninput="data.work[${i}].img=this.value;updateThumb(this);markUnsaved()" placeholder="images/work/filename.jpg" /></td>
+      <td><input class="cell-input" style="min-width:220px" value="${esc(item.img)}" oninput="setWorkImg(${i}, this)" placeholder="image path or paste a YouTube link" /></td>
       <td>
         <select class="cell-select" onchange="data.work[${i}].category=this.value;markUnsaved()">
           ${categoryOptions(item.category)}
@@ -1156,10 +1157,40 @@ function esc(s) {
 // ── ADD / DELETE ──
 function addWorkRow() {
   data.work.push({ title: '', img: '', category: 'other' });
+  markUnsaved();
   renderWork();
   const tbody = document.getElementById('work-body');
   const last = tbody.lastElementChild;
-  if (last) last.querySelector('.cell-input').focus();
+  if (last) {
+    last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    last.querySelector('.cell-input').focus();
+  }
+}
+
+// Pull an 11-char YouTube id out of a pasted URL (or accept a bare id).
+function ytId(url) {
+  if (!url) return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{11})/);
+  if (m) return m[1];
+  return /^[A-Za-z0-9_-]{11}$/.test(url.trim()) ? url.trim() : null;
+}
+
+// Image cell handler: paste an image path/URL, OR a YouTube link — a YouTube
+// link becomes a video item (with the video's thumbnail as the tile image).
+function setWorkImg(i, el) {
+  const val = el.value.trim();
+  const id = ytId(val);
+  if (id) {
+    data.work[i].video = id;
+    data.work[i].img = 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg';
+  } else {
+    delete data.work[i].video;
+    data.work[i].img = val;
+  }
+  const row = el.closest('tr');
+  const prev = row && row.querySelector('.thumb, .thumb-placeholder');
+  if (prev) prev.closest('td').innerHTML = thumbCell(data.work[i].img);
+  markUnsaved();
 }
 
 function addCarouselRow() {
