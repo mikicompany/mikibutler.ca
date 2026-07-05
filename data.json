@@ -347,7 +347,9 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/584/4k/miki-butler-starshiptroopers-extermination-ucf-statue-miki-butler-01.jpg?1684569850",
       "category": "starship-troopers",
       "group": "STE UCF Statue",
-      "description": "UCF eagle statue - model, textures, and in-game placement."
+      "description": "UCF eagle statue - model, textures, and in-game placement.",
+      "zoom": 1.3,
+      "focus": "8% 35%"
     },
     {
       "title": "STE UCF Statue — 02",
