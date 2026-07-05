@@ -726,6 +726,7 @@ function buildGroupEditor(name, items) {
   const cover = items[0];
   const m = /^(\d+)% (\d+)%$/.exec(cover.focus || '');
   const fx = m ? +m[1] : 50, fy = m ? +m[2] : 50;
+  const fz = cover.zoom || 1;
   const desc = (items.find(i => i.description) || {}).description || '';
   const wrap = document.createElement('div');
   wrap.className = 'group-editor';
@@ -735,9 +736,10 @@ function buildGroupEditor(name, items) {
       ${items.map((it, idx) => `<img class="cover-thumb${idx === 0 ? ' active' : ''}" src="${esc(it.img)}" title="${esc(it.title)}" data-idx="${idx}" loading="lazy" />`).join('')}
     </div>
     <div class="editor-controls">
-      <div class="tile-preview"><img src="${esc(cover.img)}" style="object-position:${fx}% ${fy}%" alt="" /></div>
+      <div class="tile-preview"><img src="${esc(cover.img)}" style="object-position:${fx}% ${fy}%;transform:scale(${fz});transform-origin:${fx}% ${fy}%" alt="" /></div>
       <div class="editor-fields">
         <label>Hover description<br/><input class="cell-input ed-desc" value="${esc(desc)}" placeholder="Shown on tile hover" /></label>
+        <label>Zoom <span class="fz-val">${fz.toFixed(2)}×</span><br/><input type="range" class="ed-fz" min="1" max="3" step="0.05" value="${fz}" /></label>
         <label>Crop focus — horizontal <span class="fx-val">${fx}%</span><br/><input type="range" class="ed-fx" min="0" max="100" value="${fx}" /></label>
         <label>Crop focus — vertical <span class="fy-val">${fy}%</span><br/><input type="range" class="ed-fy" min="0" max="100" value="${fy}" /></label>
       </div>
@@ -760,17 +762,25 @@ function buildGroupEditor(name, items) {
     markUnsaved();
   });
   const prevImg = wrap.querySelector('.tile-preview img');
-  const updFocus = () => {
+  const updPreview = () => {
     const x = wrap.querySelector('.ed-fx').value;
     const y = wrap.querySelector('.ed-fy').value;
+    const zoom = parseFloat(wrap.querySelector('.ed-fz').value);
     wrap.querySelector('.fx-val').textContent = x + '%';
     wrap.querySelector('.fy-val').textContent = y + '%';
-    items[0].focus = `${x}% ${y}%`;
+    wrap.querySelector('.fz-val').textContent = zoom.toFixed(2) + '×';
+    if (x === '50' && y === '50') delete items[0].focus;
+    else items[0].focus = `${x}% ${y}%`;
+    if (zoom > 1.001) items[0].zoom = zoom;
+    else delete items[0].zoom;
     prevImg.style.objectPosition = `${x}% ${y}%`;
+    prevImg.style.transformOrigin = `${x}% ${y}%`;
+    prevImg.style.transform = `scale(${zoom})`;
     markUnsaved();
   };
-  wrap.querySelector('.ed-fx').addEventListener('input', updFocus);
-  wrap.querySelector('.ed-fy').addEventListener('input', updFocus);
+  wrap.querySelector('.ed-fx').addEventListener('input', updPreview);
+  wrap.querySelector('.ed-fy').addEventListener('input', updPreview);
+  wrap.querySelector('.ed-fz').addEventListener('input', updPreview);
   return wrap;
 }
 
