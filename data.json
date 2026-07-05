@@ -214,19 +214,21 @@
       "group": "STE Generator"
     },
     {
+      "title": "STE Garrison Gate — 02",
+      "size": "wide",
+      "img": "https://cdna.artstation.com/p/assets/images/images/063/045/640/4k/miki-butler-starshiptroopers-extermination-garrison-gate-miki-butler-02.jpg?1684570080",
+      "category": "starship-troopers",
+      "group": "STE Garrison Gate",
+      "focus": "36% 50%"
+    },
+    {
       "title": "STE Garrison Gate — 01",
       "size": "large",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/637/4k/miki-butler-starshiptroopers-extermination-garrison-gate-miki-butler-01.jpg?1684570076",
       "category": "starship-troopers",
       "group": "STE Garrison Gate",
-      "description": "Garrison gate - large modular base entrance."
-    },
-    {
-      "title": "STE Garrison Gate — 02",
-      "size": "wide",
-      "img": "https://cdna.artstation.com/p/assets/images/images/063/045/640/4k/miki-butler-starshiptroopers-extermination-garrison-gate-miki-butler-02.jpg?1684570080",
-      "category": "starship-troopers",
-      "group": "STE Garrison Gate"
+      "description": "Garrison gate - large modular base entrance.",
+      "focus": "49% 50%"
     },
     {
       "title": "STE Beacon",
