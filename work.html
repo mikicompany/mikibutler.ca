@@ -146,6 +146,16 @@
     const SIZE_PATTERN = ['wide', 'small', 'small', 'large'];
     const sizeFor = i => SIZE_PATTERN[i % SIZE_PATTERN.length];
 
+    // Crop focus (object-position) and zoom (scale) are stored on the item
+    // and passed to the tile as CSS variables so they compose with the
+    // stylesheet's hover scale.
+    function tileStyle(item) {
+      const parts = [];
+      if (item.focus) parts.push(`--focus:${item.focus}`);
+      if (item.zoom && item.zoom !== 1) parts.push(`--zoom:${item.zoom}`);
+      return parts.length ? ` style="${parts.join(';')}"` : '';
+    }
+
     function buildGroupGrid(groups) {
       grid.innerHTML = '';
       groups.forEach((g, gi) => {
@@ -155,7 +165,7 @@
         const div = document.createElement('div');
         div.className = `masonry-item size-${sizeFor(gi)}`;
         div.innerHTML = `
-          <img src="${cover.img}" alt="${g.name}" loading="lazy"${cover.focus ? ` style="object-position:${cover.focus}"` : ''} />
+          <img src="${cover.img}" alt="${g.name}" loading="lazy"${tileStyle(cover)} />
           ${multi ? `<span class="item-count">${g.items.length}</span>` : mediaBadge(cover)}
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[g.category] || g.category || ''}</span>
@@ -184,7 +194,7 @@
         const div = document.createElement('div');
         div.className = `masonry-item size-${sizeFor(i)}`;
         div.innerHTML = `
-          <img src="${item.img}" alt="${item.title}" loading="lazy"${item.focus ? ` style="object-position:${item.focus}"` : ''} />
+          <img src="${item.img}" alt="${item.title}" loading="lazy"${tileStyle(item)} />
           ${mediaBadge(item)}
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[item.category] || item.category || ''}</span>
