@@ -179,7 +179,9 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/998/4k/miki-butler-hangar.jpg?1684571042",
       "category": "starship-troopers",
       "group": "STE Hangar",
-      "description": "Hangar bay environment overview."
+      "description": "Hangar bay environment overview.",
+      "zoom": 1.25,
+      "focus": "13% 10%"
     },
     {
       "title": "STE Ore Detail",
