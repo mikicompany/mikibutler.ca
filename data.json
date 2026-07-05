@@ -28,7 +28,9 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/491/4k/miki-butler-l1.jpg?1684569438",
       "category": "starship-troopers",
       "group": "STE Lookout",
-      "description": "Lookout base environment - modular structures and exterior set dressing."
+      "description": "Lookout base environment - modular structures and exterior set dressing.",
+      "zoom": 1.3,
+      "focus": "6% 25%"
     },
     {
       "title": "STE Lookout — 02",
