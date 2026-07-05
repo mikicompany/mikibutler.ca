@@ -339,7 +339,9 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/067/734/475/4k/miki-butler-1.jpg?1696096861",
       "category": "starship-troopers",
       "group": "STE Gate Tower Breakdown",
-      "description": "Gate tower asset - multi-angle breakdown sheet."
+      "description": "Gate tower asset - multi-angle breakdown sheet.",
+      "zoom": 1.15,
+      "focus": "24% 55%"
     },
     {
       "title": "STE UCF Statue — 01",
