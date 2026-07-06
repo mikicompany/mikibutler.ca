@@ -851,7 +851,7 @@ main {
 .reel-embed {
   width: 100%;
   aspect-ratio: 16/9;
-  border: none;
+  border: 1px solid var(--accent);
   border-radius: 2px;
 }
 
