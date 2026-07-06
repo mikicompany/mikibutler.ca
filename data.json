@@ -252,7 +252,8 @@
       "category": "starship-troopers",
       "group": "STE Garrison Gate",
       "description": "Garrison gate - large modular base entrance.",
-      "focus": "49% 50%"
+      "focus": "49% 50%",
+      "home": false
     },
     {
       "title": "STE Computer Starport",
