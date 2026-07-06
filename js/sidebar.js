@@ -18,11 +18,17 @@ function buildSidebar(data) {
     ).join('');
   }
 
-  if (socialsEl && data.socials) {
-    socialsEl.innerHTML = data.socials.map(s =>
-      `<a href="${s.href}" target="_blank" rel="noopener" aria-label="${s.label}">${SOCIAL_ICONS[s.icon] || ''}</a>`
-    ).join('');
-  }
+  const socialLinks = data.socials
+    ? data.socials.map(s =>
+        `<a href="${s.href}" target="_blank" rel="noopener" aria-label="${s.label}">${SOCIAL_ICONS[s.icon] || ''}</a>`
+      ).join('')
+    : '';
+
+  if (socialsEl && socialLinks) socialsEl.innerHTML = socialLinks;
+
+  // Keep the contact page's social row identical to the footer.
+  const contactSocials = document.getElementById('contact-socials');
+  if (contactSocials && socialLinks) contactSocials.innerHTML = socialLinks;
 }
 
 fetch('data.json').then(r => r.json()).then(buildSidebar);

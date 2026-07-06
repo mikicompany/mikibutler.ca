@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
   <title>Work — Miki Butler</title>
   <meta name="description" content="Portfolio of environment art by Miki Butler — Starship Troopers Extermination, Dead Rising 4, Plants vs Zombies, and more." />
   <meta name="keywords" content="environment art portfolio, game art, 3D environments, Starship Troopers, Dead Rising, Miki Butler" />
   <link rel="canonical" href="https://mikibutler.ca/work.html" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=20260705b" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 </head>
@@ -60,18 +61,55 @@
     const grid = document.getElementById('work-grid');
     const workHeader = document.querySelector('.work-header');
 
-    fetch('data.json')
-      .then(r => r.json())
-      .then(data => {
-        allItems = data.work;
-        allItems.forEach(i => { if (!i.group) i.group = i.title.split(' — ')[0]; });
-        buildFilters(allItems);
-        render();
-      });
+    function boot(data) {
+      allItems = data.work || [];
+      allItems.forEach(i => { if (!i.group) i.group = i.title.split(' — ')[0]; });
+      rebuildFilters();
+      // Deep-link: work.html?group=NAME opens that album; &item=TITLE opens
+      // that exact piece in the lightbox (used by the homepage slides).
+      const params = new URLSearchParams(location.search);
+      const target = params.get('group');
+      if (target) currentGroup = getGroups().find(g => g.name === target) || null;
+      render();
+      const targetItem = params.get('item');
+      if (currentGroup && targetItem) {
+        const idx = currentGroup.items.findIndex(it => it.title === targetItem);
+        if (idx >= 0) { lightboxItems = currentGroup.items; openLightbox(idx); }
+      }
+    }
 
-    function buildFilters(items) {
-      const cats = [...new Set(items.map(i => i.category).filter(Boolean))];
+    // When opened from the admin (Live Preview tab or docked preview), render
+    // the in-memory (possibly unsaved) data handed over via sessionStorage
+    // instead of the committed data.json.
+    let previewData = null;
+    if (new URLSearchParams(location.search).has('preview')) {
+      try { previewData = JSON.parse(sessionStorage.getItem('mb-preview')); } catch (_) {}
+    }
+    if (previewData) {
+      // Defer to a microtask so the rest of this script (e.g. sizeOf) is
+      // initialized before render() runs.
+      Promise.resolve().then(() => boot(previewData));
+    } else {
+      fetch('data.json').then(r => r.json()).then(boot);
+    }
+
+    // Live updates from the admin's docked preview: re-render in place while
+    // preserving the viewer's current filter and open album.
+    window.addEventListener('message', e => {
+      if (!e.data || e.data.type !== 'mb-preview' || !e.data.data) return;
+      const prevFilter = currentFilter;
+      const prevGroup = currentGroup && currentGroup.name;
+      allItems = e.data.data.work || [];
+      allItems.forEach(i => { if (!i.group) i.group = i.title.split(' — ')[0]; });
+      rebuildFilters();
+      currentGroup = prevGroup ? (getGroups().find(g => g.name === prevGroup) || null) : null;
+      render();
+    });
+
+    function rebuildFilters() {
       const container = document.getElementById('filters');
+      container.querySelectorAll('.filter-btn:not([data-filter="all"])').forEach(b => b.remove());
+      const cats = [...new Set(allItems.map(i => i.category).filter(Boolean))];
       cats.forEach(cat => {
         const btn = document.createElement('button');
         btn.className = 'filter-btn';
@@ -79,17 +117,19 @@
         btn.textContent = CATEGORY_LABELS[cat] || cat;
         container.appendChild(btn);
       });
-
-      container.addEventListener('click', e => {
-        const btn = e.target.closest('.filter-btn');
-        if (!btn) return;
-        container.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFilter = btn.dataset.filter;
-        currentGroup = null;
-        render();
-      });
+      container.querySelectorAll('.filter-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.filter === currentFilter));
     }
+
+    // Filter clicks (listener attached once; buttons are rebuilt on data change).
+    document.getElementById('filters').addEventListener('click', e => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      currentFilter = btn.dataset.filter;
+      currentGroup = null;
+      rebuildFilters();
+      render();
+    });
 
     function getGroups() {
       const items = currentFilter === 'all'
@@ -119,15 +159,37 @@
           bar.className = 'group-bar';
           workHeader.appendChild(bar);
         }
+        const groups = getGroups();
+        const pos = groups.findIndex(g => g.name === currentGroup.name);
+        const prevName = groups.length > 1 ? groups[(pos - 1 + groups.length) % groups.length].name : '';
+        const nextName = groups.length > 1 ? groups[(pos + 1) % groups.length].name : '';
         bar.innerHTML = `
           <button class="back-btn">&#8249; Back</button>
           <span class="group-bar-title">${currentGroup.name}</span>
           <span class="group-bar-count">${currentGroup.items.length} items</span>
+          <span class="group-nav">
+            <button class="group-nav-btn group-prev" title="Previous: ${prevName}" aria-label="Previous project">&#8249;</button>
+            <span class="group-pos"><span class="cur">${pos + 1}</span> / ${groups.length}</span>
+            <button class="group-nav-btn group-next" title="Next: ${nextName}" aria-label="Next project">&#8250;</button>
+          </span>
         `;
         bar.querySelector('.back-btn').addEventListener('click', closeGroup);
+        bar.querySelector('.group-prev').addEventListener('click', () => navigateGroup(-1));
+        bar.querySelector('.group-next').addEventListener('click', () => navigateGroup(1));
       } else if (bar) {
         bar.remove();
       }
+    }
+
+    // Move to the previous/next project (album) in the current filtered list,
+    // wrapping around at the ends.
+    function navigateGroup(dir) {
+      const groups = getGroups();
+      if (!groups.length) return;
+      const idx = groups.findIndex(g => g.name === currentGroup.name);
+      currentGroup = groups[(idx + dir + groups.length) % groups.length];
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function closeGroup() {
@@ -143,8 +205,18 @@
     // Repeating size pattern that always fills complete rows (2+1+1+4 = 8
     // cells = two full rows of 4), so the grid can never leave holes no
     // matter how tiles are ordered.
-    const SIZE_PATTERN = ['wide', 'small', 'small', 'large'];
-    const sizeFor = i => SIZE_PATTERN[i % SIZE_PATTERN.length];
+    const SIZES = ['small', 'wide', 'large', 'tall'];
+    const sizeOf = item => SIZES.includes(item.size) ? item.size : 'small';
+
+    // Crop focus (object-position) and zoom (scale) are stored on the item
+    // and passed to the tile as CSS variables so they compose with the
+    // stylesheet's hover scale.
+    function tileStyle(item) {
+      const parts = [];
+      if (item.focus) parts.push(`--focus:${item.focus}`);
+      if (item.zoom && item.zoom !== 1) parts.push(`--zoom:${item.zoom}`);
+      return parts.length ? ` style="${parts.join(';')}"` : '';
+    }
 
     function buildGroupGrid(groups) {
       grid.innerHTML = '';
@@ -153,9 +225,9 @@
         const multi = g.items.length > 1;
         const desc = (g.items.find(i => i.description) || {}).description || '';
         const div = document.createElement('div');
-        div.className = `masonry-item size-${sizeFor(gi)}`;
+        div.className = `masonry-item size-${sizeOf(cover)}`;
         div.innerHTML = `
-          <img src="${cover.img}" alt="${g.name}" loading="lazy"${cover.focus ? ` style="object-position:${cover.focus}"` : ''} />
+          <img src="${cover.img}" alt="${g.name}" loading="lazy"${tileStyle(cover)} />
           ${multi ? `<span class="item-count">${g.items.length}</span>` : mediaBadge(cover)}
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[g.category] || g.category || ''}</span>
@@ -182,9 +254,9 @@
       lightboxItems = items;
       items.forEach((item, i) => {
         const div = document.createElement('div');
-        div.className = `masonry-item size-${sizeFor(i)}`;
+        div.className = `masonry-item size-${sizeOf(item)}`;
         div.innerHTML = `
-          <img src="${item.img}" alt="${item.title}" loading="lazy"${item.focus ? ` style="object-position:${item.focus}"` : ''} />
+          <img src="${item.img}" alt="${item.title}" loading="lazy"${tileStyle(item)} />
           ${mediaBadge(item)}
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[item.category] || item.category || ''}</span>
@@ -261,8 +333,10 @@
         if (e.key === 'Escape') closeLightbox();
         if (e.key === 'ArrowLeft') navigate(-1);
         if (e.key === 'ArrowRight') navigate(1);
-      } else if (e.key === 'Escape' && currentGroup) {
-        closeGroup();
+      } else if (currentGroup) {
+        if (e.key === 'Escape') closeGroup();
+        if (e.key === 'ArrowLeft') navigateGroup(-1);
+        if (e.key === 'ArrowRight') navigateGroup(1);
       }
     });
   </script>

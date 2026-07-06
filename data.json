@@ -23,12 +23,23 @@
   ],
   "work": [
     {
+      "title": "Showreel",
+      "size": "wide",
+      "img": "https://img.youtube.com/vi/2o7dkmIlLDA/hqdefault.jpg",
+      "category": "personal",
+      "home": false,
+      "group": "Showreel",
+      "video": "2o7dkmIlLDA"
+    },
+    {
       "title": "STE Lookout — 01",
       "size": "large",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/491/4k/miki-butler-l1.jpg?1684569438",
       "category": "starship-troopers",
       "group": "STE Lookout",
-      "description": "Lookout base environment - modular structures and exterior set dressing."
+      "description": "Lookout base environment - modular structures and exterior set dressing.",
+      "zoom": 1.3,
+      "focus": "6% 25%"
     },
     {
       "title": "STE Lookout — 02",
@@ -87,24 +98,27 @@
       "group": "STE Lookout"
     },
     {
-      "title": "STE Cave Road — 02",
-      "size": "large",
-      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/760/4k/miki-butler-ste-showcase-mikibutler-caverox-02.jpg?1685503982",
+      "title": "STE Cave Road — 08",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/778/4k/miki-butler-ste-showcase-mikibutler-caverox-08.jpg?1685504021",
       "category": "starship-troopers",
       "group": "STE Cave Road",
-      "description": "Canyon cave road environment - rock formations and roadway dressing."
+      "zoom": 1.3,
+      "focus": "50% 42%"
     },
     {
-      "title": "STE Cave Road — 03",
-      "size": "wide",
-      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/762/4k/miki-butler-ste-showcase-mikibutler-caverox-03.jpg?1685503991",
-      "category": "starship-troopers",
-      "group": "STE Cave Road"
-    },
-    {
-      "title": "STE Cave Road — 04",
+      "title": "STE Cave Road — 07",
       "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/764/4k/miki-butler-ste-showcase-mikibutler-caverox-04.jpg?1685503997",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/063/425/775/4k/miki-butler-ste-showcase-mikibutler-caverox-07.jpg?1685504014",
+      "category": "starship-troopers",
+      "group": "STE Cave Road",
+      "focus": "64% 31%",
+      "zoom": 1.35
+    },
+    {
+      "title": "STE Cave Road — 06",
+      "size": "wide",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/063/425/771/4k/miki-butler-ste-showcase-mikibutler-caverox-06.jpg?1685504008",
       "category": "starship-troopers",
       "group": "STE Cave Road"
     },
@@ -116,25 +130,26 @@
       "group": "STE Cave Road"
     },
     {
-      "title": "STE Cave Road — 06",
+      "title": "STE Cave Road — 04",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/764/4k/miki-butler-ste-showcase-mikibutler-caverox-04.jpg?1685503997",
+      "category": "starship-troopers",
+      "group": "STE Cave Road"
+    },
+    {
+      "title": "STE Cave Road — 03",
       "size": "wide",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/063/425/771/4k/miki-butler-ste-showcase-mikibutler-caverox-06.jpg?1685504008",
+      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/762/4k/miki-butler-ste-showcase-mikibutler-caverox-03.jpg?1685503991",
       "category": "starship-troopers",
       "group": "STE Cave Road"
     },
     {
-      "title": "STE Cave Road — 07",
-      "size": "small",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/063/425/775/4k/miki-butler-ste-showcase-mikibutler-caverox-07.jpg?1685504014",
+      "title": "STE Cave Road — 02",
+      "size": "large",
+      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/760/4k/miki-butler-ste-showcase-mikibutler-caverox-02.jpg?1685503982",
       "category": "starship-troopers",
-      "group": "STE Cave Road"
-    },
-    {
-      "title": "STE Cave Road — 08",
-      "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/063/425/778/4k/miki-butler-ste-showcase-mikibutler-caverox-08.jpg?1685504021",
-      "category": "starship-troopers",
-      "group": "STE Cave Road"
+      "group": "STE Cave Road",
+      "description": "Canyon cave road environment - rock formations and roadway dressing."
     },
     {
       "title": "STE Cave Road — 09",
@@ -149,22 +164,17 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/719/4k/miki-butler-starshiptroopers-extermination-armory-miki-butler-01.jpg?1684570283",
       "category": "starship-troopers",
       "group": "STE Armory",
-      "description": "Armory building - modular exterior kit, hi-poly and in-game views."
+      "description": "Armory building - modular exterior kit, hi-poly and in-game views.",
+      "focus": "16% 30%",
+      "zoom": 1.5
     },
     {
       "title": "STE Armory — 02",
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/722/4k/miki-butler-starshiptroopers-extermination-armory-miki-butler-02.jpg?1684570291",
       "category": "starship-troopers",
-      "group": "STE Armory"
-    },
-    {
-      "title": "STE Hangar",
-      "size": "wide",
-      "img": "https://cdna.artstation.com/p/assets/images/images/063/045/998/4k/miki-butler-hangar.jpg?1684571042",
-      "category": "starship-troopers",
-      "group": "STE Hangar",
-      "description": "Hangar bay environment overview."
+      "group": "STE Armory",
+      "home": false
     },
     {
       "title": "STE Armory Overview",
@@ -172,6 +182,14 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/063/210/720/4k/miki-butler-highresscreenshot00010-large.jpg?1684977936",
       "category": "starship-troopers",
       "group": "STE Armory"
+    },
+    {
+      "title": "STE Ore Detail",
+      "size": "small",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/063/210/679/4k/miki-butler-miki-butler-ste-ore.jpg?1684977824",
+      "category": "starship-troopers",
+      "home": false,
+      "group": "STE Ore"
     },
     {
       "title": "STE Ore Clusters",
@@ -191,12 +209,14 @@
       "group": "STE Ore"
     },
     {
-      "title": "STE Ore Detail",
-      "size": "small",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/063/210/679/4k/miki-butler-miki-butler-ste-ore.jpg?1684977824",
+      "title": "STE Hangar",
+      "size": "wide",
+      "img": "https://cdna.artstation.com/p/assets/images/images/063/045/998/4k/miki-butler-hangar.jpg?1684571042",
       "category": "starship-troopers",
-      "home": false,
-      "group": "STE Ore"
+      "group": "STE Hangar",
+      "description": "Hangar bay environment overview.",
+      "zoom": 1.25,
+      "focus": "13% 10%"
     },
     {
       "title": "STE Generator — 01",
@@ -204,14 +224,26 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/470/4k/miki-butler-starshiptroopers-extermination-generator-01.jpg?1684569363",
       "category": "starship-troopers",
       "group": "STE Generator",
-      "description": "Generator prop - final asset and wireframe breakdown."
+      "description": "Generator prop - final asset and wireframe breakdown.",
+      "zoom": 1.15,
+      "focus": "100% 0%"
     },
     {
       "title": "STE Generator Wireframe",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/042/580/950/large/miki-butler-generator-wireframe.jpg?1634887983",
       "category": "starship-troopers",
-      "group": "STE Generator"
+      "group": "STE Generator",
+      "home": false
+    },
+    {
+      "title": "STE Garrison Gate — 02",
+      "size": "wide",
+      "img": "https://cdna.artstation.com/p/assets/images/images/063/045/640/4k/miki-butler-starshiptroopers-extermination-garrison-gate-miki-butler-02.jpg?1684570080",
+      "category": "starship-troopers",
+      "group": "STE Garrison Gate",
+      "focus": "14% 49%",
+      "zoom": 1.85
     },
     {
       "title": "STE Garrison Gate — 01",
@@ -219,29 +251,24 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/637/4k/miki-butler-starshiptroopers-extermination-garrison-gate-miki-butler-01.jpg?1684570076",
       "category": "starship-troopers",
       "group": "STE Garrison Gate",
-      "description": "Garrison gate - large modular base entrance."
+      "description": "Garrison gate - large modular base entrance.",
+      "focus": "49% 50%",
+      "home": false
     },
     {
-      "title": "STE Garrison Gate — 02",
-      "size": "wide",
-      "img": "https://cdna.artstation.com/p/assets/images/images/063/045/640/4k/miki-butler-starshiptroopers-extermination-garrison-gate-miki-butler-02.jpg?1684570080",
-      "category": "starship-troopers",
-      "group": "STE Garrison Gate"
-    },
-    {
-      "title": "STE Beacon",
+      "title": "STE Computer Starport",
       "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/063/044/270/4k/miki-butler-beacon.jpg?1684562761",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/063/210/693/large/miki-butler-miki-butler-ste-computerstarport.jpg?1684977865",
       "category": "starship-troopers",
-      "group": "STE Beacon",
-      "description": "Beacon prop for base building."
+      "group": "STE Computer / CC Unit",
+      "zoom": 1.45
     },
     {
       "title": "STE Computer — 01",
       "size": "wide",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/743/4k/miki-butler-starshiptroopers-extermination-computer-miki-butler-01.jpg?1684570337",
       "category": "starship-troopers",
-      "group": "STE Computer",
+      "group": "STE Computer / CC Unit",
       "description": "Computer consoles and starport terminal props."
     },
     {
@@ -249,7 +276,7 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/044/514/810/4k/miki-butler-ccunit-01.jpg?1640224226",
       "category": "starship-troopers",
-      "group": "STE CC Unit",
+      "group": "STE Computer / CC Unit",
       "description": "Command and control unit prop."
     },
     {
@@ -257,14 +284,14 @@
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/044/514/773/4k/miki-butler-ccunit-02.jpg?1640224121",
       "category": "starship-troopers",
-      "group": "STE CC Unit"
+      "group": "STE Computer / CC Unit"
     },
     {
-      "title": "STE Computer Starport",
+      "title": "STE Tents Detail",
       "size": "small",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/063/210/693/large/miki-butler-miki-butler-ste-computerstarport.jpg?1684977865",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/063/210/708/large/miki-butler-miki-butler-ste-tents.jpg?1684977899",
       "category": "starship-troopers",
-      "group": "STE Computer"
+      "group": "STE Tents"
     },
     {
       "title": "STE Tents — 02",
@@ -275,11 +302,23 @@
       "description": "Camp tent props and material detail."
     },
     {
-      "title": "STE Tents Detail",
+      "title": "STE Beacon",
       "size": "small",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/063/210/708/large/miki-butler-miki-butler-ste-tents.jpg?1684977899",
+      "img": "https://cdna.artstation.com/p/assets/images/images/063/044/270/4k/miki-butler-beacon.jpg?1684562761",
       "category": "starship-troopers",
-      "group": "STE Tents"
+      "group": "STE Beacon",
+      "description": "Beacon prop for base building.",
+      "zoom": 1.3,
+      "focus": "0% 31%"
+    },
+    {
+      "title": "STE Bug Goo — 04",
+      "size": "small",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/911/4k/miki-butler-n-buggoo-miki-butler-04.jpg?1684570814",
+      "category": "starship-troopers",
+      "group": "STE Bug Goo",
+      "focus": "9% 14%",
+      "zoom": 1.25
     },
     {
       "title": "STE Bug Goo — 02",
@@ -297,19 +336,14 @@
       "group": "STE Bug Goo"
     },
     {
-      "title": "STE Bug Goo — 04",
-      "size": "small",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/911/4k/miki-butler-n-buggoo-miki-butler-04.jpg?1684570814",
-      "category": "starship-troopers",
-      "group": "STE Bug Goo"
-    },
-    {
       "title": "STE Foliage — 01",
       "size": "large",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/877/4k/miki-butler-n-fol-miki-butler-01.jpg?1684570713",
       "category": "starship-troopers",
       "group": "STE Foliage",
-      "description": "Alien foliage set for planet environments."
+      "description": "Alien foliage set for planet environments.",
+      "zoom": 1.35,
+      "focus": "5% 37%"
     },
     {
       "title": "STE Foliage — 02",
@@ -332,7 +366,9 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/067/734/475/4k/miki-butler-1.jpg?1696096861",
       "category": "starship-troopers",
       "group": "STE Gate Tower Breakdown",
-      "description": "Gate tower asset - multi-angle breakdown sheet."
+      "description": "Gate tower asset - multi-angle breakdown sheet.",
+      "zoom": 1.15,
+      "focus": "24% 55%"
     },
     {
       "title": "STE UCF Statue — 01",
@@ -340,7 +376,9 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/584/4k/miki-butler-starshiptroopers-extermination-ucf-statue-miki-butler-01.jpg?1684569850",
       "category": "starship-troopers",
       "group": "STE UCF Statue",
-      "description": "UCF eagle statue - model, textures, and in-game placement."
+      "description": "UCF eagle statue - model, textures, and in-game placement.",
+      "zoom": 1.3,
+      "focus": "8% 35%"
     },
     {
       "title": "STE UCF Statue — 02",
@@ -417,6 +455,14 @@
       "group": "The Queen's Throne"
     },
     {
+      "title": "Dark Nest — 03",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/034/865/388/4k/miki-butler-mikibutler-darknest-10.jpg?1613459745",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
       "title": "Dark Nest — Video 01",
       "size": "wide",
       "img": "https://cdnb.artstation.com/p/assets/video_clips/images/034/899/421/large/miki-butler-thumb.jpg?1613548956",
@@ -434,6 +480,116 @@
       "category": "personal",
       "home": false,
       "group": "Dark Nest"
+    },
+    {
+      "title": "Dark Nest — 04",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/034/865/380/4k/miki-butler-mikibutler-darknest-05.jpg?1613459719",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
+      "title": "Dark Nest — 05",
+      "size": "small",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/034/865/379/4k/miki-butler-mikibutler-darknest-04.jpg?1613459714",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
+      "title": "Dark Nest — 06",
+      "size": "small",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/034/927/649/4k/miki-butler-mikibutler-darknest-12.jpg?1613615430",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
+      "title": "Dark Nest — Sculpts",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/034/579/544/4k/miki-butler-sculpts.jpg?1612673571",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
+      "title": "Dark Nest — Breakdown",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/034/898/032/4k/miki-butler-breakdown.jpg?1613543781",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
+      "title": "Dark Nest — Tests",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/034/577/956/original/miki-butler-tests1.gif?1612668203",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
+      "title": "Dark Nest — Core",
+      "size": "small",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/034/683/397/original/miki-butler-core.gif?1612937158",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
+      "title": "Dark Nest — Breath",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/034/649/652/original/miki-butler-breath.gif?1612860043",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
+      "title": "Dark Nest — Misc",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/034/683/734/original/miki-butler-misc.gif?1612938649",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
+      "title": "Lava Material",
+      "size": "large",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/071/332/333/large/miki-butler-lava-you-miki.jpg?1704954906",
+      "category": "personal",
+      "group": "Lava Material",
+      "description": "Procedural lava material - Substance Designer and UE."
+    },
+    {
+      "title": "Lava Material — Video",
+      "size": "wide",
+      "img": "https://cdna.artstation.com/p/assets/video_clips/images/071/332/050/large/miki-butler-thumb.jpg?1704954080",
+      "mp4": "https://cdn.artstation.com/p/video_sources/001/738/348/lavaplane-cut.mp4",
+      "category": "personal",
+      "home": false,
+      "group": "Lava Material"
+    },
+    {
+      "title": "Lava Material — 01",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/071/332/066/large/miki-butler-lava01-small.jpg?1704954108",
+      "category": "personal",
+      "group": "Lava Material"
+    },
+    {
+      "title": "Lava Material — 02",
+      "size": "small",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/071/332/061/large/miki-butler-lava02-small.jpg?1704954096",
+      "category": "personal",
+      "group": "Lava Material"
+    },
+    {
+      "title": "Lava Material — Texture Breakdown",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/071/061/002/large/miki-butler-textures-breakdown-copy.jpg?1704357882",
+      "category": "personal",
+      "group": "Lava Material"
     },
     {
       "title": "Buon Appetito — 01",
@@ -502,44 +658,6 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/033/481/094/large/miki-butler-screenshot-22.jpg?1609744576",
       "category": "personal",
       "group": "Buon Appetito"
-    },
-    {
-      "title": "Lava Material",
-      "size": "large",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/071/332/333/large/miki-butler-lava-you-miki.jpg?1704954906",
-      "category": "personal",
-      "group": "Lava Material",
-      "description": "Procedural lava material - Substance Designer and UE."
-    },
-    {
-      "title": "Lava Material — Video",
-      "size": "wide",
-      "img": "https://cdna.artstation.com/p/assets/video_clips/images/071/332/050/large/miki-butler-thumb.jpg?1704954080",
-      "mp4": "https://cdn.artstation.com/p/video_sources/001/738/348/lavaplane-cut.mp4",
-      "category": "personal",
-      "home": false,
-      "group": "Lava Material"
-    },
-    {
-      "title": "Lava Material — 01",
-      "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/071/332/066/large/miki-butler-lava01-small.jpg?1704954108",
-      "category": "personal",
-      "group": "Lava Material"
-    },
-    {
-      "title": "Lava Material — 02",
-      "size": "small",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/071/332/061/large/miki-butler-lava02-small.jpg?1704954096",
-      "category": "personal",
-      "group": "Lava Material"
-    },
-    {
-      "title": "Lava Material — Texture Breakdown",
-      "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/071/061/002/large/miki-butler-textures-breakdown-copy.jpg?1704357882",
-      "category": "personal",
-      "group": "Lava Material"
     },
     {
       "title": "Tumi Knife — Sacrifice",
@@ -674,6 +792,15 @@
       "group": "Meet Mat"
     },
     {
+      "title": "Calaca Mat — Painter Viewport",
+      "size": "small",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/023/933/843/large/miki-butler-mikibutler-meetmat-painterviewport.jpg?1580806627",
+      "category": "personal",
+      "group": "Calaca Mat",
+      "zoom": 1.35,
+      "focus": "11% 45%"
+    },
+    {
       "title": "Calaca Mat — Full",
       "size": "tall",
       "img": "https://cdna.artstation.com/p/assets/images/images/023/949/864/large/miki-butler-mikib-mat-full.jpg?1580842764",
@@ -699,13 +826,6 @@
       "title": "Calaca Mat — Back",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/023/933/570/large/miki-butler-mikibutler-meetmatback.jpg?1580805839",
-      "category": "personal",
-      "group": "Calaca Mat"
-    },
-    {
-      "title": "Calaca Mat — Painter Viewport",
-      "size": "small",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/023/933/843/large/miki-butler-mikibutler-meetmat-painterviewport.jpg?1580806627",
       "category": "personal",
       "group": "Calaca Mat"
     },
@@ -871,19 +991,19 @@
       "group": "PvZ Social Hub"
     },
     {
+      "title": "PvZ Neighborville — TV Preview",
+      "size": "wide",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/667/large/miki-butler-tvpreview.jpg?1571279850",
+      "category": "pvz",
+      "group": "PvZ Neighborville"
+    },
+    {
       "title": "PvZ Neighborville — TV Hi-Poly WIP",
       "size": "wide",
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/687/large/miki-butler-tvhipolywip.jpg?1571279925",
       "category": "pvz",
       "group": "PvZ Neighborville",
       "description": "Neighborville town content - gates, planters, signage, TVs."
-    },
-    {
-      "title": "PvZ Neighborville — TV Preview",
-      "size": "wide",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/667/large/miki-butler-tvpreview.jpg?1571279850",
-      "category": "pvz",
-      "group": "PvZ Neighborville"
     },
     {
       "title": "PvZ Neighborville — Misc Signs",
@@ -977,7 +1097,9 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/611/large/miki-butler-cactu.jpg?1571279582",
       "category": "pvz",
       "group": "PvZ Cheese Mines",
-      "description": "Cheese Mines props - mine carts, pickaxes, cactus."
+      "description": "Cheese Mines props - mine carts, pickaxes, cactus.",
+      "zoom": 1.35,
+      "focus": "8% 43%"
     },
     {
       "title": "PvZ Cheese Mines — Pickaxe",
@@ -1041,7 +1163,9 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/022/328/313/large/miki-butler-hamsterwheel.jpg?1575002389",
       "category": "pvz",
       "group": "PvZ Hamster Wheel",
-      "description": "Hamster wheel artifact prop with texture breakdowns."
+      "description": "Hamster wheel artifact prop with texture breakdowns.",
+      "zoom": 1.35,
+      "focus": "2% 45%"
     },
     {
       "title": "PvZ Hamster Wheel — Hi-Poly",
@@ -1115,7 +1239,9 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/033/047/399/4k/miki-butler-sm-eastasia-prop-well-01.jpg?1608433929",
       "category": "squad",
       "group": "Squad East Asia",
-      "description": "East Asia map props for Squad - well, truck, and lantern."
+      "description": "East Asia map props for Squad - well, truck, and lantern.",
+      "focus": "0% 34%",
+      "zoom": 1.4
     },
     {
       "title": "Squad East Asia — Truck",
@@ -1142,16 +1268,6 @@
       "description": "Squad 4.0 main menu scene (video)."
     },
     {
-      "title": "It Is Not Brocoly! — Marmoset Viewer",
-      "size": "wide",
-      "img": "https://cdnb.artstation.com/p/assets/marmosets/images/003/608/235/large/miki-c-butler-mview-image20161003-19792-1j27fle.jpg?1475552179",
-      "embed": "https://www.artstation.com/embed/3608235",
-      "category": "personal",
-      "home": false,
-      "group": "It Is Not Brocoly!",
-      "description": "Stylized alien tree study - interactive Marmoset viewer."
-    },
-    {
       "title": "Avatar: The Last Airbender (UE5)",
       "size": "wide",
       "img": "https://i.ytimg.com/vi/Fzs2S3AZSEo/maxresdefault.jpg",
@@ -1160,12 +1276,22 @@
       "home": false,
       "group": "Avatar: The Last Airbender (UE5)",
       "description": "Avatar-inspired environment built in UE5 (video)."
+    },
+    {
+      "title": "It Is Not Brocoly! — Marmoset Viewer",
+      "size": "wide",
+      "img": "https://cdnb.artstation.com/p/assets/marmosets/images/003/608/235/large/miki-c-butler-mview-image20161003-19792-1j27fle.jpg?1475552179",
+      "embed": "https://www.artstation.com/embed/3608235",
+      "category": "personal",
+      "home": false,
+      "group": "It Is Not Brocoly!",
+      "description": "Stylized alien tree study - interactive Marmoset viewer."
     }
   ],
   "socials": [
     {
       "label": "ArtStation",
-      "href": "https://mikicompany.artstation.com/",
+      "href": "https://www.artstation.com/mikicompany",
       "icon": "artstation"
     },
     {

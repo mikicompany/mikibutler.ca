@@ -10,6 +10,11 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   background: var(--bg);
@@ -17,6 +22,7 @@ body {
   display: flex;
   min-height: 100vh;
   overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* ── SIDEBAR ── */
@@ -193,6 +199,18 @@ main {
               box-shadow 0.35s ease,
               z-index 0s;
   z-index: 1;
+  animation: tile-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Subtle fade-and-rise when tiles (re)render — entering an album,
+   switching projects, or changing filters. */
+@keyframes tile-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .masonry-item { animation: none; }
 }
 
 /* Size variants */
@@ -217,8 +235,11 @@ main {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: var(--focus, 50% 50%);
+  transform: scale(var(--zoom, 1));
+  transform-origin: var(--focus, 50% 50%);
   display: block;
-  filter: brightness(0.38) saturate(0.8);
+  filter: brightness(0.62) saturate(0.9);
   transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
               filter 0.35s ease;
 }
@@ -230,8 +251,8 @@ main {
 }
 
 .masonry-item:hover img {
-  transform: scale(1.06);
-  filter: brightness(0.9) saturate(1);
+  transform: scale(calc(var(--zoom, 1) * 1.06));
+  filter: brightness(1) saturate(1);
 }
 
 .masonry-item .item-overlay {
@@ -371,6 +392,7 @@ main {
 .group-bar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 14px;
   margin-top: 16px;
 }
@@ -405,6 +427,53 @@ main {
   font-size: 11px;
   color: var(--text-muted);
   letter-spacing: 0.06em;
+}
+
+.group-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.group-nav-btn {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid #333;
+  color: var(--text-muted);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: transform 0.15s ease, background 0.2s ease,
+              color 0.2s ease, border-color 0.2s ease;
+}
+
+.group-nav-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  transform: translateY(-1px);
+}
+
+.group-nav-btn:active { transform: scale(0.92); }
+
+.group-pos {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  min-width: 52px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.group-pos .cur {
+  color: var(--accent);
+  font-weight: 700;
 }
 
 .lightbox-close {
@@ -648,6 +717,63 @@ main {
   color: #333;
   transition: opacity 0.3s ease;
 }
+
+.gp-trailer {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin: 14px auto 0;
+  width: fit-content;
+  padding: 8px 16px;
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+
+.gp-trailer:hover { background: var(--accent); color: #000; transform: translateY(-1px); }
+
+/* Mentoring card */
+.mentoring-card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  text-decoration: none;
+  color: inherit;
+  max-width: 560px;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+
+.mentoring-card:hover {
+  border-color: var(--accent);
+  background: rgba(160, 255, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+.mentoring-logo {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.mentoring-logo img { width: 32px; height: 32px; object-fit: contain; }
+.mentoring-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+.mentoring-desc { color: var(--text-muted); line-height: 1.6; font-size: 13px; margin-bottom: 8px; }
+.mentoring-link { color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; }
 
 .gameography li {
   font-size: 13px;
@@ -924,7 +1050,8 @@ main {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 12px 20px;
-    flex: none;
+    flex: 1 1 100%;
+    min-width: 0;
   }
 
   .sidebar-socials { padding-top: 0; }

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Protected Content Encryptor — local tool</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0d0d0d; color: #ddd; max-width: 760px; margin: 40px auto; padding: 0 20px; }
+    h1 { font-size: 20px; }
+    p { color: #999; font-size: 13px; line-height: 1.5; }
+    label { display: block; margin: 18px 0 6px; font-size: 13px; color: #999; }
+    input, textarea { width: 100%; box-sizing: border-box; background: #1a1a1a; color: #eee; border: 1px solid #333; border-radius: 3px; padding: 9px; font-family: monospace; font-size: 13px; }
+    textarea { min-height: 180px; }
+    button { margin-top: 16px; background: #a0ff00; color: #000; border: none; border-radius: 3px; padding: 10px 22px; font-weight: 600; cursor: pointer; }
+    button:disabled { opacity: 0.5; }
+    #out { margin-top: 16px; }
+    .err { color: #ff4444; font-size: 13px; margin-top: 10px; min-height: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Protected Content Encryptor</h1>
+  <p>
+    Local tool — run the site with <code>python serve.py</code> and open
+    <code>http://localhost:8321/tools/protect.html</code>. Paste the items to
+    protect, choose a password, and save the output as
+    <code>protected-data.json</code> in the site root. Nothing here is ever
+    sent anywhere; encryption happens in your browser.
+  </p>
+  <p>
+    ⚠️ Images referenced by <code>img</code> still upload to the public repo
+    if you commit them there. For real NDA material, host images at an
+    unguessable external URL and reference that URL here instead.
+  </p>
+
+  <label for="pw">Password</label>
+  <input id="pw" type="text" autocomplete="off" spellcheck="false" />
+
+  <label for="items">Items (JSON array)</label>
+  <textarea id="items" spellcheck="false">[
+  { "img": "images/work/protected-01.jpg", "tag": "NDA", "title": "Unreleased Project" }
+]</textarea>
+
+  <button id="go">Encrypt</button>
+  <div class="err" id="err"></div>
+
+  <label for="out">protected-data.json</label>
+  <textarea id="out" readonly placeholder="Output appears here"></textarea>
+  <button id="dl" disabled>Download protected-data.json</button>
+
+  <script>
+    const ITERATIONS = 600000;
+    const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+
+    document.getElementById('go').addEventListener('click', async () => {
+      const err = document.getElementById('err');
+      err.textContent = '';
+      const password = document.getElementById('pw').value;
+      if (!password) { err.textContent = 'Password required.'; return; }
+      let items;
+      try {
+        items = JSON.parse(document.getElementById('items').value);
+        if (!Array.isArray(items)) throw new Error();
+      } catch {
+        err.textContent = 'Items must be a valid JSON array.';
+        return;
+      }
+      const enc = new TextEncoder();
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+      const key = await crypto.subtle.deriveKey(
+        { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: ITERATIONS },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt']
+      );
+      const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(JSON.stringify({ items })));
+      const out = JSON.stringify({
+        v: 1,
+        kdf: 'PBKDF2-SHA256',
+        iterations: ITERATIONS,
+        salt: b64(salt),
+        iv: b64(iv),
+        data: b64(ct),
+      }, null, 2);
+      document.getElementById('out').value = out;
+      document.getElementById('dl').disabled = false;
+    });
+
+    document.getElementById('dl').addEventListener('click', () => {
+      const blob = new Blob([document.getElementById('out').value + '\n'], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'protected-data.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  </script>
+</body>
+</html>

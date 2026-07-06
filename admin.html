@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="robots" content="noindex, nofollow" />
   <title>Site Admin — mikibutler.ca</title>
   <style>
     :root {
@@ -48,6 +52,17 @@
     .header-logo {
       width: 32px;
       height: 32px;
+      border-radius: 50%;
+      object-fit: contain;
+    }
+
+    .build-tag {
+      font-size: 10px;
+      color: #555;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 2px 8px;
+      letter-spacing: 0.02em;
     }
 
     .header h1 {
@@ -239,8 +254,8 @@
     .cell-select:focus { border-color: var(--accent); }
 
     .thumb {
-      width: 48px;
-      height: 32px;
+      width: 72px;
+      height: 48px;
       object-fit: cover;
       border-radius: 2px;
       background: #222;
@@ -248,16 +263,35 @@
     }
 
     .thumb-placeholder {
-      width: 48px;
-      height: 32px;
+      width: 72px;
+      height: 48px;
       background: #222;
       border-radius: 2px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #333;
-      font-size: 16px;
+      font-size: 20px;
     }
+
+    .swatch {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .swatch-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid #333;
+      flex: none;
+    }
+
+    .swatch-val { font-variant-numeric: tabular-nums; }
 
     .btn-del {
       background: none;
@@ -432,19 +466,116 @@
       align-items: flex-start;
     }
 
+    .preview-col { flex: none; }
+
     .tile-preview {
       width: 240px;
       height: 160px;
-      flex: none;
       border-radius: 2px;
       overflow: hidden;
       background: #000;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
     }
+
+    .tile-preview.grabbing { cursor: grabbing; }
 
     .tile-preview img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+
+    .drag-hint {
+      font-size: 10px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    .preview-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .preview-frame-wrap {
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #0d0d0d;
+    }
+
+    #preview-frame {
+      width: 100%;
+      height: 78vh;
+      border: 0;
+      display: block;
+    }
+
+    /* ── DOCKED LIVE PREVIEW (Work tab) ── */
+    .work-layout { display: flex; gap: 20px; align-items: flex-start; }
+    .work-main { flex: 1; min-width: 0; }
+
+    .work-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+
+    .work-dock {
+      display: none;
+      flex: 0 0 42%;
+      max-width: 620px;
+      position: sticky;
+      top: 88px;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #0d0d0d;
+    }
+
+    .work-layout.docked .work-dock { display: block; }
+
+    .work-dock-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #141414;
+      border-bottom: 1px solid #2a2a2a;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .work-dock-head em { color: var(--accent); font-style: normal; text-transform: none; letter-spacing: 0; }
+
+    .dock-icon {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 6px;
+    }
+
+    .dock-icon:hover { color: var(--accent); }
+
+    #dock-frame {
+      width: 100%;
+      height: calc(100vh - 140px);
+      border: 0;
+      display: block;
+    }
+
+    @media (max-width: 1100px) {
+      /* Not enough width to edit and preview side by side */
+      .work-layout.docked { flex-direction: column; }
+      .work-dock { flex-basis: auto; max-width: none; width: 100%; position: static; }
+      #dock-frame { height: 70vh; }
     }
 
     .editor-fields {
@@ -461,17 +592,68 @@
       max-width: 320px;
       accent-color: var(--accent);
     }
+
+    /* ── TOKEN MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      padding: 24px;
+      width: 460px;
+      max-width: 92vw;
+    }
+
+    .modal h2 {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 0 0 10px;
+    }
+
+    .modal p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0 0 6px;
+    }
+
+    .modal .cell-input {
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .modal-error {
+      color: #ff4444;
+      min-height: 16px;
+      margin-top: 6px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
   </style>
 </head>
 <body>
 
 <header class="header">
   <div class="header-left">
-    <svg class="header-logo" viewBox="0 0 60 60" fill="none">
-      <circle cx="30" cy="30" r="28" stroke="#a0ff00" stroke-width="3"/>
-      <text x="30" y="38" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="26" fill="#a0ff00">M</text>
-    </svg>
+    <img class="header-logo" src="images/logo512.jpg" alt="Miki Butler" />
     <h1>mikibutler<span>.ca</span> — Admin</h1>
+    <span class="build-tag" title="Admin build date — confirms you have the latest version">build 2026-07-05</span>
   </div>
   <div class="header-actions">
     <span class="save-status" id="save-status">Unsaved changes</span>
@@ -483,6 +665,7 @@
 
 <div class="tabs">
   <button class="tab-btn active" data-tab="work">Work</button>
+  <button class="tab-btn" data-tab="preview">Live Preview</button>
   <button class="tab-btn" data-tab="carousel">Carousel</button>
   <button class="tab-btn" data-tab="menu">Menu</button>
   <button class="tab-btn" data-tab="socials">Socials</button>
@@ -491,8 +674,15 @@
 
 <!-- WORK TAB -->
 <div class="panel active" id="panel-work">
+ <div class="work-layout" id="work-layout">
+  <div class="work-main">
+  <div class="work-toolbar">
+    <button class="btn btn-primary" onclick="addWorkRow()">+ Add work</button>
+    <button class="btn btn-ghost" id="dock-toggle" onclick="toggleDock()">▐ Show live preview</button>
+  </div>
   <p class="section-label">Album order — drag a group to move it (and all its items)</p>
   <div class="menu-list" id="groups-list"></div>
+  <datalist id="group-options"></datalist>
   <p class="section-label">Work Grid — drag rows to reorder items</p>
   <div class="table-wrap">
     <table class="sheet-table" id="work-table">
@@ -514,6 +704,29 @@
     </table>
   </div>
   <button class="add-row-btn" onclick="addWorkRow()">+ Add Row</button>
+  </div>
+  <aside class="work-dock" id="work-dock">
+    <div class="work-dock-head">
+      <span>Live preview <em id="dock-status"></em></span>
+      <div>
+        <button class="dock-icon" onclick="popOutDock()" title="Open full screen">⤢</button>
+        <button class="dock-icon" onclick="toggleDock()" title="Hide preview">✕</button>
+      </div>
+    </div>
+    <iframe id="dock-frame" title="Live preview"></iframe>
+  </aside>
+ </div>
+</div>
+
+<!-- LIVE PREVIEW TAB -->
+<div class="panel" id="panel-preview">
+  <div class="preview-bar">
+    <p class="section-label" style="margin:0">Live Preview — exactly how the Work page will look, including unsaved edits</p>
+    <button class="btn btn-ghost" onclick="refreshPreview()">↻ Refresh</button>
+  </div>
+  <div class="preview-frame-wrap">
+    <iframe id="preview-frame" title="Work page preview"></iframe>
+  </div>
 </div>
 
 <!-- CAROUSEL TAB -->
@@ -575,6 +788,23 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="token-modal">
+  <div class="modal">
+    <h2>Set up one-click save</h2>
+    <p>Connect this browser to GitHub once, and Save will commit
+    <b>data.json</b> straight from here — no more steps, ever.</p>
+    <button class="btn btn-ghost" style="margin-top:10px" onclick="window.open('https://github.com/settings/tokens/new?scopes=repo&amp;description=mikibutler.ca%20admin%20save','_blank')">1 · Open GitHub (pre-filled)</button>
+    <p style="margin-top:8px">On that page just scroll down, press <b>Generate token</b>, copy it, and paste here:</p>
+    <input class="cell-input" id="token-input" placeholder="ghp_…" autocomplete="off" spellcheck="false" />
+    <p class="modal-error" id="token-error"></p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="submitToken()">2 · Connect &amp; Save</button>
+      <button class="btn btn-ghost" onclick="closeTokenModal();saveViaWebEditor()">Skip — paste into GitHub instead</button>
+      <button class="btn btn-ghost" onclick="closeTokenModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <input type="file" id="file-input" accept=".json" style="display:none" onchange="handleFileLoad(event)" />
 
@@ -585,7 +815,7 @@ let dragSrc = null;
 // ── INIT ──
 fetch('data.json')
   .then(r => r.json())
-  .then(d => { data = d; render(); })
+  .then(d => { data = d; render(); restoreDock(); })
   .catch(() => render());
 
 // ── TABS ──
@@ -597,7 +827,87 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     const panel = document.getElementById('panel-' + btn.dataset.tab);
     panel.classList.add('active');
     if (btn.dataset.tab === 'export') updateJSONPreview();
+    if (btn.dataset.tab === 'preview') refreshPreview();
   });
+});
+
+// ── LIVE PREVIEW ──
+// Feed the current (possibly unsaved) data to a real work.html rendered in
+// an iframe, so the preview matches the live page exactly.
+function refreshPreview() {
+  try { sessionStorage.setItem('mb-preview', buildJSON()); } catch (_) {}
+  const frame = document.getElementById('preview-frame');
+  frame.src = 'work.html?preview=1&t=' + Date.now();
+}
+
+// ── DOCKED LIVE PREVIEW (Work tab) ──
+// A preview pane beside the editor that re-renders in place as you edit.
+let dockTimer = null;
+
+function dockOpen() {
+  return document.getElementById('work-layout').classList.contains('docked');
+}
+
+function setDockStatus(t) {
+  const el = document.getElementById('dock-status');
+  if (el) el.textContent = t ? '· ' + t : '';
+}
+
+function loadDock() {
+  try { sessionStorage.setItem('mb-preview', buildJSON()); } catch (_) {}
+  document.getElementById('dock-frame').src = 'work.html?preview=1&t=' + Date.now();
+  setDockStatus('up to date');
+}
+
+function toggleDock() {
+  const layout = document.getElementById('work-layout');
+  const open = layout.classList.toggle('docked');
+  localStorage.setItem('dock-open', open ? '1' : '0');
+  document.getElementById('dock-toggle').textContent =
+    open ? '▐ Hide live preview' : '▐ Show live preview';
+  if (open) loadDock();
+}
+
+function restoreDock() {
+  if (localStorage.getItem('dock-open') === '1') {
+    document.getElementById('work-layout').classList.add('docked');
+    document.getElementById('dock-toggle').textContent = '▐ Hide live preview';
+    loadDock();
+  }
+}
+
+// Debounced in-place push to the docked preview as edits happen.
+function pushDockPreview() {
+  if (!dockOpen()) return;
+  setDockStatus('updating…');
+  clearTimeout(dockTimer);
+  dockTimer = setTimeout(() => {
+    try { sessionStorage.setItem('mb-preview', buildJSON()); } catch (_) {}
+    const f = document.getElementById('dock-frame');
+    if (f && f.contentWindow) f.contentWindow.postMessage({ type: 'mb-preview', data }, location.origin);
+    setDockStatus('up to date');
+  }, 500);
+}
+
+function popOutDock() {
+  try { sessionStorage.setItem('mb-preview', buildJSON()); } catch (_) {}
+  window.open('work.html?preview=1&t=' + Date.now(), '_blank');
+}
+
+// ── KEYBOARD: Ctrl/Cmd+S to save, L to toggle live preview ──
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+    e.preventDefault();
+    saveToDisk();
+    return;
+  }
+  // 'L' toggles the docked live preview — ignored while typing in a field
+  if ((e.key === 'l' || e.key === 'L') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const t = e.target;
+    if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    e.preventDefault();
+    toggleDock();
+  }
 });
 
 // ── RENDER ──
@@ -626,6 +936,8 @@ function renderGroups() {
   const list = document.getElementById('groups-list');
   list.innerHTML = '';
   const { order, map } = groupBlocks();
+  const dl = document.getElementById('group-options');
+  if (dl) dl.innerHTML = order.map(g => `<option value="${esc(g)}"></option>`).join('');
   order.forEach((name, i) => {
     const items = map.get(name);
     const open = expandedGroup === name;
@@ -642,8 +954,8 @@ function renderGroups() {
       <span style="color:var(--muted);font-size:11px">${items.length} item${items.length > 1 ? 's' : ''}</span>
       <button class="btn-expand${open ? ' open' : ''}" title="Choose / edit preview">${open ? '▾' : '▸'}</button>
     `;
-    row.querySelector('.btn-expand').addEventListener('click', e => {
-      e.stopPropagation();
+    row.addEventListener('click', e => {
+      if (e.target.closest('.drag-handle')) return;
       expandedGroup = open ? null : name;
       renderGroups();
     });
@@ -657,6 +969,7 @@ function buildGroupEditor(name, items) {
   const cover = items[0];
   const m = /^(\d+)% (\d+)%$/.exec(cover.focus || '');
   const fx = m ? +m[1] : 50, fy = m ? +m[2] : 50;
+  const fz = cover.zoom || 1;
   const desc = (items.find(i => i.description) || {}).description || '';
   const wrap = document.createElement('div');
   wrap.className = 'group-editor';
@@ -666,9 +979,14 @@ function buildGroupEditor(name, items) {
       ${items.map((it, idx) => `<img class="cover-thumb${idx === 0 ? ' active' : ''}" src="${esc(it.img)}" title="${esc(it.title)}" data-idx="${idx}" loading="lazy" />`).join('')}
     </div>
     <div class="editor-controls">
-      <div class="tile-preview"><img src="${esc(cover.img)}" style="object-position:${fx}% ${fy}%" alt="" /></div>
+      <div class="preview-col">
+        <div class="tile-preview" title="Drag to reposition"><img src="${esc(cover.img)}" style="object-position:${fx}% ${fy}%;transform:scale(${fz});transform-origin:${fx}% ${fy}%" alt="" /></div>
+        <p class="drag-hint">Drag the preview to reposition</p>
+      </div>
       <div class="editor-fields">
+        <label>Group name — rename to move all items; match another name to merge<br/><input class="cell-input ed-group" value="${esc(name)}" placeholder="Album / group name" list="group-options" /></label>
         <label>Hover description<br/><input class="cell-input ed-desc" value="${esc(desc)}" placeholder="Shown on tile hover" /></label>
+        <label>Zoom <span class="fz-val">${fz.toFixed(2)}×</span><br/><input type="range" class="ed-fz" min="1" max="3" step="0.05" value="${fz}" /></label>
         <label>Crop focus — horizontal <span class="fx-val">${fx}%</span><br/><input type="range" class="ed-fx" min="0" max="100" value="${fx}" /></label>
         <label>Crop focus — vertical <span class="fy-val">${fy}%</span><br/><input type="range" class="ed-fy" min="0" max="100" value="${fy}" /></label>
       </div>
@@ -685,23 +1003,72 @@ function buildGroupEditor(name, items) {
       renderWork();
     });
   });
+  wrap.querySelector('.ed-group').addEventListener('change', e => {
+    const newName = e.target.value.trim();
+    if (!newName || newName === name) { e.target.value = name; return; }
+    items.forEach(it => { it.group = newName; });
+    expandedGroup = newName;
+    markUnsaved();
+    renderWork();
+  });
   wrap.querySelector('.ed-desc').addEventListener('input', e => {
     items.forEach(it => { if (it !== items[0]) delete it.description; });
     items[0].description = e.target.value;
     markUnsaved();
   });
   const prevImg = wrap.querySelector('.tile-preview img');
-  const updFocus = () => {
+  const updPreview = () => {
     const x = wrap.querySelector('.ed-fx').value;
     const y = wrap.querySelector('.ed-fy').value;
+    const zoom = parseFloat(wrap.querySelector('.ed-fz').value);
     wrap.querySelector('.fx-val').textContent = x + '%';
     wrap.querySelector('.fy-val').textContent = y + '%';
-    items[0].focus = `${x}% ${y}%`;
+    wrap.querySelector('.fz-val').textContent = zoom.toFixed(2) + '×';
+    if (x === '50' && y === '50') delete items[0].focus;
+    else items[0].focus = `${x}% ${y}%`;
+    if (zoom > 1.001) items[0].zoom = zoom;
+    else delete items[0].zoom;
     prevImg.style.objectPosition = `${x}% ${y}%`;
+    prevImg.style.transformOrigin = `${x}% ${y}%`;
+    prevImg.style.transform = `scale(${zoom})`;
     markUnsaved();
   };
-  wrap.querySelector('.ed-fx').addEventListener('input', updFocus);
-  wrap.querySelector('.ed-fy').addEventListener('input', updFocus);
+  wrap.querySelector('.ed-fx').addEventListener('input', updPreview);
+  wrap.querySelector('.ed-fy').addEventListener('input', updPreview);
+  wrap.querySelector('.ed-fz').addEventListener('input', updPreview);
+
+  // Drag the preview to reposition the crop focus (keeps the sliders in sync).
+  const tile = wrap.querySelector('.tile-preview');
+  const clamp = v => Math.max(0, Math.min(100, v));
+  let drag = null;
+  tile.addEventListener('pointerdown', e => {
+    drag = {
+      px: e.clientX, py: e.clientY,
+      sx: +wrap.querySelector('.ed-fx').value,
+      sy: +wrap.querySelector('.ed-fy').value,
+      w: tile.clientWidth, h: tile.clientHeight,
+    };
+    tile.classList.add('grabbing');
+    tile.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  tile.addEventListener('pointermove', e => {
+    if (!drag) return;
+    // Grab-and-pan feel: dragging the image one way shifts the crop the other.
+    const nx = clamp(drag.sx - (e.clientX - drag.px) / drag.w * 100);
+    const ny = clamp(drag.sy - (e.clientY - drag.py) / drag.h * 100);
+    wrap.querySelector('.ed-fx').value = Math.round(nx);
+    wrap.querySelector('.ed-fy').value = Math.round(ny);
+    updPreview();
+  });
+  const endDrag = e => {
+    if (!drag) return;
+    drag = null;
+    tile.classList.remove('grabbing');
+    try { tile.releasePointerCapture(e.pointerId); } catch (_) {}
+  };
+  tile.addEventListener('pointerup', endDrag);
+  tile.addEventListener('pointercancel', endDrag);
   return wrap;
 }
 
@@ -717,10 +1084,10 @@ function renderWork() {
     tr.innerHTML = `
       <td><span class="drag-handle" title="Drag to reorder">⠿</span></td>
       <td class="row-num">${i + 1}</td>
-      <td>${thumbCell(item.img)}</td>
+      <td>${thumbCell(item.img)}<div class="swatch" data-url="${esc(item.img)}"></div></td>
       <td><input class="cell-input" value="${esc(item.title)}" oninput="data.work[${i}].title=this.value;markUnsaved()" placeholder="Title" /></td>
-      <td><input class="cell-input" style="min-width:120px" value="${esc(item.group)}" onchange="data.work[${i}].group=this.value;renderWork();markUnsaved()" placeholder="Group" /></td>
-      <td><input class="cell-input" style="min-width:220px" value="${esc(item.img)}" oninput="data.work[${i}].img=this.value;updateThumb(this);markUnsaved()" placeholder="images/work/filename.jpg" /></td>
+      <td><input class="cell-input" style="min-width:120px" list="group-options" value="${esc(item.group)}" onchange="data.work[${i}].group=this.value;renderWork();markUnsaved()" placeholder="Group" /></td>
+      <td><input class="cell-input" style="min-width:220px" value="${esc(item.img)}" oninput="setWorkImg(${i}, this)" placeholder="image path or paste a YouTube link" /></td>
       <td>
         <select class="cell-select" onchange="data.work[${i}].category=this.value;markUnsaved()">
           ${categoryOptions(item.category)}
@@ -738,6 +1105,51 @@ function renderWork() {
     `;
     addDragEvents(tr);
     tbody.appendChild(tr);
+  });
+  paintSwatches();
+}
+
+// ── DOMINANT COLOUR / VALUE SWATCHES ──
+// For each work thumbnail, average it down to one pixel to get its dominant
+// tone, and compute perceptual value (luminance) — handy for keeping the
+// gallery harmonized. Needs the image host to allow cross-origin reads;
+// if it doesn't, the swatch just hides itself.
+const colorCache = new Map();
+
+function analyzeColor(url) {
+  if (!url) return Promise.resolve(null);
+  if (colorCache.has(url)) return Promise.resolve(colorCache.get(url));
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = 1; c.height = 1;
+        const cx = c.getContext('2d');
+        cx.drawImage(img, 0, 0, 1, 1);
+        const [r, g, b] = cx.getImageData(0, 0, 1, 1).data;
+        const hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+        const value = Math.round((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 * 100);
+        const res = { hex, value };
+        colorCache.set(url, res);
+        resolve(res);
+      } catch (_) { colorCache.set(url, null); resolve(null); }
+    };
+    img.onerror = () => { colorCache.set(url, null); resolve(null); };
+    img.src = url;
+  });
+}
+
+function paintSwatches() {
+  document.querySelectorAll('.swatch:not([data-done])').forEach(el => {
+    el.setAttribute('data-done', '1');
+    analyzeColor(el.dataset.url).then(res => {
+      if (!res) { el.style.display = 'none'; return; }
+      el.innerHTML =
+        `<span class="swatch-dot" style="background:${res.hex}"></span><span class="swatch-val">${res.value}%</span>`;
+      el.title = `Dominant ${res.hex} · value ${res.value}%`;
+    });
   });
 }
 
@@ -817,10 +1229,40 @@ function esc(s) {
 // ── ADD / DELETE ──
 function addWorkRow() {
   data.work.push({ title: '', img: '', category: 'other' });
+  markUnsaved();
   renderWork();
   const tbody = document.getElementById('work-body');
   const last = tbody.lastElementChild;
-  if (last) last.querySelector('.cell-input').focus();
+  if (last) {
+    last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    last.querySelector('.cell-input').focus();
+  }
+}
+
+// Pull an 11-char YouTube id out of a pasted URL (or accept a bare id).
+function ytId(url) {
+  if (!url) return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{11})/);
+  if (m) return m[1];
+  return /^[A-Za-z0-9_-]{11}$/.test(url.trim()) ? url.trim() : null;
+}
+
+// Image cell handler: paste an image path/URL, OR a YouTube link — a YouTube
+// link becomes a video item (with the video's thumbnail as the tile image).
+function setWorkImg(i, el) {
+  const val = el.value.trim();
+  const id = ytId(val);
+  if (id) {
+    data.work[i].video = id;
+    data.work[i].img = 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg';
+  } else {
+    delete data.work[i].video;
+    data.work[i].img = val;
+  }
+  const row = el.closest('tr');
+  const prev = row && row.querySelector('.thumb, .thumb-placeholder');
+  if (prev) prev.closest('td').innerHTML = thumbCell(data.work[i].img);
+  markUnsaved();
 }
 
 function addCarouselRow() {
@@ -932,6 +1374,7 @@ function markUnsaved() {
   const el = document.getElementById('save-status');
   el.textContent = 'Unsaved changes';
   el.classList.remove('saved');
+  pushDockPreview();
 }
 
 // ── JSON ──
@@ -947,18 +1390,103 @@ function copyJSON() {
   navigator.clipboard.writeText(buildJSON()).then(() => showToast('Copied to clipboard!'));
 }
 
+function markSaved(msg) {
+  const el = document.getElementById('save-status');
+  el.textContent = msg;
+  el.classList.add('saved');
+}
+
 function saveToDisk() {
-  fetch('/save-data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: buildJSON() })
-    .then(r => { if (!r.ok) throw new Error(r.status); })
-    .then(() => {
-      const el = document.getElementById('save-status');
-      el.textContent = 'Saved to data.json ✓';
-      el.classList.add('saved');
-      showToast('Saved to data.json!');
+  const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
+  if (isLocal) {
+    fetch('/save-data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: buildJSON() })
+      .then(r => { if (!r.ok) throw new Error(r.status); })
+      .then(() => {
+        markSaved('Saved to data.json ✓');
+        showToast('Saved to data.json!');
+      })
+      .catch(() => showToast('Save endpoint not responding — is this "python serve.py"?'));
+  } else {
+    saveViaGitHub().catch(err => showToast('Save failed: ' + err.message));
+  }
+}
+
+// ── SAVE VIA GITHUB API (live site) ──
+// GitHub Pages can't run server code, so on the live site Save commits
+// data.json to the repo through the GitHub API. Requires a fine-grained
+// personal access token (Contents: read & write on this repo), asked for
+// once and kept in this browser's localStorage only.
+const GH_API = 'https://api.github.com/repos/mikicompany/mikibutler.ca/contents/data.json';
+
+// No-token save: copy the JSON and hand off to GitHub's own editor, which
+// uses the owner's existing GitHub login — nothing is stored in the browser.
+async function saveViaWebEditor() {
+  await navigator.clipboard.writeText(buildJSON() + '\n');
+  window.open('https://github.com/mikicompany/mikibutler.ca/edit/master/data.json', '_blank');
+  showToast('JSON copied! In the GitHub tab: select all, paste, then "Commit changes".');
+  markSaved('Pasted to GitHub? Site updates ~1 min after commit');
+}
+
+function openTokenModal(msg) {
+  document.getElementById('token-error').textContent = msg || '';
+  document.getElementById('token-modal').classList.add('open');
+  document.getElementById('token-input').focus();
+}
+
+function closeTokenModal() {
+  document.getElementById('token-modal').classList.remove('open');
+}
+
+function submitToken() {
+  const t = document.getElementById('token-input').value.trim();
+  if (!t) {
+    document.getElementById('token-error').textContent = 'Paste the token first.';
+    return;
+  }
+  localStorage.setItem('gh-token', t);
+  document.getElementById('token-input').value = '';
+  closeTokenModal();
+  saveViaGitHub().catch(err => showToast('Save failed: ' + err.message));
+}
+
+function b64utf8(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(bin);
+}
+
+async function saveViaGitHub() {
+  const token = localStorage.getItem('gh-token');
+  if (!token) { openTokenModal(); return; }
+  const headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+  showToast('Committing data.json…');
+  const cur = await fetch(`${GH_API}?ref=master&t=${Date.now()}`, { headers });
+  if (cur.status === 401 || cur.status === 403) {
+    localStorage.removeItem('gh-token');
+    openTokenModal('That token was rejected — generate a fresh one and paste it here.');
+    return;
+  }
+  if (!cur.ok) throw new Error('could not read current data.json (HTTP ' + cur.status + ')');
+  const { sha } = await cur.json();
+  const res = await fetch(GH_API, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify({
+      message: 'Update data.json from admin',
+      content: b64utf8(buildJSON() + '\n'),
+      sha,
+      branch: 'master'
     })
-    .catch(() => {
-      showToast('No save endpoint — run "python serve.py" locally, or use Download');
-    });
+  });
+  if (!res.ok) {
+    const detail = (await res.json().catch(() => ({}))).message || 'HTTP ' + res.status;
+    throw new Error(detail);
+  }
+  markSaved('Committed ✓ — site updates in ~1 min');
+  showToast('Committed to GitHub! Pages will redeploy in about a minute.');
 }
 
 function exportJSON() {
