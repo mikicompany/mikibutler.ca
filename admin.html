@@ -274,6 +274,25 @@
       font-size: 20px;
     }
 
+    .swatch {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .swatch-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid #333;
+      flex: none;
+    }
+
+    .swatch-val { font-variant-numeric: tabular-nums; }
+
     .btn-del {
       background: none;
       border: none;
@@ -875,11 +894,19 @@ function popOutDock() {
   window.open('work.html?preview=1&t=' + Date.now(), '_blank');
 }
 
-// ── KEYBOARD: Ctrl/Cmd+S to save ──
+// ── KEYBOARD: Ctrl/Cmd+S to save, L to toggle live preview ──
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
     e.preventDefault();
     saveToDisk();
+    return;
+  }
+  // 'L' toggles the docked live preview — ignored while typing in a field
+  if ((e.key === 'l' || e.key === 'L') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const t = e.target;
+    if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    e.preventDefault();
+    toggleDock();
   }
 });
 
@@ -1057,7 +1084,7 @@ function renderWork() {
     tr.innerHTML = `
       <td><span class="drag-handle" title="Drag to reorder">⠿</span></td>
       <td class="row-num">${i + 1}</td>
-      <td>${thumbCell(item.img)}</td>
+      <td>${thumbCell(item.img)}<div class="swatch" data-url="${esc(item.img)}"></div></td>
       <td><input class="cell-input" value="${esc(item.title)}" oninput="data.work[${i}].title=this.value;markUnsaved()" placeholder="Title" /></td>
       <td><input class="cell-input" style="min-width:120px" list="group-options" value="${esc(item.group)}" onchange="data.work[${i}].group=this.value;renderWork();markUnsaved()" placeholder="Group" /></td>
       <td><input class="cell-input" style="min-width:220px" value="${esc(item.img)}" oninput="setWorkImg(${i}, this)" placeholder="image path or paste a YouTube link" /></td>
@@ -1078,6 +1105,51 @@ function renderWork() {
     `;
     addDragEvents(tr);
     tbody.appendChild(tr);
+  });
+  paintSwatches();
+}
+
+// ── DOMINANT COLOUR / VALUE SWATCHES ──
+// For each work thumbnail, average it down to one pixel to get its dominant
+// tone, and compute perceptual value (luminance) — handy for keeping the
+// gallery harmonized. Needs the image host to allow cross-origin reads;
+// if it doesn't, the swatch just hides itself.
+const colorCache = new Map();
+
+function analyzeColor(url) {
+  if (!url) return Promise.resolve(null);
+  if (colorCache.has(url)) return Promise.resolve(colorCache.get(url));
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = 1; c.height = 1;
+        const cx = c.getContext('2d');
+        cx.drawImage(img, 0, 0, 1, 1);
+        const [r, g, b] = cx.getImageData(0, 0, 1, 1).data;
+        const hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+        const value = Math.round((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 * 100);
+        const res = { hex, value };
+        colorCache.set(url, res);
+        resolve(res);
+      } catch (_) { colorCache.set(url, null); resolve(null); }
+    };
+    img.onerror = () => { colorCache.set(url, null); resolve(null); };
+    img.src = url;
+  });
+}
+
+function paintSwatches() {
+  document.querySelectorAll('.swatch:not([data-done])').forEach(el => {
+    el.setAttribute('data-done', '1');
+    analyzeColor(el.dataset.url).then(res => {
+      if (!res) { el.style.display = 'none'; return; }
+      el.innerHTML =
+        `<span class="swatch-dot" style="background:${res.hex}"></span><span class="swatch-val">${res.value}%</span>`;
+      el.title = `Dominant ${res.hex} · value ${res.value}%`;
+    });
   });
 }
 

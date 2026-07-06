@@ -65,8 +65,8 @@
             </div>
           </div>
           <p class="resume-bio" style="margin-top:20px">
-            Hi visitor, I'm Miki; an enthusiastic Game Artist and avid player. Making games is what makes me happy, and happy is good. \:)/<br><br>
-            I have experience working on multiple titles across many platforms (PS3, X360, Wii, WiiU, N3DS, XBone, PS4, PC, and mobile), different engines (Unreal, Unity, Frostbite, plus a bunch of proprietary techs) and in a variety of art styles and teams.
+            Hi, I'm Miki Butler — a Lead Environment Artist based in Vancouver, Canada, with 15+ years crafting immersive game worlds. Making games is what makes me happy, and happy is good. :)<br><br>
+            I've shipped titles across PC, PlayStation, Xbox, Nintendo, and mobile — for studios including Capcom, EA, and Offworld Industries — working in Unreal Engine, Unity, Frostbite, and a range of proprietary tech. From Starship Troopers Extermination to Dead Rising 4 and Plants vs Zombies, I specialize in environment and prop art across a wide range of styles and teams.
           </p>
         </div>
       </div>
@@ -106,16 +106,23 @@
               </div>
             </div>
             <div class="gp-placeholder" id="gp-placeholder">Hover, tap or drag →</div>
+            <a class="gp-trailer" id="gp-trailer" href="#" target="_blank" rel="noopener" style="display:none">▶ Watch trailer</a>
           </div>
         </div>
       </div>
 
       <div class="resume-section">
         <h3>Teaching &amp; Mentoring</h3>
-        <div class="mentoring">
-          <p style="font-weight:600;margin-bottom:4px">Mentor — Think Tank Training Centre</p>
-          <p style="color:var(--text-muted);line-height:1.6">Mentoring aspiring environment and 3D artists — guiding students through portfolio development, production workflows, and industry-ready game art.</p>
-        </div>
+        <a class="mentoring-card" href="https://www.tttc.ca/" target="_blank" rel="noopener">
+          <div class="mentoring-logo">
+            <img src="https://www.google.com/s2/favicons?domain=tttc.ca&sz=128" alt="Think Tank Training Centre logo" width="32" height="32" />
+          </div>
+          <div class="mentoring-body">
+            <div class="mentoring-title">Mentor · Think Tank Training Centre</div>
+            <p class="mentoring-desc">Mentoring aspiring environment and 3D artists — guiding students through portfolio development, production workflows, and industry-ready game art.</p>
+            <span class="mentoring-link">tttc.ca ↗</span>
+          </div>
+        </a>
       </div>
 
       <div class="resume-section">
@@ -214,7 +221,7 @@
           </a>
           <a class="software-item" href="https://www.frostbite.com/" target="_blank" rel="noopener">
             <div class="software-icon" style="background:#000">
-              <img src="https://www.google.com/s2/favicons?domain=frostbite.com&sz=64" alt="Frostbite Engine" width="20" height="20" />
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXuv8du-e49bIao7R502913r8ME0wcMUaxPprSJ04EbOUMUHE1X3cYygQ&amp;s=10" alt="Frostbite Engine" width="20" height="20" />
             </div>
             Frostbite Engine
           </a>
@@ -245,6 +252,7 @@
     const gpPlatform = document.getElementById('gp-platform');
     const gpMeta     = document.getElementById('gp-meta');
     const gpOverlay  = document.getElementById('gp-overlay');
+    const gpTrailer  = document.getElementById('gp-trailer');
 
     // slot[0]=center, slot[1]=left, slot[2]=right — value = index into cards[]
     let slots = [0, 1, 2];
@@ -324,6 +332,11 @@
       gpTitle.textContent    = listItems[newIdx].textContent.trim();
       gpRole.textContent     = listItems[newIdx].dataset.role || '';
       gpPlatform.textContent = listItems[newIdx].dataset.platform || '';
+      if (gpTrailer) {
+        gpTrailer.href = 'https://www.youtube.com/results?search_query=' +
+          encodeURIComponent(listItems[newIdx].textContent.trim() + ' official trailer');
+        gpTrailer.style.display = 'inline-flex';
+      }
       placeholder.style.opacity = '0';
       gpOverlay.style.opacity = '1';
     }
@@ -335,28 +348,21 @@
       navigate(idx);
     }
 
-    function openTrailer(idx) {
-      const name = listItems[idx].textContent.trim();
-      window.open('https://www.youtube.com/results?search_query=' +
-        encodeURIComponent(name + ' official trailer'), '_blank', 'noopener');
-    }
-
     listItems.forEach((li, i) => {
       li.style.cursor = 'pointer';
-      li.title = 'Watch trailer';
       li.addEventListener('mouseenter', () => selectGame(i));
-      li.addEventListener('click', () => openTrailer(i));
+      li.addEventListener('click', () => selectGame(i));
     });
 
-    // Drag / swipe the card carousel to move through titles; a tap opens the
-    // centered game's trailer.
+    // Drag / swipe the card carousel to move through titles. Trailers open
+    // only from the explicit "Watch trailer" button, never on a stray click.
     const stage = document.getElementById('gp-stage');
     if (stage) {
-      let startX = null, dragging = false, moved = false;
+      let startX = null, dragging = false;
       stage.style.cursor = 'grab';
       stage.style.touchAction = 'pan-y';
       stage.addEventListener('pointerdown', e => {
-        startX = e.clientX; dragging = true; moved = false;
+        startX = e.clientX; dragging = true;
         stage.style.cursor = 'grabbing';
         stage.setPointerCapture(e.pointerId);
       });
@@ -364,14 +370,12 @@
         if (!dragging) return;
         const dx = e.clientX - startX;
         if (Math.abs(dx) > 45) {
-          moved = true;
           if (currentIdx === -1) selectGame(0);
           else selectGame(dx < 0 ? currentIdx + 1 : currentIdx - 1);
           startX = e.clientX; // allow continuous stepping
         }
       });
       const end = e => {
-        if (dragging && !moved && currentIdx >= 0) openTrailer(currentIdx);
         dragging = false; startX = null; stage.style.cursor = 'grab';
         try { stage.releasePointerCapture(e.pointerId); } catch (_) {}
       };
