@@ -106,7 +106,6 @@
               </div>
             </div>
             <div class="gp-placeholder" id="gp-placeholder">Hover, tap or drag →</div>
-            <a class="gp-trailer" id="gp-trailer" href="#" target="_blank" rel="noopener" style="display:none">▶ Watch trailer</a>
           </div>
         </div>
       </div>
@@ -252,7 +251,6 @@
     const gpPlatform = document.getElementById('gp-platform');
     const gpMeta     = document.getElementById('gp-meta');
     const gpOverlay  = document.getElementById('gp-overlay');
-    const gpTrailer  = document.getElementById('gp-trailer');
 
     // slot[0]=center, slot[1]=left, slot[2]=right — value = index into cards[]
     let slots = [0, 1, 2];
@@ -332,11 +330,6 @@
       gpTitle.textContent    = listItems[newIdx].textContent.trim();
       gpRole.textContent     = listItems[newIdx].dataset.role || '';
       gpPlatform.textContent = listItems[newIdx].dataset.platform || '';
-      if (gpTrailer) {
-        gpTrailer.href = 'https://www.youtube.com/results?search_query=' +
-          encodeURIComponent(listItems[newIdx].textContent.trim() + ' official trailer');
-        gpTrailer.style.display = 'inline-flex';
-      }
       placeholder.style.opacity = '0';
       gpOverlay.style.opacity = '1';
     }
