@@ -86,7 +86,7 @@
       try { previewData = JSON.parse(sessionStorage.getItem('mb-preview')); } catch (_) {}
     }
     if (previewData) {
-      // Defer to a microtask so the rest of this script (e.g. sizeFor) is
+      // Defer to a microtask so the rest of this script (e.g. sizeOf) is
       // initialized before render() runs.
       Promise.resolve().then(() => boot(previewData));
     } else {
@@ -205,8 +205,8 @@
     // Repeating size pattern that always fills complete rows (2+1+1+4 = 8
     // cells = two full rows of 4), so the grid can never leave holes no
     // matter how tiles are ordered.
-    const SIZE_PATTERN = ['wide', 'small', 'small', 'large'];
-    const sizeFor = i => SIZE_PATTERN[i % SIZE_PATTERN.length];
+    const SIZES = ['small', 'wide', 'large', 'tall'];
+    const sizeOf = item => SIZES.includes(item.size) ? item.size : 'small';
 
     // Crop focus (object-position) and zoom (scale) are stored on the item
     // and passed to the tile as CSS variables so they compose with the
@@ -225,7 +225,7 @@
         const multi = g.items.length > 1;
         const desc = (g.items.find(i => i.description) || {}).description || '';
         const div = document.createElement('div');
-        div.className = `masonry-item size-${sizeFor(gi)}`;
+        div.className = `masonry-item size-${sizeOf(cover)}`;
         div.innerHTML = `
           <img src="${cover.img}" alt="${g.name}" loading="lazy"${tileStyle(cover)} />
           ${multi ? `<span class="item-count">${g.items.length}</span>` : mediaBadge(cover)}
@@ -254,7 +254,7 @@
       lightboxItems = items;
       items.forEach((item, i) => {
         const div = document.createElement('div');
-        div.className = `masonry-item size-${sizeFor(i)}`;
+        div.className = `masonry-item size-${sizeOf(item)}`;
         div.innerHTML = `
           <img src="${item.img}" alt="${item.title}" loading="lazy"${tileStyle(item)} />
           ${mediaBadge(item)}
