@@ -109,7 +109,8 @@
     function rebuildFilters() {
       const container = document.getElementById('filters');
       container.querySelectorAll('.filter-btn:not([data-filter="all"])').forEach(b => b.remove());
-      const cats = [...new Set(allItems.map(i => i.category).filter(Boolean))];
+      const cats = [...new Set(allItems.map(i => i.category).filter(Boolean))]
+        .sort((a, b) => catRank(a) - catRank(b));
       cats.forEach(cat => {
         const btn = document.createElement('button');
         btn.className = 'filter-btn';
@@ -121,22 +122,27 @@
         b.classList.toggle('active', b.dataset.filter === currentFilter));
     }
 
-    // Filter clicks (listener attached once; buttons are rebuilt on data change).
+    // Category chips are in-page jump links to each section — no filtering,
+    // you stay on the page. (Listener attached once.)
     document.getElementById('filters').addEventListener('click', e => {
       const btn = e.target.closest('.filter-btn');
       if (!btn) return;
-      currentFilter = btn.dataset.filter;
-      currentGroup = null;
-      rebuildFilters();
-      render();
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cat = btn.dataset.filter;
+      const jump = () => {
+        if (cat === 'all') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+        const h = document.getElementById('cat-' + cat);
+        if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+      // If we're inside an album, return to the main grid first, then jump.
+      if (currentGroup) { currentGroup = null; render(); requestAnimationFrame(jump); }
+      else jump();
     });
 
     function getGroups() {
-      const items = currentFilter === 'all'
-        ? allItems
-        : allItems.filter(i => i.category === currentFilter);
       const map = new Map();
-      items.forEach(i => {
+      allItems.forEach(i => {
         if (!map.has(i.group)) map.set(i.group, { name: i.group, category: i.category, items: [] });
         map.get(i.group).items.push(i);
       });
@@ -146,7 +152,6 @@
     function render() {
       updateGroupBar();
       if (currentGroup) buildItemGrid(currentGroup.items);
-      else if (currentFilter !== 'all') buildItemGrid(allItems.filter(i => i.category === currentFilter));
       else buildGroupGrid(getGroups());
     }
 
@@ -218,39 +223,63 @@
       return parts.length ? ` style="${parts.join(';')}"` : '';
     }
 
+    function makeGroupTile(g) {
+      const cover = g.items[0];
+      const multi = g.items.length > 1;
+      const desc = (g.items.find(i => i.description) || {}).description || '';
+      const div = document.createElement('div');
+      div.className = `masonry-item size-${sizeOf(cover)}`;
+      div.innerHTML = `
+        <img src="${cover.img}" alt="${g.name}" loading="lazy"${tileStyle(cover)} />
+        ${multi ? `<span class="item-count">${g.items.length}</span>` : mediaBadge(cover)}
+        <div class="item-overlay">
+          <span class="item-tag">${CATEGORY_LABELS[g.category] || g.category || ''}</span>
+          <span class="item-title">${multi ? g.name : cover.title}</span>
+          ${desc ? `<span class="item-desc">${desc}</span>` : ''}
+        </div>
+      `;
+      div.addEventListener('click', () => {
+        if (multi) {
+          currentGroup = g;
+          render();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          lightboxItems = g.items;
+          openLightbox(0);
+        }
+      });
+      return div;
+    }
+
+    // Section order — lead with the flagship game work, personal/other last.
+    const CAT_ORDER = ['starship-troopers', 'dead-rising', 'pvz', 'squad', 'personal', 'other'];
+    const catRank = c => { const i = CAT_ORDER.indexOf(c); return i < 0 ? 99 : i; };
+
     function buildGroupGrid(groups) {
       grid.innerHTML = '';
-      groups.forEach((g, gi) => {
-        const cover = g.items[0];
-        const multi = g.items.length > 1;
-        const desc = (g.items.find(i => i.description) || {}).description || '';
-        const div = document.createElement('div');
-        div.className = `masonry-item size-${sizeOf(cover)}`;
-        div.innerHTML = `
-          <img src="${cover.img}" alt="${g.name}" loading="lazy"${tileStyle(cover)} />
-          ${multi ? `<span class="item-count">${g.items.length}</span>` : mediaBadge(cover)}
-          <div class="item-overlay">
-            <span class="item-tag">${CATEGORY_LABELS[g.category] || g.category || ''}</span>
-            <span class="item-title">${multi ? g.name : cover.title}</span>
-            ${desc ? `<span class="item-desc">${desc}</span>` : ''}
-          </div>
-        `;
-        div.addEventListener('click', () => {
-          if (multi) {
-            currentGroup = g;
-            render();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          } else {
-            lightboxItems = g.items;
-            openLightbox(0);
-          }
-        });
-        grid.appendChild(div);
+      grid.classList.add('sectioned');
+      const byCat = new Map();
+      groups.forEach(g => {
+        const cat = g.category || 'other';
+        if (!byCat.has(cat)) byCat.set(cat, []);
+        byCat.get(cat).push(g);
+      });
+      [...byCat.keys()].sort((a, b) => catRank(a) - catRank(b)).forEach(cat => {
+        const header = document.createElement('h2');
+        header.className = 'work-cat-header';
+        header.id = 'cat-' + cat;
+        header.textContent = CATEGORY_LABELS[cat] || cat;
+        grid.appendChild(header);
+        const section = document.createElement('div');
+        section.className = 'masonry-grid section-grid';
+        byCat.get(cat).forEach(g => section.appendChild(makeGroupTile(g)));
+        grid.appendChild(section);
       });
     }
 
     function buildItemGrid(items) {
       grid.innerHTML = '';
+      grid.classList.remove('sectioned');
       lightboxItems = items;
       items.forEach((item, i) => {
         const div = document.createElement('div');

@@ -190,6 +190,24 @@ main {
   gap: 6px;
 }
 
+/* Sectioned "All" view: a labelled grid per category */
+#work-grid.sectioned { display: block; padding: 0; }
+.section-grid { padding: 6px 40px 22px; }
+
+.work-cat-header {
+  scroll-margin-top: 16px;
+  margin: 28px 40px 0;
+  padding-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-bottom: 1px solid rgba(160, 255, 0, 0.22);
+}
+
+.work-cat-header:first-child { margin-top: 10px; }
+
 .masonry-item {
   position: relative;
   cursor: pointer;
@@ -1047,6 +1065,8 @@ main {
     grid-auto-rows: 140px;
     gap: 4px;
   }
+  .section-grid { padding: 4px 12px 16px; }
+  .work-cat-header { margin: 22px 12px 0; }
   .masonry-item.size-large,
   .masonry-item.size-wide { grid-column: span 2; }
   .masonry-item.size-tall { grid-row: span 2; }
