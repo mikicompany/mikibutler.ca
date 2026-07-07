@@ -24,9 +24,7 @@
   <main>
     <div class="work-header">
       <h1>Work</h1>
-      <div class="filters" id="filters">
-        <button class="filter-btn active" data-filter="all">All</button>
-      </div>
+      <div class="filters" id="filters"></div>
     </div>
     <div class="masonry-grid" id="work-grid"></div>
   </main>
@@ -108,18 +106,16 @@
 
     function rebuildFilters() {
       const container = document.getElementById('filters');
-      container.querySelectorAll('.filter-btn:not([data-filter="all"])').forEach(b => b.remove());
+      container.innerHTML = '';
       const cats = [...new Set(allItems.map(i => i.category).filter(Boolean))]
         .sort((a, b) => catRank(a) - catRank(b));
-      cats.forEach(cat => {
+      cats.forEach((cat, i) => {
         const btn = document.createElement('button');
-        btn.className = 'filter-btn';
+        btn.className = 'filter-btn' + (i === 0 ? ' active' : '');
         btn.dataset.filter = cat;
         btn.textContent = CATEGORY_LABELS[cat] || cat;
         container.appendChild(btn);
       });
-      container.querySelectorAll('.filter-btn').forEach(b =>
-        b.classList.toggle('active', b.dataset.filter === currentFilter));
     }
 
     // Category chips are in-page jump links to each section — no filtering,
@@ -131,7 +127,6 @@
       btn.classList.add('active');
       const cat = btn.dataset.filter;
       const jump = () => {
-        if (cat === 'all') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
         const h = document.getElementById('cat-' + cat);
         if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' });
       };
