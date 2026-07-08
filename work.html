@@ -36,6 +36,7 @@
     <iframe class="lb-video" src="" title="" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
     <video class="lb-vid" controls playsinline loop></video>
     <button class="lightbox-next" aria-label="Next">&#8250;</button>
+    <div class="lb-blurb" id="lb-blurb"></div>
     <div class="lightbox-caption"></div>
   </div>
 
@@ -230,12 +231,10 @@
       const cover = g.items[0];
       const multi = g.items.length > 1;
       const desc = (g.items.find(i => i.description) || {}).description || '';
-      const blurb = (g.items.find(i => i.blurb) || {}).blurb || '';
       const div = document.createElement('div');
       div.className = `masonry-item size-${sizeOf(cover)}`;
       div.innerHTML = `
         <img src="${cover.img}" alt="${g.name}" loading="lazy"${tileStyle(cover)} />
-        ${blurb ? `<div class="tile-blurb">${blurb}</div>` : ''}
         ${multi ? `<span class="item-count">${g.items.length}</span>` : mediaBadge(cover)}
         <div class="item-overlay">
           <span class="item-tag">${CATEGORY_LABELS[g.category] || g.category || ''}</span>
@@ -291,7 +290,6 @@
         div.className = `masonry-item size-${sizeOf(item)}`;
         div.innerHTML = `
           <img src="${item.img}" alt="${item.title}" loading="lazy"${tileStyle(item)} />
-          ${item.blurb ? `<div class="tile-blurb">${item.blurb}</div>` : ''}
           ${mediaBadge(item)}
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[item.category] || item.category || ''}</span>
@@ -310,6 +308,7 @@
     const lbVideo = lightbox.querySelector('.lb-video');
     const lbVid = lightbox.querySelector('.lb-vid');
     const lbCaption = lightbox.querySelector('.lightbox-caption');
+    const lbBlurb = lightbox.querySelector('.lb-blurb');
 
     function resetLightboxMedia() {
       lbImg.style.display = 'none';
@@ -325,6 +324,17 @@
       lightboxIndex = index;
       const item = lightboxItems[index];
       lbCaption.textContent = item.title;
+      // Show the piece's blurb top-left, re-triggering the slide-in animation.
+      if (item.blurb) {
+        lbBlurb.textContent = item.blurb;
+        lbBlurb.style.display = 'block';
+        lbBlurb.classList.remove('in');
+        void lbBlurb.offsetWidth; // reflow so the animation restarts each open
+        lbBlurb.classList.add('in');
+      } else {
+        lbBlurb.style.display = 'none';
+        lbBlurb.classList.remove('in');
+      }
       resetLightboxMedia();
       if (item.video) {
         lbVideo.title = item.title;
