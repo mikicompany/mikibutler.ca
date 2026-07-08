@@ -256,18 +256,26 @@ main {
   position: absolute;
   top: 0;
   left: 0;
-  max-width: 66%;
-  padding: 16px 18px;
-  font-size: 12px;
+  max-width: 72%;
+  padding: 18px 20px;
+  font-size: 15px;
   font-weight: 600;
-  line-height: 1.45;
+  line-height: 1.4;
   letter-spacing: 0.01em;
   color: #fff;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85);
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, transparent 78%);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.55) 0%, transparent 72%);
   z-index: 3;
   pointer-events: none;
   animation: blurb-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Larger, hero-style blurb on big tiles — matches the homepage look. */
+.masonry-item.size-large .tile-blurb,
+.masonry-item.size-wide .tile-blurb {
+  font-size: 19px;
+  line-height: 1.35;
+  max-width: 64%;
 }
 
 @keyframes blurb-in {

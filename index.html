@@ -90,8 +90,9 @@
     .slide-caption {
       position: absolute;
       bottom: 32px;
-      right: 32px;
-      text-align: right;
+      left: 0;
+      right: 0;
+      text-align: center;
       opacity: 0;
       transform: translateY(6px);
       transition: opacity 0.6s ease 0.8s, transform 0.6s ease 0.8s;
@@ -240,7 +241,7 @@
     @media (max-width: 768px) {
       .slide-prev { left: 10px; }
       .slide-next { right: 10px; }
-      .slide-caption { bottom: 20px; right: 20px; }
+      .slide-caption { bottom: 20px; left: 0; right: 0; text-align: center; }
       .slide-blurb { left: 20px; top: 84px; font-size: 16px; max-width: 72%; }
       /* Too many slides to show a dot each on a phone — use a counter */
       .slide-dots { display: none; }
@@ -299,14 +300,11 @@
     fetch('data.json').then(r => r.json()).then(data => {
       // Filter out items with home: false
       const workSlides = data.work.filter(item => item.home !== false);
-      // Lead with any slide that has a blurb, so you land on it (and see the
-      // text animate in) the moment you arrive. Stable — order is otherwise kept.
-      workSlides.sort((a, b) => (b.blurb ? 1 : 0) - (a.blurb ? 1 : 0));
       const videoSlides = (data.carousel || []).filter(item => item.video);
       slides = [...workSlides, ...videoSlides];
       buildSlideshow();
-      // Defer activation one frame so the blurb's "from" state paints first
-      // and the slide-in transition actually runs on entry.
+      // Defer activation one frame so a slide's blurb "from" state paints first
+      // and its slide-in transition runs when that slide becomes active.
       requestAnimationFrame(() => requestAnimationFrame(() => goTo(0)));
     });
 

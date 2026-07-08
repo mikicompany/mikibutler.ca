@@ -230,10 +230,12 @@
       const cover = g.items[0];
       const multi = g.items.length > 1;
       const desc = (g.items.find(i => i.description) || {}).description || '';
+      const blurb = (g.items.find(i => i.blurb) || {}).blurb || '';
       const div = document.createElement('div');
       div.className = `masonry-item size-${sizeOf(cover)}`;
       div.innerHTML = `
         <img src="${cover.img}" alt="${g.name}" loading="lazy"${tileStyle(cover)} />
+        ${blurb ? `<div class="tile-blurb">${blurb}</div>` : ''}
         ${multi ? `<span class="item-count">${g.items.length}</span>` : mediaBadge(cover)}
         <div class="item-overlay">
           <span class="item-tag">${CATEGORY_LABELS[g.category] || g.category || ''}</span>
@@ -289,6 +291,7 @@
         div.className = `masonry-item size-${sizeOf(item)}`;
         div.innerHTML = `
           <img src="${item.img}" alt="${item.title}" loading="lazy"${tileStyle(item)} />
+          ${item.blurb ? `<div class="tile-blurb">${item.blurb}</div>` : ''}
           ${mediaBadge(item)}
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[item.category] || item.category || ''}</span>
