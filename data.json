@@ -27,7 +27,7 @@
       "size": "wide",
       "img": "https://img.youtube.com/vi/2o7dkmIlLDA/hqdefault.jpg",
       "category": "starship-troopers",
-      "home": true,
+      "home": false,
       "group": "Showreel",
       "video": "2o7dkmIlLDA"
     },
