@@ -150,9 +150,17 @@
       else buildGroupGrid(getGroups());
     }
 
+    // Light the category chip that matches the given category (used so the
+    // header highlight always follows the project you're actually viewing).
+    function highlightCategory(cat) {
+      document.querySelectorAll('.filter-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.filter === cat));
+    }
+
     function updateGroupBar() {
       let bar = document.getElementById('group-bar');
       if (currentGroup) {
+        highlightCategory(currentGroup.category);
         if (!bar) {
           bar = document.createElement('div');
           bar.id = 'group-bar';
