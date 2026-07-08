@@ -375,7 +375,8 @@
       "group": "STE Gate Tower Breakdown",
       "description": "Gate tower asset - multi-angle breakdown sheet.",
       "zoom": 1.15,
-      "focus": "24% 55%"
+      "focus": "24% 55%",
+      "home": false
     },
     {
       "title": "STE UCF Statue — 01",
