@@ -355,7 +355,8 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/880/4k/miki-butler-n-fol-miki-butler-02.jpg?1684570718",
       "category": "starship-troopers",
-      "group": "STE Foliage"
+      "group": "STE Foliage",
+      "home": false
     },
     {
       "title": "STE Elephant Tree",
@@ -363,7 +364,8 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/063/209/678/4k/miki-butler-ste-showcase-elephant-tree.jpg?1684974661",
       "category": "starship-troopers",
       "group": "STE Foliage",
-      "description": "Elephant tree - hero foliage asset."
+      "description": "Elephant tree - hero foliage asset.",
+      "home": false
     },
     {
       "title": "STE Gate Tower Breakdown",
