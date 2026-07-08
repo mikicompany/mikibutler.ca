@@ -293,14 +293,14 @@
     },
     {
       "title": "STE Tents Detail",
-      "size": "small",
+      "size": "large",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/210/708/large/miki-butler-miki-butler-ste-tents.jpg?1684977899",
       "category": "starship-troopers",
       "group": "STE Tents"
     },
     {
       "title": "STE Tents — 02",
-      "size": "wide",
+      "size": "large",
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/670/4k/miki-butler-starshiptroopers-extermination-tents-miki-butler-02.jpg?1684570163",
       "category": "starship-troopers",
       "group": "STE Tents",
@@ -465,6 +465,14 @@
       "home": false
     },
     {
+      "title": "Dark Nest — 04",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/034/865/380/4k/miki-butler-mikibutler-darknest-05.jpg?1613459719",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
       "title": "Dark Nest — Video 01",
       "size": "wide",
       "img": "https://cdnb.artstation.com/p/assets/video_clips/images/034/899/421/large/miki-butler-thumb.jpg?1613548956",
@@ -479,14 +487,6 @@
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/video_clips/images/034/899/492/large/miki-butler-thumb.jpg?1613549353",
       "mp4": "https://cdn.artstation.com/p/video_sources/000/266/441/egg-02.mp4",
-      "category": "personal",
-      "home": false,
-      "group": "Dark Nest"
-    },
-    {
-      "title": "Dark Nest — 04",
-      "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/034/865/380/4k/miki-butler-mikibutler-darknest-05.jpg?1613459719",
       "category": "personal",
       "home": false,
       "group": "Dark Nest"
@@ -1220,7 +1220,7 @@
     },
     {
       "title": "PvZ Hamster Wheel",
-      "size": "wide",
+      "size": "large",
       "img": "https://cdnb.artstation.com/p/assets/images/images/022/328/313/large/miki-butler-hamsterwheel.jpg?1575002389",
       "category": "pvz",
       "group": "PvZ Hamster Wheel",
