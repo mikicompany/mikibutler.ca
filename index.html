@@ -90,8 +90,9 @@
     .slide-caption {
       position: absolute;
       bottom: 32px;
-      right: 32px;
-      text-align: right;
+      left: 0;
+      right: 0;
+      text-align: center;
       opacity: 0;
       transform: translateY(6px);
       transition: opacity 0.6s ease 0.8s, transform 0.6s ease 0.8s;
@@ -116,6 +117,30 @@
       font-weight: 600;
       color: rgba(255,255,255,0.7);
       letter-spacing: 0.04em;
+    }
+
+    /* Top-left project blurb — eases in from the left on the active slide */
+    .slide-blurb {
+      position: absolute;
+      top: 14%;
+      left: 210px;
+      max-width: 440px;
+      font-size: 23px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: #fff;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.75);
+      opacity: 0;
+      transform: translateX(-42px);
+      transition: opacity 0.7s ease 0.9s, transform 0.7s cubic-bezier(0.22,1,0.36,1) 0.9s;
+      pointer-events: none;
+    }
+    .slide.active .slide-blurb {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .slide-blurb { transition: opacity 0.4s ease; transform: none; }
     }
 
     /* Dot indicators */
@@ -216,7 +241,8 @@
     @media (max-width: 768px) {
       .slide-prev { left: 10px; }
       .slide-next { right: 10px; }
-      .slide-caption { bottom: 20px; right: 20px; }
+      .slide-caption { bottom: 20px; left: 0; right: 0; text-align: center; }
+      .slide-blurb { left: 20px; top: 84px; font-size: 16px; max-width: 72%; }
       /* Too many slides to show a dot each on a phone — use a counter */
       .slide-dots { display: none; }
       .slide-counter {
@@ -277,7 +303,9 @@
       const videoSlides = (data.carousel || []).filter(item => item.video);
       slides = [...workSlides, ...videoSlides];
       buildSlideshow();
-      goTo(0);
+      // Defer activation one frame so a slide's blurb "from" state paints first
+      // and its slide-in transition runs when that slide becomes active.
+      requestAnimationFrame(() => requestAnimationFrame(() => goTo(0)));
     });
 
     function buildSlideshow() {

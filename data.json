@@ -1,7 +1,7 @@
 {
   "menu": [
     {
-      "label": "Home Page",
+      "label": "Home",
       "href": "index.html"
     },
     {
@@ -210,11 +210,12 @@
     },
     {
       "title": "STE Hangar",
-      "size": "wide",
+      "size": "large",
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/998/4k/miki-butler-hangar.jpg?1684571042",
       "category": "starship-troopers",
       "group": "STE Hangar",
       "description": "Hangar bay environment overview.",
+      "blurb": "Main Menu Lighting and Layout for Starship Troopers Extermination",
       "zoom": 1.25,
       "focus": "13% 10%"
     },
@@ -261,7 +262,8 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/210/693/large/miki-butler-miki-butler-ste-computerstarport.jpg?1684977865",
       "category": "starship-troopers",
       "group": "STE Computer / CC Unit",
-      "zoom": 1.45
+      "zoom": 1.45,
+      "home": false
     },
     {
       "title": "STE Computer — 01",
@@ -269,7 +271,8 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/743/4k/miki-butler-starshiptroopers-extermination-computer-miki-butler-01.jpg?1684570337",
       "category": "starship-troopers",
       "group": "STE Computer / CC Unit",
-      "description": "Computer consoles and starport terminal props."
+      "description": "Computer consoles and starport terminal props.",
+      "home": false
     },
     {
       "title": "STE CC Unit — 01",
@@ -277,14 +280,16 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/044/514/810/4k/miki-butler-ccunit-01.jpg?1640224226",
       "category": "starship-troopers",
       "group": "STE Computer / CC Unit",
-      "description": "Command and control unit prop."
+      "description": "Command and control unit prop.",
+      "home": false
     },
     {
       "title": "STE CC Unit — 02",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/044/514/773/4k/miki-butler-ccunit-02.jpg?1640224121",
       "category": "starship-troopers",
-      "group": "STE Computer / CC Unit"
+      "group": "STE Computer / CC Unit",
+      "home": false
     },
     {
       "title": "STE Tents Detail",
@@ -309,7 +314,8 @@
       "group": "STE Beacon",
       "description": "Beacon prop for base building.",
       "zoom": 1.3,
-      "focus": "0% 31%"
+      "focus": "0% 31%",
+      "home": false
     },
     {
       "title": "STE Bug Goo — 04",
@@ -350,7 +356,8 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/880/4k/miki-butler-n-fol-miki-butler-02.jpg?1684570718",
       "category": "starship-troopers",
-      "group": "STE Foliage"
+      "group": "STE Foliage",
+      "home": false
     },
     {
       "title": "STE Elephant Tree",
@@ -358,7 +365,8 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/063/209/678/4k/miki-butler-ste-showcase-elephant-tree.jpg?1684974661",
       "category": "starship-troopers",
       "group": "STE Foliage",
-      "description": "Elephant tree - hero foliage asset."
+      "description": "Elephant tree - hero foliage asset.",
+      "home": false
     },
     {
       "title": "STE Gate Tower Breakdown",
@@ -368,7 +376,8 @@
       "group": "STE Gate Tower Breakdown",
       "description": "Gate tower asset - multi-angle breakdown sheet.",
       "zoom": 1.15,
-      "focus": "24% 55%"
+      "focus": "24% 55%",
+      "home": false
     },
     {
       "title": "STE UCF Statue — 01",
@@ -400,7 +409,7 @@
       "img": "https://i.ytimg.com/vi/gW9upMvJpE4/maxresdefault.jpg",
       "video": "gW9upMvJpE4",
       "category": "personal",
-      "home": false,
+      "home": true,
       "group": "Miki's Diner",
       "description": "Stylized diner scene - personal environment piece (video)."
     },
@@ -452,15 +461,8 @@
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/040/906/877/4k/miki-butler-wireframe.jpg?1630226728",
       "category": "personal",
-      "group": "The Queen's Throne"
-    },
-    {
-      "title": "Dark Nest — 03",
-      "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/034/865/388/4k/miki-butler-mikibutler-darknest-10.jpg?1613459745",
-      "category": "personal",
-      "home": false,
-      "group": "Dark Nest"
+      "group": "The Queen's Throne",
+      "home": false
     },
     {
       "title": "Dark Nest — Video 01",
@@ -485,6 +487,14 @@
       "title": "Dark Nest — 04",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/034/865/380/4k/miki-butler-mikibutler-darknest-05.jpg?1613459719",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
+      "title": "Dark Nest — 03",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/034/865/388/4k/miki-butler-mikibutler-darknest-10.jpg?1613459745",
       "category": "personal",
       "home": false,
       "group": "Dark Nest"
@@ -559,7 +569,8 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/071/332/333/large/miki-butler-lava-you-miki.jpg?1704954906",
       "category": "personal",
       "group": "Lava Material",
-      "description": "Procedural lava material - Substance Designer and UE."
+      "description": "Procedural lava material - Substance Designer and UE.",
+      "home": false
     },
     {
       "title": "Lava Material — Video",
@@ -575,21 +586,24 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/071/332/066/large/miki-butler-lava01-small.jpg?1704954108",
       "category": "personal",
-      "group": "Lava Material"
+      "group": "Lava Material",
+      "home": false
     },
     {
       "title": "Lava Material — 02",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/071/332/061/large/miki-butler-lava02-small.jpg?1704954096",
       "category": "personal",
-      "group": "Lava Material"
+      "group": "Lava Material",
+      "home": false
     },
     {
       "title": "Lava Material — Texture Breakdown",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/071/061/002/large/miki-butler-textures-breakdown-copy.jpg?1704357882",
       "category": "personal",
-      "group": "Lava Material"
+      "group": "Lava Material",
+      "home": false
     },
     {
       "title": "Buon Appetito — 01",
@@ -597,7 +611,8 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/033/611/249/4k/miki-butler-miki-pizza-1.jpg?1610086831",
       "category": "personal",
       "group": "Buon Appetito",
-      "description": "Procedural pizza material built in Substance Designer."
+      "description": "Procedural pizza material built in Substance Designer.",
+      "home": false
     },
     {
       "title": "Buon Appetito — Video 01",
@@ -613,14 +628,16 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/033/611/478/large/miki-butler-miki-pizza2.jpg?1610087994",
       "category": "personal",
-      "group": "Buon Appetito"
+      "group": "Buon Appetito",
+      "home": false
     },
     {
       "title": "Buon Appetito — 03",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/033/611/829/large/miki-butler-miki-pizza-3.jpg?1610089247",
       "category": "personal",
-      "group": "Buon Appetito"
+      "group": "Buon Appetito",
+      "home": false
     },
     {
       "title": "Buon Appetito — Video 02",
@@ -636,28 +653,32 @@
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/033/611/863/large/miki-butler-miki-pizza-4.jpg?1610089399",
       "category": "personal",
-      "group": "Buon Appetito"
+      "group": "Buon Appetito",
+      "home": false
     },
     {
       "title": "Buon Appetito — Breakdown Maps",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/033/607/964/large/miki-butler-breakdown-maps.jpg?1610073094",
       "category": "personal",
-      "group": "Buon Appetito"
+      "group": "Buon Appetito",
+      "home": false
     },
     {
       "title": "Buon Appetito — Material Passes",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/033/611/522/large/miki-butler-pizza-passes.jpg?1610088204",
       "category": "personal",
-      "group": "Buon Appetito"
+      "group": "Buon Appetito",
+      "home": false
     },
     {
       "title": "Buon Appetito — Substance Graph",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/033/481/094/large/miki-butler-screenshot-22.jpg?1609744576",
       "category": "personal",
-      "group": "Buon Appetito"
+      "group": "Buon Appetito",
+      "home": false
     },
     {
       "title": "Tumi Knife — Sacrifice",
@@ -686,14 +707,16 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/013/005/834/large/miki-butler-screenclip.jpg?1537594167",
       "category": "personal",
-      "group": "Tumi Knife"
+      "group": "Tumi Knife",
+      "home": false
     },
     {
       "title": "Tumi Knife — 05",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/012/709/220/large/miki-butler-screenclip.jpg?1536127488",
       "category": "personal",
-      "group": "Tumi Knife"
+      "group": "Tumi Knife",
+      "home": false
     },
     {
       "title": "Tumi Knife — 3D Model",
@@ -709,21 +732,24 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/012/567/272/large/miki-butler-his.jpg?1535439667",
       "category": "personal",
-      "group": "Tumi Knife"
+      "group": "Tumi Knife",
+      "home": false
     },
     {
       "title": "Tumi Knife — Passes",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/012/932/385/large/miki-butler-passes.jpg?1537255496",
       "category": "personal",
-      "group": "Tumi Knife"
+      "group": "Tumi Knife",
+      "home": false
     },
     {
       "title": "Tumi Knife — 09",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/012/991/076/large/miki-butler-sin-titulo-4.jpg?1537514983",
       "category": "personal",
-      "group": "Tumi Knife"
+      "group": "Tumi Knife",
+      "home": false
     },
     {
       "title": "Tumi Knife — Forest Scene 3D",
@@ -740,28 +766,32 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/019/408/057/large/miki-butler-dsc00011.jpg?1563354945",
       "category": "personal",
       "group": "Meet Mat",
-      "description": "Meet Mat contest entry by Allegorithmic - the printed figurine."
+      "description": "Meet Mat contest entry by Allegorithmic - the printed figurine.",
+      "home": false
     },
     {
       "title": "Meet Mat — 02",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/018/661/336/large/miki-butler-71nlsebzqnl.jpg?1560240433",
       "category": "personal",
-      "group": "Meet Mat"
+      "group": "Meet Mat",
+      "home": false
     },
     {
       "title": "Meet Mat — 03",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/018/661/337/large/miki-butler-71x7txqcubl.jpg?1560240435",
       "category": "personal",
-      "group": "Meet Mat"
+      "group": "Meet Mat",
+      "home": false
     },
     {
       "title": "Meet Mat — 04",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/018/661/333/large/miki-butler-71jla7riihl.jpg?1560240429",
       "category": "personal",
-      "group": "Meet Mat"
+      "group": "Meet Mat",
+      "home": false
     },
     {
       "title": "Meet Mat — 05",
@@ -782,14 +812,16 @@
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/020/489/393/large/miki-butler-p8221418.jpg?1567982775",
       "category": "personal",
-      "group": "Meet Mat"
+      "group": "Meet Mat",
+      "home": false
     },
     {
       "title": "Meet Mat — 08",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/020/489/400/large/miki-butler-p8221417.jpg?1567982793",
       "category": "personal",
-      "group": "Meet Mat"
+      "group": "Meet Mat",
+      "home": false
     },
     {
       "title": "Calaca Mat — Painter Viewport",
@@ -806,28 +838,32 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/023/949/864/large/miki-butler-mikib-mat-full.jpg?1580842764",
       "category": "personal",
       "group": "Calaca Mat",
-      "description": "Calaca Mat - Day of the Dead entry for the Meet Mat 2 contest."
+      "description": "Calaca Mat - Day of the Dead entry for the Meet Mat 2 contest.",
+      "home": false
     },
     {
       "title": "Calaca Mat — 01",
       "size": "wide",
       "img": "https://cdnb.artstation.com/p/assets/images/images/023/932/613/large/miki-butler-mat7c7.jpg?1580802271",
       "category": "personal",
-      "group": "Calaca Mat"
+      "group": "Calaca Mat",
+      "home": false
     },
     {
       "title": "Calaca Mat — 02",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/023/932/611/large/miki-butler-mat1.jpg?1580802268",
       "category": "personal",
-      "group": "Calaca Mat"
+      "group": "Calaca Mat",
+      "home": false
     },
     {
       "title": "Calaca Mat — Back",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/023/933/570/large/miki-butler-mikibutler-meetmatback.jpg?1580805839",
       "category": "personal",
-      "group": "Calaca Mat"
+      "group": "Calaca Mat",
+      "home": false
     },
     {
       "title": "Calaca Mat — 3D Model",
@@ -843,14 +879,16 @@
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/023/932/903/large/miki-butler-screenshot-23.jpg?1580803318",
       "category": "personal",
-      "group": "Calaca Mat"
+      "group": "Calaca Mat",
+      "home": false
     },
     {
       "title": "Calaca Mat — Screenshot 02",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/023/932/905/large/miki-butler-screenshot-24.jpg?1580803322",
       "category": "personal",
-      "group": "Calaca Mat"
+      "group": "Calaca Mat",
+      "home": false
     },
     {
       "title": "Calaca Mat — Screenshot 03",
@@ -895,14 +933,16 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/020/381/350/large/miki-butler-previewhipoly.jpg?1567557062",
       "category": "pvz",
-      "group": "PvZ Social Hub"
+      "group": "PvZ Social Hub",
+      "home": false
     },
     {
       "title": "PvZ Social Hub — Velvet Rope In-Game",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/021/663/694/large/miki-butler-red-velvet-2.jpg?1572501640",
       "category": "pvz",
-      "group": "PvZ Social Hub"
+      "group": "PvZ Social Hub",
+      "home": false
     },
     {
       "title": "PvZ Social Hub — Props Preview",
@@ -916,7 +956,8 @@
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/020/870/742/large/miki-butler-socialhub-plant-prop-largeballoon-witchhat-01.jpg?1569490647",
       "category": "pvz",
-      "group": "PvZ Social Hub"
+      "group": "PvZ Social Hub",
+      "home": false
     },
     {
       "title": "PvZ Social Hub — Hot Air Balloon Basket",
@@ -930,7 +971,8 @@
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/021/878/762/large/miki-butler-basket-maps.jpg?1573280194",
       "category": "pvz",
-      "group": "PvZ Social Hub"
+      "group": "PvZ Social Hub",
+      "home": false
     },
     {
       "title": "PvZ Social Hub — Witch Hat In-Game",
@@ -958,7 +1000,8 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/022/235/536/large/miki-butler-plants-vs-zombies-battle-for-neighborville-screenshot-2019-11-24-19-02-32-94.jpg?1574643557",
       "category": "pvz",
-      "group": "PvZ Social Hub"
+      "group": "PvZ Social Hub",
+      "home": false
     },
     {
       "title": "PvZ Social Hub — Screenshot 03",
@@ -995,7 +1038,8 @@
       "size": "wide",
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/667/large/miki-butler-tvpreview.jpg?1571279850",
       "category": "pvz",
-      "group": "PvZ Neighborville"
+      "group": "PvZ Neighborville",
+      "home": false
     },
     {
       "title": "PvZ Neighborville — TV Hi-Poly WIP",
@@ -1003,42 +1047,48 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/687/large/miki-butler-tvhipolywip.jpg?1571279925",
       "category": "pvz",
       "group": "PvZ Neighborville",
-      "description": "Neighborville town content - gates, planters, signage, TVs."
+      "description": "Neighborville town content - gates, planters, signage, TVs.",
+      "home": false
     },
     {
       "title": "PvZ Neighborville — Misc Signs",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/021/337/658/large/miki-butler-miscsigns.jpg?1571279827",
       "category": "pvz",
-      "group": "PvZ Neighborville"
+      "group": "PvZ Neighborville",
+      "home": false
     },
     {
       "title": "PvZ Neighborville — Planter",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/663/large/miki-butler-planter.jpg?1571279833",
       "category": "pvz",
-      "group": "PvZ Neighborville"
+      "group": "PvZ Neighborville",
+      "home": false
     },
     {
       "title": "PvZ Neighborville — Picnic Blanket & Basket",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/665/large/miki-butler-picnicblanketandbasket.jpg?1571279835",
       "category": "pvz",
-      "group": "PvZ Neighborville"
+      "group": "PvZ Neighborville",
+      "home": false
     },
     {
       "title": "PvZ Neighborville — Hanging Banner",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/021/337/694/large/miki-butler-hangingbanner.jpg?1571279976",
       "category": "pvz",
-      "group": "PvZ Neighborville"
+      "group": "PvZ Neighborville",
+      "home": false
     },
     {
       "title": "PvZ Neighborville — Banner",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/021/337/676/large/miki-butler-banner.jpg?1571279895",
       "category": "pvz",
-      "group": "PvZ Neighborville"
+      "group": "PvZ Neighborville",
+      "home": false
     },
     {
       "title": "PvZ Neighborville — Screenshot 01",
@@ -1059,21 +1109,24 @@
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/663/785/large/miki-butler-gasstationisland.jpg?1572502195",
       "category": "pvz",
-      "group": "PvZ Neighborville"
+      "group": "PvZ Neighborville",
+      "home": false
     },
     {
       "title": "PvZ Neighborville — Large Planter",
       "size": "wide",
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/669/large/miki-butler-planterbig.jpg?1571279840",
       "category": "pvz",
-      "group": "PvZ Neighborville"
+      "group": "PvZ Neighborville",
+      "home": false
     },
     {
       "title": "PvZ Neighborville — Gate",
       "size": "large",
       "img": "https://cdna.artstation.com/p/assets/images/images/021/337/660/large/miki-butler-neighborvillegate.jpg?1571279825",
       "category": "pvz",
-      "group": "PvZ Neighborville"
+      "group": "PvZ Neighborville",
+      "home": false
     },
     {
       "title": "PvZ Neighborville — Gate In-Game",
@@ -1088,7 +1141,7 @@
       "img": "https://i.ytimg.com/vi/HPPA2h18tpA/maxresdefault.jpg",
       "video": "HPPA2h18tpA",
       "category": "pvz",
-      "home": false,
+      "home": true,
       "group": "PvZ Neighborville"
     },
     {
@@ -1099,28 +1152,24 @@
       "group": "PvZ Cheese Mines",
       "description": "Cheese Mines props - mine carts, pickaxes, cactus.",
       "zoom": 1.35,
-      "focus": "8% 43%"
+      "focus": "8% 43%",
+      "home": false
     },
     {
       "title": "PvZ Cheese Mines — Pickaxe",
       "size": "wide",
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/615/large/miki-butler-pickupaxe.jpg?1571279601",
       "category": "pvz",
-      "group": "PvZ Cheese Mines"
-    },
-    {
-      "title": "PvZ Cheese Mines — Pickaxe Preview",
-      "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/021/337/616/large/miki-butler-papreview.jpg?1571279603",
-      "category": "pvz",
-      "group": "PvZ Cheese Mines"
+      "group": "PvZ Cheese Mines",
+      "home": false
     },
     {
       "title": "PvZ Cheese Mines — Hi-Poly Preview",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/617/large/miki-butler-preview-hipoly.jpg?1571279605",
       "category": "pvz",
-      "group": "PvZ Cheese Mines"
+      "group": "PvZ Cheese Mines",
+      "home": false
     },
     {
       "title": "PvZ Cheese Mines — Mine Cart",
@@ -1130,32 +1179,44 @@
       "group": "PvZ Cheese Mines"
     },
     {
+      "title": "PvZ Cheese Mines — Pickaxe Preview",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/021/337/616/large/miki-butler-papreview.jpg?1571279603",
+      "category": "pvz",
+      "group": "PvZ Cheese Mines",
+      "home": false
+    },
+    {
       "title": "PvZ Cheese Mines — Mine Carts In-Game",
       "size": "large",
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/663/717/large/miki-butler-pvz-mine-carts.jpg?1572501803",
       "category": "pvz",
-      "group": "PvZ Cheese Mines"
+      "group": "PvZ Cheese Mines",
+      "home": false
     },
     {
       "title": "PvZ Cheese Mines — Wooden Arrow",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/021/337/618/large/miki-butler-woodenarrow.jpg?1571279608",
       "category": "pvz",
-      "group": "PvZ Cheese Mines"
+      "group": "PvZ Cheese Mines",
+      "home": false
     },
     {
       "title": "PvZ Cheese Mines — Screenshot 01",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/022/235/551/large/miki-butler-plants-vs-zombies-battle-for-neighborville-screenshot-2019-11-24-19-06-29-47.jpg?1574643617",
       "category": "pvz",
-      "group": "PvZ Cheese Mines"
+      "group": "PvZ Cheese Mines",
+      "home": false
     },
     {
       "title": "PvZ Cheese Mines — Screenshot 02",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/022/235/553/large/miki-butler-plants-vs-zombies-battle-for-neighborville-screenshot-2019-11-24-19-06-51-05.jpg?1574643625",
       "category": "pvz",
-      "group": "PvZ Cheese Mines"
+      "group": "PvZ Cheese Mines",
+      "home": false
     },
     {
       "title": "PvZ Hamster Wheel",
@@ -1172,21 +1233,24 @@
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/022/328/315/large/miki-butler-hamsterwheelhipoly.jpg?1575002393",
       "category": "pvz",
-      "group": "PvZ Hamster Wheel"
+      "group": "PvZ Hamster Wheel",
+      "home": false
     },
     {
       "title": "PvZ Hamster Wheel — Maps Preview 01",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/022/328/385/large/miki-butler-mapspreview1.jpg?1575002892",
       "category": "pvz",
-      "group": "PvZ Hamster Wheel"
+      "group": "PvZ Hamster Wheel",
+      "home": false
     },
     {
       "title": "PvZ Hamster Wheel — Maps Preview 02",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/022/328/384/large/miki-butler-mapspreview2.jpg?1575002889",
       "category": "pvz",
-      "group": "PvZ Hamster Wheel"
+      "group": "PvZ Hamster Wheel",
+      "home": false
     },
     {
       "title": "PvZ Hamster Wheel — Video",
@@ -1210,14 +1274,16 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/022/328/304/large/miki-butler-dancinghall01.jpg?1575002316",
       "category": "pvz",
-      "group": "PvZ Hall of Obedience"
+      "group": "PvZ Hall of Obedience",
+      "home": false
     },
     {
       "title": "PvZ Hall of Obedience — Dancing",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/022/328/306/large/miki-butler-dancing.jpg?1575002325",
       "category": "pvz",
-      "group": "PvZ Hall of Obedience"
+      "group": "PvZ Hall of Obedience",
+      "home": false
     },
     {
       "title": "PvZ Hall of Obedience — Screenshot 01",
@@ -1231,7 +1297,8 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/022/235/464/large/miki-butler-plants-vs-zombies-battle-for-neighborville-screenshot-2019-11-24-18-58-21-62.jpg?1574643377",
       "category": "pvz",
-      "group": "PvZ Hall of Obedience"
+      "group": "PvZ Hall of Obedience",
+      "home": false
     },
     {
       "title": "Squad East Asia — Well",
@@ -1241,29 +1308,32 @@
       "group": "Squad East Asia",
       "description": "East Asia map props for Squad - well, truck, and lantern.",
       "focus": "0% 34%",
-      "zoom": 1.4
+      "zoom": 1.4,
+      "home": false
     },
     {
       "title": "Squad East Asia — Truck",
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/051/944/332/4k/miki-butler-unknown.jpg?1658560694",
       "category": "squad",
-      "group": "Squad East Asia"
+      "group": "Squad East Asia",
+      "home": false
     },
     {
       "title": "Squad East Asia — Lantern",
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/033/509/488/4k/miki-butler-wip.jpg?1609813453",
       "category": "squad",
-      "group": "Squad East Asia"
+      "group": "Squad East Asia",
+      "home": false
     },
     {
       "title": "Squad 4.0 Menu",
-      "size": "small",
+      "size": "large",
       "img": "https://i.ytimg.com/vi/omxs3hx_Lv4/hqdefault.jpg",
       "video": "omxs3hx_Lv4",
       "category": "squad",
-      "home": false,
+      "home": true,
       "group": "Squad 4.0 Menu",
       "description": "Squad 4.0 main menu scene (video)."
     },

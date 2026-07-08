@@ -36,6 +36,7 @@
     <iframe class="lb-video" src="" title="" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
     <video class="lb-vid" controls playsinline loop></video>
     <button class="lightbox-next" aria-label="Next">&#8250;</button>
+    <div class="lb-blurb" id="lb-blurb"></div>
     <div class="lightbox-caption"></div>
   </div>
 
@@ -150,9 +151,17 @@
       else buildGroupGrid(getGroups());
     }
 
+    // Light the category chip that matches the given category (used so the
+    // header highlight always follows the project you're actually viewing).
+    function highlightCategory(cat) {
+      document.querySelectorAll('.filter-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.filter === cat));
+    }
+
     function updateGroupBar() {
       let bar = document.getElementById('group-bar');
       if (currentGroup) {
+        highlightCategory(currentGroup.category);
         if (!bar) {
           bar = document.createElement('div');
           bar.id = 'group-bar';
@@ -299,6 +308,7 @@
     const lbVideo = lightbox.querySelector('.lb-video');
     const lbVid = lightbox.querySelector('.lb-vid');
     const lbCaption = lightbox.querySelector('.lightbox-caption');
+    const lbBlurb = lightbox.querySelector('.lb-blurb');
 
     function resetLightboxMedia() {
       lbImg.style.display = 'none';
@@ -314,6 +324,17 @@
       lightboxIndex = index;
       const item = lightboxItems[index];
       lbCaption.textContent = item.title;
+      // Show the piece's blurb top-left, re-triggering the slide-in animation.
+      if (item.blurb) {
+        lbBlurb.textContent = item.blurb;
+        lbBlurb.style.display = 'block';
+        lbBlurb.classList.remove('in');
+        void lbBlurb.offsetWidth; // reflow so the animation restarts each open
+        lbBlurb.classList.add('in');
+      } else {
+        lbBlurb.style.display = 'none';
+        lbBlurb.classList.remove('in');
+      }
       resetLightboxMedia();
       if (item.video) {
         lbVideo.title = item.title;
