@@ -216,8 +216,7 @@
       "group": "STE Hangar",
       "description": "Hangar bay environment overview.",
       "zoom": 1.25,
-      "focus": "13% 10%",
-      "blurb": "Main Menu Lighting and Layout for Starship Troopers Extermination"
+      "focus": "13% 10%"
     },
     {
       "title": "STE Generator — 01",
@@ -456,14 +455,6 @@
       "group": "The Queen's Throne"
     },
     {
-      "title": "Dark Nest — 03",
-      "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/034/865/388/4k/miki-butler-mikibutler-darknest-10.jpg?1613459745",
-      "category": "personal",
-      "home": false,
-      "group": "Dark Nest"
-    },
-    {
       "title": "Dark Nest — Video 01",
       "size": "wide",
       "img": "https://cdnb.artstation.com/p/assets/video_clips/images/034/899/421/large/miki-butler-thumb.jpg?1613548956",
@@ -486,6 +477,14 @@
       "title": "Dark Nest — 04",
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/034/865/380/4k/miki-butler-mikibutler-darknest-05.jpg?1613459719",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
+      "title": "Dark Nest — 03",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/034/865/388/4k/miki-butler-mikibutler-darknest-10.jpg?1613459745",
       "category": "personal",
       "home": false,
       "group": "Dark Nest"
@@ -1110,13 +1109,6 @@
       "group": "PvZ Cheese Mines"
     },
     {
-      "title": "PvZ Cheese Mines — Pickaxe Preview",
-      "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/021/337/616/large/miki-butler-papreview.jpg?1571279603",
-      "category": "pvz",
-      "group": "PvZ Cheese Mines"
-    },
-    {
       "title": "PvZ Cheese Mines — Hi-Poly Preview",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/021/337/617/large/miki-butler-preview-hipoly.jpg?1571279605",
@@ -1127,6 +1119,13 @@
       "title": "PvZ Cheese Mines — Mine Cart",
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/021/337/612/large/miki-butler-minecart.jpg?1571279592",
+      "category": "pvz",
+      "group": "PvZ Cheese Mines"
+    },
+    {
+      "title": "PvZ Cheese Mines — Pickaxe Preview",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/021/337/616/large/miki-butler-papreview.jpg?1571279603",
       "category": "pvz",
       "group": "PvZ Cheese Mines"
     },
@@ -1256,15 +1255,16 @@
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/033/509/488/4k/miki-butler-wip.jpg?1609813453",
       "category": "squad",
-      "group": "Squad East Asia"
+      "group": "Squad East Asia",
+      "home": false
     },
     {
       "title": "Squad 4.0 Menu",
-      "size": "small",
+      "size": "large",
       "img": "https://i.ytimg.com/vi/omxs3hx_Lv4/hqdefault.jpg",
       "video": "omxs3hx_Lv4",
       "category": "squad",
-      "home": false,
+      "home": true,
       "group": "Squad 4.0 Menu",
       "description": "Squad 4.0 main menu scene (video)."
     },
