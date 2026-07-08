@@ -215,7 +215,6 @@
       "category": "starship-troopers",
       "group": "STE Hangar",
       "description": "Hangar bay environment overview.",
-      "blurb": "Main Menu Lighting and Layout for Starship Troopers Extermination",
       "zoom": 1.25,
       "focus": "13% 10%"
     },
@@ -465,6 +464,14 @@
       "home": false
     },
     {
+      "title": "Dark Nest — 04",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/034/865/380/4k/miki-butler-mikibutler-darknest-05.jpg?1613459719",
+      "category": "personal",
+      "home": false,
+      "group": "Dark Nest"
+    },
+    {
       "title": "Dark Nest — Video 01",
       "size": "wide",
       "img": "https://cdnb.artstation.com/p/assets/video_clips/images/034/899/421/large/miki-butler-thumb.jpg?1613548956",
@@ -479,14 +486,6 @@
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/video_clips/images/034/899/492/large/miki-butler-thumb.jpg?1613549353",
       "mp4": "https://cdn.artstation.com/p/video_sources/000/266/441/egg-02.mp4",
-      "category": "personal",
-      "home": false,
-      "group": "Dark Nest"
-    },
-    {
-      "title": "Dark Nest — 04",
-      "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/034/865/380/4k/miki-butler-mikibutler-darknest-05.jpg?1613459719",
       "category": "personal",
       "home": false,
       "group": "Dark Nest"
@@ -824,8 +823,8 @@
       "home": false
     },
     {
-      "title": "Calaca Mat ",
-      "size": "large",
+      "title": "Calaca Mat — Painter Viewport",
+      "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/023/933/843/large/miki-butler-mikibutler-meetmat-painterviewport.jpg?1580806627",
       "category": "personal",
       "group": "Calaca Mat",
