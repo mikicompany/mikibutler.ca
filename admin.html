@@ -971,6 +971,7 @@ function buildGroupEditor(name, items) {
   const fx = m ? +m[1] : 50, fy = m ? +m[2] : 50;
   const fz = cover.zoom || 1;
   const desc = (items.find(i => i.description) || {}).description || '';
+  const blurb = (items.find(i => i.blurb) || {}).blurb || '';
   const wrap = document.createElement('div');
   wrap.className = 'group-editor';
   wrap.innerHTML = `
@@ -986,6 +987,7 @@ function buildGroupEditor(name, items) {
       <div class="editor-fields">
         <label>Group name — rename to move all items; match another name to merge<br/><input class="cell-input ed-group" value="${esc(name)}" placeholder="Album / group name" list="group-options" /></label>
         <label>Hover description<br/><input class="cell-input ed-desc" value="${esc(desc)}" placeholder="Shown on tile hover" /></label>
+        <label>Corner blurb — eases in, top-left of the tile<br/><input class="cell-input ed-blurb" value="${esc(blurb)}" placeholder="e.g. Main Menu Lighting and Layout" /></label>
         <label>Zoom <span class="fz-val">${fz.toFixed(2)}×</span><br/><input type="range" class="ed-fz" min="1" max="3" step="0.05" value="${fz}" /></label>
         <label>Crop focus — horizontal <span class="fx-val">${fx}%</span><br/><input type="range" class="ed-fx" min="0" max="100" value="${fx}" /></label>
         <label>Crop focus — vertical <span class="fy-val">${fy}%</span><br/><input type="range" class="ed-fy" min="0" max="100" value="${fy}" /></label>
@@ -1014,6 +1016,12 @@ function buildGroupEditor(name, items) {
   wrap.querySelector('.ed-desc').addEventListener('input', e => {
     items.forEach(it => { if (it !== items[0]) delete it.description; });
     items[0].description = e.target.value;
+    markUnsaved();
+  });
+  wrap.querySelector('.ed-blurb').addEventListener('input', e => {
+    items.forEach(it => { if (it !== items[0]) delete it.blurb; });
+    const v = e.target.value.trim();
+    if (v) items[0].blurb = v; else delete items[0].blurb;
     markUnsaved();
   });
   const prevImg = wrap.querySelector('.tile-preview img');
