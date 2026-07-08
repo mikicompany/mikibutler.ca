@@ -118,6 +118,30 @@
       letter-spacing: 0.04em;
     }
 
+    /* Top-left project blurb — eases in from the left on the active slide */
+    .slide-blurb {
+      position: absolute;
+      top: 14%;
+      left: 210px;
+      max-width: 440px;
+      font-size: 23px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: #fff;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.75);
+      opacity: 0;
+      transform: translateX(-42px);
+      transition: opacity 0.7s ease 0.9s, transform 0.7s cubic-bezier(0.22,1,0.36,1) 0.9s;
+      pointer-events: none;
+    }
+    .slide.active .slide-blurb {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .slide-blurb { transition: opacity 0.4s ease; transform: none; }
+    }
+
     /* Dot indicators */
     .slide-dots {
       position: fixed;
@@ -217,6 +241,7 @@
       .slide-prev { left: 10px; }
       .slide-next { right: 10px; }
       .slide-caption { bottom: 20px; right: 20px; }
+      .slide-blurb { left: 20px; top: 84px; font-size: 16px; max-width: 72%; }
       /* Too many slides to show a dot each on a phone — use a counter */
       .slide-dots { display: none; }
       .slide-counter {
@@ -293,6 +318,7 @@
         slide.innerHTML = `
           ${media}
           <div class="slide-overlay"></div>
+          ${item.blurb ? `<div class="slide-blurb">${item.blurb}</div>` : ''}
           <div class="slide-caption">
             <div class="cap-tag">${CATEGORY_LABELS[item.category] || item.category || ''}</div>
             <div class="cap-title">${item.title}</div>
