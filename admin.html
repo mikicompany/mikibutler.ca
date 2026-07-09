@@ -669,6 +669,7 @@
   <button class="tab-btn" data-tab="carousel">Carousel</button>
   <button class="tab-btn" data-tab="menu">Menu</button>
   <button class="tab-btn" data-tab="socials">Socials</button>
+  <button class="tab-btn" data-tab="protected">🔒 Protected</button>
   <button class="tab-btn" data-tab="export">JSON Preview</button>
 </div>
 
@@ -778,6 +779,45 @@
     </table>
   </div>
   <button class="add-row-btn" onclick="addSocialsRow()">+ Add Social</button>
+</div>
+
+<!-- PROTECTED WORKS TAB -->
+<div class="panel" id="panel-protected">
+  <p class="section-label">Protected Works — kept in an encrypted file, separate from the public Work list</p>
+  <div id="prot-locked" style="max-width:560px">
+    <p style="color:var(--muted);font-size:12px;line-height:1.6">
+      These pieces are stored <b>encrypted</b> (AES-GCM). Enter the protected password to
+      load &amp; edit them. Saving re-encrypts in your browser and commits only the
+      unreadable blob — the plaintext titles and URLs never touch the public repo.
+    </p>
+    <label style="display:block;margin:14px 0 6px;font-size:12px;color:var(--muted)">Protected password</label>
+    <input class="cell-input" id="prot-pw" type="password" placeholder="Password" autocomplete="off" spellcheck="false" style="max-width:280px" />
+    <button class="btn btn-primary" style="margin-left:8px" onclick="unlockProtected()">Unlock</button>
+    <p class="modal-error" id="prot-error" style="min-height:16px"></p>
+  </div>
+  <div id="prot-unlocked" style="display:none">
+    <div class="table-wrap">
+      <table class="sheet-table" id="prot-table">
+        <thead>
+          <tr>
+            <th class="col-num">#</th>
+            <th class="col-prev">Preview</th>
+            <th>Title</th>
+            <th>Tag</th>
+            <th>Image URL / Path</th>
+            <th class="col-del"></th>
+          </tr>
+        </thead>
+        <tbody id="prot-body"></tbody>
+      </table>
+    </div>
+    <button class="add-row-btn" onclick="addProtectedRow()">+ Add Protected Work</button>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="saveProtected()">🔒 Encrypt &amp; Save Protected</button>
+      <input class="cell-input" id="prot-newpw" type="text" placeholder="(optional) change password to…" autocomplete="off" spellcheck="false" style="max-width:240px" />
+      <span style="color:var(--muted);font-size:11px">⚠️ Images at public URLs stay openable directly — host NDA art at unguessable URLs.</span>
+    </div>
+  </div>
 </div>
 
 <!-- JSON PREVIEW TAB -->
@@ -1518,6 +1558,123 @@ async function saveViaGitHub() {
   }
   markSaved('Committed ✓ — site updates in ~1 min');
   showToast('Committed to GitHub! Pages will redeploy in about a minute.');
+}
+
+// Generic committer for any repo file (reuses the saved GitHub token).
+async function ghCommit(path, contentStr, message) {
+  const token = localStorage.getItem('gh-token');
+  if (!token) { openTokenModal(); return false; }
+  const headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+  const api = 'https://api.github.com/repos/mikicompany/mikibutler.ca/contents/' + path;
+  const cur = await fetch(`${api}?ref=master&t=${Date.now()}`, { headers });
+  if (cur.status === 401 || cur.status === 403) {
+    localStorage.removeItem('gh-token');
+    openTokenModal('That token was rejected — generate a fresh one and paste it here.');
+    return false;
+  }
+  let sha;
+  if (cur.ok) sha = (await cur.json()).sha;
+  else if (cur.status !== 404) throw new Error('read ' + path + ' failed (HTTP ' + cur.status + ')');
+  const res = await fetch(api, {
+    method: 'PUT', headers,
+    body: JSON.stringify({ message, content: b64utf8(contentStr), sha, branch: 'master' })
+  });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || 'HTTP ' + res.status);
+  return true;
+}
+
+// ── PROTECTED WORKS (client-side encrypted) ──
+// Managed here, but stored only as an AES-GCM blob in protected-data.json —
+// same scheme as tools/protect.html and protected.html.
+const PROT_ITER = 600000;
+let protectedItems = [];
+let protectedPw = '';
+
+const _pb64 = buf => { let s = ''; const b = new Uint8Array(buf); for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); };
+const _punb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+async function _protKey(pw, salt, iter, usage) {
+  const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: iter }, km, { name: 'AES-GCM', length: 256 }, false, [usage]);
+}
+async function encryptProtected(items, pw) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await _protKey(pw, salt, PROT_ITER, 'encrypt');
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify({ items })));
+  return JSON.stringify({ v: 1, kdf: 'PBKDF2-SHA256', iterations: PROT_ITER, salt: _pb64(salt), iv: _pb64(iv), data: _pb64(ct) }, null, 2);
+}
+async function decryptProtected(blob, pw) {
+  const key = await _protKey(pw, _punb64(blob.salt), blob.iterations, 'decrypt');
+  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: _punb64(blob.iv) }, key, _punb64(blob.data));
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+
+async function unlockProtected() {
+  const pw = document.getElementById('prot-pw').value;
+  const errEl = document.getElementById('prot-error');
+  errEl.textContent = '';
+  if (!pw) { errEl.textContent = 'Enter the password first.'; return; }
+  try {
+    const r = await fetch('protected-data.json?t=' + Date.now());
+    if (r.ok) {
+      const payload = await decryptProtected(await r.json(), pw); // throws on wrong pw
+      protectedItems = payload.items || [];
+    } else {
+      protectedItems = []; // no file yet — first-time setup with this password
+    }
+    protectedPw = pw;
+    document.getElementById('prot-locked').style.display = 'none';
+    document.getElementById('prot-unlocked').style.display = '';
+    renderProtected();
+    showToast('Unlocked — ' + protectedItems.length + ' protected item(s).');
+  } catch (e) {
+    errEl.textContent = 'Wrong password (or the file is unreadable).';
+  }
+}
+
+function renderProtected() {
+  const tbody = document.getElementById('prot-body');
+  tbody.innerHTML = '';
+  protectedItems.forEach((item, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="row-num">${i + 1}</td>
+      <td>${thumbCell(item.img)}</td>
+      <td><input class="cell-input" value="${esc(item.title || '')}" oninput="protectedItems[${i}].title=this.value" placeholder="Title" /></td>
+      <td><input class="cell-input" style="max-width:90px" value="${esc(item.tag || '')}" oninput="protectedItems[${i}].tag=this.value" placeholder="NDA" /></td>
+      <td><input class="cell-input" style="min-width:220px" value="${esc(item.img || '')}" oninput="protectedItems[${i}].img=this.value;updateThumb(this)" placeholder="image URL or path" /></td>
+      <td><button class="btn-del" onclick="delProtected(${i})" title="Delete">×</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+function addProtectedRow() { protectedItems.push({ img: '', title: '', tag: 'NDA' }); renderProtected(); }
+function delProtected(i) { protectedItems.splice(i, 1); renderProtected(); }
+
+async function saveProtected() {
+  if (!protectedPw) { showToast('Unlock first.'); return; }
+  const newPw = document.getElementById('prot-newpw').value.trim();
+  const pw = newPw || protectedPw;
+  let blobStr;
+  try { blobStr = await encryptProtected(protectedItems, pw); }
+  catch (e) { showToast('Encryption failed: ' + e.message); return; }
+  if (['localhost', '127.0.0.1'].includes(location.hostname)) {
+    const b = new Blob([blobStr + '\n'], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(b); a.download = 'protected-data.json'; a.click();
+    URL.revokeObjectURL(a.href);
+    protectedPw = pw; document.getElementById('prot-newpw').value = '';
+    showToast('Downloaded protected-data.json — drop it in the site root & commit.');
+    return;
+  }
+  try {
+    showToast('Encrypting & committing protected-data.json…');
+    if (await ghCommit('protected-data.json', blobStr + '\n', 'Update protected-data.json from admin')) {
+      protectedPw = pw; document.getElementById('prot-newpw').value = '';
+      showToast(newPw ? 'Saved with the NEW password! Redeploys in ~1 min.' : 'Protected works committed! Redeploys in ~1 min.');
+    }
+  } catch (e) { showToast('Save failed: ' + e.message); }
 }
 
 function exportJSON() {
