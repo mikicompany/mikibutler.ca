@@ -695,8 +695,10 @@
           <th>Group</th>
           <th>Image URL / Path</th>
           <th>Category</th>
-          <th>Size</th>
+          <th>Work size</th>
+          <th>Sub size</th>
           <th style="width:60px">Home</th>
+          <th style="width:60px">Hidden</th>
           <th class="col-del"></th>
         </tr>
       </thead>
@@ -1102,13 +1104,22 @@ function renderWork() {
         </select>
       </td>
       <td>
-        <select class="cell-select" onchange="data.work[${i}].size=this.value;markUnsaved()">
+        <select class="cell-select" onchange="data.work[${i}].size=this.value;markUnsaved()" title="Tile size on the Work page">
           ${['small','wide','large','tall'].map(v =>
             `<option value="${v}"${(item.size || 'small') === v ? ' selected' : ''}>${v}</option>`
           ).join('')}
         </select>
       </td>
+      <td>
+        <select class="cell-select" onchange="setSubSize(${i}, this.value)" title="Tile size inside the album — defaults to the work size">
+          <option value=""${!item.subSize ? ' selected' : ''}>↳ inherit</option>
+          ${['small','wide','large','tall'].map(v =>
+            `<option value="${v}"${item.subSize === v ? ' selected' : ''}>${v}</option>`
+          ).join('')}
+        </select>
+      </td>
       <td style="text-align:center"><input type="checkbox" ${item.home !== false ? 'checked' : ''} onchange="data.work[${i}].home=this.checked;markUnsaved()" title="Show on homepage" style="width:16px;height:16px;accent-color:#a0ff00;cursor:pointer" /></td>
+      <td style="text-align:center"><input type="checkbox" ${item.hidden ? 'checked' : ''} onchange="setHidden(${i}, this.checked)" title="Hide this work everywhere (kept in data, not deleted)" style="width:16px;height:16px;accent-color:#ff8c00;cursor:pointer" /></td>
       <td><button class="btn-del" onclick="deleteRow('work',${i})" title="Delete">×</button></td>
     `;
     addDragEvents(tr);
@@ -1270,6 +1281,18 @@ function setWorkImg(i, el) {
   const row = el.closest('tr');
   const prev = row && row.querySelector('.thumb, .thumb-placeholder');
   if (prev) prev.closest('td').innerHTML = thumbCell(data.work[i].img);
+  markUnsaved();
+}
+
+// Sub-work size: blank ("inherit") stores nothing so it follows the work size.
+function setSubSize(i, v) {
+  if (v) data.work[i].subSize = v; else delete data.work[i].subSize;
+  markUnsaved();
+}
+
+// Hide a work everywhere without deleting it (kept in data.json).
+function setHidden(i, checked) {
+  if (checked) data.work[i].hidden = true; else delete data.work[i].hidden;
   markUnsaved();
 }
 

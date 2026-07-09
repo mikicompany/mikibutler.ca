@@ -108,7 +108,7 @@
     function rebuildFilters() {
       const container = document.getElementById('filters');
       container.innerHTML = '';
-      const cats = [...new Set(allItems.map(i => i.category).filter(Boolean))]
+      const cats = [...new Set(allItems.filter(i => !i.hidden).map(i => i.category).filter(Boolean))]
         .sort((a, b) => catRank(a) - catRank(b));
       cats.forEach((cat, i) => {
         const btn = document.createElement('button');
@@ -139,10 +139,11 @@
     function getGroups() {
       const map = new Map();
       allItems.forEach(i => {
+        if (i.hidden) return; // hidden works are kept in data but never shown
         if (!map.has(i.group)) map.set(i.group, { name: i.group, category: i.category, items: [] });
         map.get(i.group).items.push(i);
       });
-      return [...map.values()];
+      return [...map.values()].filter(g => g.items.length);
     }
 
     function render() {
@@ -216,6 +217,9 @@
     // matter how tiles are ordered.
     const SIZES = ['small', 'wide', 'large', 'tall'];
     const sizeOf = item => SIZES.includes(item.size) ? item.size : 'small';
+    // Size of a tile *inside* an album — inherits the work (group) size unless
+    // the item sets its own subSize.
+    const subSizeOf = item => SIZES.includes(item.subSize) ? item.subSize : sizeOf(item);
 
     // Crop focus (object-position) and zoom (scale) are stored on the item
     // and passed to the tile as CSS variables so they compose with the
@@ -287,7 +291,7 @@
       lightboxItems = items;
       items.forEach((item, i) => {
         const div = document.createElement('div');
-        div.className = `masonry-item size-${sizeOf(item)}`;
+        div.className = `masonry-item size-${subSizeOf(item)}`;
         div.innerHTML = `
           <img src="${item.img}" alt="${item.title}" loading="lazy"${tileStyle(item)} />
           ${mediaBadge(item)}
