@@ -999,12 +999,31 @@ main {
   justify-content: center;
   min-height: 100vh;
   padding: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Big, softly blurred logo watermark behind the card */
+.contact-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(88vw, 88vh);
+  height: auto;
+  transform: translate(-50%, -50%);
+  filter: blur(22px);
+  opacity: 0.04;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
 }
 
 .contact-card {
   max-width: 480px;
   width: 100%;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .contact-card .m-logo {
