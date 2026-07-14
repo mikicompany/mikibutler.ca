@@ -1003,15 +1003,15 @@ main {
   overflow: hidden;
 }
 
-/* Big, softly blurred logo watermark behind the card */
+/* Big, softly blurred logo watermark behind the card, anchored left */
 .contact-bg {
   position: absolute;
   top: 50%;
-  left: 50%;
-  width: min(88vw, 88vh);
+  left: 20%;
+  width: calc(min(88vw, 88vh) + 150px);
   height: auto;
   transform: translate(-50%, -50%);
-  filter: blur(22px);
+  filter: blur(48px);
   opacity: 0.04;
   pointer-events: none;
   user-select: none;
