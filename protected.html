@@ -106,19 +106,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       function render(items) {
         const grid = document.getElementById('protected-grid');
         grid.innerHTML = '';
+        const attr = s => String(s == null ? '' : s).replace(/"/g, '&quot;');
         items.forEach(item => {
           const div = document.createElement('div');
-          div.className = 'masonry-item';
+          const isMedia = !!(item.video || item.embed);
+          div.className = 'masonry-item' + (isMedia ? ' size-large pv-media-tile' : '');
           div.dataset.title = item.title || '';
-          div.innerHTML = `
-            <img src="${item.img}" alt="" loading="lazy" />
-            <div class="item-overlay">
-              <span class="item-tag"></span>
-              <span class="item-title"></span>
-            </div>
-          `;
-          div.querySelector('.item-tag').textContent = item.tag || '';
-          div.querySelector('.item-title').textContent = item.title || '';
+          const media = item.embed
+            ? `<div class="pv-media"><iframe src="${attr(item.embed)}" title="${attr(item.title)}" frameborder="0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`
+            : item.video
+              ? `<video src="${attr(item.video)}"${item.img ? ` poster="${attr(item.img)}"` : ''} controls playsinline preload="metadata"></video>`
+              : `<img src="${attr(item.img)}" alt="" loading="lazy" />`;
+          if (isMedia) {
+            div.innerHTML = media + `<div class="pv-caption"></div>`;
+            div.querySelector('.pv-caption').textContent = [item.tag, item.title].filter(Boolean).join(' · ');
+          } else {
+            div.innerHTML = media + `
+              <div class="item-overlay">
+                <span class="item-tag"></span>
+                <span class="item-title"></span>
+              </div>`;
+            div.querySelector('.item-tag').textContent = item.tag || '';
+            div.querySelector('.item-title').textContent = item.title || '';
+          }
           grid.appendChild(div);
         });
         if (window.refreshLightbox) window.refreshLightbox();

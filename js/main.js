@@ -36,11 +36,13 @@ if (lightbox) {
   // can hook newly added items into the lightbox.
   window.refreshLightbox = function () {
     items = [];
-    document.querySelectorAll('.masonry-item').forEach((el, i) => {
+    document.querySelectorAll('.masonry-item').forEach(el => {
       const img = el.querySelector('img');
-      const title = el.dataset.title || '';
-      items.push({ src: img.src, title });
-      el.onclick = () => openLightbox(i);
+      // Video / embedded tiles play inline — skip them (no image to zoom).
+      if (!img || el.querySelector('video, iframe')) return;
+      const idx = items.length;
+      items.push({ src: img.src, title: el.dataset.title || '' });
+      el.onclick = () => openLightbox(idx);
     });
   };
   window.refreshLightbox();

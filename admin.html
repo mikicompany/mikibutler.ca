@@ -809,6 +809,7 @@
             <th>Title</th>
             <th>Tag</th>
             <th>Image URL / Path</th>
+            <th>Video / YouTube (optional)</th>
             <th class="col-del"></th>
           </tr>
         </thead>
@@ -1648,7 +1649,8 @@ function renderProtected() {
       <td>${thumbCell(item.img)}</td>
       <td><input class="cell-input" value="${esc(item.title || '')}" oninput="protectedItems[${i}].title=this.value" placeholder="Title" /></td>
       <td><input class="cell-input" style="max-width:90px" value="${esc(item.tag || '')}" oninput="protectedItems[${i}].tag=this.value" placeholder="NDA" /></td>
-      <td><input class="cell-input" style="min-width:220px" value="${esc(item.img || '')}" oninput="protectedItems[${i}].img=this.value;updateThumb(this)" placeholder="image URL or path" /></td>
+      <td><input class="cell-input" style="min-width:200px" value="${esc(item.img || '')}" oninput="protectedItems[${i}].img=this.value;updateThumb(this)" placeholder="image URL (or video poster)" /></td>
+      <td><input class="cell-input" style="min-width:200px" value="${esc(item.video || item.embed || '')}" oninput="setProtVideo(${i}, this)" placeholder="mp4 URL or YouTube link" /></td>
       <td><button class="btn-del" onclick="delProtected(${i})" title="Delete">×</button></td>
     `;
     tbody.appendChild(tr);
@@ -1656,6 +1658,17 @@ function renderProtected() {
 }
 function addProtectedRow() { protectedItems.push({ img: '', title: '', tag: 'NDA' }); renderProtected(); }
 function delProtected(i) { protectedItems.splice(i, 1); renderProtected(); }
+
+// A YouTube link becomes an embed; any other URL is treated as a direct video
+// file (e.g. an ArtStation .mp4). Blank clears both. The Image field can still
+// hold a poster/thumbnail.
+function setProtVideo(i, el) {
+  const v = el.value.trim();
+  const id = (typeof ytId === 'function') ? ytId(v) : null;
+  if (id) { protectedItems[i].embed = 'https://www.youtube.com/embed/' + id + '?rel=0'; delete protectedItems[i].video; }
+  else if (v) { protectedItems[i].video = v; delete protectedItems[i].embed; }
+  else { delete protectedItems[i].video; delete protectedItems[i].embed; }
+}
 
 async function saveProtected() {
   if (!protectedPw) { showToast('Unlock first.'); return; }

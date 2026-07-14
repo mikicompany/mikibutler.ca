@@ -287,6 +287,35 @@ main {
   .tile-blurb { animation: none; }
 }
 
+/* Protected media (inline video / embedded player) tiles */
+.masonry-item.pv-media-tile { cursor: default; background: #000; }
+.masonry-item video,
+.masonry-item .pv-media,
+.masonry-item .pv-media iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+}
+.masonry-item video { object-fit: contain; background: #000; }
+.masonry-item .pv-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75), transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+
 /* Size variants */
 .masonry-item.size-large {
   grid-column: span 2;
