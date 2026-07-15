@@ -1506,7 +1506,11 @@ function saveToDisk() {
       })
       .catch(() => showToast('Save endpoint not responding — is this "python serve.py"?'));
   } else {
-    saveViaGitHub().catch(err => showToast('Save failed: ' + err.message));
+    saveViaGitHub()
+      // If Protected was unlocked and edited this session, flush it too so the
+      // one Save button covers both — no more "logo didn't save" surprises.
+      .then(() => { if (protectedPw && protectedDirty) return saveProtected(); })
+      .catch(err => showToast('Save failed: ' + err.message));
   }
 }
 
@@ -1617,6 +1621,7 @@ async function ghCommit(path, contentStr, message) {
 const PROT_ITER = 600000;
 let protectedItems = [];
 let protectedPw = '';
+let protectedDirty = false; // true once protected items are edited this session
 
 const _pb64 = buf => { let s = ''; const b = new Uint8Array(buf); for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); };
 const _punb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -1669,9 +1674,9 @@ function renderProtected() {
     tr.innerHTML = `
       <td class="row-num">${i + 1}</td>
       <td><span class="prot-prev" title="Edit preview — crop & zoom" onclick="openProtEditor(${i})">${thumbCell(item.img)}<span class="prot-prev-edit">✎ crop</span></span></td>
-      <td><input class="cell-input" value="${esc(item.title || '')}" oninput="protectedItems[${i}].title=this.value" placeholder="Title" /></td>
-      <td><input class="cell-input" style="max-width:90px" value="${esc(item.tag || '')}" oninput="protectedItems[${i}].tag=this.value" placeholder="NDA" /></td>
-      <td><input class="cell-input" style="min-width:200px" value="${esc(item.img || '')}" oninput="protectedItems[${i}].img=this.value;updateThumb(this)" placeholder="image URL (or video poster)" /></td>
+      <td><input class="cell-input" value="${esc(item.title || '')}" oninput="protectedItems[${i}].title=this.value;protectedDirty=true" placeholder="Title" /></td>
+      <td><input class="cell-input" style="max-width:90px" value="${esc(item.tag || '')}" oninput="protectedItems[${i}].tag=this.value;protectedDirty=true" placeholder="NDA" /></td>
+      <td><input class="cell-input" style="min-width:200px" value="${esc(item.img || '')}" oninput="protectedItems[${i}].img=this.value;updateThumb(this);protectedDirty=true" placeholder="image URL (or video poster)" /></td>
       <td><input class="cell-input" style="min-width:200px" value="${esc(item.video || item.embed || '')}" oninput="setProtVideo(${i}, this)" placeholder="mp4 URL or YouTube link" /></td>
       <td>
         <select class="cell-select" onchange="setProtLogo(${i}, this.value)" title="Ownership badge (bottom-right)">
@@ -1684,8 +1689,8 @@ function renderProtected() {
     tbody.appendChild(tr);
   });
 }
-function addProtectedRow() { protectedItems.push({ img: '', title: '', tag: 'NDA' }); renderProtected(); }
-function delProtected(i) { protectedItems.splice(i, 1); renderProtected(); }
+function addProtectedRow() { protectedItems.push({ img: '', title: '', tag: 'NDA' }); protectedDirty = true; renderProtected(); }
+function delProtected(i) { protectedItems.splice(i, 1); protectedDirty = true; renderProtected(); }
 
 // A YouTube link becomes an embed; any other URL is treated as a direct video
 // file (e.g. an ArtStation .mp4). Blank clears both. The Image field can still
@@ -1696,11 +1701,13 @@ function setProtVideo(i, el) {
   if (id) { protectedItems[i].embed = 'https://www.youtube.com/embed/' + id + '?rel=0'; delete protectedItems[i].video; }
   else if (v) { protectedItems[i].video = v; delete protectedItems[i].embed; }
   else { delete protectedItems[i].video; delete protectedItems[i].embed; }
+  protectedDirty = true;
 }
 
 // Ownership badge preset per item: '' (none) / 'ea' / 'offworld' / 'capcom'.
 function setProtLogo(i, v) {
   if (v) protectedItems[i].logo = v; else delete protectedItems[i].logo;
+  protectedDirty = true;
 }
 
 // ── Protected preview editor (crop / zoom / drag) — mirrors the Work editor ──
@@ -1738,6 +1745,7 @@ function peApply() {
   document.getElementById('pe-zval').textContent = z.toFixed(2) + '×';
   if (x === 50 && y === 50) delete it.focus; else it.focus = x + '% ' + y + '%';
   if (z > 1.001) it.zoom = z; else delete it.zoom;
+  protectedDirty = true;
   const img = document.getElementById('pe-img');
   img.style.objectPosition = x + '% ' + y + '%';
   img.style.transformOrigin = x + '% ' + y + '%';
@@ -1780,14 +1788,14 @@ async function saveProtected() {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(b); a.download = 'protected-data.json'; a.click();
     URL.revokeObjectURL(a.href);
-    protectedPw = pw; document.getElementById('prot-newpw').value = '';
+    protectedPw = pw; protectedDirty = false; document.getElementById('prot-newpw').value = '';
     showToast('Downloaded protected-data.json — drop it in the site root & commit.');
     return;
   }
   try {
     showToast('Encrypting & committing protected-data.json…');
     if (await ghCommit('protected-data.json', blobStr + '\n', 'Update protected-data.json from admin')) {
-      protectedPw = pw; document.getElementById('prot-newpw').value = '';
+      protectedPw = pw; protectedDirty = false; document.getElementById('prot-newpw').value = '';
       showToast(newPw ? 'Saved with the NEW password! Redeploys in ~1 min.' : 'Protected works committed! Redeploys in ~1 min.');
     }
   } catch (e) { showToast('Save failed: ' + e.message); }
