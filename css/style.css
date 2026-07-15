@@ -300,6 +300,20 @@ main {
   border: 0;
 }
 .masonry-item video { object-fit: contain; background: #000; }
+.masonry-item .pv-logo {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  border-radius: 50%;
+  opacity: 0.92;
+  pointer-events: none;
+  z-index: 3;
+  filter: drop-shadow(0 2px 7px rgba(0, 0, 0, 0.7));
+}
+
 .masonry-item .pv-caption {
   position: absolute;
   left: 0;

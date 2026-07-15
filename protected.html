@@ -107,6 +107,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const grid = document.getElementById('protected-grid');
         grid.innerHTML = '';
         const attr = s => String(s == null ? '' : s).replace(/"/g, '&quot;');
+        const cropStyle = it => {
+          const parts = [];
+          if (it.focus) parts.push('--focus:' + it.focus);
+          if (it.zoom && it.zoom !== 1) parts.push('--zoom:' + it.zoom);
+          return parts.length ? ` style="${parts.join(';')}"` : '';
+        };
         items.forEach(item => {
           const div = document.createElement('div');
           const isMedia = !!(item.video || item.embed);
@@ -116,12 +122,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             ? `<div class="pv-media"><iframe src="${attr(item.embed)}" title="${attr(item.title)}" frameborder="0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`
             : item.video
               ? `<video src="${attr(item.video)}"${item.img ? ` poster="${attr(item.img)}"` : ''} controls playsinline preload="metadata"></video>`
-              : `<img src="${attr(item.img)}" alt="" loading="lazy" />`;
+              : `<img src="${attr(item.img)}" alt="" loading="lazy"${cropStyle(item)} />`;
+          const logo = item.logo ? `<img class="pv-logo" src="images/logo512.jpg" alt="" aria-hidden="true" />` : '';
           if (isMedia) {
-            div.innerHTML = media + `<div class="pv-caption"></div>`;
+            div.innerHTML = media + logo + `<div class="pv-caption"></div>`;
             div.querySelector('.pv-caption').textContent = [item.tag, item.title].filter(Boolean).join(' · ');
           } else {
-            div.innerHTML = media + `
+            div.innerHTML = media + logo + `
               <div class="item-overlay">
                 <span class="item-tag"></span>
                 <span class="item-title"></span>

@@ -483,6 +483,9 @@
     }
 
     .tile-preview.grabbing { cursor: grabbing; }
+    .prot-prev { cursor: pointer; display: inline-block; text-align: center; }
+    .prot-prev-edit { display: block; font-size: 9px; color: var(--accent); margin-top: 2px; letter-spacing: 0.03em; }
+    .prot-prev:hover .prot-prev-edit { text-decoration: underline; }
 
     .tile-preview img {
       width: 100%;
@@ -810,6 +813,7 @@
             <th>Tag</th>
             <th>Image URL / Path</th>
             <th>Video / YouTube (optional)</th>
+            <th style="width:48px">Logo</th>
             <th class="col-del"></th>
           </tr>
         </thead>
@@ -848,6 +852,24 @@
       <button class="btn btn-primary" onclick="submitToken()">2 · Connect &amp; Save</button>
       <button class="btn btn-ghost" onclick="closeTokenModal();saveViaWebEditor()">Skip — paste into GitHub instead</button>
       <button class="btn btn-ghost" onclick="closeTokenModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Protected item preview editor (crop / zoom) -->
+<div class="modal-overlay" id="prot-editor-modal">
+  <div class="modal" style="width:320px">
+    <h2 style="margin-bottom:14px">Edit preview</h2>
+    <div class="tile-preview" id="pe-tile"><img id="pe-img" src="" alt="" /></div>
+    <p class="drag-hint">Drag the preview to reposition</p>
+    <label style="display:block;margin:14px 0 4px;font-size:12px;color:var(--muted)">Zoom <span id="pe-zval">1.00×</span></label>
+    <input type="range" id="pe-zoom" min="1" max="3" step="0.05" value="1" style="width:100%" />
+    <label style="display:block;margin:12px 0 4px;font-size:12px;color:var(--muted)">Crop — horizontal <span id="pe-xval">50%</span></label>
+    <input type="range" id="pe-x" min="0" max="100" value="50" style="width:100%" />
+    <label style="display:block;margin:12px 0 4px;font-size:12px;color:var(--muted)">Crop — vertical <span id="pe-yval">50%</span></label>
+    <input type="range" id="pe-y" min="0" max="100" value="50" style="width:100%" />
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-primary" onclick="closeProtEditor()">Done</button>
     </div>
   </div>
 </div>
@@ -1646,11 +1668,12 @@ function renderProtected() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="row-num">${i + 1}</td>
-      <td>${thumbCell(item.img)}</td>
+      <td><span class="prot-prev" title="Edit preview — crop & zoom" onclick="openProtEditor(${i})">${thumbCell(item.img)}<span class="prot-prev-edit">✎ crop</span></span></td>
       <td><input class="cell-input" value="${esc(item.title || '')}" oninput="protectedItems[${i}].title=this.value" placeholder="Title" /></td>
       <td><input class="cell-input" style="max-width:90px" value="${esc(item.tag || '')}" oninput="protectedItems[${i}].tag=this.value" placeholder="NDA" /></td>
       <td><input class="cell-input" style="min-width:200px" value="${esc(item.img || '')}" oninput="protectedItems[${i}].img=this.value;updateThumb(this)" placeholder="image URL (or video poster)" /></td>
       <td><input class="cell-input" style="min-width:200px" value="${esc(item.video || item.embed || '')}" oninput="setProtVideo(${i}, this)" placeholder="mp4 URL or YouTube link" /></td>
+      <td style="text-align:center"><input type="checkbox" ${item.logo ? 'checked' : ''} onchange="toggleProtLogo(${i}, this.checked)" title="Show logo badge bottom-right" style="width:16px;height:16px;accent-color:#a0ff00;cursor:pointer" /></td>
       <td><button class="btn-del" onclick="delProtected(${i})" title="Delete">×</button></td>
     `;
     tbody.appendChild(tr);
@@ -1669,6 +1692,64 @@ function setProtVideo(i, el) {
   else if (v) { protectedItems[i].video = v; delete protectedItems[i].embed; }
   else { delete protectedItems[i].video; delete protectedItems[i].embed; }
 }
+
+function toggleProtLogo(i, checked) {
+  if (checked) protectedItems[i].logo = true; else delete protectedItems[i].logo;
+}
+
+// ── Protected preview editor (crop / zoom / drag) — mirrors the Work editor ──
+let protEditIdx = -1;
+function openProtEditor(i) {
+  protEditIdx = i;
+  const it = protectedItems[i];
+  document.getElementById('pe-img').src = it.img || '';
+  const [fx, fy] = (it.focus || '50% 50%').replace(/%/g, '').trim().split(/\s+/).map(n => parseInt(n, 10));
+  document.getElementById('pe-x').value = isNaN(fx) ? 50 : fx;
+  document.getElementById('pe-y').value = isNaN(fy) ? 50 : fy;
+  document.getElementById('pe-zoom').value = it.zoom || 1;
+  peApply();
+  document.getElementById('prot-editor-modal').classList.add('open');
+}
+function peApply() {
+  if (protEditIdx < 0) return;
+  const it = protectedItems[protEditIdx];
+  const x = +document.getElementById('pe-x').value;
+  const y = +document.getElementById('pe-y').value;
+  const z = parseFloat(document.getElementById('pe-zoom').value);
+  document.getElementById('pe-xval').textContent = x + '%';
+  document.getElementById('pe-yval').textContent = y + '%';
+  document.getElementById('pe-zval').textContent = z.toFixed(2) + '×';
+  if (x === 50 && y === 50) delete it.focus; else it.focus = x + '% ' + y + '%';
+  if (z > 1.001) it.zoom = z; else delete it.zoom;
+  const img = document.getElementById('pe-img');
+  img.style.objectPosition = x + '% ' + y + '%';
+  img.style.transformOrigin = x + '% ' + y + '%';
+  img.style.transform = 'scale(' + z + ')';
+}
+function closeProtEditor() {
+  document.getElementById('prot-editor-modal').classList.remove('open');
+  protEditIdx = -1;
+}
+(function initProtEditor() {
+  const tile = document.getElementById('pe-tile');
+  if (!tile) return;
+  ['pe-zoom', 'pe-x', 'pe-y'].forEach(id => document.getElementById(id).addEventListener('input', peApply));
+  const clamp = v => Math.max(0, Math.min(100, v));
+  let drag = null;
+  tile.addEventListener('pointerdown', e => {
+    drag = { px: e.clientX, py: e.clientY, sx: +document.getElementById('pe-x').value, sy: +document.getElementById('pe-y').value, w: tile.clientWidth, h: tile.clientHeight };
+    tile.classList.add('grabbing'); tile.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  tile.addEventListener('pointermove', e => {
+    if (!drag) return;
+    document.getElementById('pe-x').value = Math.round(clamp(drag.sx - (e.clientX - drag.px) / drag.w * 100));
+    document.getElementById('pe-y').value = Math.round(clamp(drag.sy - (e.clientY - drag.py) / drag.h * 100));
+    peApply();
+  });
+  const end = e => { if (!drag) return; drag = null; tile.classList.remove('grabbing'); try { tile.releasePointerCapture(e.pointerId); } catch (_) {} };
+  tile.addEventListener('pointerup', end);
+  tile.addEventListener('pointercancel', end);
+})();
 
 async function saveProtected() {
   if (!protectedPw) { showToast('Unlock first.'); return; }
