@@ -861,7 +861,7 @@
   <div class="modal" style="width:320px">
     <h2 style="margin-bottom:14px">Edit preview</h2>
     <div class="tile-preview" id="pe-tile"><img id="pe-img" src="" alt="" /></div>
-    <p class="drag-hint">Drag the preview to reposition</p>
+    <p class="drag-hint" id="pe-status">Drag the preview to reposition</p>
     <label style="display:block;margin:14px 0 4px;font-size:12px;color:var(--muted)">Zoom <span id="pe-zval">1.00×</span></label>
     <input type="range" id="pe-zoom" min="1" max="3" step="0.05" value="1" style="width:100%" />
     <label style="display:block;margin:12px 0 4px;font-size:12px;color:var(--muted)">Crop — horizontal <span id="pe-xval">50%</span></label>
@@ -1708,7 +1708,18 @@ let protEditIdx = -1;
 function openProtEditor(i) {
   protEditIdx = i;
   const it = protectedItems[i];
-  document.getElementById('pe-img').src = it.img || '';
+  const status = document.getElementById('pe-status');
+  const img = document.getElementById('pe-img');
+  if (!it.img) {
+    status.textContent = '⚠ No image on this item to crop (video/embed only).';
+    status.style.color = '#e0a000';
+  } else {
+    status.textContent = 'Loading preview…';
+    status.style.color = 'var(--muted)';
+    img.onload = () => { status.textContent = 'Drag the preview to reposition'; status.style.color = 'var(--muted)'; };
+    img.onerror = () => { status.textContent = "⚠ Image didn't load — the URL is blocked (hotlink) or wrong. Can't preview or crop it."; status.style.color = '#ff6b6b'; };
+  }
+  img.src = it.img || '';
   const [fx, fy] = (it.focus || '50% 50%').replace(/%/g, '').trim().split(/\s+/).map(n => parseInt(n, 10));
   document.getElementById('pe-x').value = isNaN(fx) ? 50 : fx;
   document.getElementById('pe-y').value = isNaN(fy) ? 50 : fy;
