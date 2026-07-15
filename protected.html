@@ -107,6 +107,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const grid = document.getElementById('protected-grid');
         grid.innerHTML = '';
         const attr = s => String(s == null ? '' : s).replace(/"/g, '&quot;');
+        const LOGOS = {
+          ea:       { name: 'EA',                  icon: 'https://www.google.com/s2/favicons?domain=ea.com&sz=128' },
+          offworld: { name: 'Offworld Industries', icon: 'https://www.google.com/s2/favicons?domain=offworldindustries.com&sz=128' },
+          capcom:   { name: 'Capcom',              icon: 'https://www.google.com/s2/favicons?domain=capcom.com&sz=128' },
+        };
         const cropStyle = it => {
           const parts = [];
           if (it.focus) parts.push('--focus:' + it.focus);
@@ -123,7 +128,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             : item.video
               ? `<video src="${attr(item.video)}"${item.img ? ` poster="${attr(item.img)}"` : ''} controls playsinline preload="metadata"></video>`
               : `<img src="${attr(item.img)}" alt="" loading="lazy"${cropStyle(item)} />`;
-          const logo = item.logo ? `<img class="pv-logo" src="images/logo512.jpg" alt="" aria-hidden="true" />` : '';
+          const owner = LOGOS[item.logo];
+          const logo = owner
+            ? `<div class="pv-owner"><img src="${attr(owner.icon)}" alt="" /><span>Property of ${owner.name}</span></div>`
+            : '';
           if (isMedia) {
             div.innerHTML = media + logo + `<div class="pv-caption"></div>`;
             div.querySelector('.pv-caption').textContent = [item.tag, item.title].filter(Boolean).join(' · ');
