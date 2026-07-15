@@ -1673,7 +1673,12 @@ function renderProtected() {
       <td><input class="cell-input" style="max-width:90px" value="${esc(item.tag || '')}" oninput="protectedItems[${i}].tag=this.value" placeholder="NDA" /></td>
       <td><input class="cell-input" style="min-width:200px" value="${esc(item.img || '')}" oninput="protectedItems[${i}].img=this.value;updateThumb(this)" placeholder="image URL (or video poster)" /></td>
       <td><input class="cell-input" style="min-width:200px" value="${esc(item.video || item.embed || '')}" oninput="setProtVideo(${i}, this)" placeholder="mp4 URL or YouTube link" /></td>
-      <td style="text-align:center"><input type="checkbox" ${item.logo ? 'checked' : ''} onchange="toggleProtLogo(${i}, this.checked)" title="Show logo badge bottom-right" style="width:16px;height:16px;accent-color:#a0ff00;cursor:pointer" /></td>
+      <td>
+        <select class="cell-select" onchange="setProtLogo(${i}, this.value)" title="Ownership badge (bottom-right)">
+          ${[['','No logo'],['ea','EA'],['offworld','Offworld'],['capcom','Capcom']].map(([v,label]) =>
+            `<option value="${v}"${(item.logo || '') === v ? ' selected' : ''}>${label}</option>`).join('')}
+        </select>
+      </td>
       <td><button class="btn-del" onclick="delProtected(${i})" title="Delete">×</button></td>
     `;
     tbody.appendChild(tr);
@@ -1693,8 +1698,9 @@ function setProtVideo(i, el) {
   else { delete protectedItems[i].video; delete protectedItems[i].embed; }
 }
 
-function toggleProtLogo(i, checked) {
-  if (checked) protectedItems[i].logo = true; else delete protectedItems[i].logo;
+// Ownership badge preset per item: '' (none) / 'ea' / 'offworld' / 'capcom'.
+function setProtLogo(i, v) {
+  if (v) protectedItems[i].logo = v; else delete protectedItems[i].logo;
 }
 
 // ── Protected preview editor (crop / zoom / drag) — mirrors the Work editor ──
