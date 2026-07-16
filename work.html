@@ -27,7 +27,7 @@
   <meta name="description" content="Portfolio of environment art by Miki Butler — Starship Troopers Extermination, Dead Rising 4, Plants vs Zombies, and more." />
   <meta name="keywords" content="environment art portfolio, game art, 3D environments, Starship Troopers, Dead Rising, Miki Butler" />
   <link rel="canonical" href="https://mikibutler.ca/work.html" />
-  <link rel="stylesheet" href="css/style.css?v=20260716" />
+  <link rel="stylesheet" href="css/style.css?v=20260716b" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 </head>
@@ -52,7 +52,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="masonry-grid" id="work-grid"></div>
   </main>
 
-  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer" tabindex="-1">
     <span class="lightbox-close" aria-label="Close">&times;</span>
     <button class="lightbox-prev" aria-label="Previous">&#8249;</button>
     <img class="lb-img" src="" alt="" />
@@ -382,6 +382,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
       lightbox.classList.add('open');
       document.body.style.overflow = 'hidden';
+      // Keep focus on the lightbox so arrow keys navigate (until/unless the
+      // viewer clicks into a video, which hands keyboard control to the player).
+      lightbox.focus();
     }
 
     function closeLightbox() {
