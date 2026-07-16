@@ -33,8 +33,20 @@ function buildSidebar(data) {
 
 fetch('data.json').then(r => r.json()).then(buildSidebar);
 
-// Easter egg: spam-click the logo 5× (in quick succession) to open the
-// hidden Arcade. A lone click still goes home after a brief coalescing pause.
+// ── Easter eggs → the hidden Arcade ──
+// A bright flash, then jump to the Arcade.
+function revealArcade() {
+  const f = document.createElement('div');
+  f.setAttribute('aria-hidden', 'true');
+  f.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#a0ff00;opacity:0;pointer-events:none;transition:opacity .1s ease;';
+  document.body.appendChild(f);
+  requestAnimationFrame(() => { f.style.opacity = '0.95'; });
+  setTimeout(() => { f.style.opacity = '0'; }, 160);
+  setTimeout(() => { window.location.href = 'arcade.html'; }, 440);
+}
+
+// 1) Spam-click the logo 7× (in quick succession). A lone click still goes
+//    home after a brief coalescing pause.
 (function () {
   const logo = document.querySelector('.sidebar-logo');
   if (!logo) return;
@@ -43,11 +55,27 @@ fetch('data.json').then(r => r.json()).then(buildSidebar);
     e.preventDefault();
     n++;
     clearTimeout(t);
-    if (n >= 5) { n = 0; window.location.href = 'arcade.html'; return; }
+    if (n >= 7) { n = 0; revealArcade(); return; }
     t = setTimeout(function () {
       const dest = logo.getAttribute('href') || 'index.html';
       n = 0;
       window.location.href = dest;
     }, 300);
+  });
+})();
+
+// 2) Konami code (desktop): ↑ ↑ ↓ ↓ ← → ← → B A
+(function () {
+  const seq = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
+  let i = 0;
+  window.addEventListener('keydown', function (e) {
+    // Don't hijack typing in form fields.
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName)) { i = 0; return; }
+    const k = e.key.toLowerCase();
+    if (k === seq[i]) {
+      if (++i === seq.length) { i = 0; revealArcade(); }
+    } else {
+      i = (k === seq[0]) ? 1 : 0;
+    }
   });
 })();
