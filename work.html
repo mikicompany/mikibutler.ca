@@ -275,11 +275,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           render();
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-          lightboxItems = g.items;
-          openLightbox(0);
+          // Single-piece work: let the arrows browse across ALL works (each
+          // group's cover), in the same order they appear on the grid.
+          const order = groupsInDisplayOrder();
+          lightboxItems = order.map(gr => gr.items[0]);
+          openLightbox(Math.max(0, order.findIndex(gr => gr.name === g.name)));
         }
       });
       return div;
+    }
+
+    // Groups in the same order the grid shows them (by category rank, then
+    // data order) — so lightbox arrows move like the eye does across the page.
+    function groupsInDisplayOrder() {
+      const byCat = new Map();
+      getGroups().forEach(gr => {
+        const c = gr.category || 'other';
+        if (!byCat.has(c)) byCat.set(c, []);
+        byCat.get(c).push(gr);
+      });
+      const out = [];
+      [...byCat.keys()].sort((a, b) => catRank(a) - catRank(b)).forEach(c => byCat.get(c).forEach(gr => out.push(gr)));
+      return out;
     }
 
     // Section order — lead with the flagship game work, personal/other last.
