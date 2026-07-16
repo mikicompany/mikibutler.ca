@@ -190,6 +190,104 @@ main {
   gap: 6px;
 }
 
+/* ── ARCADE ── */
+.arcade-page {
+  min-height: 100vh;
+  padding: 64px 60px 80px;
+}
+.arcade-head { margin-bottom: 34px; }
+.arcade-head h1 {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.arcade-head p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 8px;
+}
+.arcade-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  max-width: 840px;
+}
+.arcade-card {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 6px;
+  aspect-ratio: 3 / 4;
+  background: #0a0b07;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.arcade-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.8);
+  transition: transform 0.4s ease, filter 0.3s ease;
+}
+.arcade-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--accent);
+}
+.arcade-card:hover img {
+  transform: scale(1.05);
+  filter: brightness(1);
+}
+.arcade-card-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.arcade-card:hover .arcade-card-overlay { opacity: 1; }
+.arcade-play {
+  background: var(--accent);
+  color: #000;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+.arcade-card-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 26px 14px 13px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  pointer-events: none;
+}
+.arcade-title {
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+.arcade-tag {
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 /* Sectioned "All" view: a labelled grid per category */
 #work-grid.sectioned { display: block; padding: 0; }
 .section-grid { padding: 6px 40px 22px; }
@@ -1226,6 +1324,11 @@ main {
   }
   /* Video / embed tiles have no static child, so give them a height */
   .masonry-item.pv-media-tile { aspect-ratio: 16 / 9; }
+
+  /* Arcade */
+  .arcade-page { padding: 28px 16px 64px; }
+  .arcade-head h1 { font-size: 26px; }
+  .arcade-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
   .work-header { padding: 24px 16px 16px; }
 
