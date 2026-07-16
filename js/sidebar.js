@@ -32,3 +32,22 @@ function buildSidebar(data) {
 }
 
 fetch('data.json').then(r => r.json()).then(buildSidebar);
+
+// Easter egg: spam-click the logo 5× (in quick succession) to open the
+// hidden Arcade. A lone click still goes home after a brief coalescing pause.
+(function () {
+  const logo = document.querySelector('.sidebar-logo');
+  if (!logo) return;
+  let n = 0, t = null;
+  logo.addEventListener('click', function (e) {
+    e.preventDefault();
+    n++;
+    clearTimeout(t);
+    if (n >= 5) { n = 0; window.location.href = 'arcade.html'; return; }
+    t = setTimeout(function () {
+      const dest = logo.getAttribute('href') || 'index.html';
+      n = 0;
+      window.location.href = dest;
+    }, 300);
+  });
+})();
