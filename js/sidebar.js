@@ -34,15 +34,15 @@ function buildSidebar(data) {
 fetch('data.json').then(r => r.json()).then(buildSidebar);
 
 // ── Easter eggs → the hidden Arcade ──
-// A bright flash, then jump to the Arcade.
+// A bright flash that stays lit through the jump, so the Arcade page fades up
+// out of it (no jarring blink-then-cut).
 function revealArcade() {
   const f = document.createElement('div');
   f.setAttribute('aria-hidden', 'true');
-  f.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#a0ff00;opacity:0;pointer-events:none;transition:opacity .1s ease;';
+  f.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#a0ff00;opacity:0;pointer-events:none;transition:opacity .13s ease-out;';
   document.body.appendChild(f);
-  requestAnimationFrame(() => { f.style.opacity = '0.95'; });
-  setTimeout(() => { f.style.opacity = '0'; }, 160);
-  setTimeout(() => { window.location.href = 'arcade.html'; }, 440);
+  requestAnimationFrame(() => { f.style.opacity = '1'; });
+  setTimeout(() => { window.location.href = 'arcade.html'; }, 260);
 }
 
 // 1) Spam-click the logo 7× (in quick succession). A lone click still goes

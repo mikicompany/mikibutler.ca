@@ -27,6 +27,11 @@
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* Fade the page up so it emerges from the Easter-egg flash */
+    body { animation: arcade-in 0.45s ease both; }
+    @keyframes arcade-in { from { opacity: 0; } to { opacity: 1; } }
+  </style>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -44,7 +49,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <main>
     <div class="arcade-page">
       <div class="arcade-head">
-        <h1>Arcade</h1>
+        <h1>Arcade <span aria-hidden="true">🕹️</span></h1>
         <p>Browser games I've worked on — pick one and play. (Desktop recommended.)</p>
       </div>
       <div class="arcade-grid">
