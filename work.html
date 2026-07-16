@@ -70,6 +70,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       'dead-rising': 'Dead Rising',
       'pvz': 'Plants vs Zombies',
       'squad': 'Squad',
+      'star-trek-legends': 'Star Trek Legends',
       'personal': 'Personal Work',
       'other': 'Other'
     };
@@ -300,7 +301,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
 
     // Section order — lead with the flagship game work, personal/other last.
-    const CAT_ORDER = ['starship-troopers', 'dead-rising', 'pvz', 'squad', 'personal', 'other'];
+    const CAT_ORDER = ['starship-troopers', 'dead-rising', 'pvz', 'squad', 'star-trek-legends', 'personal', 'other'];
     const catRank = c => { const i = CAT_ORDER.indexOf(c); return i < 0 ? 99 : i; };
 
     function buildGroupGrid(groups) {
