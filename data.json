@@ -1364,6 +1364,14 @@
       "home": false,
       "group": "It Is Not Brocoly!",
       "description": "Stylized alien tree study - interactive Marmoset viewer."
+    },
+    {
+      "title": "Star Trek Legends — Sand Planet",
+      "size": "large",
+      "img": "https://cdnb.artstation.com/p/assets/images/images/036/309/283/large/miki-butler-sandplanet.jpg?1617295733",
+      "category": "star-trek-legends",
+      "home": false,
+      "group": "Star Trek Legends"
     }
   ],
   "socials": [
