@@ -1077,6 +1077,7 @@ function buildGroupEditor(name, items) {
         <label>Contrast <span class="fc-val">${fc.toFixed(2)}×</span><br/><input type="range" class="ed-fc" min="0.5" max="2" step="0.05" value="${fc}" /></label>
         <label>Saturation <span class="fs-val">${fs.toFixed(2)}×</span><br/><input type="range" class="ed-fs" min="0" max="2" step="0.05" value="${fs}" /></label>
         <label>Gamma / midtones <span class="fg-val">${fg.toFixed(2)}</span><br/><input type="range" class="ed-fg" min="0.4" max="2.6" step="0.05" value="${fg}" /></label>
+        <button type="button" class="btn btn-ghost ed-reset" style="margin-top:12px;align-self:flex-start">↺ Reset to default</button>
       </div>
     </div>
   `;
@@ -1150,6 +1151,13 @@ function buildGroupEditor(name, items) {
   wrap.querySelector('.ed-fs').addEventListener('input', updPreview);
   wrap.querySelector('.ed-fg').addEventListener('input', updPreview);
   setPvGamma(fg); // sync the shared SVG filter to this cover's gamma on open
+
+  // Reset crop / zoom / levels back to defaults for this cover.
+  wrap.querySelector('.ed-reset').addEventListener('click', () => {
+    const defaults = { '.ed-fx': 50, '.ed-fy': 50, '.ed-fz': 1, '.ed-fb': 1, '.ed-fc': 1, '.ed-fs': 1, '.ed-fg': 1 };
+    Object.entries(defaults).forEach(([sel, val]) => { wrap.querySelector(sel).value = val; });
+    updPreview(); // writes defaults → deletes the fields, repaints the preview
+  });
 
   // Drag the preview to reposition the crop focus (keeps the sliders in sync).
   const tile = wrap.querySelector('.tile-preview');
