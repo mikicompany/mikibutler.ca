@@ -217,9 +217,7 @@
       "description": "Hangar bay environment overview.",
       "blurb": "Main Menu Lighting for Starship Troopers Extermination",
       "zoom": 1.25,
-      "focus": "13% 10%",
-      "gamma": 1.2,
-      "bright": 1.25
+      "focus": "13% 10%"
     },
     {
       "title": "STE Generator — 01",
@@ -472,8 +470,7 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/034/865/380/4k/miki-butler-mikibutler-darknest-05.jpg?1613459719",
       "category": "personal",
       "home": false,
-      "group": "Dark Nest",
-      "sat": 0.8
+      "group": "Dark Nest"
     },
     {
       "title": "Dark Nest — Video 01",
@@ -573,8 +570,7 @@
       "category": "personal",
       "group": "Lava Material",
       "description": "Procedural lava material - Substance Designer and UE.",
-      "home": false,
-      "sat": 0.85
+      "home": false
     },
     {
       "title": "Lava Material — Video",
@@ -616,8 +612,7 @@
       "category": "personal",
       "group": "Buon Appetito",
       "description": "Procedural pizza material built in Substance Designer.",
-      "home": false,
-      "sat": 0.85
+      "home": false
     },
     {
       "title": "Buon Appetito — Video 01",
@@ -1393,7 +1388,8 @@
       "category": "star-trek-legends",
       "home": false,
       "group": "Star Trek Legends",
-      "video": "1vvP-NmRz5s"
+      "video": "1vvP-NmRz5s",
+      "hidden": true
     }
   ],
   "socials": [
