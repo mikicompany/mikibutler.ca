@@ -694,14 +694,16 @@
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/013/032/640/large/miki-butler-beauty.jpg?1537745889",
       "category": "personal",
-      "group": "Tumi Knife"
+      "group": "Tumi Knife",
+      "home": false
     },
     {
       "title": "Tumi Knife — 03",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/013/005/819/large/miki-butler-screenclip.jpg?1537594072",
       "category": "personal",
-      "group": "Tumi Knife"
+      "group": "Tumi Knife",
+      "home": false
     },
     {
       "title": "Tumi Knife — 04",
