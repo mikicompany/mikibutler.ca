@@ -235,7 +235,8 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/042/580/950/large/miki-butler-generator-wireframe.jpg?1634887983",
       "category": "starship-troopers",
       "group": "STE Generator",
-      "home": false
+      "home": false,
+      "subSize": "large"
     },
     {
       "title": "STE Garrison Gate — 02",
