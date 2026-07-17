@@ -75,7 +75,8 @@
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/487/4k/miki-butler-l6.jpg?1684569419",
       "category": "starship-troopers",
-      "group": "STE Lookout"
+      "group": "STE Lookout",
+      "subSize": "large"
     },
     {
       "title": "STE Lookout — 07",
