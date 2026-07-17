@@ -53,7 +53,8 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/496/4k/miki-butler-l3.jpg?1684569446",
       "category": "starship-troopers",
-      "group": "STE Lookout"
+      "group": "STE Lookout",
+      "subSize": "large"
     },
     {
       "title": "STE Lookout — 04",
@@ -74,7 +75,8 @@
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/487/4k/miki-butler-l6.jpg?1684569419",
       "category": "starship-troopers",
-      "group": "STE Lookout"
+      "group": "STE Lookout",
+      "subSize": "large"
     },
     {
       "title": "STE Lookout — 07",
@@ -334,14 +336,16 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/906/4k/miki-butler-n-buggoo-miki-butler-02.jpg?1684570803",
       "category": "starship-troopers",
       "group": "STE Bug Goo",
-      "description": "Alien nest goo - organic mesh and shader work."
+      "description": "Alien nest goo - organic mesh and shader work.",
+      "home": false
     },
     {
       "title": "STE Bug Goo — 03",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/907/4k/miki-butler-n-buggoo-miki-butler-03.jpg?1684570810",
       "category": "starship-troopers",
-      "group": "STE Bug Goo"
+      "group": "STE Bug Goo",
+      "home": false
     },
     {
       "title": "STE Foliage — 01",
@@ -471,7 +475,7 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/034/865/380/4k/miki-butler-mikibutler-darknest-05.jpg?1613459719",
       "category": "personal",
-      "home": true,
+      "home": false,
       "group": "Dark Nest"
     },
     {
@@ -498,7 +502,7 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/034/865/388/4k/miki-butler-mikibutler-darknest-10.jpg?1613459745",
       "category": "personal",
-      "home": true,
+      "home": false,
       "group": "Dark Nest"
     },
     {
@@ -695,16 +699,14 @@
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/013/032/640/large/miki-butler-beauty.jpg?1537745889",
       "category": "personal",
-      "group": "Tumi Knife",
-      "home": false
+      "group": "Tumi Knife"
     },
     {
       "title": "Tumi Knife — 03",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/013/005/819/large/miki-butler-screenclip.jpg?1537594072",
       "category": "personal",
-      "group": "Tumi Knife",
-      "home": false
+      "group": "Tumi Knife"
     },
     {
       "title": "Tumi Knife — 04",
@@ -834,8 +836,7 @@
       "category": "personal",
       "group": "Calaca Mat",
       "zoom": 1.35,
-      "focus": "11% 45%",
-      "home": false
+      "focus": "11% 45%"
     },
     {
       "title": "Calaca Mat — Full",
@@ -907,8 +908,7 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/023/932/908/large/miki-butler-screenshot-26.jpg?1580803328",
       "category": "personal",
-      "group": "Calaca Mat",
-      "home": false
+      "group": "Calaca Mat"
     },
     {
       "title": "Calaca Mat — Alphas",
@@ -1182,8 +1182,7 @@
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/021/337/612/large/miki-butler-minecart.jpg?1571279592",
       "category": "pvz",
-      "group": "PvZ Cheese Mines",
-      "home": false
+      "group": "PvZ Cheese Mines"
     },
     {
       "title": "PvZ Cheese Mines — Pickaxe Preview",
