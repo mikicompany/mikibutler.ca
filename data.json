@@ -472,7 +472,8 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/034/865/380/4k/miki-butler-mikibutler-darknest-05.jpg?1613459719",
       "category": "personal",
       "home": false,
-      "group": "Dark Nest"
+      "group": "Dark Nest",
+      "sat": 0.8
     },
     {
       "title": "Dark Nest — Video 01",
