@@ -325,7 +325,8 @@
       "category": "starship-troopers",
       "group": "STE Bug Goo",
       "focus": "9% 14%",
-      "zoom": 1.25
+      "zoom": 1.25,
+      "home": false
     },
     {
       "title": "STE Bug Goo — 02",
