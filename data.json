@@ -327,8 +327,7 @@
       "category": "starship-troopers",
       "group": "STE Bug Goo",
       "focus": "9% 14%",
-      "zoom": 1.25,
-      "home": false
+      "zoom": 1.25
     },
     {
       "title": "STE Bug Goo — 02",
@@ -336,16 +335,14 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/906/4k/miki-butler-n-buggoo-miki-butler-02.jpg?1684570803",
       "category": "starship-troopers",
       "group": "STE Bug Goo",
-      "description": "Alien nest goo - organic mesh and shader work.",
-      "home": false
+      "description": "Alien nest goo - organic mesh and shader work."
     },
     {
       "title": "STE Bug Goo — 03",
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/907/4k/miki-butler-n-buggoo-miki-butler-03.jpg?1684570810",
       "category": "starship-troopers",
-      "group": "STE Bug Goo",
-      "home": false
+      "group": "STE Bug Goo"
     },
     {
       "title": "STE Foliage — 01",
@@ -908,7 +905,8 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/023/932/908/large/miki-butler-screenshot-26.jpg?1580803328",
       "category": "personal",
-      "group": "Calaca Mat"
+      "group": "Calaca Mat",
+      "home": false
     },
     {
       "title": "Calaca Mat — Alphas",
