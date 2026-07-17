@@ -217,7 +217,9 @@
       "description": "Hangar bay environment overview.",
       "blurb": "Main Menu Lighting for Starship Troopers Extermination",
       "zoom": 1.25,
-      "focus": "13% 10%"
+      "focus": "13% 10%",
+      "gamma": 1.2,
+      "bright": 1.25
     },
     {
       "title": "STE Generator — 01",
