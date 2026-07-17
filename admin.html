@@ -1040,8 +1040,11 @@ function buildGroupEditor(name, items) {
   const m = /^(\d+)% (\d+)%$/.exec(cover.focus || '');
   const fx = m ? +m[1] : 50, fy = m ? +m[2] : 50;
   const fz = cover.zoom || 1;
+  const fb = cover.bright || 1, fc = cover.contrast || 1, fs = cover.sat || 1;
   const desc = (items.find(i => i.description) || {}).description || '';
   const blurb = (items.find(i => i.blurb) || {}).blurb || '';
+  // Preview filter that matches the live tile's resting look (base × adjust).
+  const previewFilter = (b, c, s) => `brightness(${(0.62 * b).toFixed(3)}) saturate(${(0.9 * s).toFixed(3)}) contrast(${c})`;
   const wrap = document.createElement('div');
   wrap.className = 'group-editor';
   wrap.innerHTML = `
@@ -1051,7 +1054,7 @@ function buildGroupEditor(name, items) {
     </div>
     <div class="editor-controls">
       <div class="preview-col">
-        <div class="tile-preview" title="Drag to reposition"><img src="${esc(cover.img)}" style="object-position:${fx}% ${fy}%;transform:scale(${fz});transform-origin:${fx}% ${fy}%" alt="" /></div>
+        <div class="tile-preview" title="Drag to reposition"><img src="${esc(cover.img)}" style="object-position:${fx}% ${fy}%;transform:scale(${fz});transform-origin:${fx}% ${fy}%;filter:${previewFilter(fb, fc, fs)}" alt="" /></div>
         <p class="drag-hint">Drag the preview to reposition</p>
       </div>
       <div class="editor-fields">
@@ -1061,6 +1064,9 @@ function buildGroupEditor(name, items) {
         <label>Zoom <span class="fz-val">${fz.toFixed(2)}×</span><br/><input type="range" class="ed-fz" min="1" max="3" step="0.05" value="${fz}" /></label>
         <label>Crop focus — horizontal <span class="fx-val">${fx}%</span><br/><input type="range" class="ed-fx" min="0" max="100" value="${fx}" /></label>
         <label>Crop focus — vertical <span class="fy-val">${fy}%</span><br/><input type="range" class="ed-fy" min="0" max="100" value="${fy}" /></label>
+        <label>Brightness <span class="fb-val">${fb.toFixed(2)}×</span><br/><input type="range" class="ed-fb" min="0.4" max="2.2" step="0.05" value="${fb}" /></label>
+        <label>Contrast <span class="fc-val">${fc.toFixed(2)}×</span><br/><input type="range" class="ed-fc" min="0.5" max="2" step="0.05" value="${fc}" /></label>
+        <label>Saturation <span class="fs-val">${fs.toFixed(2)}×</span><br/><input type="range" class="ed-fs" min="0" max="2" step="0.05" value="${fs}" /></label>
       </div>
     </div>
   `;
@@ -1109,11 +1115,25 @@ function buildGroupEditor(name, items) {
     prevImg.style.objectPosition = `${x}% ${y}%`;
     prevImg.style.transformOrigin = `${x}% ${y}%`;
     prevImg.style.transform = `scale(${zoom})`;
+    // Levels / colour balance
+    const bright = parseFloat(wrap.querySelector('.ed-fb').value);
+    const contrast = parseFloat(wrap.querySelector('.ed-fc').value);
+    const sat = parseFloat(wrap.querySelector('.ed-fs').value);
+    wrap.querySelector('.fb-val').textContent = bright.toFixed(2) + '×';
+    wrap.querySelector('.fc-val').textContent = contrast.toFixed(2) + '×';
+    wrap.querySelector('.fs-val').textContent = sat.toFixed(2) + '×';
+    if (bright !== 1) items[0].bright = bright; else delete items[0].bright;
+    if (contrast !== 1) items[0].contrast = contrast; else delete items[0].contrast;
+    if (sat !== 1) items[0].sat = sat; else delete items[0].sat;
+    prevImg.style.filter = previewFilter(bright, contrast, sat);
     markUnsaved();
   };
   wrap.querySelector('.ed-fx').addEventListener('input', updPreview);
   wrap.querySelector('.ed-fy').addEventListener('input', updPreview);
   wrap.querySelector('.ed-fz').addEventListener('input', updPreview);
+  wrap.querySelector('.ed-fb').addEventListener('input', updPreview);
+  wrap.querySelector('.ed-fc').addEventListener('input', updPreview);
+  wrap.querySelector('.ed-fs').addEventListener('input', updPreview);
 
   // Drag the preview to reposition the crop focus (keeps the sliders in sync).
   const tile = wrap.querySelector('.tile-preview');

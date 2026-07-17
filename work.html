@@ -27,7 +27,7 @@
   <meta name="description" content="Portfolio of environment art by Miki Butler — Starship Troopers Extermination, Dead Rising 4, Plants vs Zombies, and more." />
   <meta name="keywords" content="environment art portfolio, game art, 3D environments, Starship Troopers, Dead Rising, Miki Butler" />
   <link rel="canonical" href="https://mikibutler.ca/work.html" />
-  <link rel="stylesheet" href="css/style.css?v=20260716b" />
+  <link rel="stylesheet" href="css/style.css?v=20260716c" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 </head>
@@ -254,6 +254,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const parts = [];
       if (item.focus) parts.push(`--focus:${item.focus}`);
       if (item.zoom && item.zoom !== 1) parts.push(`--zoom:${item.zoom}`);
+      if (item.bright && item.bright !== 1) parts.push(`--adj-b:${item.bright}`);
+      if (item.contrast && item.contrast !== 1) parts.push(`--adj-c:${item.contrast}`);
+      if (item.sat && item.sat !== 1) parts.push(`--adj-s:${item.sat}`);
       return parts.length ? ` style="${parts.join(';')}"` : '';
     }
 
