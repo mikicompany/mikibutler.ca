@@ -1380,15 +1380,6 @@
       "category": "star-trek-legends",
       "home": false,
       "group": "Star Trek Legends"
-    },
-    {
-      "title": "Star Trek Legends — Video",
-      "size": "wide",
-      "img": "https://img.youtube.com/vi/1vvP-NmRz5s/hqdefault.jpg",
-      "category": "star-trek-legends",
-      "home": false,
-      "group": "Star Trek Legends",
-      "video": "1vvP-NmRz5s"
     }
   ],
   "socials": [
