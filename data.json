@@ -615,7 +615,8 @@
       "category": "personal",
       "group": "Buon Appetito",
       "description": "Procedural pizza material built in Substance Designer.",
-      "home": false
+      "home": false,
+      "sat": 0.85
     },
     {
       "title": "Buon Appetito — Video 01",
