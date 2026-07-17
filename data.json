@@ -53,8 +53,7 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/063/045/496/4k/miki-butler-l3.jpg?1684569446",
       "category": "starship-troopers",
-      "group": "STE Lookout",
-      "subSize": "large"
+      "group": "STE Lookout"
     },
     {
       "title": "STE Lookout — 04",
@@ -75,8 +74,7 @@
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/063/045/487/4k/miki-butler-l6.jpg?1684569419",
       "category": "starship-troopers",
-      "group": "STE Lookout",
-      "subSize": "large"
+      "group": "STE Lookout"
     },
     {
       "title": "STE Lookout — 07",
@@ -472,7 +470,7 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/034/865/380/4k/miki-butler-mikibutler-darknest-05.jpg?1613459719",
       "category": "personal",
-      "home": false,
+      "home": true,
       "group": "Dark Nest"
     },
     {
@@ -499,7 +497,7 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/034/865/388/4k/miki-butler-mikibutler-darknest-10.jpg?1613459745",
       "category": "personal",
-      "home": false,
+      "home": true,
       "group": "Dark Nest"
     },
     {
@@ -833,7 +831,8 @@
       "category": "personal",
       "group": "Calaca Mat",
       "zoom": 1.35,
-      "focus": "11% 45%"
+      "focus": "11% 45%",
+      "home": false
     },
     {
       "title": "Calaca Mat — Full",
@@ -905,7 +904,8 @@
       "size": "small",
       "img": "https://cdna.artstation.com/p/assets/images/images/023/932/908/large/miki-butler-screenshot-26.jpg?1580803328",
       "category": "personal",
-      "group": "Calaca Mat"
+      "group": "Calaca Mat",
+      "home": false
     },
     {
       "title": "Calaca Mat — Alphas",
@@ -1179,7 +1179,8 @@
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/021/337/612/large/miki-butler-minecart.jpg?1571279592",
       "category": "pvz",
-      "group": "PvZ Cheese Mines"
+      "group": "PvZ Cheese Mines",
+      "home": false
     },
     {
       "title": "PvZ Cheese Mines — Pickaxe Preview",
