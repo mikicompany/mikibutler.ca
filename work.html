@@ -27,7 +27,7 @@
   <meta name="description" content="Portfolio of environment art by Miki Butler — Starship Troopers Extermination, Dead Rising 4, Plants vs Zombies, and more." />
   <meta name="keywords" content="environment art portfolio, game art, 3D environments, Starship Troopers, Dead Rising, Miki Butler" />
   <link rel="canonical" href="https://mikibutler.ca/work.html" />
-  <link rel="stylesheet" href="css/style.css?v=20260716c" />
+  <link rel="stylesheet" href="css/style.css?v=20260716d" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 </head>
@@ -62,6 +62,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="lb-blurb" id="lb-blurb"></div>
     <div class="lightbox-caption"></div>
   </div>
+
+  <!-- Per-thumb gamma filters are injected here at render time -->
+  <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"><defs id="lv-defs"></defs></svg>
 
   <script src="js/sidebar.js"></script>
   <script>
@@ -171,9 +174,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
 
     function render() {
+      pendingLevels.clear();
       updateGroupBar();
       if (currentGroup) buildItemGrid(currentGroup.items);
       else buildGroupGrid(getGroups());
+      flushLevels();
+    }
+
+    // Per-thumb gamma (midtones) is done with an SVG filter — CSS has no gamma.
+    // Filters are deduped by value and flushed into the page's <defs> each render.
+    const pendingLevels = new Map();
+    function levelsVar(item) {
+      const g = item.gamma;
+      if (!g || g === 1) return '';
+      const id = 'lvg-' + String(g).replace(/[^0-9]/g, '_');
+      if (!pendingLevels.has(id)) {
+        const e = (1 / g).toFixed(4);
+        pendingLevels.set(id, `<filter id="${id}" color-interpolation-filters="sRGB"><feComponentTransfer>` +
+          `<feFuncR type="gamma" exponent="${e}"/><feFuncG type="gamma" exponent="${e}"/><feFuncB type="gamma" exponent="${e}"/>` +
+          `</feComponentTransfer></filter>`);
+      }
+      return `--lv:url(#${id})`;
+    }
+    function flushLevels() {
+      const defs = document.getElementById('lv-defs');
+      if (defs) defs.innerHTML = [...pendingLevels.values()].join('');
     }
 
     // Light the category chip that matches the given category (used so the
@@ -257,6 +282,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if (item.bright && item.bright !== 1) parts.push(`--adj-b:${item.bright}`);
       if (item.contrast && item.contrast !== 1) parts.push(`--adj-c:${item.contrast}`);
       if (item.sat && item.sat !== 1) parts.push(`--adj-s:${item.sat}`);
+      const lv = levelsVar(item);
+      if (lv) parts.push(lv);
       return parts.length ? ` style="${parts.join(';')}"` : '';
     }
 
