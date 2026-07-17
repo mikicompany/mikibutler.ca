@@ -572,7 +572,8 @@
       "category": "personal",
       "group": "Lava Material",
       "description": "Procedural lava material - Substance Designer and UE.",
-      "home": false
+      "home": false,
+      "sat": 0.9
     },
     {
       "title": "Lava Material — Video",
