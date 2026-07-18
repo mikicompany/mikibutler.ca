@@ -1148,7 +1148,7 @@ main {
   height: 100%;
   object-fit: cover;
   object-position: 50% center;
-  opacity: 0.15;
+  opacity: 0.3;
   transform: translateX(-60px);
 }
 
