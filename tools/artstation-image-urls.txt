@@ -159,3 +159,10 @@ images_images_033_509_488_4k_miki-butler-wip.jpg	https://cdna.artstation.com/p/a
 marmosets_images_003_608_235_large_miki-c-butler-mview-image20161003-19792-1j27fle.jpg	https://cdnb.artstation.com/p/assets/marmosets/images/003/608/235/large/miki-c-butler-mview-image20161003-19792-1j27fle.jpg?1475552179
 images_images_036_309_283_large_miki-butler-sandplanet.jpg	https://cdnb.artstation.com/p/assets/images/images/036/309/283/large/miki-butler-sandplanet.jpg?1617295733
 images_images_042_187_162_large_miki-butler-desert2.jpg	https://cdna.artstation.com/p/assets/images/images/042/187/162/large/miki-butler-desert2.jpg?1633811316
+video_sources_000_003_870_hamster-wheel-artifact-video.mp4	https://cdn.artstation.com/p/video_sources/000/003/870/hamster-wheel-artifact-video.mp4
+video_sources_000_014_769_mat-passes.mp4	https://cdn.artstation.com/p/video_sources/000/014/769/mat-passes.mp4
+video_sources_000_226_637_miki-pizza-vid2.mp4	https://cdn.artstation.com/p/video_sources/000/226/637/miki-pizza-vid2.mp4
+video_sources_000_227_191_miki-pizza-vid-2.mp4	https://cdn.artstation.com/p/video_sources/000/227/191/miki-pizza-vid-2.mp4
+video_sources_000_266_436_egg-01.mp4	https://cdn.artstation.com/p/video_sources/000/266/436/egg-01.mp4
+video_sources_000_266_441_egg-02.mp4	https://cdn.artstation.com/p/video_sources/000/266/441/egg-02.mp4
+video_sources_001_738_348_lavaplane-cut.mp4	https://cdn.artstation.com/p/video_sources/001/738/348/lavaplane-cut.mp4
