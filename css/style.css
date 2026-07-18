@@ -1136,12 +1136,31 @@ main {
 }
 
 /* ── CONTACT ── */
+.contact-bg {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: var(--sidebar-width);
+  right: -60px;
+  z-index: 0;
+  pointer-events: none;
+  width: auto;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% center;
+  opacity: 0.15;
+  transform: translateX(-60px);
+}
+
 .contact-page {
+  position: relative;
+  z-index: 2;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   min-height: 100vh;
-  padding: 60px;
+  padding: 60px 60px 12vh;
 }
 
 .contact-card {
@@ -1386,7 +1405,7 @@ main {
   .software-icon { width: 28px; height: 28px; }
 
   /* Contact */
-  .contact-page { padding: 32px 24px; }
+  .contact-page { padding: 32px 24px 10vh; }
 
   /* Home slideshow arrows */
   .slide-prev { left: 8px; font-size: 28px; }
