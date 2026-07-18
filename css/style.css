@@ -1404,8 +1404,12 @@ main {
   .software-item { font-size: 11px; padding: 10px 12px; gap: 8px; }
   .software-icon { width: 28px; height: 28px; }
 
-  /* Contact */
-  .contact-page { padding: 32px 24px 10vh; }
+  /* Contact — fit within the visible viewport (no scroll to reach the email) */
+  .contact-page {
+    min-height: calc(100dvh - 118px);
+    justify-content: center;
+    padding: 24px;
+  }
   .contact-bg {
     left: 50%;
     right: auto;
