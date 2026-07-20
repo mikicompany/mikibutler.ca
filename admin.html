@@ -117,6 +117,25 @@
     }
 
     .save-status.saved { color: var(--accent); }
+    .save-status.failed { color: #ff6b6b; }
+
+    /* Persistent save-failure banner — stays put until retried or dismissed. */
+    .save-banner {
+      display: none;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 24px;
+      background: #3a0e0e;
+      border-bottom: 1px solid #ff5555;
+      color: #ffdcdc;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .save-banner.show { display: flex; }
+    .save-banner .sb-icon { font-size: 16px; }
+    .save-banner .sb-msg { flex: 1; }
+    .save-banner .sb-msg b { color: #fff; }
+    .save-banner .sb-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
     /* ── TABS ── */
     .tabs {
@@ -659,7 +678,7 @@
   <div class="header-left">
     <img class="header-logo" src="images/logo512.jpg" alt="Miki Butler" />
     <h1>mikibutler<span>.ca</span> — Admin</h1>
-    <span class="build-tag" title="Admin build date — confirms you have the latest version">build 2026-07-05</span>
+    <span class="build-tag" title="Admin build date — confirms you have the latest version">build 2026-07-20</span>
   </div>
   <div class="header-actions">
     <span class="save-status" id="save-status">Unsaved changes</span>
@@ -668,6 +687,15 @@
     <button class="btn btn-primary" onclick="saveToDisk()">Save</button>
   </div>
 </header>
+
+<div class="save-banner" id="save-banner" role="alert" aria-live="assertive">
+  <span class="sb-icon" aria-hidden="true">⚠️</span>
+  <span class="sb-msg" id="save-banner-msg"></span>
+  <span class="sb-actions">
+    <button class="btn btn-primary" onclick="saveToDisk()">Retry Save</button>
+    <button class="btn btn-ghost" onclick="clearSaveError()">Dismiss</button>
+  </span>
+</div>
 
 <div class="tabs">
   <button class="tab-btn active" data-tab="work">Work</button>
@@ -1539,11 +1567,29 @@ function copyJSON() {
 function markSaved(msg) {
   const el = document.getElementById('save-status');
   el.textContent = msg;
+  el.classList.remove('failed');
   el.classList.add('saved');
+  clearSaveError();
+}
+
+// Persistent failure banner — unlike a toast, it stays until the save
+// succeeds or the user dismisses it, so a rejected token can't slip by.
+function showSaveError(msg) {
+  document.getElementById('save-banner-msg').innerHTML = msg;
+  document.getElementById('save-banner').classList.add('show');
+  const el = document.getElementById('save-status');
+  el.textContent = 'Save failed';
+  el.classList.remove('saved');
+  el.classList.add('failed');
+}
+
+function clearSaveError() {
+  document.getElementById('save-banner').classList.remove('show');
 }
 
 function saveToDisk() {
   const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
+  clearSaveError();
   if (isLocal) {
     fetch('/save-data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: buildJSON() })
       .then(r => { if (!r.ok) throw new Error(r.status); })
@@ -1551,13 +1597,14 @@ function saveToDisk() {
         markSaved('Saved to data.json ✓');
         showToast('Saved to data.json!');
       })
-      .catch(() => showToast('Save endpoint not responding — is this "python serve.py"?'));
+      .catch(() => showSaveError('Save endpoint not responding — is this running under <b>python serve.py</b>?'));
   } else {
     saveViaGitHub()
       // If Protected was unlocked and edited this session, flush it too so the
       // one Save button covers both — no more "logo didn't save" surprises.
-      .then(() => { if (protectedPw && protectedDirty) return saveProtected(); })
-      .catch(err => showToast('Save failed: ' + err.message));
+      // Skip if the token was just cleared (rejected) so we don't double-prompt.
+      .then(() => { if (protectedPw && protectedDirty && localStorage.getItem('gh-token')) return saveProtected(); })
+      .catch(err => showSaveError('Save failed: ' + (err && err.message ? err.message : err)));
   }
 }
 
@@ -1596,7 +1643,9 @@ function submitToken() {
   localStorage.setItem('gh-token', t);
   document.getElementById('token-input').value = '';
   closeTokenModal();
-  saveViaGitHub().catch(err => showToast('Save failed: ' + err.message));
+  saveViaGitHub()
+    .then(() => { if (protectedPw && protectedDirty && localStorage.getItem('gh-token')) return saveProtected(); })
+    .catch(err => showSaveError('Save failed: ' + (err && err.message ? err.message : err)));
 }
 
 function b64utf8(str) {
@@ -1617,6 +1666,7 @@ async function saveViaGitHub() {
   if (cur.status === 401 || cur.status === 403) {
     localStorage.removeItem('gh-token');
     openTokenModal('That token was rejected — generate a fresh one and paste it here.');
+    showSaveError('Your GitHub token was <b>rejected or expired</b> — reconnect in the pop-up (or click Retry Save) to generate a fresh one. Nothing was saved.');
     return;
   }
   if (!cur.ok) throw new Error('could not read current data.json (HTTP ' + cur.status + ')');
