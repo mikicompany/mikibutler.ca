@@ -124,7 +124,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // initialized before render() runs.
       Promise.resolve().then(() => boot(previewData));
     } else {
-      fetch('data.json').then(r => r.json()).then(boot);
+      fetch('data.json?t=' + Date.now()).then(r => r.json()).then(boot);
     }
 
     // Live updates from the admin's docked preview: re-render in place while

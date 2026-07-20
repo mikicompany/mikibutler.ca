@@ -884,7 +884,9 @@ let data = { menu: [], work: [], carousel: [] };
 let dragSrc = null;
 
 // ── INIT ──
-fetch('data.json')
+// Cache-bust so a reload always pulls the freshly-committed data.json — GitHub
+// Pages/CDN otherwise serves a stale copy, making a just-saved edit look lost.
+fetch('data.json?t=' + Date.now())
   .then(r => r.json())
   .then(d => { data = d; render(); restoreDock(); })
   .catch(() => render());

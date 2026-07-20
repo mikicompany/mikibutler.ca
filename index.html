@@ -321,7 +321,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     let timer = null;
     let progressTimer = null;
 
-    fetch('data.json').then(r => r.json()).then(data => {
+    fetch('data.json?t=' + Date.now()).then(r => r.json()).then(data => {
       // Filter out items with home: false
       const workSlides = data.work.filter(item => item.home !== false && !item.hidden);
       const videoSlides = (data.carousel || []).filter(item => item.video);
