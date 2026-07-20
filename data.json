@@ -467,7 +467,8 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/040/906/877/4k/miki-butler-wireframe.jpg?1630226728",
       "category": "personal",
       "group": "The Queen's Throne",
-      "home": false
+      "home": false,
+      "subSize": "large"
     },
     {
       "title": "Dark Nest — 04",
