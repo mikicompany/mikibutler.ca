@@ -731,6 +731,39 @@ main {
   text-transform: uppercase;
 }
 
+/* When the shown image is a project cover, clicking it opens the project. */
+.lightbox.can-enter .lb-img { cursor: pointer; }
+
+.lightbox-hint {
+  position: absolute;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: #cfcfcf;
+  letter-spacing: 0.04em;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 6px 12px;
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.lightbox.can-enter .lightbox-hint { opacity: 1; }
+
+.lightbox-hint kbd {
+  font-family: inherit;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(160, 255, 0, 0.12);
+  border: 1px solid rgba(160, 255, 0, 0.35);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin: 0 2px;
+}
+
 /* Piece blurb, top-left of the lightbox — eases in from the left on open. */
 .lb-blurb {
   position: absolute;

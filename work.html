@@ -27,7 +27,7 @@
   <meta name="description" content="Portfolio of environment art by Miki Butler — Starship Troopers Extermination, Dead Rising 4, Plants vs Zombies, and more." />
   <meta name="keywords" content="environment art portfolio, game art, 3D environments, Starship Troopers, Dead Rising, Miki Butler" />
   <link rel="canonical" href="https://mikibutler.ca/work.html" />
-  <link rel="stylesheet" href="css/style.css?v=20260716d" />
+  <link rel="stylesheet" href="css/style.css?v=20260720a" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 </head>
@@ -61,6 +61,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <button class="lightbox-next" aria-label="Next">&#8250;</button>
     <div class="lb-blurb" id="lb-blurb"></div>
     <div class="lightbox-caption"></div>
+    <div class="lightbox-hint" aria-hidden="true">Click or press <kbd>Enter</kbd> to open this project</div>
   </div>
 
   <!-- Per-thumb gamma filters are injected here at render time -->
@@ -83,6 +84,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     let currentGroup = null;
     let lightboxItems = [];
     let lightboxIndex = 0;
+    // When the lightbox is browsing group covers (opened from a single-piece
+    // work), this holds the group behind each cover so Enter / a click can
+    // dive into that group's sub-pieces. Null when viewing a group's own items.
+    let lightboxGroups = null;
 
     const grid = document.getElementById('work-grid');
     const workHeader = document.querySelector('.work-header');
@@ -100,7 +105,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const targetItem = params.get('item');
       if (currentGroup && targetItem) {
         const idx = currentGroup.items.findIndex(it => it.title === targetItem);
-        if (idx >= 0) { lightboxItems = currentGroup.items; openLightbox(idx); }
+        if (idx >= 0) { lightboxItems = currentGroup.items; lightboxGroups = null; openLightbox(idx); }
       }
     }
 
@@ -312,6 +317,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           // group's cover), in the same order they appear on the grid.
           const order = groupsInDisplayOrder();
           lightboxItems = order.map(gr => gr.items[0]);
+          lightboxGroups = order;
           openLightbox(Math.max(0, order.findIndex(gr => gr.name === g.name)));
         }
       });
@@ -362,6 +368,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       grid.innerHTML = '';
       grid.classList.remove('sectioned');
       lightboxItems = items;
+      lightboxGroups = null;
       items.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = `masonry-item size-${subSizeOf(item)}`;
@@ -431,6 +438,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         lbImg.style.display = '';
       }
       lightbox.classList.add('open');
+      // Mark when the current cover can be opened into its group, so the image
+      // shows a pointer and a hint that Enter / click dives in.
+      lightbox.classList.toggle('can-enter', !!enterableGroup());
       document.body.style.overflow = 'hidden';
       // Keep focus on the lightbox so arrow keys navigate (until/unless the
       // viewer clicks into a video, which hands keyboard control to the player).
@@ -448,16 +458,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       openLightbox(lightboxIndex);
     }
 
+    // The group behind the cover currently shown, when the lightbox is browsing
+    // covers and that group actually has sub-pieces to open into.
+    function enterableGroup() {
+      if (!lightboxGroups) return null;
+      const g = lightboxGroups[lightboxIndex];
+      return (g && g.items.length > 1) ? g : null;
+    }
+
+    // Dive from the cover into the group's grid of all its sub-pieces.
+    function enterCurrentGroup() {
+      const g = enterableGroup();
+      if (!g) return;
+      closeLightbox();
+      currentGroup = g;
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     lightbox.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
     lightbox.querySelector('.lightbox-prev').addEventListener('click', () => navigate(-1));
     lightbox.querySelector('.lightbox-next').addEventListener('click', () => navigate(1));
     lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+    // Clicking the cover image dives into its group (when browsing covers).
+    lbImg.addEventListener('click', e => { if (enterableGroup()) { e.stopPropagation(); enterCurrentGroup(); } });
 
     document.addEventListener('keydown', e => {
       if (lightbox.classList.contains('open')) {
         if (e.key === 'Escape') closeLightbox();
         if (e.key === 'ArrowLeft') navigate(-1);
         if (e.key === 'ArrowRight') navigate(1);
+        if (e.key === 'Enter') { e.preventDefault(); enterCurrentGroup(); }
       } else if (currentGroup) {
         if (e.key === 'Escape') closeGroup();
         if (e.key === 'ArrowLeft') navigateGroup(-1);
