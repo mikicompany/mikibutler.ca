@@ -275,7 +275,8 @@
       "category": "starship-troopers",
       "group": "STE Computer / CC Unit",
       "description": "Computer consoles and starport terminal props.",
-      "home": false
+      "home": false,
+      "subSize": "large"
     },
     {
       "title": "STE CC Unit — 01",
@@ -284,7 +285,8 @@
       "category": "starship-troopers",
       "group": "STE Computer / CC Unit",
       "description": "Command and control unit prop.",
-      "home": false
+      "home": false,
+      "subSize": "large"
     },
     {
       "title": "STE CC Unit — 02",
