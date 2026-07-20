@@ -88,6 +88,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // work), this holds the group behind each cover so Enter / a click can
     // dive into that group's sub-pieces. Null when viewing a group's own items.
     let lightboxGroups = null;
+    // The project most recently backed out of, so Enter can toggle straight
+    // back into it from the main works view.
+    let lastGroupName = null;
 
     const grid = document.getElementById('work-grid');
     const workHeader = document.querySelector('.work-header');
@@ -484,6 +487,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     lbImg.addEventListener('click', e => { if (enterableGroup()) { e.stopPropagation(); enterCurrentGroup(); } });
 
     document.addEventListener('keydown', e => {
+      // Don't hijack Enter when a button/link/field is focused (e.g. a filter
+      // chip or the album's back button already handle it).
+      const onControl = ['INPUT', 'TEXTAREA', 'BUTTON', 'A', 'SELECT'].includes((e.target.tagName || ''));
       if (lightbox.classList.contains('open')) {
         if (e.key === 'Escape') closeLightbox();
         if (e.key === 'ArrowLeft') navigate(-1);
@@ -493,6 +499,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (e.key === 'Escape') closeGroup();
         if (e.key === 'ArrowLeft') navigateGroup(-1);
         if (e.key === 'ArrowRight') navigateGroup(1);
+        // Enter backs out of the sub-pieces to the main works view, remembering
+        // this project so Enter can jump straight back into it.
+        if (e.key === 'Enter' && !onControl) { e.preventDefault(); lastGroupName = currentGroup.name; closeGroup(); }
+      } else {
+        // On the main works view, Enter jumps back into the most recent project.
+        if (e.key === 'Enter' && !onControl && lastGroupName) {
+          const g = getGroups().find(x => x.name === lastGroupName);
+          if (g) { e.preventDefault(); currentGroup = g; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        }
       }
     });
   </script>
