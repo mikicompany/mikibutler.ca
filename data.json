@@ -755,7 +755,8 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/012/991/076/large/miki-butler-sin-titulo-4.jpg?1537514983",
       "category": "personal",
       "group": "Tumi Knife",
-      "home": false
+      "home": false,
+      "subSize": "large"
     },
     {
       "title": "Tumi Knife — Forest Scene 3D",
@@ -819,7 +820,8 @@
       "img": "https://cdnb.artstation.com/p/assets/images/images/020/489/393/large/miki-butler-p8221418.jpg?1567982775",
       "category": "personal",
       "group": "Meet Mat",
-      "home": false
+      "home": false,
+      "subSize": "large"
     },
     {
       "title": "Meet Mat — 08",
@@ -827,7 +829,8 @@
       "img": "https://cdna.artstation.com/p/assets/images/images/020/489/400/large/miki-butler-p8221417.jpg?1567982793",
       "category": "personal",
       "group": "Meet Mat",
-      "home": false
+      "home": false,
+      "subSize": "large"
     },
     {
       "title": "Calaca Mat — Painter Viewport",
