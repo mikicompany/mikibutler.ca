@@ -812,7 +812,8 @@
       "size": "small",
       "img": "https://cdnb.artstation.com/p/assets/images/images/020/489/059/large/miki-butler-p8221417.jpg?1567980992",
       "category": "personal",
-      "group": "Meet Mat"
+      "group": "Meet Mat",
+      "subSize": "large"
     },
     {
       "title": "Meet Mat — 07",
