@@ -48,6 +48,63 @@
       transition: color 0.2s;
     }
     .arcade-tools a:hover { color: var(--accent); }
+
+    /* ── Old-TV video set beneath the games ── */
+    .crt-wrap { margin-top: 44px; display: flex; flex-direction: column; align-items: center; }
+    .crt-heading { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+                   color: var(--accent); margin-bottom: 16px; }
+    .crt-tv {
+      display: flex; gap: 16px; align-items: stretch; width: 100%; max-width: 720px;
+      background: linear-gradient(157deg, #2c2c2c, #151515);
+      border: 1px solid #000; border-radius: 18px; padding: 16px;
+      box-shadow: 0 20px 44px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .crt-screen {
+      position: relative; flex: 1; aspect-ratio: 4 / 3; background: #000; border-radius: 12px; overflow: hidden;
+      box-shadow: inset 0 0 0 4px #0a0a0a, inset 0 0 44px rgba(0,0,0,.9), 0 0 22px rgba(160,255,0,.07);
+    }
+    .crt-screen iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .crt-glass {
+      position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply;
+      background:
+        repeating-linear-gradient(rgba(0,0,0,.17) 0 1px, transparent 1px 3px),
+        radial-gradient(ellipse at center, transparent 56%, rgba(0,0,0,.42) 100%);
+    }
+    .crt-static {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+      background-size: 130px 130px;
+    }
+    .crt-static.on { animation: crt-flick .34s steps(2) 1; }
+    @keyframes crt-flick { 0%,100% { opacity: 0; } 20% { opacity: .95; } 55% { opacity: .5; } 80% { opacity: .85; } }
+
+    .crt-panel { width: 76px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 4px 0; }
+    .crt-brand { font-size: 8px; letter-spacing: .1em; color: #6a6a6a; font-weight: 800; }
+    .crt-channels { display: flex; flex-direction: column; gap: 9px; }
+    .crt-ch {
+      width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-weight: 800; font-size: 16px; color: #aaa;
+      background: radial-gradient(circle at 35% 28%, #3c3c3c, #131313); border: 1px solid #000;
+      box-shadow: 0 2px 5px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09); transition: all .15s;
+    }
+    .crt-ch:hover { color: #fff; }
+    .crt-ch.active { color: #000; background: var(--accent); box-shadow: 0 0 14px rgba(160,255,0,.6); }
+    .crt-knob {
+      width: 34px; height: 34px; border-radius: 50%; position: relative;
+      background: radial-gradient(circle at 35% 28%, #363636, #111); border: 1px solid #000;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 2px 4px rgba(0,0,0,.5);
+    }
+    .crt-knob::after { content: ''; position: absolute; left: 50%; top: 5px; width: 2px; height: 11px; background: #777; transform: translateX(-50%); border-radius: 2px; }
+    .crt-speaker { width: 46px; height: 22px; margin-top: 2px; border-radius: 3px;
+                   background: repeating-linear-gradient(90deg, #0c0c0c 0 2px, #2b2b2b 2px 4px); }
+    .crt-led { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 9px var(--accent); }
+    .crt-caption { margin-top: 14px; font-size: 12px; color: #777; letter-spacing: .03em; }
+    .crt-caption b { color: var(--accent); }
+
+    @media (max-width: 640px) {
+      .crt-tv { flex-direction: column; }
+      .crt-panel { width: 100%; flex-direction: row; justify-content: center; flex-wrap: wrap; }
+      .crt-speaker { margin-top: 0; }
+    }
   </style>
 </head>
 <body>
@@ -95,6 +152,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
         </a>
       </div>
+
+      <div class="crt-wrap">
+        <div class="crt-heading">On the Telly 📺</div>
+        <div class="crt-tv">
+          <div class="crt-screen">
+            <iframe id="crt-frame" title="Arcade TV" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <div class="crt-static" id="crt-static"></div>
+            <div class="crt-glass"></div>
+          </div>
+          <div class="crt-panel">
+            <div class="crt-brand">MIKIVISION</div>
+            <div class="crt-channels">
+              <button class="crt-ch active" data-ch="0" aria-label="Channel 1">1</button>
+              <button class="crt-ch" data-ch="1" aria-label="Channel 2">2</button>
+            </div>
+            <div class="crt-knob"></div>
+            <div class="crt-knob"></div>
+            <div class="crt-speaker"></div>
+            <div class="crt-led" title="power"></div>
+          </div>
+        </div>
+        <p class="crt-caption">Channel <b id="crt-num">1</b> — turn the dial to switch</p>
+      </div>
+
       <div class="arcade-tools">
         <a href="linkcheck.html">🔗 Link Health</a>
         <span>·</span>
@@ -104,5 +185,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </main>
 
   <script src="js/sidebar.js"></script>
+  <script>
+    // Old-TV channel switcher: tune between the two videos with a static flicker.
+    (function () {
+      var VIDS = ['yYgq4ol4OWo', 'MaSAZPmdS8A'];
+      var frame = document.getElementById('crt-frame');
+      var stat = document.getElementById('crt-static');
+      var num = document.getElementById('crt-num');
+      var cur = -1;
+      function tune(i, play) {
+        if (i === cur) return;
+        cur = i;
+        stat.classList.remove('on'); void stat.offsetWidth; stat.classList.add('on');
+        document.querySelectorAll('.crt-ch').forEach(function (b) { b.classList.toggle('active', +b.dataset.ch === i); });
+        num.textContent = i + 1;
+        setTimeout(function () {
+          frame.src = 'https://www.youtube.com/embed/' + VIDS[i] + '?rel=0' + (play ? '&autoplay=1' : '');
+        }, 150);
+      }
+      document.querySelectorAll('.crt-ch').forEach(function (b) {
+        b.addEventListener('click', function () { tune(+b.dataset.ch, true); });
+      });
+      tune(0, false); // power on to channel 1 (no autoplay)
+    })();
+  </script>
 </body>
 </html>
