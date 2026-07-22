@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png" />
+  <title>Link Health — Miki Butler</title>
+  <style>
+    :root {
+      --bg: #111; --panel: #171717; --border: #2a2a2a; --text: #eee;
+      --muted: #8a8a8a; --accent: #a0ff00; --ok: #8bde3c; --bad: #ff5b5b; --warn: #ffc451;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 24px; }
+    a { color: var(--accent); }
+    header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+    header img { width: 34px; height: 34px; border-radius: 50%; box-shadow: 0 0 10px rgba(160,255,0,.35); }
+    h1 { font-size: 20px; font-weight: 700; }
+    .sub { color: var(--muted); font-size: 12px; margin-bottom: 18px; line-height: 1.5; }
+
+    .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 14px; }
+    .tile { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+    .tile .n { font-size: 26px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .tile .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
+    .tile.ok .n { color: var(--ok); } .tile.bad .n { color: var(--bad); } .tile.warn .n { color: var(--warn); }
+    .tile.pop { animation: tilepop .3s ease; }
+    @keyframes tilepop { 40% { transform: scale(1.06); } }
+
+    .bar { height: 6px; background: #222; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+    .bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg,#6cc a,var(--accent)); background: var(--accent); transition: width .2s; box-shadow: 0 0 10px rgba(160,255,0,.5); }
+    .status { font-size: 12px; color: var(--muted); min-height: 18px; margin-bottom: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .status b { color: var(--accent); }
+
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+    button { background: transparent; border: 1px solid var(--border); color: var(--text); font: inherit; font-size: 12px;
+             padding: 7px 13px; border-radius: 6px; cursor: pointer; transition: all .15s; }
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    button:disabled { opacity: .4; cursor: default; }
+    #run { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 800; font-size: 14px; padding: 11px 22px; letter-spacing: .02em; }
+    #run:hover:not(:disabled) { color: #000; filter: brightness(1.08); box-shadow: 0 0 22px rgba(160,255,0,.4); }
+    #run.pulse { animation: runpulse 1.6s ease-in-out infinite; }
+    @keyframes runpulse { 0%,100% { box-shadow: 0 0 0 rgba(160,255,0,.0); } 50% { box-shadow: 0 0 26px rgba(160,255,0,.55); } }
+    .chip { font-size: 11px; }
+    .chip.active { border-color: var(--accent); color: var(--accent); }
+    .spacer { flex: 1; }
+
+    .rows { display: flex; flex-direction: column; gap: 4px; }
+    .row { position: relative; overflow: hidden; display: grid; grid-template-columns: 22px 46px 1fr auto; align-items: center; gap: 12px;
+           background: var(--panel); border: 1px solid var(--border); border-radius: 7px; padding: 7px 12px;
+           transition: border-color .2s, background .2s, opacity .2s; }
+    .row.hide { display: none; }
+    .row.queued { opacity: .5; }
+    .row.scanning { opacity: 1; border-color: var(--accent); background: #14180c;
+                    box-shadow: 0 0 0 1px var(--accent), 0 0 20px rgba(160,255,0,.18); }
+    .row.scanning::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(100deg, transparent 32%, rgba(160,255,0,.16) 50%, transparent 68%);
+      transform: translateX(-100%); animation: sweep .9s linear infinite; }
+    @keyframes sweep { to { transform: translateX(100%); } }
+    .row.pop { animation: rowpop .32s ease; }
+    @keyframes rowpop { 40% { transform: scale(1.014); } }
+
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: #333; justify-self: center; transition: background .2s; }
+    .dot.queued { background: #3a3a3a; }
+    .dot.ok { background: var(--ok); } .dot.bad { background: var(--bad); box-shadow: 0 0 8px rgba(255,91,91,.6); }
+    .dot.warn { background: var(--warn); } .dot.checking { background: var(--accent); animation: pulse .8s infinite; }
+    @keyframes pulse { 50% { opacity: .3; } }
+    .thumb { width: 46px; height: 34px; border-radius: 4px; object-fit: cover; background: #000; border: 1px solid #222; }
+    .thumb.icon { display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--muted); }
+    .meta { min-width: 0; }
+    .meta .t { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .meta .u { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .meta .u a { color: var(--muted); text-decoration: none; }
+    .meta .u a:hover { color: var(--accent); }
+    .badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 3px 8px;
+             border-radius: 999px; white-space: nowrap; }
+    .badge.queued { color: var(--muted); background: #202020; }
+    .badge.checking { color: #000; background: var(--accent); }
+    .badge.ok { color: var(--ok); background: rgba(139,222,60,.12); }
+    .badge.bad { color: var(--bad); background: rgba(255,91,91,.14); }
+    .badge.warn { color: var(--warn); background: rgba(255,196,81,.14); }
+    .type { display: inline-block; font-size: 9px; color: var(--muted); border: 1px solid var(--border);
+            border-radius: 4px; padding: 1px 5px; margin-right: 6px; text-transform: uppercase; letter-spacing: .04em; }
+    footer { color: var(--muted); font-size: 11px; margin-top: 18px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="images/logo512.jpg" alt="" />
+    <h1>Link Health</h1>
+    <span class="type" style="font-size:11px">mikibutler.ca</span>
+  </header>
+  <p class="sub">
+    Scans every image, video, 3D viewer, social and internal link the site uses. Results reflect
+    <b>your browser's network</b>, so run it from a normal connection. Cross-origin embeds &amp; social links
+    can only be checked for reachability (their exact status is hidden by the browser) — open them to confirm.
+    Protected works are encrypted and not listed here.
+  </p>
+
+  <div class="tiles">
+    <div class="tile"><div class="n" id="t-total">0</div><div class="l">Total links</div></div>
+    <div class="tile ok"><div class="n" id="t-ok">0</div><div class="l">Healthy</div></div>
+    <div class="tile bad"><div class="n" id="t-bad">0</div><div class="l">Broken</div></div>
+    <div class="tile warn"><div class="n" id="t-warn">0</div><div class="l">Unverifiable</div></div>
+    <div class="tile"><div class="n" id="t-left">0</div><div class="l">Remaining</div></div>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="status" id="status">Ready to scan.</div>
+
+  <div class="controls">
+    <button id="run" class="pulse">▶ Start scan</button>
+    <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="bad">Broken</button>
+    <button class="chip" data-filter="warn">Unverifiable</button>
+    <button class="chip" data-filter="ok">Healthy</button>
+    <span class="spacer"></span>
+    <button id="copy">⧉ Copy broken URLs</button>
+  </div>
+
+  <div class="rows" id="rows"></div>
+
+  <footer>
+    <b>Legend:</b> ● Healthy — the resource loaded ·
+    ● Broken — it failed to load (missing / renamed / removed) ·
+    ● Unverifiable — reachable but the browser hides the exact status (embeds &amp; external links); open it to confirm.
+  </footer>
+
+  <script>
+    const DATA_URL = 'data.json?t=' + Date.now();
+    const rowsEl = document.getElementById('rows');
+    const statusEl = document.getElementById('status');
+    const runBtn = document.getElementById('run');
+    let checks = [];
+    let filter = 'all';
+    let scanning = false;
+
+    const ICONS = { mp4: '🎞', embed: '🧊', link: '🔗', internal: '📄', youtube: '▶' };
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    async function buildList() {
+      const data = await fetch(DATA_URL).then(r => r.json());
+      const out = [], seen = new Set();
+      const add = (type, url, label, where, thumb) => {
+        const key = type + '|' + url;
+        if (seen.has(key)) return;
+        seen.add(key);
+        out.push({ type, url, label: label || url, where: where || '', thumb });
+      };
+      (data.work || []).forEach(it => {
+        const where = it.group || (it.title || '').split(' — ')[0];
+        if (it.img) add('image', it.img, it.title, where, it.img);
+        if (it.video) add('youtube', 'https://youtu.be/' + it.video, it.title, where,
+                          'https://i.ytimg.com/vi/' + it.video + '/hqdefault.jpg');
+        if (it.mp4) add('mp4', it.mp4, it.title, where);
+        if (it.embed) add('embed', it.embed, it.title, where);
+      });
+      (data.socials || []).forEach(s => add('link', s.href, s.label, 'Socials'));
+      (data.menu || []).forEach(m => add('internal', m.href, m.label, 'Menu'));
+      ['images/favicon-32.png', 'images/favicon-16.png', 'images/apple-touch-icon.png',
+       'images/logo512.jpg', 'video/logo-reveal.mp4', 'video/logo-reveal.webm',
+       'arcade.html', 'spacefrogs/index.html', 'hungry/index.html', 'somanyrockers/index.html'
+      ].forEach(u => add('internal', u, u, 'Site assets'));
+      return out;
+    }
+
+    // ── per-type checks ──
+    const withTimeout = (ms, run) => new Promise(res => {
+      let done = false;
+      const t = setTimeout(() => { if (!done) { done = true; res({ state: 'warn', note: 'timed out' }); } }, ms);
+      run(r => { if (!done) { done = true; clearTimeout(t); res(r); } });
+    });
+
+    function checkImageEl(imgEl, url, isYouTube) {
+      return withTimeout(30000, done => {
+        imgEl.onload = () => {
+          if (isYouTube && imgEl.naturalWidth && imgEl.naturalWidth <= 120)
+            return done({ state: 'bad', note: 'no thumbnail — video private or removed' });
+          done({ state: 'ok' });
+        };
+        imgEl.onerror = () => done({ state: 'bad', note: 'failed to load' });
+        imgEl.src = url;
+      });
+    }
+    function checkVideo(url) {
+      return withTimeout(30000, done => {
+        const v = document.createElement('video');
+        v.preload = 'metadata'; v.muted = true;
+        v.onloadedmetadata = () => { done({ state: 'ok' }); v.removeAttribute('src'); };
+        v.onerror = () => done({ state: 'bad', note: 'failed to load' });
+        v.src = url;
+      });
+    }
+    function fetchWithTimeout(url, opts, ms) {
+      const ac = new AbortController();
+      const t = setTimeout(() => ac.abort(), ms);
+      return fetch(url, { ...opts, signal: ac.signal }).finally(() => clearTimeout(t));
+    }
+    async function checkReachable(url) {
+      try { await fetchWithTimeout(url, { mode: 'no-cors', cache: 'no-store' }, 12000);
+        return { state: 'warn', note: 'reachable — open to confirm' };
+      } catch (e) { return { state: 'bad', note: e.name === 'AbortError' ? 'no response (timed out)' : 'unreachable' }; }
+    }
+    async function checkInternal(url) {
+      try { const r = await fetchWithTimeout(url, { cache: 'no-store' }, 12000);
+        return r.ok ? { state: 'ok' } : { state: 'bad', note: 'HTTP ' + r.status };
+      } catch (e) { return { state: 'bad', note: e.name === 'AbortError' ? 'timed out' : (e.message || 'fetch failed') }; }
+    }
+
+    function makeRow(c) {
+      const row = document.createElement('div');
+      row.className = 'row queued';
+      const isImg = c.type === 'image' || c.type === 'youtube';
+      const thumb = isImg ? `<img class="thumb" alt="" />` : `<div class="thumb icon">${ICONS[c.type] || '🔗'}</div>`;
+      row.innerHTML = `
+        <span class="dot queued"></span>
+        ${thumb}
+        <div class="meta">
+          <div class="t">${escapeHtml(c.label)}</div>
+          <div class="u"><span class="type">${c.type}</span>${c.where ? escapeHtml(c.where) + ' · ' : ''}<a href="${encodeURI(c.url)}" target="_blank" rel="noopener">${escapeHtml(c.url)}</a></div>
+        </div>
+        <span class="badge queued">queued</span>
+      `;
+      c.el = row; c.state = null;
+      c.imgEl = row.querySelector('.thumb');
+      c.dotEl = row.querySelector('.dot');
+      c.badgeEl = row.querySelector('.badge');
+      rowsEl.appendChild(row);
+      return c;
+    }
+
+    function markChecking(c) {
+      c.el.classList.remove('queued'); c.el.classList.add('scanning');
+      c.dotEl.className = 'dot checking';
+      c.badgeEl.className = 'badge checking'; c.badgeEl.textContent = 'scanning';
+    }
+    function setState(c, r) {
+      c.state = r.state;
+      c.el.classList.remove('scanning'); c.el.classList.add('pop');
+      setTimeout(() => c.el.classList.remove('pop'), 340);
+      c.dotEl.className = 'dot ' + r.state;
+      c.badgeEl.className = 'badge ' + r.state;
+      c.badgeEl.textContent = r.state === 'ok' ? 'healthy' : r.state === 'bad' ? 'broken' : 'unverifiable';
+      if (r.note) c.badgeEl.title = r.note;
+      applyFilter(); updateSummary();
+    }
+    async function runCheck(c) {
+      markChecking(c);
+      let r;
+      if (c.type === 'image') r = await checkImageEl(c.imgEl, c.url, false);
+      else if (c.type === 'youtube') r = await checkImageEl(c.imgEl, c.thumb, true);
+      else if (c.type === 'mp4') r = await checkVideo(c.url);
+      else if (c.type === 'internal') r = await checkInternal(c.url);
+      else r = await checkReachable(c.url);
+      setState(c, r);
+    }
+
+    // ── the fun part: a wave that sweeps down the list ──
+    let lastFollow = 0;
+    function follow(el) {
+      const now = performance.now();
+      if (now - lastFollow < 80) return;
+      lastFollow = now;
+      const r = el.getBoundingClientRect();
+      window.scrollTo({ top: window.scrollY + r.top - window.innerHeight * 0.42, behavior: 'smooth' });
+    }
+
+    async function scan() {
+      if (scanning) return;
+      scanning = true;
+      runBtn.disabled = true; runBtn.classList.remove('pulse');
+      runBtn.textContent = '◆ Scanning…';
+      const STAGGER = 42, MAX_ACTIVE = 6;
+      let active = 0, started = 0;
+      for (const c of checks) {
+        while (active >= MAX_ACTIVE) await sleep(18);
+        active++; started++;
+        follow(c.el);
+        statusEl.innerHTML = `Scanning <b>${started}</b> / ${checks.length} — <span style="color:#bbb">${escapeHtml(c.label)}</span>`;
+        runCheck(c).then(() => { active--; });
+        await sleep(STAGGER);
+      }
+      while (checks.some(c => !c.state)) await sleep(60);
+      onComplete();
+    }
+
+    function onComplete() {
+      scanning = false;
+      runBtn.disabled = false;
+      runBtn.textContent = '↻ Re-run scan';
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // back to the summary
+      const bad = checks.filter(c => c.state === 'bad').length;
+      const warn = checks.filter(c => c.state === 'warn').length;
+      const ok = checks.filter(c => c.state === 'ok').length;
+      statusEl.innerHTML = bad
+        ? `Scan complete — <b style="color:var(--bad)">${bad} broken</b>, ${warn} unverifiable, ${ok} healthy. Use the Broken filter to see them.`
+        : `✓ Scan complete — <b>all ${ok} loadable links healthy</b>${warn ? `, ${warn} unverifiable (open to confirm)` : ''}.`;
+      ['t-ok','t-bad','t-warn'].forEach(id => {
+        const tile = document.getElementById(id).closest('.tile');
+        tile.classList.add('pop'); setTimeout(() => tile.classList.remove('pop'), 320);
+      });
+      if (bad) { document.querySelector('.chip[data-filter="bad"]').click(); }
+    }
+
+    function updateSummary() {
+      const n = { ok: 0, bad: 0, warn: 0, left: 0 };
+      checks.forEach(c => { if (!c.state) n.left++; else n[c.state]++; });
+      document.getElementById('t-total').textContent = checks.length;
+      document.getElementById('t-ok').textContent = n.ok;
+      document.getElementById('t-bad').textContent = n.bad;
+      document.getElementById('t-warn').textContent = n.warn;
+      document.getElementById('t-left').textContent = n.left;
+      const done = checks.length - n.left;
+      document.getElementById('bar').style.width = checks.length ? (done / checks.length * 100) + '%' : '0';
+    }
+    function applyFilter() {
+      checks.forEach(c => {
+        const show = filter === 'all' || c.state === filter;
+        if (c.el) c.el.classList.toggle('hide', !show);
+      });
+    }
+    function escapeHtml(s) { return String(s).replace(/[&<>"]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m])); }
+
+    async function init() {
+      rowsEl.innerHTML = '';
+      statusEl.textContent = 'Loading links…';
+      try {
+        const list = await buildList();
+        checks = list.map(makeRow);
+        updateSummary();
+        statusEl.innerHTML = `Ready — <b>${checks.length}</b> links found. Press <b>Start scan</b>.`;
+        // linkcheck.html?scan=1 kicks the scan off automatically.
+        if (new URLSearchParams(location.search).get('scan') === '1') scan();
+      } catch (e) {
+        statusEl.textContent = 'Could not load data.json: ' + e.message;
+      }
+    }
+
+    runBtn.addEventListener('click', () => { if (!scanning) { checks.forEach(resetRow); updateSummary(); scan(); } });
+    function resetRow(c) {
+      c.state = null;
+      c.el.className = 'row queued';
+      c.dotEl.className = 'dot queued';
+      c.badgeEl.className = 'badge queued'; c.badgeEl.textContent = 'queued';
+      if (c.imgEl && c.imgEl.tagName === 'IMG') c.imgEl.removeAttribute('src');
+    }
+    document.getElementById('copy').addEventListener('click', () => {
+      const brokenList = checks.filter(c => c.state === 'bad');
+      navigator.clipboard.writeText(brokenList.map(c => c.url).join('\n') || '(none)').then(() => {
+        const b = document.getElementById('copy'); const old = b.textContent;
+        b.textContent = '✓ Copied ' + brokenList.length; setTimeout(() => b.textContent = old, 1500);
+      });
+    });
+    document.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active'); filter = btn.dataset.filter; applyFilter();
+    }));
+
+    init();
+  </script>
+</body>
+</html>
