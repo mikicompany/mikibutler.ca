@@ -31,6 +31,23 @@
     /* Fade the page up so it emerges from the Easter-egg flash */
     body { animation: arcade-in 0.45s ease both; }
     @keyframes arcade-in { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Discreet tools row at the bottom of the (hidden) arcade page */
+    .arcade-tools {
+      margin-top: 48px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: #555;
+    }
+    .arcade-tools a {
+      color: #888;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+    .arcade-tools a:hover { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -77,6 +94,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <span class="arcade-tag">Rhythm</span>
           </div>
         </a>
+      </div>
+      <div class="arcade-tools">
+        <a href="linkcheck.html">🔗 Link Health</a>
+        <span>·</span>
+        <a href="admin.html">🛠 Admin</a>
       </div>
     </div>
   </main>
