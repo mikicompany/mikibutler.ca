@@ -840,7 +840,8 @@
       "embed": "https://sketchfab.com/models/9b85cc26df9348b9977d10c2c287a619/embed",
       "category": "personal",
       "group": "Meet Mat",
-      "home": false
+      "home": false,
+      "hidden": true
     },
     {
       "title": "Meet Mat — 09",
