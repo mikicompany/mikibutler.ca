@@ -57,6 +57,27 @@
   }
   </script>
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* Beating heart next to a favourite tool */
+    .love-heart {
+      display: inline-block;
+      color: #ff3b5c;
+      margin-left: 5px;
+      font-size: 1.05em;
+      transform-origin: center;
+      animation: heartbeat 1.3s ease-in-out infinite;
+      filter: drop-shadow(0 0 4px rgba(255, 59, 92, 0.55));
+      will-change: transform;
+    }
+    @keyframes heartbeat {
+      0%   { transform: scale(1); }
+      14%  { transform: scale(1.32); }
+      28%  { transform: scale(1); }
+      42%  { transform: scale(1.32); }
+      70%  { transform: scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) { .love-heart { animation: none; } }
+  </style>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 </head>
@@ -209,7 +230,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div class="software-icon" style="background:#222">
               <img src="https://cdn.simpleicons.org/blender/e87d0d" alt="Blender" width="18" height="18" />
             </div>
-            Blender
+            <span>Blender <span class="love-heart" aria-label="love" title="a personal favourite">&#10084;</span></span>
           </a>
           <a class="software-item" href="https://www.autodesk.com/products/maya/" target="_blank" rel="noopener">
             <div class="software-icon" style="background:#0696d7">
