@@ -79,6 +79,8 @@
     .badge.ok { color: var(--ok); background: rgba(139,222,60,.12); }
     .badge.bad { color: var(--bad); background: rgba(255,91,91,.14); }
     .badge.warn { color: var(--warn); background: rgba(255,196,81,.14); }
+    .badge.heavy { color: var(--warn); background: rgba(255,196,81,.16); border: 1px solid rgba(255,196,81,.4); }
+    .badges { display: flex; gap: 6px; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
     .type { display: inline-block; font-size: 9px; color: var(--muted); border: 1px solid var(--border);
             border-radius: 4px; padding: 1px 5px; margin-right: 6px; text-transform: uppercase; letter-spacing: .04em; }
     footer { color: var(--muted); font-size: 11px; margin-top: 18px; line-height: 1.6; }
@@ -101,6 +103,7 @@
     <div class="tile"><div class="n" id="t-total">0</div><div class="l">Total links</div></div>
     <div class="tile ok"><div class="n" id="t-ok">0</div><div class="l">Healthy</div></div>
     <div class="tile bad"><div class="n" id="t-bad">0</div><div class="l">Broken</div></div>
+    <div class="tile warn"><div class="n" id="t-heavy">0</div><div class="l">Heavy images</div></div>
     <div class="tile warn"><div class="n" id="t-warn">0</div><div class="l">Unverifiable</div></div>
     <div class="tile"><div class="n" id="t-left">0</div><div class="l">Remaining</div></div>
   </div>
@@ -111,6 +114,7 @@
     <button id="run" class="pulse">▶ Start scan</button>
     <button class="chip active" data-filter="all">All</button>
     <button class="chip" data-filter="bad">Broken</button>
+    <button class="chip" data-filter="heavy">Heavy images</button>
     <button class="chip" data-filter="warn">Unverifiable</button>
     <button class="chip" data-filter="ok">Healthy</button>
     <span class="spacer"></span>
@@ -122,7 +126,9 @@
   <footer>
     <b>Legend:</b> ● Healthy — the resource loaded ·
     ● Broken — it failed to load (missing / renamed / removed) ·
-    ● Unverifiable — reachable but the browser hides the exact status (embeds &amp; external links); open it to confirm.
+    ● Unverifiable — reachable but the browser hides the exact status (embeds &amp; external links); open it to confirm ·
+    <span style="color:var(--warn)">⚠ Heavy</span> — the source image is much larger than the tile it fills
+    (≥ 2600px on its longest edge, or ≥ 6MP), so it costs extra bandwidth &amp; decode time; a smaller export would load faster.
   </footer>
 
   <script>
@@ -170,12 +176,18 @@
       run(r => { if (!done) { done = true; clearTimeout(t); res(r); } });
     });
 
+    // A source image is "heavy" when its longest edge or megapixel count is far
+    // bigger than any tile needs — it downloads/decodes big then gets downscaled.
+    const HEAVY_EDGE = 2600;   // px (flags ArtStation /4k/ 3840-wide sources)
+    const HEAVY_MP = 6;        // megapixels
     function checkImageEl(imgEl, url, isYouTube) {
       return withTimeout(30000, done => {
         imgEl.onload = () => {
-          if (isYouTube && imgEl.naturalWidth && imgEl.naturalWidth <= 120)
+          const w = imgEl.naturalWidth, h = imgEl.naturalHeight;
+          if (isYouTube && w && w <= 120)
             return done({ state: 'bad', note: 'no thumbnail — video private or removed' });
-          done({ state: 'ok' });
+          const heavy = !isYouTube && (Math.max(w, h) >= HEAVY_EDGE || (w * h) / 1e6 >= HEAVY_MP);
+          done({ state: 'ok', w, h, heavy });
         };
         imgEl.onerror = () => done({ state: 'bad', note: 'failed to load' });
         imgEl.src = url;
@@ -218,12 +230,13 @@
           <div class="t">${escapeHtml(c.label)}</div>
           <div class="u"><span class="type">${c.type}</span>${c.where ? escapeHtml(c.where) + ' · ' : ''}<a href="${encodeURI(c.url)}" target="_blank" rel="noopener">${escapeHtml(c.url)}</a></div>
         </div>
-        <span class="badge queued">queued</span>
+        <span class="badges"><span class="badge queued">queued</span><span class="badge heavy" hidden></span></span>
       `;
-      c.el = row; c.state = null;
+      c.el = row; c.state = null; c.heavy = false;
       c.imgEl = row.querySelector('.thumb');
       c.dotEl = row.querySelector('.dot');
-      c.badgeEl = row.querySelector('.badge');
+      c.badgeEl = row.querySelector('.badges .badge');
+      c.heavyEl = row.querySelector('.badge.heavy');
       rowsEl.appendChild(row);
       return c;
     }
@@ -241,6 +254,12 @@
       c.badgeEl.className = 'badge ' + r.state;
       c.badgeEl.textContent = r.state === 'ok' ? 'healthy' : r.state === 'bad' ? 'broken' : 'unverifiable';
       if (r.note) c.badgeEl.title = r.note;
+      c.heavy = !!r.heavy;
+      if (r.heavy) {
+        c.heavyEl.hidden = false;
+        c.heavyEl.textContent = '⚠ ' + r.w + '×' + r.h;
+        c.heavyEl.title = 'Large source (' + r.w + '×' + r.h + 'px) downscaled on the page — a smaller export would load faster';
+      } else if (c.heavyEl) { c.heavyEl.hidden = true; }
       applyFilter(); updateSummary();
     }
     async function runCheck(c) {
@@ -291,9 +310,11 @@
       const bad = checks.filter(c => c.state === 'bad').length;
       const warn = checks.filter(c => c.state === 'warn').length;
       const ok = checks.filter(c => c.state === 'ok').length;
-      statusEl.innerHTML = bad
+      const heavy = checks.filter(c => c.heavy).length;
+      const heavyTxt = heavy ? ` · <b style="color:var(--warn)">${heavy} heavy image${heavy > 1 ? 's' : ''}</b> (see Heavy filter)` : '';
+      statusEl.innerHTML = (bad
         ? `Scan complete — <b style="color:var(--bad)">${bad} broken</b>, ${warn} unverifiable, ${ok} healthy. Use the Broken filter to see them.`
-        : `✓ Scan complete — <b>all ${ok} loadable links healthy</b>${warn ? `, ${warn} unverifiable (open to confirm)` : ''}.`;
+        : `✓ Scan complete — <b>all ${ok} loadable links healthy</b>${warn ? `, ${warn} unverifiable (open to confirm)` : ''}.`) + heavyTxt;
       ['t-ok','t-bad','t-warn'].forEach(id => {
         const tile = document.getElementById(id).closest('.tile');
         tile.classList.add('pop'); setTimeout(() => tile.classList.remove('pop'), 320);
@@ -303,10 +324,12 @@
 
     function updateSummary() {
       const n = { ok: 0, bad: 0, warn: 0, left: 0 };
-      checks.forEach(c => { if (!c.state) n.left++; else n[c.state]++; });
+      let heavy = 0;
+      checks.forEach(c => { if (!c.state) n.left++; else n[c.state]++; if (c.heavy) heavy++; });
       document.getElementById('t-total').textContent = checks.length;
       document.getElementById('t-ok').textContent = n.ok;
       document.getElementById('t-bad').textContent = n.bad;
+      document.getElementById('t-heavy').textContent = heavy;
       document.getElementById('t-warn').textContent = n.warn;
       document.getElementById('t-left').textContent = n.left;
       const done = checks.length - n.left;
@@ -314,7 +337,7 @@
     }
     function applyFilter() {
       checks.forEach(c => {
-        const show = filter === 'all' || c.state === filter;
+        const show = filter === 'all' || (filter === 'heavy' ? c.heavy : c.state === filter);
         if (c.el) c.el.classList.toggle('hide', !show);
       });
     }
@@ -337,10 +360,11 @@
 
     runBtn.addEventListener('click', () => { if (!scanning) { checks.forEach(resetRow); updateSummary(); scan(); } });
     function resetRow(c) {
-      c.state = null;
+      c.state = null; c.heavy = false;
       c.el.className = 'row queued';
       c.dotEl.className = 'dot queued';
       c.badgeEl.className = 'badge queued'; c.badgeEl.textContent = 'queued';
+      if (c.heavyEl) c.heavyEl.hidden = true;
       if (c.imgEl && c.imgEl.tagName === 'IMG') c.imgEl.removeAttribute('src');
     }
     document.getElementById('copy').addEventListener('click', () => {
