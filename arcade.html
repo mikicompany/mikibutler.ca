@@ -119,9 +119,18 @@
     .cab-marquee {
       font-family: 'Press Start 2P', monospace; font-size: 15px; text-align: center; color: #fff;
       padding: 13px 8px; border-radius: 8px; letter-spacing: 1px; margin-bottom: 12px;
-      background: linear-gradient(90deg, #ff3cac, #7a5cff 55%, #00e6ff);
-      text-shadow: 0 0 6px rgba(255,255,255,.7); box-shadow: 0 0 20px rgba(122,92,255,.55), inset 0 -3px 6px rgba(0,0,0,.35);
+      background: linear-gradient(90deg, #ff3cac, #7a5cff 25%, #00e6ff 50%, #7a5cff 75%, #ff3cac);
+      background-size: 200% 100%;
+      text-shadow: 0 0 6px rgba(255,255,255,.7);
+      animation: marquee-flow 5s linear infinite, marquee-glow 2s ease-in-out infinite;
     }
+    @keyframes marquee-flow { to { background-position: 200% 0; } }
+    @keyframes marquee-glow {
+      0%, 100% { box-shadow: 0 0 16px rgba(122,92,255,.5), inset 0 -3px 6px rgba(0,0,0,.35); }
+      50%      { box-shadow: 0 0 30px rgba(0,230,255,.75), 0 0 46px rgba(255,60,172,.45), inset 0 -3px 6px rgba(0,0,0,.35); }
+    }
+    /* Freeze the marquee while a game is running */
+    .cab.playing .cab-marquee { animation: none; box-shadow: 0 0 14px rgba(122,92,255,.4), inset 0 -3px 6px rgba(0,0,0,.35); }
     .cab-screen {
       position: relative; aspect-ratio: 3 / 4; background: #04060a; overflow: hidden;
       border: 7px solid #0a0a0a; border-radius: 10px;
@@ -227,7 +236,7 @@
       .cab-hint { font-size: 6px; }
       .cab-deck { gap: 26px; padding: 12px 8px; }
     }
-    @media (prefers-reduced-motion: reduce) { .cab-list li.sel::before, .cab-coin, .cab-btn.red::after { animation: none; } }
+    @media (prefers-reduced-motion: reduce) { .cab-list li.sel::before, .cab-coin, .cab-btn.red::after, .cab-marquee { animation: none; } }
   </style>
 </head>
 <body>
@@ -353,6 +362,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var frame = document.getElementById('cab-frame');
       var openBtn = document.getElementById('cab-open');
       var stick = document.getElementById('cab-stick');
+      var cab = document.querySelector('.cab');
       var sel = 0, playing = false;
 
       // ── 8-bit sound (square-wave blips via Web Audio) ──
@@ -392,8 +402,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         frame.src = url;
         openBtn.href = url;
         menu.hidden = true; game.hidden = false;
+        cab.classList.add('playing'); // freeze the marquee while playing
       }
-      function toMenu() { playing = false; frame.src = 'about:blank'; game.hidden = true; menu.hidden = false; sClick(); }
+      function toMenu() { playing = false; frame.src = 'about:blank'; game.hidden = true; menu.hidden = false; cab.classList.remove('playing'); sClick(); }
 
       items.forEach(function (li, i) {
         li.addEventListener('click', function () { if (sel === i) start(); else { sel = i; render(); sMove(); } });
