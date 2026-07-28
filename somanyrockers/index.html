@@ -6,6 +6,16 @@
     <title>Unity WebGL Player | So Many Rockers</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+    <style>
+      /* Fill the arcade-cabinet iframe: center the canvas and scale it to fit
+         (contain — never stretched or cut), hide the Unity footer. */
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+      #unity-container.unity-desktop { position: absolute; left: 0; top: 0; transform: none;
+        width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+      #unity-canvas { max-width: 100% !important; max-height: 100% !important; width: auto !important; height: auto !important; display: block; }
+      #unity-footer { display: none !important; }
+      #unity-mobile-warning { display: none !important; }
+    </style>
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">

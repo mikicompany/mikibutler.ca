@@ -265,9 +265,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div class="cab-menu" id="cab-menu">
               <div class="cab-title">SELECT GAME</div>
               <ul class="cab-list" id="cab-list">
-                <li data-url="spacefrogs/" data-cover="images/arcade/spacefrogs.jpg">SPACE FROGS</li>
-                <li data-url="hungry/" data-cover="images/arcade/hungry.jpg">HUNGRY BIRTHS</li>
-                <li data-url="somanyrockers/" data-cover="images/arcade/somanyrockers.jpg">SO MANY ROCKERS</li>
+                <li data-url="spacefrogs/" data-cover="images/arcade/spacefrogs.jpg" data-ar="8 / 5">SPACE FROGS</li>
+                <li data-url="hungry/" data-cover="images/arcade/hungry.jpg" data-ar="2 / 3">HUNGRY BIRTHS</li>
+                <li data-url="somanyrockers/" data-cover="images/arcade/somanyrockers.jpg" data-ar="8 / 5">SO MANY ROCKERS</li>
               </ul>
               <div class="cab-hint">JOYSTICK / &#9650;&#9660; SELECT<br>RED BUTTON / &#9166; START</div>
               <div class="cab-coin">PRESS START</div>
@@ -363,6 +363,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var openBtn = document.getElementById('cab-open');
       var stick = document.getElementById('cab-stick');
       var cab = document.querySelector('.cab');
+      var screenEl = document.querySelector('.cab-screen');
       var sel = 0, playing = false;
 
       // ── 8-bit sound (square-wave blips via Web Audio) ──
@@ -401,10 +402,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         var url = items[sel].dataset.url;
         frame.src = url;
         openBtn.href = url;
+        screenEl.style.aspectRatio = items[sel].dataset.ar || '8 / 5'; // fit the screen to the game
         menu.hidden = true; game.hidden = false;
         cab.classList.add('playing'); // freeze the marquee while playing
       }
-      function toMenu() { playing = false; frame.src = 'about:blank'; game.hidden = true; menu.hidden = false; cab.classList.remove('playing'); sClick(); }
+      function toMenu() { playing = false; frame.src = 'about:blank'; screenEl.style.aspectRatio = ''; game.hidden = true; menu.hidden = false; cab.classList.remove('playing'); sClick(); }
 
       items.forEach(function (li, i) {
         li.addEventListener('click', function () { if (sel === i) start(); else { sel = i; render(); sMove(); } });
