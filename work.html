@@ -104,6 +104,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // back into it from the main works view.
     let lastGroupName = null;
 
+    // Grid thumbnails use ArtStation's 1920px "large" variant instead of the
+    // 3840px "4k" source — ~4× lighter to load; the lightbox still uses 4k.
+    const thumb = u => (u || '').replace('/4k/', '/large/');
+
     const grid = document.getElementById('work-grid');
     const workHeader = document.querySelector('.work-header');
 
@@ -314,7 +318,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const div = document.createElement('div');
       div.className = `masonry-item size-${sizeOf(cover)}`;
       div.innerHTML = `
-        <img src="${cover.img}" alt="${g.name}" loading="lazy"${tileStyle(cover)} />
+        <img src="${thumb(cover.img)}" alt="${g.name}" loading="lazy"${tileStyle(cover)} />
         ${multi ? `<span class="item-count">${g.items.length}</span>` : mediaBadge(cover)}
         <div class="item-overlay">
           <span class="item-tag">${CATEGORY_LABELS[g.category] || g.category || ''}</span>
@@ -388,7 +392,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const div = document.createElement('div');
         div.className = `masonry-item size-${subSizeOf(item)}`;
         div.innerHTML = `
-          <img src="${item.img}" alt="${item.title}" loading="lazy"${tileStyle(item)} />
+          <img src="${thumb(item.img)}" alt="${item.title}" loading="lazy"${tileStyle(item)} />
           ${mediaBadge(item)}
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[item.category] || item.category || ''}</span>

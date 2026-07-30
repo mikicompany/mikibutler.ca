@@ -360,7 +360,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         slide.className = 'slide';
         const media = item.video
           ? `<div class="slide-video"><iframe class="slide-video-frame" src="https://www.youtube.com/embed/${item.video}?autoplay=1&mute=1&loop=1&playlist=${item.video}&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1" title="${item.title}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>`
-          : `<img src="${item.img}" alt="${item.title}" />`;
+          : `<img src="${(item.img || '').replace('/4k/', '/large/')}" alt="${item.title}" />`;
         slide.innerHTML = `
           ${media}
           <div class="slide-overlay"></div>
