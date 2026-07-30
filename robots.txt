@@ -2,13 +2,11 @@
 User-agent: *
 Allow: /
 
-# Private / tooling / heavy game builds — no search value
-Disallow: /admin.html
-Disallow: /linkcheck.html
-Disallow: /tools/
+# Heavy game builds — skip to save crawl budget (no search value).
+# Private pages (admin, tools, protected, arcade) are kept out of search
+# via their own noindex meta tags, not listed here.
 Disallow: /spacefrogs/
 Disallow: /hungry/
 Disallow: /somanyrockers/
-Disallow: /protected-data.json
 
 Sitemap: https://mikibutler.ca/sitemap.xml
