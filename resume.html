@@ -22,13 +22,13 @@
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png" />
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
-  <title>About Miki Butler — Senior Environment Artist in Vancouver | 15+ Years</title>
-  <meta name="description" content="Miki Butler is a Senior Environment Artist in Vancouver with 15+ years crafting game worlds for studios including Capcom, EA, Ubisoft, Offworld Industries and Next Level Games — Starship Troopers Extermination, Dead Rising 4, Plants vs Zombies. Also mentors 3D artists at Think Tank Training Centre." />
+  <title>About Miki Butler — Senior Environment Artist in Vancouver | 18+ Years</title>
+  <meta name="description" content="Miki Butler is a Senior Environment Artist in Vancouver with 18+ years crafting game worlds for studios including Capcom, EA, Ubisoft, Offworld Industries and Next Level Games — Starship Troopers Extermination, Dead Rising 4, Plants vs Zombies. Also mentors 3D artists at Think Tank Training Centre." />
   <meta name="keywords" content="Miki Butler, environment artist Vancouver, senior environment artist, game environment art, 3D artist, Next Level Games, Starship Troopers Extermination, Dead Rising 4, Plants vs Zombies, Think Tank Training Centre mentor, Unreal Engine, Substance 3D, ZBrush" />
   <meta name="author" content="Miki Butler" />
   <meta property="og:type" content="profile" />
   <meta property="og:title" content="Miki Butler — Senior Environment Artist" />
-  <meta property="og:description" content="15+ years of game environment art for Capcom, EA, Ubisoft, Offworld Industries and Next Level Games. Mentor at Think Tank Training Centre. Based in Vancouver, Canada." />
+  <meta property="og:description" content="18+ years of game environment art for Capcom, EA, Ubisoft, Offworld Industries and Next Level Games. Mentor at Think Tank Training Centre. Based in Vancouver, Canada." />
   <meta property="og:url" content="https://mikibutler.ca/resume.html" />
   <meta property="og:image" content="https://mikibutler.ca/images/logo512.jpg" />
   <meta name="twitter:card" content="summary" />
@@ -109,7 +109,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
           </div>
           <p class="resume-bio" style="margin-top:20px">
-            Hi, I'm Miki Butler — a Senior Environment Artist based in Vancouver, Canada, with 15+ years crafting immersive game worlds. Making games is what makes me happy, and happy is good. :)<br><br>
+            Hi, I'm Miki Butler — a Senior Environment Artist based in Vancouver, Canada, with <span class="years-xp">18</span> years crafting immersive game worlds. Making games is what makes me happy, and happy is good. :)<br><br>
             I've shipped titles across PC, PlayStation, Xbox, Nintendo, and mobile — for studios including Capcom, EA, Ubisoft, Offworld Industries, and Next Level Games — working in Unreal Engine, Unity, Frostbite, and a range of proprietary tech. From Starship Troopers Extermination to Dead Rising 4 and Plants vs Zombies, I specialize in environment and prop art across a wide range of styles and teams.
           </p>
         </div>
@@ -419,6 +419,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       stage.addEventListener('pointerup', end);
       stage.addEventListener('pointercancel', end);
     }
+  </script>
+  <script>
+    // Years of experience — computed from the career start year so it stays
+    // accurate on its own and never needs a manual yearly update.
+    (function () {
+      var CAREER_START = 2008;
+      var years = new Date().getFullYear() - CAREER_START;
+      document.querySelectorAll('.years-xp').forEach(function (el) { el.textContent = years; });
+      // Keep the tab title and share/SEO meta consistent and self-updating too.
+      document.title = document.title.replace(/\d+\+?\s*Years/i, years + '+ Years');
+      ['meta[name="description"]', 'meta[property="og:description"]'].forEach(function (sel) {
+        var m = document.querySelector(sel);
+        if (m) m.setAttribute('content', m.getAttribute('content').replace(/\d+\+?\s*years/i, years + '+ years'));
+      });
+    })();
   </script>
 </body>
 </html>
