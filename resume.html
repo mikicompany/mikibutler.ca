@@ -304,25 +304,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const gpMeta     = document.getElementById('gp-meta');
     const gpOverlay  = document.getElementById('gp-overlay');
 
-    // slot[0]=center, slot[1]=left, slot[2]=right — value = index into cards[]
-    let slots = [0, 1, 2];
     let currentIdx = -1;
 
+    // Fixed roles — card[0] is always left, [1] center, [2] right. Nothing
+    // recycles or rotates, so the cover and its position can never desync.
     const POS = {
-      center:    { x:   0, scale: 1.00, rot:  0, op: 1,    z: 5 },
-      left:      { x:-155, scale: 0.78, rot: -7, op: 0.55, z: 3 },
-      right:     { x: 155, scale: 0.78, rot:  7, op: 0.55, z: 3 },
-      exitLeft:  { x:-310, scale: 0.62, rot:-12, op: 0,    z: 1 },
-      exitRight: { x: 310, scale: 0.62, rot: 12, op: 0,    z: 1 },
+      center: { x:   0, scale: 1.00, rot:  0, op: 1,    z: 5 },
+      left:   { x:-155, scale: 0.78, rot: -7, op: 0.55, z: 3 },
+      right:  { x: 155, scale: 0.78, rot:  7, op: 0.55, z: 3 },
     };
 
-    function place(cardEl, posName, instant) {
+    function place(cardEl, posName) {
       const p = POS[posName];
-      if (instant) { cardEl.style.transition = 'none'; cardEl.offsetHeight; }
       cardEl.style.transform = `translateX(${p.x}px) scale(${p.scale}) rotate(${p.rot}deg)`;
-      cardEl.style.opacity   = p.op;
       cardEl.style.zIndex    = p.z;
-      if (instant) { cardEl.offsetHeight; cardEl.style.transition = ''; }
+      cardEl.dataset.baseOp  = p.op;
     }
 
     function imgUrl(i) {
@@ -330,14 +326,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       return listItems[i].dataset.img || '';
     }
 
+    // Set a card's cover with a quick crossfade; hide the card if there's no
+    // neighbour in that direction (ends of the list).
     function setImg(cardEl, url) {
       const img = cardEl.querySelector('img');
-      if (img.src !== url) img.src = url;
+      if (!url) { cardEl.style.opacity = '0'; return; }
+      cardEl.style.opacity = cardEl.dataset.baseOp || '1';
+      if (img.getAttribute('src') !== url) {
+        img.style.opacity = '0';
+        img.src = url;
+        requestAnimationFrame(() => { img.style.opacity = '1'; });
+      }
     }
+
+    // Lock the three cards to their positions once, hidden until the first hover.
+    place(cards[0], 'left');
+    place(cards[1], 'center');
+    place(cards[2], 'right');
+    cards.forEach(c => { c.style.opacity = '0'; c.querySelector('img').style.transition = 'opacity .22s ease'; });
 
     // Preload all cover images and KEEP a reference to each (window-scoped) so
     // the browser can't garbage-collect them mid-download and cancel the fetch —
-    // that was making cards pop in one-by-one instead of being ready instantly.
+    // that was making cards pop in slowly.
     window._gpPreload = [];
     listItems.forEach(li => {
       if (li.dataset.img) { const p = new Image(); p.src = li.dataset.img; window._gpPreload.push(p); }
@@ -345,45 +355,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     function navigate(newIdx) {
       if (newIdx === currentIdx) return;
-      const goRight = currentIdx === -1 ? true : newIdx > currentIdx;
-      const prevIdx = currentIdx;
       currentIdx = newIdx;
+      setImg(cards[0], imgUrl(newIdx - 1)); // left neighbour
+      setImg(cards[1], imgUrl(newIdx));     // center = the selected game
+      setImg(cards[2], imgUrl(newIdx + 1)); // right neighbour
 
-      const centerCard = cards[slots[0]];
-      const leftCard   = cards[slots[1]];
-      const rightCard  = cards[slots[2]];
-
-      if (currentIdx === 0 && prevIdx === -1) {
-        // First ever hover — snap all into place instantly
-        setImg(centerCard, imgUrl(newIdx));
-        setImg(leftCard,   imgUrl(newIdx - 1));
-        setImg(rightCard,  imgUrl(newIdx + 1));
-        place(centerCard, 'center', true);
-        place(leftCard,   imgUrl(newIdx - 1) ? 'left' : 'exitLeft', true);
-        place(rightCard,  imgUrl(newIdx + 1) ? 'right' : 'exitRight', true);
-      } else if (goRight) {
-        // Recycle leftCard: snap to exitRight, load next-right image, animate to right
-        setImg(leftCard, imgUrl(newIdx + 1));
-        place(leftCard, 'exitRight', true);
-        requestAnimationFrame(() => {
-          place(centerCard, 'left');
-          place(rightCard,  'center');
-          place(leftCard,   imgUrl(newIdx + 1) ? 'right' : 'exitRight');
-        });
-        slots = [slots[2], slots[0], slots[1]];
-      } else {
-        // Recycle rightCard: snap to exitLeft, load prev-left image, animate to left
-        setImg(rightCard, imgUrl(newIdx - 1));
-        place(rightCard, 'exitLeft', true);
-        requestAnimationFrame(() => {
-          place(centerCard, 'right');
-          place(leftCard,   'center');
-          place(rightCard,  imgUrl(newIdx - 1) ? 'left' : 'exitLeft');
-        });
-        slots = [slots[1], slots[2], slots[0]];
-      }
-
-      // Update meta
       gpTitle.textContent    = listItems[newIdx].textContent.trim();
       gpRole.textContent     = listItems[newIdx].dataset.role || '';
       gpPlatform.textContent = listItems[newIdx].dataset.platform || '';
