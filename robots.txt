@@ -1,0 +1,14 @@
+# robots.txt — mikibutler.ca
+User-agent: *
+Allow: /
+
+# Private / tooling / heavy game builds — no search value
+Disallow: /admin.html
+Disallow: /linkcheck.html
+Disallow: /tools/
+Disallow: /spacefrogs/
+Disallow: /hungry/
+Disallow: /somanyrockers/
+Disallow: /protected-data.json
+
+Sitemap: https://mikibutler.ca/sitemap.xml
