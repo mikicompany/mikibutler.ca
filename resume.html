@@ -63,6 +63,8 @@
   }
   </script>
   <link rel="stylesheet" href="css/style.css" />
+  <!-- Warm up the first gameography cover so the carousel's center card is ready on load -->
+  <link rel="preload" as="image" href="images/gameography/starship-troopers.jpg" />
   <style>
     /* Beating heart next to a favourite tool */
     .love-heart {
@@ -333,8 +335,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if (img.src !== url) img.src = url;
     }
 
-    // Preload all images
-    listItems.forEach(li => { if (li.dataset.img) { const p = new Image(); p.src = li.dataset.img; } });
+    // Preload all cover images and KEEP a reference to each (window-scoped) so
+    // the browser can't garbage-collect them mid-download and cancel the fetch —
+    // that was making cards pop in one-by-one instead of being ready instantly.
+    window._gpPreload = [];
+    listItems.forEach(li => {
+      if (li.dataset.img) { const p = new Image(); p.src = li.dataset.img; window._gpPreload.push(p); }
+    });
 
     function navigate(newIdx) {
       if (newIdx === currentIdx) return;
