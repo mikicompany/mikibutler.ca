@@ -353,8 +353,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if (li.dataset.img) { const p = new Image(); p.src = li.dataset.img; window._gpPreload.push(p); }
     });
 
+    // Transient coverflow motion. The cards' resting positions stay fixed (so a
+    // cover can never settle on the wrong card); we just ADD a directional slide
+    // plus a small center pop on top of each card's base transform, and it eases
+    // back to the resting layout. composite:'add' layers over the inline style.
+    const canAnim = typeof Element.prototype.animate === 'function'
+      && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function slidePulse(dir) {
+      if (!canAnim || !dir) return;
+      cards.forEach(c => {
+        c.animate(
+          [ { transform: `translateX(${dir * 64}px)` }, { transform: 'translateX(0px)' } ],
+          { duration: 300, easing: 'cubic-bezier(.22,.68,.28,1)', composite: 'add' }
+        );
+      });
+      cards[1].animate(
+        [ { transform: 'scale(1.07)' }, { transform: 'scale(1)' } ],
+        { duration: 280, easing: 'cubic-bezier(.2,.7,.3,1)', composite: 'add' }
+      );
+    }
+
     function navigate(newIdx) {
       if (newIdx === currentIdx) return;
+      const dir = currentIdx === -1 ? 1 : Math.sign(newIdx - currentIdx);
       currentIdx = newIdx;
       setImg(cards[0], imgUrl(newIdx - 1)); // left neighbour
       setImg(cards[1], imgUrl(newIdx));     // center = the selected game
@@ -365,6 +386,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       gpPlatform.textContent = listItems[newIdx].dataset.platform || '';
       placeholder.style.opacity = '0';
       gpOverlay.style.opacity = '1';
+      slidePulse(dir);
     }
 
     function selectGame(idx) {
