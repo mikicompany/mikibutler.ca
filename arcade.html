@@ -237,6 +237,53 @@
       .cab-deck { gap: 26px; padding: 12px 8px; }
     }
     @media (prefers-reduced-motion: reduce) { .cab-list li.sel::before, .cab-coin, .cab-btn.red::after, .cab-marquee { animation: none; } }
+
+    /* ── Tools: image A/B comparison slider ── */
+    .tools-wrap { margin: 96px auto 0; max-width: 760px; padding: 0 4px; }
+    .tools-heading { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+                     color: var(--accent); text-align: center; }
+    .tools-sub { font-size: 13px; color: #9aa2ad; text-align: center; margin: 8px auto 20px; max-width: 520px; line-height: 1.5; }
+    .cmp-inputs { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .cmp-field { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 7px; }
+    .cmp-field-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8a9099; }
+    .cmp-row { display: flex; gap: 8px; }
+    .cmp-url { flex: 1; min-width: 0; background: #111418; border: 1px solid #2a2f37; color: #e8eaed;
+               border-radius: 8px; padding: 9px 11px; font-size: 13px; font-family: inherit; }
+    .cmp-url::placeholder { color: #5b626c; }
+    .cmp-url:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(160,255,0,.12); }
+    .cmp-file { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; cursor: pointer;
+                background: #1c2128; border: 1px solid #2a2f37; color: #cfd4db; border-radius: 8px;
+                padding: 9px 12px; font-size: 12px; font-weight: 600; transition: border-color .2s, color .2s; }
+    .cmp-file:hover { border-color: var(--accent); color: #fff; }
+
+    .cmp { position: relative; width: 100%; margin: 0 auto; aspect-ratio: 16 / 10; background: #0a0c0f;
+           border: 1px solid #23272e; border-radius: 12px; overflow: hidden; touch-action: none; user-select: none;
+           --pos: 50%; box-shadow: 0 16px 40px rgba(0,0,0,.5); }
+    .cmp-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center;
+               -webkit-user-drag: none; user-drag: none; pointer-events: none; }
+    .cmp-b { clip-path: inset(0 0 0 var(--pos)); }        /* B is revealed on the right of the slider */
+    .cmp-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+                 text-align: center; padding: 20px; color: #616872; font-size: 13px; z-index: 5; }
+    .cmp-badge { position: absolute; top: 10px; z-index: 4; font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+                 padding: 3px 9px; border-radius: 6px; background: rgba(0,0,0,.55); color: #fff;
+                 backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); opacity: 0; transition: opacity .2s; pointer-events: none; }
+    .cmp-badge-a { left: 10px; } .cmp-badge-b { right: 10px; }
+    .cmp.has-a .cmp-badge-a, .cmp.has-b .cmp-badge-b { opacity: 1; }
+    .cmp-line { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; margin-left: -1px; z-index: 6;
+                background: var(--accent); box-shadow: 0 0 10px rgba(160,255,0,.5); opacity: 0; transition: opacity .2s; }
+    .cmp.has-a.has-b .cmp-line { opacity: 1; }
+    .cmp-grip { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 40px; height: 40px;
+                border-radius: 50%; border: 2px solid var(--accent); background: rgba(10,12,15,.85); color: var(--accent);
+                cursor: ew-resize; display: flex; align-items: center; justify-content: center; font-size: 15px;
+                box-shadow: 0 2px 12px rgba(0,0,0,.5); }
+    .cmp-grip:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+    .cmp-controls { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
+    .cmp-controls button { background: #1c2128; border: 1px solid #2a2f37; color: #cfd4db; border-radius: 8px;
+                           padding: 8px 14px; font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer;
+                           transition: border-color .2s, color .2s; }
+    .cmp-controls button:hover { border-color: var(--accent); color: #fff; }
+    .cmp-err { text-align: center; color: #ff8f8f; font-size: 12px; min-height: 16px; margin-top: 10px; }
+    @media (max-width: 600px) { .cmp { aspect-ratio: 4 / 3; } .cmp-field { min-width: 100%; } }
   </style>
 </head>
 <body>
@@ -319,6 +366,45 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <p class="crt-caption">Channel <b id="crt-num">1</b> — turn the dial to switch</p>
       </div>
+
+      <section class="tools-wrap" id="tools">
+        <div class="tools-heading">Tools 🧰</div>
+        <p class="tools-sub">Image A/B comparison — drag the slider to wipe between two shots. Upload a file or paste an image link for each side.</p>
+
+        <div class="cmp-inputs">
+          <div class="cmp-field">
+            <span class="cmp-field-label">A · Before</span>
+            <div class="cmp-row">
+              <input type="url" class="cmp-url" id="urlA" placeholder="Paste image link…" autocomplete="off" spellcheck="false" />
+              <label class="cmp-file">⬆ Upload<input type="file" accept="image/*" id="fileA" hidden /></label>
+            </div>
+          </div>
+          <div class="cmp-field">
+            <span class="cmp-field-label">B · After</span>
+            <div class="cmp-row">
+              <input type="url" class="cmp-url" id="urlB" placeholder="Paste image link…" autocomplete="off" spellcheck="false" />
+              <label class="cmp-file">⬆ Upload<input type="file" accept="image/*" id="fileB" hidden /></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="cmp" id="cmp" style="--pos:50%">
+          <img class="cmp-img cmp-a" id="cmpA" alt="Image A" />
+          <img class="cmp-img cmp-b" id="cmpB" alt="Image B" />
+          <span class="cmp-badge cmp-badge-a">A</span>
+          <span class="cmp-badge cmp-badge-b">B</span>
+          <div class="cmp-empty" id="cmpEmpty">Add an image to A and B to compare</div>
+          <div class="cmp-line" id="cmpLine">
+            <button type="button" class="cmp-grip" id="cmpGrip" aria-label="Drag to compare — arrow keys to nudge">⟺</button>
+          </div>
+        </div>
+
+        <div class="cmp-controls">
+          <button type="button" id="cmpSwap">⇄ Swap A / B</button>
+          <button type="button" id="cmpReset">Reset</button>
+        </div>
+        <p class="cmp-err" id="cmpErr"></p>
+      </section>
 
       <div class="arcade-tools">
         <a href="linkcheck.html">🔗 Link Health</a>
@@ -427,6 +513,103 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         else if (e.key === 'Enter') { e.preventDefault(); start(); }
       });
       render();
+    })();
+  </script>
+
+  <script>
+    // Tools · image A/B comparison slider. Each side takes an uploaded file
+    // (object URL) or a pasted image link. Drag anywhere on the frame — or use
+    // the grip's arrow keys — to wipe between them.
+    (function () {
+      var cmp   = document.getElementById('cmp');
+      if (!cmp) return;
+      var imgA  = document.getElementById('cmpA');
+      var imgB  = document.getElementById('cmpB');
+      var empty = document.getElementById('cmpEmpty');
+      var grip  = document.getElementById('cmpGrip');
+      var err   = document.getElementById('cmpErr');
+      var urlA  = document.getElementById('urlA');
+      var urlB  = document.getElementById('urlB');
+      var pos = 50;
+
+      function setPos(p) {
+        pos = Math.max(0, Math.min(100, p));
+        cmp.style.setProperty('--pos', pos + '%');
+      }
+      function has(img) { return !!img.getAttribute('src'); }
+      function refresh() {
+        cmp.classList.toggle('has-a', has(imgA));
+        cmp.classList.toggle('has-b', has(imgB));
+        empty.style.display = (has(imgA) || has(imgB)) ? 'none' : 'flex';
+      }
+      function applyAspect(img) {
+        if (img.naturalWidth) cmp.style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
+      }
+
+      imgA.addEventListener('load', function () { applyAspect(imgA); err.textContent = ''; refresh(); });
+      imgB.addEventListener('load', function () { if (!has(imgA)) applyAspect(imgB); err.textContent = ''; refresh(); });
+      function fail(side) {
+        return function () {
+          err.textContent = 'Couldn’t load image ' + side + '. The site may block hotlinking — try uploading the file instead.';
+        };
+      }
+      imgA.addEventListener('error', fail('A'));
+      imgB.addEventListener('error', fail('B'));
+
+      function setSrc(img, src) {
+        if (img._obj) { URL.revokeObjectURL(img._obj); img._obj = null; }
+        if (src) { img.src = src; } else { img.removeAttribute('src'); }
+      }
+      function fromFile(img, file) {
+        if (!file) return;
+        var u = URL.createObjectURL(file);
+        setSrc(img, u); img._obj = u;
+      }
+      function fromUrl(img, val) { var s = (val || '').trim(); if (s) { err.textContent = ''; setSrc(img, s); } }
+
+      document.getElementById('fileA').addEventListener('change', function (e) { fromFile(imgA, e.target.files[0]); });
+      document.getElementById('fileB').addEventListener('change', function (e) { fromFile(imgB, e.target.files[0]); });
+      urlA.addEventListener('change', function () { fromUrl(imgA, urlA.value); });
+      urlB.addEventListener('change', function () { fromUrl(imgB, urlB.value); });
+      [urlA, urlB].forEach(function (inp) {
+        inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); inp.dispatchEvent(new Event('change')); } });
+      });
+
+      // Drag to wipe
+      var dragging = false;
+      function fromEvent(e) {
+        var r = cmp.getBoundingClientRect();
+        setPos((e.clientX - r.left) / r.width * 100);
+      }
+      cmp.addEventListener('pointerdown', function (e) {
+        if (!has(imgA) && !has(imgB)) return;
+        dragging = true; try { cmp.setPointerCapture(e.pointerId); } catch (_) {}
+        fromEvent(e);
+      });
+      cmp.addEventListener('pointermove', function (e) { if (dragging) fromEvent(e); });
+      function endDrag(e) { dragging = false; try { cmp.releasePointerCapture(e.pointerId); } catch (_) {} }
+      cmp.addEventListener('pointerup', endDrag);
+      cmp.addEventListener('pointercancel', endDrag);
+      grip.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowLeft')  { e.preventDefault(); setPos(pos - 2); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); setPos(pos + 2); }
+      });
+
+      document.getElementById('cmpSwap').addEventListener('click', function () {
+        var sa = imgA.getAttribute('src'), sb = imgB.getAttribute('src');
+        var oa = imgA._obj || null, ob = imgB._obj || null;
+        setSrc(imgA, sb); imgA._obj = ob;
+        setSrc(imgB, sa); imgB._obj = oa;
+        var t = urlA.value; urlA.value = urlB.value; urlB.value = t;
+        refresh();
+      });
+      document.getElementById('cmpReset').addEventListener('click', function () {
+        setSrc(imgA, null); setSrc(imgB, null);
+        urlA.value = ''; urlB.value = ''; err.textContent = '';
+        cmp.style.aspectRatio = '16 / 10'; setPos(50); refresh();
+      });
+
+      setPos(50); refresh();
     })();
   </script>
 </body>
