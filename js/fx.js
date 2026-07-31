@@ -27,7 +27,7 @@
   }, { passive: true });
 
   /* ── pixel-sparkle burst ────────────────────────────────────────── */
-  var COLORS = ['#7CFF6B', '#59d1ff', '#ffd84a', '#ff7ce0'];
+  var COLORS = ['#7CFF6B', '#4be03a', '#a8ff9c', '#2fbf22']; // all green, a few shades for depth
   function sparkle(x, y) {
     if (reduce) return;
     var n = 6;
