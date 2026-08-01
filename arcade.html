@@ -282,7 +282,10 @@
                            padding: 8px 14px; font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer;
                            transition: border-color .2s, color .2s; }
     .cmp-controls button:hover { border-color: var(--accent); color: #fff; }
-    .cmp-err { text-align: center; color: #ff8f8f; font-size: 12px; min-height: 16px; margin-top: 10px; }
+    .cmp-controls button:disabled { opacity: .5; cursor: default; border-color: #2a2f37; color: #cfd4db; }
+    #cmpExport.rec { border-color: #ff5c5c; color: #ff9d9d; }
+    .cmp-status { text-align: center; color: var(--accent); font-size: 12px; min-height: 16px; margin-top: 10px; }
+    .cmp-err { text-align: center; color: #ff8f8f; font-size: 12px; min-height: 16px; margin-top: 6px; }
     @media (max-width: 600px) { .cmp { aspect-ratio: 4 / 3; } .cmp-field { min-width: 100%; } }
   </style>
 </head>
@@ -401,8 +404,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <div class="cmp-controls">
           <button type="button" id="cmpSwap">⇄ Swap A / B</button>
+          <button type="button" id="cmpExport">⬇ Save MP4</button>
           <button type="button" id="cmpReset">Reset</button>
         </div>
+        <p class="cmp-status" id="cmpStatus"></p>
         <p class="cmp-err" id="cmpErr"></p>
       </section>
 
@@ -605,8 +610,134 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       });
       document.getElementById('cmpReset').addEventListener('click', function () {
         setSrc(imgA, null); setSrc(imgB, null);
-        urlA.value = ''; urlB.value = ''; err.textContent = '';
+        urlA.value = ''; urlB.value = ''; err.textContent = ''; status.textContent = '';
         cmp.style.aspectRatio = '16 / 10'; setPos(50); refresh();
+      });
+
+      // ── Export an MP4 that wipes A ⇄ B ──────────────────────────────
+      var status = document.getElementById('cmpStatus');
+      var exportBtn = document.getElementById('cmpExport');
+
+      // Re-load a source into a fresh, crossOrigin image so the canvas stays
+      // untainted (required to record it). Uploaded files and same-origin
+      // images always pass; a hotlinked URL only passes if its host sends CORS.
+      function loadClean(src) {
+        return new Promise(function (res, rej) {
+          if (!src) return rej('missing');
+          var im = new Image();
+          im.crossOrigin = 'anonymous';
+          im.onload = function () { res(im); };
+          im.onerror = function () { rej('cors'); };
+          im.src = src;
+        });
+      }
+      function drawContain(ctx, im, W, H) {
+        if (!im || !im.naturalWidth) return;
+        var s = Math.min(W / im.naturalWidth, H / im.naturalHeight);
+        var w = im.naturalWidth * s, h = im.naturalHeight * s;
+        ctx.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
+      }
+      function badge(ctx, txt, x, W) {
+        ctx.font = '700 ' + Math.round(W * 0.022) + 'px Inter, sans-serif';
+        var padX = W * 0.014, padY = W * 0.010, tw = ctx.measureText(txt).width;
+        var bw = tw + padX * 2, bh = W * 0.022 + padY * 2, by = W * 0.014;
+        var bx = x === 'l' ? W * 0.014 : W - bw - W * 0.014;
+        ctx.fillStyle = 'rgba(0,0,0,.55)';
+        if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 6); ctx.fill(); }
+        else ctx.fillRect(bx, by, bw, bh);
+        ctx.fillStyle = '#fff'; ctx.textBaseline = 'top';
+        ctx.fillText(txt, bx + padX, by + padY);
+      }
+      function pickMime() {
+        var c = ['video/mp4;codecs=avc1.42E01E', 'video/mp4',
+                 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+        for (var i = 0; i < c.length; i++) {
+          if (window.MediaRecorder && MediaRecorder.isTypeSupported(c[i])) return c[i];
+        }
+        return '';
+      }
+
+      exportBtn.addEventListener('click', function () {
+        err.textContent = '';
+        if (!has(imgA) || !has(imgB)) { err.textContent = 'Add an image to both A and B first.'; return; }
+        if (!window.MediaRecorder) { err.textContent = 'Video export isn’t supported in this browser.'; return; }
+        var mime = pickMime();
+        if (!mime) { err.textContent = 'This browser can’t record video.'; return; }
+
+        exportBtn.disabled = true; exportBtn.classList.add('rec');
+        exportBtn.textContent = '● Recording…';
+        status.textContent = 'Rendering the wipe — keep this tab in front…';
+
+        Promise.all([loadClean(imgA.getAttribute('src')), loadClean(imgB.getAttribute('src'))])
+          .then(function (ims) {
+            var a = ims[0], b = ims[1];
+            // Canvas sized from A, capped so files stay reasonable; even dims for H.264.
+            var maxW = 1600;
+            var scale = Math.min(1, maxW / a.naturalWidth);
+            var W = Math.round(a.naturalWidth * scale / 2) * 2;
+            var H = Math.round(a.naturalHeight * scale / 2) * 2;
+            var canvas = document.createElement('canvas');
+            canvas.width = W; canvas.height = H;
+            var ctx = canvas.getContext('2d');
+            var ACCENT = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#a0ff00';
+
+            function render(pos) {
+              ctx.fillStyle = '#0a0c0f'; ctx.fillRect(0, 0, W, H);
+              drawContain(ctx, a, W, H);
+              var x = W * pos / 100;
+              ctx.save(); ctx.beginPath(); ctx.rect(x, 0, W - x, H); ctx.clip();
+              drawContain(ctx, b, W, H); ctx.restore();
+              ctx.fillStyle = ACCENT; ctx.fillRect(x - 2, 0, 4, H);
+              badge(ctx, 'A', 'l', W); badge(ctx, 'B', 'r', W);
+            }
+
+            var stream = canvas.captureStream(30);
+            var rec, chunks = [];
+            try { rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8000000 }); }
+            catch (e) { throw 'recorder'; }
+            rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+            rec.onstop = function () {
+              var isMp4 = mime.indexOf('mp4') !== -1;
+              var blob = new Blob(chunks, { type: isMp4 ? 'video/mp4' : 'video/webm' });
+              var url = URL.createObjectURL(blob);
+              var link = document.createElement('a');
+              link.href = url; link.download = 'ab-comparison.' + (isMp4 ? 'mp4' : 'webm');
+              document.body.appendChild(link); link.click(); link.remove();
+              setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+              exportBtn.disabled = false; exportBtn.classList.remove('rec');
+              exportBtn.textContent = '⬇ Save MP4';
+              status.textContent = isMp4 ? 'Saved ab-comparison.mp4 ✓'
+                                         : 'Your browser can’t record MP4 — saved a WebM instead ✓';
+              setTimeout(function () { status.textContent = ''; }, 6000);
+            };
+
+            // 5s timeline: hold A → wipe to B → hold B → wipe back.
+            var DUR = 5000, start = performance.now();
+            function ease(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+            function pfrom(t) {
+              if (t < 0.12) return 0;
+              if (t < 0.46) return ease((t - 0.12) / 0.34) * 100;
+              if (t < 0.58) return 100;
+              if (t < 0.92) return 100 - ease((t - 0.58) / 0.34) * 100;
+              return 0;
+            }
+            render(0);
+            rec.start();
+            function tick(now) {
+              var t = (now - start) / DUR;
+              if (t >= 1) { render(0); rec.stop(); return; }
+              render(pfrom(t));
+              requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+          })
+          .catch(function (reason) {
+            exportBtn.disabled = false; exportBtn.classList.remove('rec');
+            exportBtn.textContent = '⬇ Save MP4'; status.textContent = '';
+            err.textContent = (reason === 'cors')
+              ? 'Can’t export a linked image (the host blocks cross-origin use). Upload the file instead, then export.'
+              : 'Sorry — couldn’t record the video on this browser.';
+          });
       });
 
       setPos(50); refresh();
