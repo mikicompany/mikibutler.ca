@@ -65,6 +65,11 @@
       box-shadow: inset 0 0 0 4px #0a0a0a, inset 0 0 44px rgba(0,0,0,.9), 0 0 22px rgba(160,255,0,.07);
     }
     .crt-screen iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .crt-screen canvas#crt-pixel { position: absolute; inset: 0; width: 100%; height: 100%; display: none;
+      image-rendering: pixelated; image-rendering: crisp-edges; object-fit: cover; background: #000; }
+    .crt-screen.pixel canvas#crt-pixel { display: block; }
+    .crt-screen.pixel iframe { visibility: hidden; }
+    video#crt-reel { display: none; }
     .crt-glass {
       position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply;
       background:
@@ -424,8 +429,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="crt-wrap">
         <div class="crt-heading">On the Telly 📺</div>
         <div class="crt-tv">
-          <div class="crt-screen">
+          <div class="crt-screen" id="crt-screen">
             <iframe id="crt-frame" title="Arcade TV" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <canvas id="crt-pixel" width="168" height="126"></canvas>
             <div class="crt-static" id="crt-static"></div>
             <div class="crt-glass"></div>
           </div>
@@ -434,6 +440,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div class="crt-channels">
               <button class="crt-ch active" data-ch="0" aria-label="Channel 1">1</button>
               <button class="crt-ch" data-ch="1" aria-label="Channel 2">2</button>
+              <button class="crt-ch" data-ch="2" aria-label="Channel 3 — Pixel Reel">3</button>
             </div>
             <div class="crt-knob"></div>
             <div class="crt-knob"></div>
@@ -441,7 +448,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div class="crt-led" title="power"></div>
           </div>
         </div>
-        <p class="crt-caption">Channel <b id="crt-num">1</b> — turn the dial to switch</p>
+        <p class="crt-caption">Channel <b id="crt-num">1</b> — turn the dial to switch · <b>3</b> = pixel reel</p>
+        <!-- Self-hosted clip pixelated live on channel 3. Swap the src for the
+             real demo reel (an .mp4 in /video) to show it in pixel art. -->
+        <video id="crt-reel" src="video/logo-reveal.mp4" muted loop playsinline preload="auto"></video>
       </div>
 
       <section class="reelboy-wrap" id="reels">
@@ -559,22 +569,56 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <script src="js/sidebar.js"></script>
   <script src="js/fx.js" defer></script>
   <script>
-    // Old-TV channel switcher: tune between the two videos with a static flicker.
+    // Old-TV channel switcher: 1-2 are YouTube; 3 is the demo reel rendered as
+    // pixel art (video → low-res canvas → CSS nearest-neighbour scale up).
     (function () {
       var VIDS = ['yYgq4ol4OWo', 'MaSAZPmdS8A'];
-      var frame = document.getElementById('crt-frame');
-      var stat = document.getElementById('crt-static');
-      var num = document.getElementById('crt-num');
-      var cur = -1;
+      var PIX = 2; // the pixel-reel channel
+      var frame  = document.getElementById('crt-frame');
+      var stat   = document.getElementById('crt-static');
+      var num    = document.getElementById('crt-num');
+      var screen = document.getElementById('crt-screen');
+      var canvas = document.getElementById('crt-pixel');
+      var cctx   = canvas.getContext('2d');
+      var reel   = document.getElementById('crt-reel');
+      var cur = -1, pixelOn = false, raf = 0;
+
+      function drawCover() {
+        if (reel.readyState >= 2 && reel.videoWidth) {
+          var W = canvas.width, H = canvas.height, vr = reel.videoWidth / reel.videoHeight, cr = W / H;
+          var sw, sh, sx, sy;
+          if (vr > cr) { sh = reel.videoHeight; sw = sh * cr; sx = (reel.videoWidth - sw) / 2; sy = 0; }
+          else { sw = reel.videoWidth; sh = sw / cr; sx = 0; sy = (reel.videoHeight - sh) / 2; }
+          cctx.imageSmoothingEnabled = false;
+          cctx.drawImage(reel, sx, sy, sw, sh, 0, 0, W, H);
+        }
+        raf = requestAnimationFrame(drawCover);
+      }
+      function startPixel() {
+        pixelOn = true; screen.classList.add('pixel');
+        var p = reel.play(); if (p && p.catch) p.catch(function () {});
+        if (!raf) raf = requestAnimationFrame(drawCover);
+      }
+      function stopPixel() {
+        pixelOn = false; screen.classList.remove('pixel');
+        reel.pause(); cancelAnimationFrame(raf); raf = 0;
+      }
+
       function tune(i, play) {
         if (i === cur) return;
         cur = i;
         stat.classList.remove('on'); void stat.offsetWidth; stat.classList.add('on');
         document.querySelectorAll('.crt-ch').forEach(function (b) { b.classList.toggle('active', +b.dataset.ch === i); });
         num.textContent = i + 1;
-        setTimeout(function () {
-          frame.src = 'https://www.youtube.com/embed/' + VIDS[i] + '?rel=0' + (play ? '&autoplay=1' : '');
-        }, 150);
+        if (i === PIX) {
+          frame.src = '';           // silence YouTube
+          setTimeout(startPixel, 150);
+        } else {
+          if (pixelOn) stopPixel();
+          setTimeout(function () {
+            frame.src = 'https://www.youtube.com/embed/' + VIDS[i] + '?rel=0' + (play ? '&autoplay=1' : '');
+          }, 150);
+        }
       }
       document.querySelectorAll('.crt-ch').forEach(function (b) {
         b.addEventListener('click', function () { tune(+b.dataset.ch, true); });
