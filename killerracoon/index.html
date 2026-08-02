@@ -1,259 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<meta name="robots" content="noindex, nofollow" />
-<title>Killer Racoon</title>
-<style>
-  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
-  * { -webkit-tap-highlight-color: transparent; user-select: none; touch-action: none; }
-  #wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; }
-  #game { height: 100%; width: 100%; display: block; image-rendering: pixelated; image-rendering: crisp-edges; background: #0b0b0b; cursor: pointer; }
-  #scan { position: fixed; inset: 0; pointer-events: none; z-index: 2;
-    background: repeating-linear-gradient(rgba(0,0,0,.22) 0 2px, transparent 2px 4px); mix-blend-mode: multiply; }
-</style>
-</head>
-<body>
-  <div id="wrap"><canvas id="game" width="320" height="240" tabindex="0"></canvas></div>
-  <div id="scan"></div>
-<script>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+		<title>Killer Racoon</title>
+		<style>
+html, body, #canvas {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+body {
+	color: white;
+	background-color: black;
+	overflow: hidden;
+	touch-action: none;
+}
+
+#canvas {
+	display: block;
+}
+
+#canvas:focus {
+	outline: none;
+}
+
+#status, #status-splash, #status-progress {
+	position: absolute;
+	left: 0;
+	right: 0;
+}
+
+#status, #status-splash {
+	top: 0;
+	bottom: 0;
+}
+
+#status {
+	background-color: #242424;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	visibility: hidden;
+}
+
+#status-splash {
+	max-height: 100%;
+	max-width: 100%;
+	margin: auto;
+}
+
+#status-progress, #status-notice {
+	display: none;
+}
+
+#status-progress {
+	bottom: 10%;
+	width: 50%;
+	margin: 0 auto;
+}
+
+#status-notice {
+	background-color: #5b3943;
+	border-radius: 0.5rem;
+	border: 1px solid #9b3943;
+	color: #e0e0e0;
+	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+	line-height: 1.3;
+	margin: 0 2rem;
+	overflow: hidden;
+	padding: 1rem;
+	text-align: center;
+	z-index: 1;
+}
+		</style>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
+<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+
+	</head>
+	<body>
+		<canvas id="canvas">
+			Your browser does not support the canvas tag.
+		</canvas>
+
+		<noscript>
+			Your browser does not support JavaScript.
+		</noscript>
+
+		<div id="status">
+			<img id="status-splash" src="index.png" alt="">
+			<progress id="status-progress"></progress>
+			<div id="status-notice"></div>
+		</div>
+
+		<script src="index.js"></script>
+		<script>
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":12704,"index.wasm":35376909},"focusCanvas":true,"gdextensionLibs":[]};
+const GODOT_THREADS_ENABLED = false;
+const engine = new Engine(GODOT_CONFIG);
+
 (function () {
-  var cv = document.getElementById('game');
-  var g  = cv.getContext('2d');
-  var W = cv.width, H = cv.height;
-  var INK = '#e9e9e6', DIM = '#0b0b0b', GRID = '#000';
+	const statusOverlay = document.getElementById('status');
+	const statusProgress = document.getElementById('status-progress');
+	const statusNotice = document.getElementById('status-notice');
 
-  // dither pattern (gray) — 2x2 checker of ink
-  var pc = document.createElement('canvas'); pc.width = 2; pc.height = 2;
-  var pg = pc.getContext('2d'); pg.fillStyle = INK; pg.fillRect(0,0,1,1); pg.fillRect(1,1,1,1);
-  var GRAY = g.createPattern(pc, 'repeat');
+	let initializing = true;
+	let statusMode = '';
 
-  // ── 8-bit sound ──
-  var actx = null;
-  function tone(f,d,ty,v,w){ try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended')actx.resume();
-    var t=actx.currentTime+(w||0),o=actx.createOscillator(),gg=actx.createGain(); o.type=ty||'square'; o.frequency.setValueAtTime(f,t);
-    gg.gain.setValueAtTime(v||0.05,t); gg.gain.exponentialRampToValueAtTime(0.0001,t+d); o.connect(gg); gg.connect(actx.destination); o.start(t); o.stop(t+d);}catch(e){} }
-  var sJump = function(){ tone(420,0.09,'square',0.05); tone(680,0.07,'square',0.04,0.06); };
-  var sBite = function(){ tone(200,0.05,'square',0.06); tone(90,0.08,'sawtooth',0.05,0.03); };
-  var sEat  = function(){ tone(660,0.05,'square',0.05); tone(990,0.06,'square',0.045,0.05); };
-  var sHurt = function(){ tone(180,0.16,'triangle',0.07); tone(100,0.2,'triangle',0.06,0.12); };
-  var sOver = function(){ tone(400,0.12,'square',0.06); tone(280,0.12,'square',0.06,0.12); tone(150,0.28,'square',0.06,0.24); };
+	function setStatusMode(mode) {
+		if (statusMode === mode || !initializing) {
+			return;
+		}
+		if (mode === 'hidden') {
+			statusOverlay.remove();
+			initializing = false;
+			return;
+		}
+		statusOverlay.style.visibility = 'visible';
+		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
+		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
+		statusMode = mode;
+	}
 
-  function rect(x,y,w,h,c){ g.fillStyle=c; g.fillRect(x|0,y|0,Math.max(0,w|0),Math.max(0,h|0)); }
-  function grey(x,y,w,h){ g.fillStyle=GRAY; g.fillRect(x|0,y|0,w|0,h|0); }
+	function setStatusNotice(text) {
+		while (statusNotice.lastChild) {
+			statusNotice.removeChild(statusNotice.lastChild);
+		}
+		const lines = text.split('\n');
+		lines.forEach((line) => {
+			statusNotice.appendChild(document.createTextNode(line));
+			statusNotice.appendChild(document.createElement('br'));
+		});
+	}
 
-  var GROUND = H - 30;         // y of ground top
-  var RX = 54;                 // raccoon fixed screen x (left edge of body)
+	function displayFailureNotice(err) {
+		console.error(err);
+		if (err instanceof Error) {
+			setStatusNotice(err.message);
+		} else if (typeof err === 'string') {
+			setStatusNotice(err);
+		} else {
+			setStatusNotice('An unknown error occured');
+		}
+		setStatusMode('notice');
+		initializing = false;
+	}
 
-  // ── sprites (side view, facing right) ──
-  function raccoon(feetY, biting, phase, hurt) {
-    var top = feetY - 22, x = RX;
-    if (hurt) g.globalAlpha = 0.45;
-    // tail (striped) at back-left
-    rect(x-10, top+6, 11, 7, INK); rect(x-9, top+7, 2, 5, DIM); rect(x-5, top+7, 2, 5, DIM);
-    // body
-    rect(x, top+6, 26, 12, INK);
-    // legs (run cycle)
-    var a = phase % 2;
-    rect(x+3,  top+18, 4, 4, INK); rect(x+9,  top+18, 4, 4, DIM);
-    rect(x+15+ (a?0:2), top+18, 4, 4, INK); rect(x+20-(a?2:0), top+18, 4, 4, INK);
-    // head at front
-    rect(x+18, top+1, 13, 12, INK);
-    rect(x+20, top-2, 5, 4, INK);                 // ear
-    // mask (dark band) + eye
-    rect(x+18, top+4, 13, 4, DIM);
-    rect(x+25, top+5, 2, 2, INK);                  // eye glint
-    // snout / mouth
-    if (biting) {
-      rect(x+30, top+3, 5, 3, INK);                // upper jaw
-      rect(x+30, top+9, 5, 3, INK);                // lower jaw (open)
-      rect(x+34, top+2, 3, 9, INK);                // chomp flash
-    } else {
-      rect(x+30, top+6, 4, 3, INK);
-    }
-    g.globalAlpha = 1;
-  }
-  function trashcan(x, top, h) {                    // FOOD
-    grey(x+1, top+4, 15, h-4);
-    rect(x, top+4, 17, 2, INK);                     // rim
-    rect(x, top+2, 17, 2, INK);                     // lid
-    rect(x+6, top, 5, 2, INK);                      // handle
-    rect(x+1, top+6, 2, h-6, INK); rect(x+8, top+6, 2, h-6, INK); rect(x+14, top+6, 2, h-6, INK); // ribs
-  }
-  function dog(x, top, h, phase) {
-    rect(x, top+5, 28, h-5, INK);                   // body
-    rect(x+24, top, 8, 10, INK);                    // head
-    rect(x+30, top+4, 3, 3, DIM);                   // eye
-    rect(x+31, top+9, 4, 3, INK);                   // snout
-    rect(x-4, top+7, 5, 6, INK);                    // tail
-    var a = phase % 2 ? 0 : 2;
-    rect(x+4, top+h-3, 4,4, INK); rect(x+16+a, top+h-3, 4,4, INK); // legs
-  }
-  function cat(x, top, h, phase) {
-    rect(x+2, top+4, 18, h-4, INK);                 // arched body
-    rect(x, top+8, 6, 3, INK);                      // head
-    rect(x+1, top+5, 2, 3, INK); rect(x+4, top+5, 2, 3, INK); // ears
-    rect(x+18, top, 4, h, INK);                     // upright tail
-    rect(x+4, top+h-3, 3,3, INK); rect(x+13, top+h-3, 3,3, INK);
-  }
-  function exterm(x, top, h, phase) {               // pest-control human
-    rect(x+4, top+8, 9, h-8, INK);                  // torso
-    rect(x+5, top+2, 7, 6, INK);                    // head
-    rect(x+6, top+4, 4, 2, DIM);                    // visor
-    rect(x+2, top+10, 3, 8, INK);                   // arm
-    var a = phase % 2 ? 0 : 2;
-    rect(x+5, top+h-3, 3,3, INK); rect(x+9+a, top+h-3, 3,3, INK);
-    grey(x+13, top+11, 6, 8);                       // spray tank
-    rect(x+18, top+9, 3, 2, INK);                   // nozzle
-  }
+	const missing = Engine.getMissingFeatures({
+		threads: GODOT_THREADS_ENABLED,
+	});
 
-  // ── state ──
-  var STATE='title', obs=[], parts=[], hint=3;
-  var score=0, best=0, lives=3, dist=0, spd=118, spawnT=0, spawnGap=1.15, t=0;
-  var airY=0, vy=0, grounded=true, biteT=0, biteCd=0, invT=0, shake=0;
-  try{ best=+localStorage.getItem('kr2_best')||0; }catch(e){}
-
-  var TYPES = ['can','dog','cat','exterm'];
-  function reset(){ obs=[]; parts=[]; score=0; lives=3; dist=0; spd=118; spawnT=0; spawnGap=1.15;
-    airY=0; vy=0; grounded=true; biteT=0; biteCd=0; invT=0; shake=0; hint=3; STATE='play'; }
-
-  function spawnOne(){
-    var r=Math.random(), type;
-    if (r<0.42) type='can'; else { var e=['dog','cat','exterm']; type=e[(Math.random()*3)|0]; }
-    var h = type==='can'?24 : type==='dog'?20 : type==='cat'?14 : 34;
-    var w = type==='can'?17 : type==='dog'?34 : type==='cat'?22 : 22;
-    obs.push({ x:W+10, w:w, h:h, type:type, hit:false, ph:0, vx:(type==='dog'?24:type==='cat'?40:0) });
-  }
-  function jump(){ if (grounded){ vy=305; airY=0.001; grounded=false; sJump(); } }
-  function bite(){ if (biteCd>0) return; biteT=0.16; biteCd=0.32; sBite(); }
-  function burst(x,y,n){ for(var i=0;i<(n||8);i++) parts.push({x:x,y:y,vx:(Math.random()-0.5)*120,vy:-Math.random()*120,life:0.5}); }
-
-  // ── input ──
-  var keys={};
-  function tapStart(){ if(STATE==='title'||STATE==='over') reset(); }
-  window.addEventListener('keydown', function(e){
-    keys[e.key]=true;
-    if (e.key===' '||e.key==='ArrowUp'||e.key==='w'){ e.preventDefault(); if(STATE==='play') jump(); else tapStart(); }
-    if (e.key==='ArrowDown'||e.key==='ArrowRight'||e.key==='b'||e.key==='k'||e.key==='x'||e.key==='f'){ e.preventDefault(); if(STATE==='play') bite(); else tapStart(); }
-    if (e.key==='Enter'){ e.preventDefault(); tapStart(); }
-  });
-  window.addEventListener('keyup', function(e){ keys[e.key]=false; });
-  cv.addEventListener('pointerdown', function(e){
-    cv.focus();
-    if (STATE!=='play'){ tapStart(); return; }
-    var r=cv.getBoundingClientRect(), fx=(e.clientX-r.left)/r.width;
-    if (fx < 0.45) jump(); else bite();
-  });
-
-  // ── update ──
-  function update(dt){
-    if (STATE!=='play') { t+=dt; return; }
-    t+=dt; dist += spd*dt; score = (dist/12)|0;
-    spd = 118 + Math.min(140, dist*0.02);
-    spawnGap = Math.max(0.55, 1.15 - dist*0.00018);
-    if (biteT>0) biteT-=dt; if (biteCd>0) biteCd-=dt; if (invT>0) invT-=dt; if (shake>0) shake-=dt; if (hint>0) hint-=dt;
-
-    // jump physics
-    if (!grounded){ airY += vy*dt; vy -= 1150*dt; if (airY<=0){ airY=0; vy=0; grounded=true; } }
-    var feetY = GROUND - airY;
-
-    // spawn
-    spawnT += dt; if (spawnT>=spawnGap){ spawnT=0; spawnOne(); }
-
-    var biting = biteT>0;
-    for (var i=obs.length-1;i>=0;i--){
-      var o=obs[i]; o.x -= (spd + o.vx)*dt; o.ph += spd*dt*0.05;
-      var top = GROUND - o.h;
-      // bite: forward chomp range in front of the snout
-      if (biting && !o.hit && o.x < RX+40 && o.x+o.w > RX+24 && airY < o.h+10) {
-        o.hit=true; var pts = o.type==='can'?15 : o.type==='exterm'?30 : o.type==='dog'?25:20;
-        score += pts; dist += pts*3; sEat(); burst(o.x+o.w/2, top+o.h/2, 12);
-        obs.splice(i,1); continue;
-      }
-      // body collision (horizontal overlap with raccoon)
-      if (o.x < RX+30 && o.x+o.w > RX+2) {
-        var cleared = airY > o.h - 2;                 // jumped high enough
-        if (!cleared && invT<=0) {
-          lives--; invT=1.1; shake=0.32; sHurt(); burst(RX+14, feetY-8, 12);
-          obs.splice(i,1);
-          if (lives<=0){ STATE='over'; sOver(); if(score>best){best=score; try{localStorage.setItem('kr2_best',best);}catch(e){}} }
-          continue;
-        }
-      }
-      if (o.x + o.w < -20) obs.splice(i,1);
-    }
-    for (var p=parts.length-1;p>=0;p--){ var q=parts[p]; q.x+=q.vx*dt; q.y+=q.vy*dt; q.vy+=260*dt; q.life-=dt; if(q.life<=0) parts.splice(p,1); }
-  }
-
-  // ── draw ──
-  var bgx=0;
-  function drawBG(){
-    rect(0,0,W,H,DIM);
-    // moon
-    g.fillStyle=INK; g.beginPath(); g.arc(W-46, 34, 13, 0, 7); g.fill();
-    g.fillStyle=DIM; g.beginPath(); g.arc(W-40, 30, 12, 0, 7); g.fill();
-    // stars
-    g.fillStyle=INK; for (var s=0;s<18;s++){ var sx=(s*53+13)%W, sy=(s*29+7)%110; g.fillRect(sx,sy,1,1); }
-    // parallax skyline (dithered) scrolling slowly
-    var off = (dist*0.25) % 64;
-    for (var b=-1; b<W/64+1; b++){ var bx=b*64 - off; var bh=24+((b*37)%22); grey(bx+6, 118-bh, 20, bh); grey(bx+34, 118-bh*0.7, 16, bh*0.7); }
-    // ground
-    rect(0, GROUND, W, 2, INK);
-    rect(0, GROUND+2, W, H-GROUND, DIM);
-    var goff = (dist) % 16;
-    g.fillStyle=INK; for (var x=-16; x<W; x+=16){ g.fillRect(x+8-goff, GROUND+7, 2, 2); }
-  }
-  function text(str,x,y,size,col,align){ g.fillStyle=col||INK; g.font='bold '+(size||9)+'px monospace'; g.textAlign=align||'center'; g.fillText(str,x,y); }
-
-  function drawObs(o){ var top=GROUND-o.h;
-    if (o.type==='can') trashcan(o.x, top, o.h);
-    else if (o.type==='dog') dog(o.x, top, o.h, o.ph|0);
-    else if (o.type==='cat') cat(o.x, top, o.h, o.ph|0);
-    else exterm(o.x, top, o.h, o.ph|0);
-  }
-
-  function draw(){
-    g.save();
-    if (shake>0) g.translate((Math.random()-0.5)*4,(Math.random()-0.5)*4);
-    drawBG();
-    for (var i=0;i<obs.length;i++) drawObs(obs[i]);
-    g.fillStyle=INK; for (var p=0;p<parts.length;p++){ var q=parts[p]; g.globalAlpha=Math.max(0,q.life*2); g.fillRect(q.x|0,q.y|0,2,2); } g.globalAlpha=1;
-
-    if (STATE!=='title'){
-      var feetY = GROUND - airY;
-      var flash = invT>0 && (((invT*12)|0)%2===0);
-      raccoon(feetY, biteT>0, (t*10)|0, flash);
-    }
-    // HUD
-    text('SCORE '+score, 6, 13, 10, INK, 'left');
-    text('BEST '+best, W-6, 13, 9, GRAY, 'right'); g.fillStyle=INK; g.textAlign='right'; g.fillText('BEST '+best, W-6, 13);
-    for (var l=0;l<3;l++){ g.fillStyle = l<lives?INK:DIM; g.fillRect(6+l*11, 18, 8, 7); g.fillStyle=DIM; g.fillRect(6+l*11+3,20,2,3); }
-    g.restore();
-
-    if (STATE==='play' && hint>0){ g.globalAlpha=Math.min(1,hint); text('◄ JUMP', W*0.25, H-10, 9, INK); text('BITE ►', W*0.75, H-10, 9, INK); g.globalAlpha=1; }
-
-    if (STATE==='title'){
-      g.fillStyle='rgba(11,11,11,.72)'; g.fillRect(0,0,W,H);
-      raccoon(GROUND-2, true, 0, false);
-      text('KILLER', W/2, H/2-24, 26, INK); text('RACOON', W/2, H/2+4, 26, INK);
-      text('bite the trash • dodge the pound', W/2, H/2+26, 9, GRAY); g.fillStyle=INK; g.textAlign='center'; g.fillText('bite the trash • dodge the pound', W/2, H/2+26);
-      if (((t*2)|0)%2===0) text('TAP / SPACE TO START', W/2, H-40, 10, INK);
-      text('JUMP = SPACE   BITE = B / ►', W/2, H-22, 8, INK);
-    } else if (STATE==='over'){
-      g.fillStyle='rgba(11,11,11,.75)'; g.fillRect(0,0,W,H);
-      text('BUSTED!', W/2, H/2-24, 24, INK);
-      text('SCORE  '+score, W/2, H/2+2, 12, INK);
-      text('BEST   '+best, W/2, H/2+20, 10, INK);
-      if (((t*2)|0)%2===0) text('TAP / SPACE TO RETRY', W/2, H-30, 10, INK);
-    }
-  }
-
-  var last=performance.now();
-  function frame(now){ var dt=Math.min(0.05,(now-last)/1000); last=now; update(dt); draw(); requestAnimationFrame(frame); }
-  requestAnimationFrame(frame);
-  cv.focus();
-})();
-</script>
-</body>
+	if (missing.length !== 0) {
+		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
+			// There's a chance that installing the service worker would fix the issue
+			Promise.race([
+				navigator.serviceWorker.getRegistration().then((registration) => {
+					if (registration != null) {
+						return Promise.reject(new Error('Service worker already exists.'));
+					}
+					return registration;
+				}).then(() => engine.installServiceWorker()),
+				// For some reason, `getRegistration()` can stall
+				new Promise((resolve) => {
+					setTimeout(() => resolve(), 2000);
+				}),
+			]).catch((err) => {
+				console.error('Error while registering service worker:', err);
+			}).then(() => {
+				window.location.reload();
+			});
+		} else {
+			// Display the message as usual
+			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+			displayFailureNotice(missingMsg + missing.join('\n'));
+		}
+	} else {
+		setStatusMode('progress');
+		engine.startGame({
+			'onProgress': function (current, total) {
+				if (current > 0 && total > 0) {
+					statusProgress.value = current;
+					statusProgress.max = total;
+				} else {
+					statusProgress.removeAttribute('value');
+					statusProgress.removeAttribute('max');
+				}
+			},
+		}).then(() => {
+			setStatusMode('hidden');
+		}, displayFailureNotice);
+	}
+}());
+		</script>
+	</body>
 </html>
+
