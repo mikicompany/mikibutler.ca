@@ -224,8 +224,12 @@
     .cab-coindoor { width: 96px; padding: 11px; border-radius: 8px; display: flex; justify-content: center;
                     background: linear-gradient(180deg, #2c2340, #191128);
                     box-shadow: inset 0 1px 0 rgba(255,255,255,.06), inset 0 -4px 8px rgba(0,0,0,.4), 0 2px 5px rgba(0,0,0,.4); }
-    .cab-coinslot { width: 54px; height: 30px; border-radius: 6px; position: relative;
-                    background: linear-gradient(180deg, #333, #0d0d0d); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+    .cab-coinslot { width: 54px; height: 30px; border-radius: 6px; position: relative; cursor: pointer;
+                    background: linear-gradient(180deg, #333, #0d0d0d); box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+                    transition: transform .08s ease, box-shadow .15s ease; }
+    .cab-coinslot:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 0 10px rgba(255,204,0,.4); }
+    .cab-coinslot.clink { animation: coin-clink .18s ease; }
+    @keyframes coin-clink { 0%,100% { transform: scale(1); } 40% { transform: scale(.9); } }
     .cab-coinslot::before { content: ''; position: absolute; top: 8px; left: 50%; width: 22px; height: 4px; background: #000; border-radius: 2px; transform: translateX(-50%); box-shadow: 0 0 4px rgba(0,0,0,.8); }
     .cab-coinslot::after { content: 'INSERT COIN'; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); font-family: 'Press Start 2P', monospace; font-size: 6px; color: #667; white-space: nowrap; }
     .cab-plate { font-family: 'Press Start 2P', monospace; font-size: 8px; letter-spacing: 2px; color: #6b5fa0; }
@@ -1112,6 +1116,59 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           counter.textContent = reels.length + ' reel' + (reels.length > 1 ? 's' : '') + ' — press A to play';
         }).catch(function () { counter.textContent = 'Placeholder reel — paste your reel links'; });
       }
+    })();
+  </script>
+
+  <script>
+    // Coin slot: tap it for a coin "clink" + arcade coin sound + gold sparkles.
+    (function () {
+      var slot = document.querySelector('.cab-coinslot');
+      if (!slot) return;
+      var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var actx = null;
+      function tone(f, d, when, vol) {
+        try {
+          if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+          if (actx.state === 'suspended') actx.resume();
+          var t = actx.currentTime + (when || 0);
+          var o = actx.createOscillator(), g = actx.createGain();
+          o.type = 'square'; o.frequency.setValueAtTime(f, t);
+          g.gain.setValueAtTime(vol || 0.06, t);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+          o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + d);
+        } catch (e) {}
+      }
+      function coinSound() { tone(988, 0.08, 0, 0.06); tone(1319, 0.17, 0.07, 0.06); } // classic "coin!" up-chime
+
+      var GOLD = ['#ffcc00', '#ffe680', '#ffb300', '#fff3b0'];
+      function sparkle(x, y) {
+        if (reduce) return;
+        for (var i = 0; i < 12; i++) {
+          var p = document.createElement('span');
+          var a = (Math.PI * 2 * i) / 12 + Math.random() * 0.5;
+          var dist = 18 + Math.random() * 26;
+          p.style.cssText = 'position:fixed;left:' + x + 'px;top:' + y + 'px;width:5px;height:5px;background:' +
+            GOLD[(Math.random() * GOLD.length) | 0] + ';pointer-events:none;z-index:99999;border-radius:1px;image-rendering:pixelated;';
+          document.body.appendChild(p);
+          (function (el, dx, dy) {
+            if (el.animate) {
+              el.animate(
+                [ { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+                  { transform: 'translate(calc(-50% + ' + dx + 'px),calc(-50% + ' + dy + 'px)) scale(0)', opacity: 0 } ],
+                { duration: 520 + Math.random() * 240, easing: 'cubic-bezier(.2,.7,.3,1)' }
+              ).onfinish = function () { el.remove(); };
+            } else { el.remove(); }
+          })(p, Math.cos(a) * dist, Math.sin(a) * dist);
+        }
+      }
+
+      slot.addEventListener('pointerdown', function () {
+        coinSound();
+        slot.classList.remove('clink'); void slot.offsetWidth; slot.classList.add('clink');
+        if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
+        var r = slot.getBoundingClientRect();
+        sparkle(r.left + r.width / 2, r.top + r.height / 2);
+      });
     })();
   </script>
 </body>
