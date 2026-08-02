@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>MIKI BOY — Reels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --gb-body:#d8d5cc; --gb-body2:#bfbcb2; --gb-screen-frame:#37373a; --lcd:#8ba614; --accent:#a0ff00; --maroon:#8a2b4a; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; font-family: Inter, system-ui, sans-serif;
+    background: radial-gradient(circle at 50% 30%, #23262d 0%, #14161a 70%);
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding: 40px 16px 60px; color: #e8eaed;
+  }
+  .stage-title { font-size: 13px; letter-spacing: .22em; text-transform: uppercase; color: #7f8794; margin: 0 0 26px; }
+
+  /* ── Game Boy body ── */
+  .gb {
+    position: relative; width: 340px; max-width: 92vw;
+    background: linear-gradient(160deg, #e6e3db 0%, var(--gb-body) 40%, var(--gb-body2) 100%);
+    border-radius: 16px 16px 74px 16px;
+    padding: 22px 22px 26px;
+    box-shadow: 0 30px 60px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.7),
+                inset 0 -6px 14px rgba(0,0,0,.14), inset -3px 0 8px rgba(0,0,0,.08);
+  }
+  .gb::before { /* top grille lines */
+    content: ""; position: absolute; top: 9px; right: 20px; width: 46px; height: 8px;
+    background: repeating-linear-gradient(90deg, rgba(0,0,0,.12) 0 2px, transparent 2px 5px);
+    border-radius: 2px;
+  }
+
+  /* ── Screen housing ── */
+  .gb-screen-frame {
+    position: relative; background: linear-gradient(160deg, #3d3d40, #2a2a2d);
+    border-radius: 10px 10px 34px 10px; padding: 20px 26px 30px;
+    box-shadow: inset 0 3px 10px rgba(0,0,0,.6), inset 0 0 0 1px rgba(0,0,0,.4);
+  }
+  .gb-screen-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .gb-power-led { width: 8px; height: 8px; border-radius: 50%; background: #ff3b3b; box-shadow: 0 0 8px #ff3b3b; }
+  .gb-power-lines { flex: 1; height: 6px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.10) 0 3px, transparent 3px 7px); border-radius: 3px; }
+  .gb-screen-top small { font-size: 7px; letter-spacing: .12em; color: #9aa; }
+
+  .lcd {
+    position: relative; width: 100%; aspect-ratio: 9 / 16; overflow: hidden;
+    background: #0a0c0f; border-radius: 6px;
+    box-shadow: inset 0 0 0 2px #14151a, inset 0 0 30px rgba(0,0,0,.8);
+  }
+  .lcd iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background:#000; }
+
+  /* Placeholder "reel" that fills the screen until a real reel is loaded */
+  .reel-ph { position: absolute; inset: 0; display: flex; flex-direction: column; }
+  .reel-ph img { width: 100%; height: 100%; object-fit: cover; }
+  .reel-ph .veil { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.45) 0%, transparent 26%, transparent 55%, rgba(0,0,0,.72) 100%); }
+  .reel-ph .top { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; align-items: center; gap: 7px; z-index: 2; }
+  .reel-ph .avatar { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(45deg,#feda75,#d62976,#962fbf); padding: 2px; }
+  .reel-ph .avatar span { display:flex; width:100%; height:100%; border-radius:50%; background:#111; align-items:center; justify-content:center; font-size:11px; }
+  .reel-ph .handle { font-size: 11px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.7); }
+  .reel-ph .play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 2; }
+  .reel-ph .play button {
+    width: 54px; height: 54px; border-radius: 50%; border: 0; cursor: pointer;
+    background: rgba(255,255,255,.16); backdrop-filter: blur(3px); color: #fff; font-size: 20px;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,.4);
+  }
+  .reel-ph .bottom { position: absolute; left: 10px; right: 10px; bottom: 12px; z-index: 2; }
+  .reel-ph .cap { font-size: 10px; color: #fff; line-height: 1.35; text-shadow: 0 1px 3px rgba(0,0,0,.8); margin-bottom: 8px; }
+  .reel-ph .rail { display: flex; gap: 14px; font-size: 15px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+  .reel-ph .rail b { font-size: 9px; font-weight: 600; margin-left: 3px; }
+  /* Retro LCD flavour: faint scanlines + green tint, gentle so the reel stays watchable */
+  .lcd .crt { position: absolute; inset: 0; pointer-events: none; z-index: 3;
+    background: repeating-linear-gradient(rgba(0,0,0,.10) 0 1px, transparent 1px 3px);
+    mix-blend-mode: multiply; }
+  .lcd .tint { position:absolute; inset:0; pointer-events:none; z-index:3; background: rgba(120,150,20,.10); mix-blend-mode: soft-light; }
+
+  .gb-brand { text-align: center; margin-top: 12px; }
+  .gb-brand .word { font-family: 'Press Start 2P', monospace; font-size: 15px; color: #cfccc3; letter-spacing: 1px; }
+  .gb-brand .word span { color: #ef5c86; }
+  .gb-brand .sub { font-size: 7px; letter-spacing: .1em; color: #8f8f96; margin-top: 3px; }
+
+  /* ── Controls ── */
+  .gb-controls { margin-top: 22px; position: relative; height: 150px; }
+  /* D-pad */
+  .dpad { position: absolute; left: 6px; top: 8px; width: 96px; height: 96px; }
+  .dpad button { position: absolute; background: #26262a; border: 0; cursor: pointer; color: #55565c;
+    box-shadow: 0 3px 0 #0d0d10, inset 0 1px 0 rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; font-size:12px; }
+  .dpad .up    { left: 33px; top: 0;   width: 30px; height: 36px; border-radius: 6px 6px 0 0; }
+  .dpad .down  { left: 33px; top: 60px; width: 30px; height: 36px; border-radius: 0 0 6px 6px; }
+  .dpad .left  { left: 0;   top: 33px; width: 36px; height: 30px; border-radius: 6px 0 0 6px; }
+  .dpad .right { left: 60px; top: 33px; width: 36px; height: 30px; border-radius: 0 6px 6px 0; }
+  .dpad .mid   { left: 30px; top: 30px; width: 36px; height: 36px; background:#26262a; box-shadow: inset 0 0 4px #000; border-radius:4px; pointer-events:none; }
+  .dpad button:active { box-shadow: 0 1px 0 #0d0d10; transform: translateY(2px); }
+
+  /* A / B */
+  .ab { position: absolute; right: 4px; top: 20px; width: 130px; height: 80px; transform: rotate(-22deg); }
+  .ab button { position: absolute; width: 46px; height: 46px; border-radius: 50%; cursor: pointer; border: 0;
+    background: radial-gradient(circle at 36% 30%, #a83459, var(--maroon) 70%); color: #ffd7e4; font-weight: 800; font-size: 15px;
+    box-shadow: 0 4px 0 #4e1830, inset 0 1px 0 rgba(255,255,255,.25); }
+  .ab button:active { box-shadow: 0 1px 0 #4e1830; transform: translateY(3px); }
+  .ab .a { right: 0; top: 0; }
+  .ab .b { right: 58px; top: 20px; }
+  .ab .lab { position: absolute; font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--maroon); }
+  .ab .lab-a { right: 14px; top: 50px; } .ab .lab-b { right: 72px; top: 70px; }
+
+  /* Start / Select */
+  .startsel { position: absolute; left: 50%; bottom: 2px; transform: translateX(-50%) rotate(-22deg); display: flex; gap: 18px; }
+  .startsel div { text-align: center; }
+  .startsel button { width: 42px; height: 12px; border-radius: 8px; border: 0; cursor: pointer; background: #7a7f88;
+    box-shadow: 0 3px 0 #4b4e55, inset 0 1px 0 rgba(255,255,255,.3); }
+  .startsel button:active { box-shadow: 0 1px 0 #4b4e55; transform: translateY(2px); }
+  .startsel small { display: block; font-family: 'Press Start 2P', monospace; font-size: 6px; color: #6a6a6a; margin-top: 6px; letter-spacing: .06em; }
+
+  /* Speaker */
+  .speaker { position: absolute; right: 8px; bottom: -6px; width: 60px; height: 46px;
+    background: repeating-linear-gradient(115deg, rgba(0,0,0,.16) 0 3px, transparent 3px 8px); border-radius: 4px; transform: rotate(0deg); opacity:.5; }
+
+  /* ── Loader bar under the console ── */
+  .loader { width: 340px; max-width: 92vw; margin: 26px auto 0; }
+  .loader p { font-size: 12px; color: #9aa2ad; text-align: center; margin: 0 0 10px; line-height: 1.5; }
+  .loader .row { display: flex; gap: 8px; }
+  .loader input { flex: 1; min-width: 0; background: #111418; border: 1px solid #2a2f37; color: #e8eaed; border-radius: 8px; padding: 9px 11px; font-size: 13px; }
+  .loader input:focus { outline: none; border-color: var(--accent); }
+  .loader button { background: #1c2128; border: 1px solid #2a2f37; color: #cfd4db; border-radius: 8px; padding: 9px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .loader button:hover { border-color: var(--accent); color: #fff; }
+  .loader .hint { font-size: 11px; color: #616872; text-align: center; margin-top: 10px; }
+  .counter { text-align:center; font-size: 11px; color:#7f8794; margin-top:8px; letter-spacing:.08em; }
+</style>
+</head>
+<body>
+  <p class="stage-title">Mock-up · MIKI BOY reels player</p>
+
+  <div class="gb" id="gb">
+    <div class="gb-screen-frame">
+      <div class="gb-screen-top">
+        <span class="gb-power-led"></span>
+        <span class="gb-power-lines"></span>
+        <small>BATTERY</small>
+      </div>
+
+      <div class="lcd" id="lcd">
+        <!-- Placeholder reel (shown until a real reel link is loaded) -->
+        <div class="reel-ph" id="reelPh">
+          <img id="phCover" src="images/gameography/starship-troopers.jpg" alt="" />
+          <div class="veil"></div>
+          <div class="top">
+            <span class="avatar"><span>📷</span></span>
+            <span class="handle">@mikicompany</span>
+          </div>
+          <div class="play"><button id="phPlay" aria-label="Play reel">▶</button></div>
+          <div class="bottom">
+            <div class="cap">Environment art breakdowns, timelapses & behind-the-scenes 🎮✨</div>
+            <div class="rail">♥<b>1.2k</b> 💬<b>84</b> ➤<b>Share</b></div>
+          </div>
+        </div>
+        <div class="tint"></div>
+        <div class="crt"></div>
+      </div>
+
+      <div class="gb-brand">
+        <div class="word">MIKI <span>BOY</span></div>
+        <div class="sub">REELS · @mikicompany</div>
+      </div>
+    </div>
+
+    <div class="gb-controls">
+      <div class="dpad">
+        <button class="up"    aria-label="Up">▲</button>
+        <button class="left"  id="btnPrev" aria-label="Previous reel">◀</button>
+        <span class="mid"></span>
+        <button class="right" id="btnNext" aria-label="Next reel">▶</button>
+        <button class="down"  aria-label="Down">▼</button>
+      </div>
+      <div class="ab">
+        <button class="a" id="btnA">A</button>
+        <button class="b" id="btnB">B</button>
+      </div>
+      <div class="startsel">
+        <div><button id="btnSelect"></button><small>SELECT</small></div>
+        <div><button id="btnStart"></button><small>START</small></div>
+      </div>
+      <span class="speaker"></span>
+    </div>
+  </div>
+
+  <div class="loader">
+    <p>Press <b>A</b> to play · <b>◀ ▶</b> to switch reels · <b>START</b> opens it on Instagram.</p>
+    <div class="row">
+      <input id="reelUrl" type="url" placeholder="Paste an Instagram reel link…" autocomplete="off" spellcheck="false" />
+      <button id="reelAdd">Load</button>
+    </div>
+    <div class="counter" id="counter">Placeholder reel — add your links</div>
+    <p class="hint">Tip: paste one or more of your reel links to load the real thing.</p>
+  </div>
+
+<script>
+  // Drop your reel links here (or paste them live in the box below the console).
+  // e.g. 'https://www.instagram.com/reel/Cxxxxxxxxxx/'
+  var REELS = [];
+
+  var lcd = document.getElementById('lcd');
+  var ph = document.getElementById('reelPh');
+  var counter = document.getElementById('counter');
+  var idx = -1;
+  var frame = null;
+
+  function shortcode(url) {
+    var m = (url || '').match(/instagram\.com\/(?:reel|reels|p|tv)\/([A-Za-z0-9_-]+)/i);
+    return m ? m[1] : null;
+  }
+  function show(i) {
+    if (!REELS.length) return;
+    idx = (i + REELS.length) % REELS.length;
+    var code = shortcode(REELS[idx]);
+    if (!code) return;
+    if (!frame) { frame = document.createElement('iframe'); frame.setAttribute('allowtransparency','true'); frame.allow='autoplay; encrypted-media; clipboard-write; picture-in-picture'; lcd.insertBefore(frame, lcd.firstChild); }
+    ph.style.display = 'none';
+    frame.src = 'https://www.instagram.com/reel/' + code + '/embed/';
+    counter.textContent = 'Reel ' + (idx + 1) + ' / ' + REELS.length;
+  }
+  function addReel(url) {
+    var code = shortcode(url);
+    if (!code) { counter.textContent = 'That doesn’t look like a reel link'; return; }
+    REELS.push(url); show(REELS.length - 1);
+  }
+  function next() { if (REELS.length) show(idx + 1); }
+  function prev() { if (REELS.length) show(idx - 1); }
+  function play() { if (REELS.length) show(idx < 0 ? 0 : idx); }
+  function openIG() {
+    var url = REELS.length ? REELS[idx] : 'https://www.instagram.com/mikicompany/reels/';
+    window.open(url, '_blank', 'noopener');
+  }
+
+  document.getElementById('btnNext').addEventListener('click', next);
+  document.getElementById('btnPrev').addEventListener('click', prev);
+  document.getElementById('btnA').addEventListener('click', play);
+  document.getElementById('phPlay').addEventListener('click', play);
+  document.getElementById('btnB').addEventListener('click', function(){ if(frame){ frame.remove(); frame=null; ph.style.display=''; idx=-1; counter.textContent = REELS.length? 'Stopped — press A to play':'Placeholder reel — add your links'; } });
+  document.getElementById('btnStart').addEventListener('click', openIG);
+  document.getElementById('btnSelect').addEventListener('click', openIG);
+  document.getElementById('reelAdd').addEventListener('click', function(){ addReel(document.getElementById('reelUrl').value); document.getElementById('reelUrl').value=''; });
+  document.getElementById('reelUrl').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); this.blur(); addReel(this.value); this.value=''; } });
+
+  window.addEventListener('keydown', function(e){
+    if (['INPUT','TEXTAREA'].indexOf(e.target.tagName)>=0) return;
+    if (e.key==='ArrowRight') next();
+    else if (e.key==='ArrowLeft') prev();
+    else if (e.key==='a'||e.key==='A'||e.key==='Enter') play();
+    else if (e.key==='b'||e.key==='B') document.getElementById('btnB').click();
+  });
+
+  // Preload any links hard-coded in REELS
+  if (REELS.length) show(0);
+</script>
+</body>
+</html>
