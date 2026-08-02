@@ -449,9 +449,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
         </div>
         <p class="crt-caption">Channel <b id="crt-num">1</b> — turn the dial to switch · <b>3</b> = pixel reel</p>
-        <!-- Self-hosted clip pixelated live on channel 3. Swap the src for the
-             real demo reel (an .mp4 in /video) to show it in pixel art. -->
-        <video id="crt-reel" src="video/logo-reveal.mp4" muted loop playsinline preload="auto"></video>
+        <!-- Self-hosted clip pixelated live on channel 3. Swap these sources for
+             the real demo reel (drop an .mp4/.webm in /video) to show it in pixel art. -->
+        <video id="crt-reel" muted loop playsinline preload="auto" crossorigin="anonymous">
+          <source src="video/logo-reveal.webm" type="video/webm" />
+          <source src="video/logo-reveal.mp4" type="video/mp4" />
+        </video>
       </div>
 
       <section class="reelboy-wrap" id="reels">
