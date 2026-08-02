@@ -882,65 +882,114 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </script>
 
   <script>
-    // Reels · MIKI BOY. Instagram reel embeds on the Game Boy screen. Button
-    // controls only (no global key capture — the cabinet owns the keyboard).
+    // Reels · MIKI BOY. Auto-loads every reel from a Behold JSON feed
+    // (behold.so — connect your IG once, paste the feed URL below) and stays
+    // current as you post. Native <video> autoplays/loops when the feed gives a
+    // video URL; otherwise it falls back to Instagram's tap-to-play embed.
+    // Manual paste still works for one-offs. Button controls only — the cabinet
+    // owns the keyboard.
     (function () {
-      // Paste your reel links here, e.g. 'https://www.instagram.com/reel/CODE/'
-      var REELS = [];
+      // ── Paste your Behold JSON feed URL here to auto-load all reels ──
+      var BEHOLD_FEED = window.BEHOLD_FEED || '';
 
-      var lcd = document.getElementById('lcd');
-      var ph = document.getElementById('reelPh');
+      var lcd     = document.getElementById('lcd');
+      var ph      = document.getElementById('reelPh');
+      var phCover = document.getElementById('phCover');
       var counter = document.getElementById('rbCounter');
       if (!lcd) return;
-      var idx = -1, frame = null;
+
+      var reels = [];        // { permalink, video, thumb, caption }
+      var idx = -1, node = null;
 
       function shortcode(url) {
         var m = (url || '').match(/instagram\.com\/(?:reel|reels|p|tv)\/([A-Za-z0-9_-]+)/i);
         return m ? m[1] : null;
       }
-      function show(i) {
-        if (!REELS.length) return;
-        idx = (i + REELS.length) % REELS.length;
-        var code = shortcode(REELS[idx]); if (!code) return;
-        if (!frame) {
-          frame = document.createElement('iframe');
-          frame.setAttribute('allowtransparency', 'true');
-          frame.allow = 'autoplay; encrypted-media; clipboard-write; picture-in-picture';
-          lcd.insertBefore(frame, lcd.firstChild);
+      function clearNode() { if (node) { node.remove(); node = null; } }
+
+      function render(i) {
+        if (!reels.length) return;
+        idx = (i + reels.length) % reels.length;
+        var r = reels[idx];
+        clearNode();
+        if (r.video) {
+          node = document.createElement('video');
+          node.src = r.video; node.muted = true; node.loop = true; node.autoplay = true;
+          node.playsInline = true; node.setAttribute('playsinline', '');
+          if (r.thumb) node.poster = r.thumb;
+          node.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;';
+          lcd.insertBefore(node, lcd.firstChild);
+          if (node.play) { var p = node.play(); if (p && p.catch) p.catch(function () {}); }
+        } else {
+          var code = shortcode(r.permalink); if (!code) return;
+          node = document.createElement('iframe');
+          node.allow = 'autoplay; encrypted-media; clipboard-write; picture-in-picture';
+          node.setAttribute('allowtransparency', 'true');
+          node.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;';
+          node.src = 'https://www.instagram.com/reel/' + code + '/embed/';
+          lcd.insertBefore(node, lcd.firstChild);
         }
         ph.style.display = 'none';
-        frame.src = 'https://www.instagram.com/reel/' + code + '/embed/';
-        counter.textContent = 'Reel ' + (idx + 1) + ' / ' + REELS.length;
+        counter.textContent = 'Reel ' + (idx + 1) + ' / ' + reels.length;
       }
-      function addReel(url) {
-        var code = shortcode(url);
-        if (!code) { counter.textContent = 'That doesn’t look like a reel link'; return; }
-        REELS.push(url); show(REELS.length - 1);
-      }
-      function play() { if (REELS.length) show(idx < 0 ? 0 : idx); }
+      function play() { if (reels.length) render(idx < 0 ? 0 : idx); }
       function stop() {
-        if (frame) { frame.remove(); frame = null; ph.style.display = ''; idx = -1; }
-        counter.textContent = REELS.length ? 'Stopped — press A to play' : 'Placeholder reel — paste your reel links';
+        clearNode(); ph.style.display = ''; idx = -1;
+        counter.textContent = reels.length ? 'Stopped — press A to play' : 'Placeholder reel — paste your reel links';
       }
       function openIG() {
-        window.open(REELS.length ? REELS[idx] : 'https://www.instagram.com/mikicompany/reels/', '_blank', 'noopener');
+        var url = (reels.length && idx >= 0) ? reels[idx].permalink : 'https://www.instagram.com/mikicompany/reels/';
+        window.open(url, '_blank', 'noopener');
+      }
+      function addManual(url) {
+        var code = shortcode(url);
+        if (!code) { counter.textContent = 'That doesn’t look like a reel link'; return; }
+        reels.push({ permalink: url }); render(reels.length - 1);
       }
 
-      document.getElementById('rbNext').addEventListener('click', function () { if (REELS.length) show(idx + 1); });
-      document.getElementById('rbPrev').addEventListener('click', function () { if (REELS.length) show(idx - 1); });
+      document.getElementById('rbNext').addEventListener('click', function () { if (reels.length) render(idx + 1); });
+      document.getElementById('rbPrev').addEventListener('click', function () { if (reels.length) render(idx - 1); });
       document.getElementById('rbA').addEventListener('click', play);
       document.getElementById('phPlay').addEventListener('click', play);
       document.getElementById('rbB').addEventListener('click', stop);
       document.getElementById('rbStart').addEventListener('click', openIG);
       document.getElementById('rbSelect').addEventListener('click', openIG);
       document.getElementById('rbAdd').addEventListener('click', function () {
-        var el = document.getElementById('rbUrl'); addReel(el.value); el.value = '';
+        var el = document.getElementById('rbUrl'); addManual(el.value); el.value = '';
       });
       document.getElementById('rbUrl').addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') { e.preventDefault(); addReel(this.value); this.value = ''; }
+        if (e.key === 'Enter') { e.preventDefault(); addManual(this.value); this.value = ''; }
       });
 
-      if (REELS.length) show(0);
+      // ── Auto-load reels from the Behold feed ──
+      // Behold's shape has drifted across versions; read fields defensively.
+      function normalize(json) {
+        var arr = Array.isArray(json) ? json : (json.posts || json.data || json.media || []);
+        var out = [];
+        (arr || []).forEach(function (p) {
+          var type = (p.mediaType || p.media_type || '').toUpperCase();
+          var permalink = p.permalink || p.link || '';
+          if (type !== 'VIDEO' && !/\/reel\//.test(permalink)) return; // reels only
+          var sizes = p.sizes || {};
+          var video = (type === 'VIDEO')
+            ? (p.mediaUrl || p.media_url || (sizes.full && sizes.full.mediaUrl) || '') : '';
+          var thumb = p.thumbnailUrl || p.thumbnail_url
+            || (sizes.medium && sizes.medium.mediaUrl) || (sizes.small && sizes.small.mediaUrl)
+            || p.mediaUrl || '';
+          out.push({ permalink: permalink, video: video, thumb: thumb, caption: p.caption || p.prunedCaption || '' });
+        });
+        return out;
+      }
+      if (BEHOLD_FEED) {
+        counter.textContent = 'Loading reels…';
+        fetch(BEHOLD_FEED).then(function (r) { return r.json(); }).then(function (json) {
+          var list = normalize(json);
+          if (!list.length) { counter.textContent = 'No reels found in the feed yet'; return; }
+          reels = list;
+          if (reels[0].thumb) phCover.src = reels[0].thumb;   // freshen placeholder to latest reel
+          counter.textContent = reels.length + ' reel' + (reels.length > 1 ? 's' : '') + ' — press A to play';
+        }).catch(function () { counter.textContent = 'Placeholder reel — paste your reel links'; });
+      }
     })();
   </script>
 </body>
