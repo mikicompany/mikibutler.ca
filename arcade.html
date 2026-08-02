@@ -70,6 +70,12 @@
     .crt-screen.pixel canvas#crt-pixel { display: block; }
     .crt-screen.pixel iframe { visibility: hidden; }
     video#crt-reel { display: none; }
+    .crt-pixlabel { position: absolute; left: 8px; bottom: 8px; z-index: 2; display: none;
+      font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; color: #d7ffd0;
+      background: rgba(0,0,0,.5); padding: 4px 6px; border-radius: 4px; }
+    .crt-screen.pixel .crt-pixlabel { display: block; }
+    .crt-knob.knob-live { cursor: pointer; transition: transform .18s ease; }
+    .crt-knob.knob-live:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 0 10px rgba(160,255,0,.4); }
     .crt-glass {
       position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply;
       background:
@@ -432,6 +438,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div class="crt-screen" id="crt-screen">
             <iframe id="crt-frame" title="Arcade TV" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             <canvas id="crt-pixel" width="168" height="126"></canvas>
+            <div class="crt-pixlabel" id="crt-pixlabel"></div>
             <div class="crt-static" id="crt-static"></div>
             <div class="crt-glass"></div>
           </div>
@@ -442,7 +449,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               <button class="crt-ch" data-ch="1" aria-label="Channel 2">2</button>
               <button class="crt-ch" data-ch="2" aria-label="Channel 3 — Pixel Reel">3</button>
             </div>
-            <div class="crt-knob"></div>
+            <div class="crt-knob knob-live" id="crt-knob-color" title="Colour — cycle the pixel-reel palette"></div>
             <div class="crt-knob"></div>
             <div class="crt-speaker"></div>
             <div class="crt-led" title="power"></div>
@@ -573,7 +580,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <script src="js/fx.js" defer></script>
   <script>
     // Old-TV channel switcher: 1-2 are YouTube; 3 is the demo reel rendered as
-    // pixel art (video → low-res canvas → CSS nearest-neighbour scale up).
+    // pixel art (video → low-res canvas → CSS nearest-neighbour scale up). The
+    // colour knob cycles the palette: full colour → Game Boy → 16-colour.
     (function () {
       var VIDS = ['yYgq4ol4OWo', 'MaSAZPmdS8A'];
       var PIX = 2; // the pixel-reel channel
@@ -582,9 +590,41 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var num    = document.getElementById('crt-num');
       var screen = document.getElementById('crt-screen');
       var canvas = document.getElementById('crt-pixel');
-      var cctx   = canvas.getContext('2d');
+      var cctx   = canvas.getContext('2d', { willReadFrequently: true });
       var reel   = document.getElementById('crt-reel');
+      var knob   = document.getElementById('crt-knob-color');
+      var plabel = document.getElementById('crt-pixlabel');
       var cur = -1, pixelOn = false, raf = 0;
+
+      // Palettes
+      var PALS = [
+        { id: 'full', name: 'FULL COLOUR' },
+        { id: 'gb',   name: 'GAME BOY' },
+        { id: 'p8',   name: '16-COLOUR' }
+      ];
+      var palIdx = 0;
+      var GB = [[15,56,15],[48,98,48],[139,172,15],[155,188,15]];
+      var P8 = [[0,0,0],[29,43,83],[126,37,83],[0,135,81],[171,82,54],[95,87,79],[194,195,199],[255,241,232],
+                [255,0,77],[255,163,0],[255,236,39],[0,228,54],[41,173,255],[131,118,156],[255,119,168],[255,204,170]];
+      function quantize(d, mode) {
+        var i;
+        if (mode === 'gb') {
+          for (i = 0; i < d.length; i += 4) {
+            var l = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+            var c = l < 64 ? GB[0] : l < 128 ? GB[1] : l < 192 ? GB[2] : GB[3];
+            d[i]=c[0]; d[i+1]=c[1]; d[i+2]=c[2];
+          }
+        } else if (mode === 'p8') {
+          for (i = 0; i < d.length; i += 4) {
+            var best = 0, bd = 1e9;
+            for (var k = 0; k < P8.length; k++) {
+              var dr=d[i]-P8[k][0], dg=d[i+1]-P8[k][1], db=d[i+2]-P8[k][2], dist=dr*dr+dg*dg+db*db;
+              if (dist < bd) { bd = dist; best = k; }
+            }
+            d[i]=P8[best][0]; d[i+1]=P8[best][1]; d[i+2]=P8[best][2];
+          }
+        }
+      }
 
       function drawCover() {
         if (reel.readyState >= 2 && reel.videoWidth) {
@@ -594,6 +634,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           else { sw = reel.videoWidth; sh = sw / cr; sx = 0; sy = (reel.videoHeight - sh) / 2; }
           cctx.imageSmoothingEnabled = false;
           cctx.drawImage(reel, sx, sy, sw, sh, 0, 0, W, H);
+          var mode = PALS[palIdx].id;
+          if (mode !== 'full') {
+            var img = cctx.getImageData(0, 0, W, H);
+            quantize(img.data, mode);
+            cctx.putImageData(img, 0, 0);
+          }
         }
         raf = requestAnimationFrame(drawCover);
       }
@@ -605,6 +651,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       function stopPixel() {
         pixelOn = false; screen.classList.remove('pixel');
         reel.pause(); cancelAnimationFrame(raf); raf = 0;
+      }
+      function applyPalette() {
+        plabel.textContent = PALS[palIdx].name;
+        knob.style.transform = 'rotate(' + (palIdx * 120) + 'deg)';
+      }
+      function cyclePalette() {
+        palIdx = (palIdx + 1) % PALS.length;
+        applyPalette();
       }
 
       function tune(i, play) {
@@ -624,8 +678,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
       }
       document.querySelectorAll('.crt-ch').forEach(function (b) {
-        b.addEventListener('click', function () { tune(+b.dataset.ch, true); });
+        b.addEventListener('click', function () {
+          var ch = +b.dataset.ch;
+          if (ch === PIX && cur === PIX) cyclePalette(); // re-tap channel 3 to change look
+          else tune(ch, true);
+        });
       });
+      // Colour knob: jump to the pixel reel if needed, then cycle the palette.
+      knob.addEventListener('click', function () {
+        if (cur !== PIX) tune(PIX, true); else cyclePalette();
+      });
+
+      applyPalette();
       tune(0, false); // power on to channel 1 (no autoplay)
     })();
 
