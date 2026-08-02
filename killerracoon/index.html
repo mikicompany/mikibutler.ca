@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Killer Racoon</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #05070a; overflow: hidden; }
+  * { -webkit-tap-highlight-color: transparent; user-select: none; touch-action: none; }
+  #wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #05070a; }
+  #game {
+    height: 100%; width: 100%; display: block;
+    image-rendering: pixelated; image-rendering: crisp-edges;
+    background: #10131a; cursor: pointer;
+  }
+  /* CRT scanlines over the pixels */
+  #scan { position: fixed; inset: 0; pointer-events: none; z-index: 2;
+    background: repeating-linear-gradient(rgba(0,0,0,.16) 0 2px, transparent 2px 4px); mix-blend-mode: multiply; }
+</style>
+</head>
+<body>
+  <div id="wrap"><canvas id="game" width="180" height="270" tabindex="0"></canvas></div>
+  <div id="scan"></div>
+<script>
+(function () {
+  var cv = document.getElementById('game');
+  var g  = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+
+  // ── tiny 8-bit sound ──
+  var actx = null;
+  function tone(freq, dur, type, vol, when) {
+    try {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+      var t = actx.currentTime + (when || 0);
+      var o = actx.createOscillator(), gg = actx.createGain();
+      o.type = type || 'square'; o.frequency.setValueAtTime(freq, t);
+      gg.gain.setValueAtTime(vol || 0.05, t);
+      gg.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(gg); gg.connect(actx.destination); o.start(t); o.stop(t + dur);
+    } catch (e) {}
+  }
+  var sClaw  = function(){ tone(720,0.05,'square',0.05); tone(300,0.07,'square',0.04,0.04); };
+  var sSnack = function(){ tone(880,0.05,'square',0.05); tone(1180,0.06,'square',0.045,0.05); };
+  var sKill  = function(){ tone(160,0.08,'sawtooth',0.06); tone(90,0.12,'sawtooth',0.05,0.07); };
+  var sHurt  = function(){ tone(200,0.14,'triangle',0.07); tone(120,0.18,'triangle',0.06,0.1); };
+  var sOver  = function(){ tone(400,0.12,'square',0.06); tone(300,0.12,'square',0.06,0.12); tone(180,0.25,'square',0.06,0.24); };
+
+  // ── palette ──
+  var C = { bg1:'#161a24', bg2:'#0d1017', fur:'#8a94a3', furD:'#5d6675', mask:'#1b1f28',
+            eye:'#e9ff5a', nose:'#20242c', white:'#e8eef5', tail:'#3a4150',
+            dog:'#b5723a', dogD:'#7c4a20', snack:'#ffd84a', snack2:'#ff7a3c',
+            slash:'#ffffff', heart:'#ff3b5c', accent:'#a0ff00', text:'#e8eef5', pink:'#ff3cac' };
+
+  function rect(x,y,w,h,c){ g.fillStyle=c; g.fillRect(x|0,y|0,w|0,h|0); }
+
+  // ── player raccoon ──
+  var player = { x: W/2, w: 26, h: 22, speed: 130 };
+  function drawRaccoon(cx, y, clawing, hurtFlash) {
+    var x = (cx - player.w/2) | 0;
+    if (hurtFlash) { g.globalAlpha = 0.5; }
+    // tail (ringed) to the left
+    rect(x-6, y+8, 7, 8, C.tail); rect(x-6, y+10, 7, 2, C.furD);
+    // body
+    rect(x+2, y+6, 22, 15, C.fur);
+    rect(x+2, y+16, 22, 5, C.furD);
+    // ears
+    rect(x+3, y+2, 5, 5, C.fur); rect(x+18, y+2, 5, 5, C.fur);
+    rect(x+4, y+3, 3, 3, C.furD); rect(x+19, y+3, 3, 3, C.furD);
+    // head/face
+    rect(x+5, y+5, 16, 11, C.fur);
+    // mask
+    rect(x+5, y+8, 16, 5, C.mask);
+    // eyes
+    rect(x+7, y+9, 3, 3, C.white); rect(x+16, y+9, 3, 3, C.white);
+    rect(x+8, y+10, 2, 2, C.eye);  rect(x+17, y+10, 2, 2, C.eye);
+    // nose
+    rect(x+12, y+13, 3, 2, C.nose);
+    // feet
+    rect(x+6, y+21, 4, 2, C.furD); rect(x+16, y+21, 4, 2, C.furD);
+    // claws when attacking
+    if (clawing) {
+      g.fillStyle = C.slash;
+      for (var i=0;i<4;i++){ rect(x+2 + i*6, y-6, 2, 8, C.white); }
+      rect(x-2, y-2, W*0, 0, C.white);
+    }
+    g.globalAlpha = 1;
+  }
+  function drawDog(x, y, s) {
+    rect(x+2, y+4, 16, 12, C.dog);
+    rect(x+2, y+12, 16, 4, C.dogD);
+    rect(x+0, y+3, 5, 6, C.dog);   // ear
+    rect(x+15, y+3, 5, 6, C.dog);
+    rect(x+6, y+2, 8, 6, C.dog);   // snout
+    rect(x+7, y+6, 2, 2, C.nose); rect(x+11, y+6, 2, 2, C.nose); // eyes (angry)
+    rect(x+9, y+9, 3, 2, C.dogD);  // muzzle
+  }
+  function drawSnack(x, y, kind) {
+    if (kind === 0) { // burger
+      rect(x+2, y+2, 14, 3, C.snack);
+      rect(x+2, y+6, 14, 3, C.snack2);
+      rect(x+2, y+9, 14, 3, C.snack);
+    } else { // pizza slice
+      g.fillStyle = C.snack; g.beginPath();
+      g.moveTo(x+9,y+2); g.lineTo(x+2,y+14); g.lineTo(x+16,y+14); g.closePath(); g.fill();
+      rect(x+7, y+7, 2, 2, C.snack2); rect(x+11, y+9, 2, 2, C.snack2);
+    }
+  }
+
+  // ── state ──
+  var STATE = 'title';
+  var fallers = [], slashes = [], parts = [];
+  var score = 0, best = 0, lives = 3, clawT = 0, clawCd = 0, invT = 0, shake = 0;
+  var spawnT = 0, spawnEvery = 1.05, fallBase = 46, elapsed = 0;
+  try { best = +localStorage.getItem('kr_best') || 0; } catch(e){}
+
+  function reset() {
+    fallers = []; slashes = []; parts = [];
+    score = 0; lives = 3; clawT = 0; clawCd = 0; invT = 0; shake = 0;
+    spawnT = 0; spawnEvery = 1.05; elapsed = 0; player.x = W/2;
+    STATE = 'play';
+  }
+  function spawn() {
+    var kind = Math.random() < 0.42 ? 'dog' : 'snack';
+    fallers.push({ x: 12 + Math.random()*(W-36), y: -18, type: kind,
+                   vy: fallBase + Math.min(70, elapsed*2.2) + Math.random()*20,
+                   sk: (Math.random()*2)|0 });
+  }
+  function claw() {
+    if (clawCd > 0) return;
+    clawT = 0.13; clawCd = 0.34; sClaw();
+    slashes.push({ t: 0.16 });
+  }
+  function burst(x, y, col, n) {
+    for (var i=0;i<(n||8);i++) parts.push({ x:x, y:y, vx:(Math.random()-0.5)*90, vy:(Math.random()-0.9)*90, life:0.5, col:col });
+  }
+
+  // ── input ──
+  var keys = {};
+  function press() { if (STATE==='title') reset(); else if (STATE==='over') reset(); else claw(); cv.focus(); }
+  window.addEventListener('keydown', function(e){
+    keys[e.key] = true;
+    if (e.key===' '||e.key==='ArrowUp'||e.key==='w'||e.key==='Enter') { e.preventDefault(); press(); }
+  });
+  window.addEventListener('keyup', function(e){ keys[e.key] = false; });
+
+  var pointerX = null;
+  function relX(clientX) { var r = cv.getBoundingClientRect(); return (clientX - r.left) / r.width * W; }
+  cv.addEventListener('pointerdown', function(e){ pointerX = relX(e.clientX); press(); });
+  cv.addEventListener('pointermove', function(e){ if (e.buttons || e.pointerType==='touch') pointerX = relX(e.clientX); });
+  window.addEventListener('pointerup', function(){ pointerX = null; });
+
+  // ── update ──
+  function update(dt) {
+    if (STATE !== 'play') return;
+    elapsed += dt;
+    spawnEvery = Math.max(0.42, 1.05 - elapsed*0.012);
+    if (clawT>0) clawT -= dt; if (clawCd>0) clawCd -= dt; if (invT>0) invT -= dt; if (shake>0) shake -= dt;
+
+    // move player
+    var dir = 0;
+    if (keys['ArrowLeft']||keys['a']) dir -= 1;
+    if (keys['ArrowRight']||keys['d']) dir += 1;
+    if (dir) player.x += dir * player.speed * dt;
+    if (pointerX != null) player.x += (pointerX - player.x) * Math.min(1, dt*12);
+    player.x = Math.max(player.w/2, Math.min(W-player.w/2, player.x));
+
+    // spawn
+    spawnT += dt; if (spawnT >= spawnEvery) { spawnT = 0; spawn(); }
+
+    var py = H - 34;
+    var clawing = clawT > 0;
+    for (var i=fallers.length-1;i>=0;i--) {
+      var f = fallers[i]; f.y += f.vy * dt;
+      var fw = 18, fh = 16, cxf = f.x+fw/2;
+      // claw hit box (above + around player)
+      if (clawing && Math.abs(cxf - player.x) < 26 && f.y > py-34 && f.y < py+16) {
+        if (f.type==='dog') { score += 10; sKill(); burst(cxf, f.y+8, C.dog, 10); }
+        else { score += 5; sSnack(); burst(cxf, f.y+8, C.snack, 8); }
+        fallers.splice(i,1); continue;
+      }
+      // body contact with player
+      if (f.y+fh > py && f.y < py+player.h && Math.abs(cxf - player.x) < (player.w/2+fw/2-4)) {
+        if (f.type==='snack') { score += 5; sSnack(); burst(cxf, py, C.snack, 8); fallers.splice(i,1); continue; }
+        else if (invT<=0) { lives--; invT = 1.1; shake = 0.3; sHurt(); burst(player.x, py, C.heart, 12);
+          fallers.splice(i,1);
+          if (lives<=0) { STATE='over'; sOver(); if (score>best){ best=score; try{localStorage.setItem('kr_best',best);}catch(e){} } }
+          continue; }
+      }
+      if (f.y > H+20) fallers.splice(i,1);
+    }
+    for (var s=slashes.length-1;s>=0;s--){ slashes[s].t -= dt; if (slashes[s].t<=0) slashes.splice(s,1); }
+    for (var p=parts.length-1;p>=0;p--){ var pt=parts[p]; pt.x+=pt.vx*dt; pt.y+=pt.vy*dt; pt.vy+=200*dt; pt.life-=dt; if (pt.life<=0) parts.splice(p,1); }
+  }
+
+  // ── draw ──
+  function bg() {
+    var gr = g.createLinearGradient(0,0,0,H); gr.addColorStop(0,C.bg1); gr.addColorStop(1,C.bg2);
+    g.fillStyle = gr; g.fillRect(0,0,W,H);
+    // ground
+    rect(0, H-12, W, 12, '#0a1f12'); rect(0, H-12, W, 2, '#14361f');
+    for (var i=0;i<W;i+=8) rect(i+2, H-9, 3, 3, '#0e2a18');
+  }
+  function text(str, x, y, size, col, align) {
+    g.fillStyle = col || C.text; g.font = 'bold '+(size||8)+'px monospace';
+    g.textAlign = align||'center'; g.textBaseline='alphabetic'; g.fillText(str, x, y);
+  }
+  function hud() {
+    text('SCORE '+score, 5, 11, 8, C.accent, 'left');
+    text('BEST '+best, W-5, 11, 7, C.furD, 'right');
+    for (var i=0;i<3;i++){ g.fillStyle = i<lives ? C.heart : '#33262c'; g.fillRect(6+i*10, 15, 7, 6); g.fillRect(7+i*10,14,2,2); g.fillRect(10+i*10,14,2,2); }
+  }
+  function draw() {
+    g.save();
+    if (shake>0) g.translate((Math.random()-0.5)*4, (Math.random()-0.5)*4);
+    bg();
+
+    for (var i=0;i<fallers.length;i++){ var f=fallers[i];
+      if (f.type==='dog') drawDog(f.x, f.y, f.sk); else drawSnack(f.x, f.y, f.sk); }
+
+    for (var p=0;p<parts.length;p++){ var pt=parts[p]; g.globalAlpha=Math.max(0,pt.life*2); rect(pt.x,pt.y,2,2,pt.col); }
+    g.globalAlpha=1;
+
+    if (STATE==='play' || STATE==='over') {
+      var flash = invT>0 && (((invT*12)|0)%2===0);
+      drawRaccoon(player.x, H-34, clawT>0, flash);
+      // slash arc
+      for (var s=0;s<slashes.length;s++){ var a=slashes[s].t/0.16; g.globalAlpha=a;
+        g.strokeStyle=C.slash; g.lineWidth=2; g.beginPath();
+        g.arc(player.x, H-24, 22, Math.PI*1.15, Math.PI*1.85); g.stroke(); g.globalAlpha=1; }
+    }
+    hud();
+    g.restore();
+
+    if (STATE==='title') {
+      g.fillStyle='rgba(5,7,10,.7)'; g.fillRect(0,0,W,H);
+      drawRaccoon(W/2, H/2-6, true, false);
+      text('KILLER', W/2, H/2-40, 18, C.pink);
+      text('RACOON', W/2, H/2-24, 18, C.accent);
+      text('trash panda rampage', W/2, H/2+34, 7, C.furD);
+      if (((elapsed*2)|0)%2===0) text('TAP / SPACE TO START', W/2, H-40, 8, C.text);
+      text('MOVE ← →   CLAW = TAP/SPACE', W/2, H-20, 6, C.furD);
+    } else if (STATE==='over') {
+      g.fillStyle='rgba(5,7,10,.72)'; g.fillRect(0,0,W,H);
+      text('GAME OVER', W/2, H/2-20, 15, C.pink);
+      text('SCORE  '+score, W/2, H/2+6, 10, C.accent);
+      text('BEST   '+best, W/2, H/2+22, 8, C.furD);
+      if (((elapsed*2)|0)%2===0) text('TAP / SPACE TO RETRY', W/2, H-34, 8, C.text);
+    }
+    elapsed += 0; // (title anim uses elapsed; advance below)
+  }
+
+  // ── loop ──
+  var last = performance.now();
+  function frame(now) {
+    var dt = Math.min(0.05, (now-last)/1000); last = now;
+    if (STATE==='title' || STATE==='over') elapsed += dt; // for blinking prompt
+    update(dt);
+    draw();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  cv.focus();
+})();
+</script>
+</body>
+</html>

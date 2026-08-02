@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600" shape-rendering="crispEdges">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a2030"/>
+      <stop offset="1" stop-color="#0a0d14"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="600" fill="url(#bg)"/>
+  <!-- claw slashes -->
+  <g stroke="#ff3cac" stroke-width="6" opacity="0.5" stroke-linecap="round">
+    <line x1="30" y1="60" x2="150" y2="210"/>
+    <line x1="60" y1="40" x2="180" y2="190"/>
+    <line x1="90" y1="30" x2="210" y2="180"/>
+  </g>
+  <!-- raccoon head (chunky pixels) -->
+  <g>
+    <!-- ears -->
+    <rect x="120" y="250" width="40" height="40" fill="#8a94a3"/>
+    <rect x="240" y="250" width="40" height="40" fill="#8a94a3"/>
+    <rect x="130" y="260" width="20" height="20" fill="#5d6675"/>
+    <rect x="250" y="260" width="20" height="20" fill="#5d6675"/>
+    <!-- head -->
+    <rect x="110" y="280" width="180" height="140" fill="#8a94a3"/>
+    <rect x="110" y="380" width="180" height="40" fill="#5d6675"/>
+    <!-- mask -->
+    <rect x="110" y="310" width="180" height="60" fill="#161a24"/>
+    <!-- eyes -->
+    <rect x="140" y="320" width="40" height="34" fill="#e8eef5"/>
+    <rect x="220" y="320" width="40" height="34" fill="#e8eef5"/>
+    <rect x="150" y="328" width="22" height="22" fill="#a0ff00"/>
+    <rect x="228" y="328" width="22" height="22" fill="#a0ff00"/>
+    <rect x="156" y="334" width="8" height="8" fill="#0a0d14"/>
+    <rect x="234" y="334" width="8" height="8" fill="#0a0d14"/>
+    <!-- nose + fangs -->
+    <rect x="185" y="384" width="30" height="18" fill="#20242c"/>
+    <rect x="176" y="402" width="10" height="16" fill="#e8eef5"/>
+    <rect x="214" y="402" width="10" height="16" fill="#e8eef5"/>
+  </g>
+  <!-- title -->
+  <text x="200" y="500" font-family="'Press Start 2P', monospace" font-size="42" font-weight="700"
+        fill="#ff3cac" text-anchor="middle" letter-spacing="2">KILLER</text>
+  <text x="200" y="552" font-family="'Press Start 2P', monospace" font-size="42" font-weight="700"
+        fill="#a0ff00" text-anchor="middle" letter-spacing="2">RACOON</text>
+</svg>
