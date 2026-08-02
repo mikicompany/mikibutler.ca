@@ -405,6 +405,14 @@
     .pal-sw::after { content: 'copied ✓'; position: absolute; top: 6px; left: 50%; transform: translateX(-50%); font-size: 9px;
       background: rgba(0,0,0,.6); color: #fff; padding: 2px 5px; border-radius: 3px; opacity: 0; transition: opacity .2s; pointer-events: none; }
     .pal-sw.copied::after { opacity: 1; }
+
+    /* ── Sketch Pad ── */
+    .draw-stage { padding: 12px; }
+    .draw-stage canvas { width: 100%; max-width: 560px; background: #fff; border-radius: 10px; cursor: crosshair; touch-action: none; display: block; }
+    .draw-pal { display: inline-flex; gap: 6px; }
+    .draw-sw { width: 22px; height: 22px; border-radius: 5px; cursor: pointer; border: 2px solid #2a2f37; box-sizing: border-box; padding: 0; }
+    .draw-sw.sel { border-color: var(--accent); box-shadow: 0 0 6px rgba(160,255,0,.5); }
+    #drawColor { width: 34px; height: 30px; border: 1px solid #2a2f37; border-radius: 8px; background: #1c2128; cursor: pointer; padding: 2px; }
   </style>
 </head>
 <body>
@@ -635,6 +643,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
           <div class="pal-swatches" id="palSwatches"></div>
           <p class="cmp-err" id="palErr"></p>
+        </div>
+
+        <!-- Sketch Pad -->
+        <div class="tool-block">
+          <div class="tool-title">Sketch Pad ✏️</div>
+          <p class="tool-desc">Doodle right here — pick a colour and brush, flip on pixel mode for retro art, then save it.</p>
+          <div class="tool-stage draw-stage" style="min-height:0">
+            <canvas id="drawCanvas" width="840" height="520"></canvas>
+          </div>
+          <div class="tool-controls">
+            <span class="draw-pal" id="drawPal"></span>
+            <input type="color" id="drawColor" value="#111111" title="Custom colour" />
+            <label class="tool-slider">Size <input type="range" id="drawSize" min="1" max="48" step="1" value="6" /> <b id="drawSizeVal">6</b></label>
+            <button type="button" id="drawErase">Eraser</button>
+            <button type="button" id="drawPixel">Pixel</button>
+            <button type="button" id="drawUndo">↶ Undo</button>
+            <button type="button" id="drawClear">Clear</button>
+            <button type="button" id="drawSave">⬇ Save PNG</button>
+          </div>
         </div>
       </section>
 
@@ -1352,6 +1379,72 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }, function () { err.textContent = 'Couldn’t load that image — try uploading the file.'; });
       }
       toolBind('palUrl', 'palFile', load);
+    })();
+  </script>
+
+  <script>
+    // Sketch Pad — a simple in-browser drawing tool (brush / eraser / pixel /
+    // undo / clear / save PNG). Draws on a white paper canvas.
+    (function () {
+      var cv = document.getElementById('drawCanvas'); if (!cv) return;
+      var ctx = cv.getContext('2d', { willReadFrequently: true });
+      var color = '#111111', size = 6, erasing = false, pixel = false;
+      var drawing = false, lastX = 0, lastY = 0, undo = [];
+
+      function fillPaper() { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cv.width, cv.height); }
+      fillPaper();
+      function snapshot() { try { undo.push(ctx.getImageData(0, 0, cv.width, cv.height)); if (undo.length > 24) undo.shift(); } catch (e) {} }
+      function pos(e) { var r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * cv.width, y: (e.clientY - r.top) / r.height * cv.height }; }
+      function paint(x0, y0, x1, y1) {
+        var c = erasing ? '#ffffff' : color;
+        if (pixel) {
+          var g = Math.max(3, size);
+          ctx.fillStyle = c;
+          // step along the segment so fast drags stay continuous
+          var dx = x1 - x0, dy = y1 - y0, steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / (g * 0.6)));
+          for (var s = 0; s <= steps; s++) {
+            var px = x0 + dx * s / steps, py = y0 + dy * s / steps;
+            ctx.fillRect(Math.floor(px / g) * g, Math.floor(py / g) * g, g, g);
+          }
+        } else {
+          ctx.strokeStyle = c; ctx.lineWidth = size; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+          ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+        }
+      }
+      cv.addEventListener('pointerdown', function (e) {
+        drawing = true; snapshot(); var p = pos(e); lastX = p.x; lastY = p.y; paint(p.x, p.y, p.x, p.y);
+        try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+      });
+      cv.addEventListener('pointermove', function (e) { if (!drawing) return; var p = pos(e); paint(lastX, lastY, p.x, p.y); lastX = p.x; lastY = p.y; });
+      function end(e) { drawing = false; try { cv.releasePointerCapture(e.pointerId); } catch (_) {} }
+      cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+
+      // palette
+      var PAL = ['#111111', '#ffffff', '#e23b3b', '#f5a623', '#ffd84a', '#2ecc71', '#3aa0ff', '#a0ff00', '#b967ff', '#8a5a2b'];
+      var palEl = document.getElementById('drawPal');
+      var colorEl = document.getElementById('drawColor');
+      var eraseBtn = document.getElementById('drawErase');
+      function selectSwatch(node) {
+        var kids = palEl.children;
+        for (var i = 0; i < kids.length; i++) kids[i].classList.toggle('sel', kids[i] === node);
+      }
+      PAL.forEach(function (c, i) {
+        var sw = document.createElement('button'); sw.type = 'button'; sw.className = 'draw-sw' + (i === 0 ? ' sel' : '');
+        sw.style.background = c; sw.title = c;
+        sw.addEventListener('click', function () { color = c; erasing = false; eraseBtn.classList.remove('on'); colorEl.value = c; selectSwatch(sw); });
+        palEl.appendChild(sw);
+      });
+      colorEl.addEventListener('input', function () { color = this.value; erasing = false; eraseBtn.classList.remove('on'); selectSwatch(null); });
+      var sz = document.getElementById('drawSize'), szv = document.getElementById('drawSizeVal');
+      sz.addEventListener('input', function () { size = +sz.value; szv.textContent = size; });
+      eraseBtn.addEventListener('click', function () { erasing = !erasing; this.classList.toggle('on', erasing); });
+      document.getElementById('drawPixel').addEventListener('click', function () { pixel = !pixel; this.classList.toggle('on', pixel); });
+      document.getElementById('drawUndo').addEventListener('click', function () { if (undo.length) ctx.putImageData(undo.pop(), 0, 0); });
+      document.getElementById('drawClear').addEventListener('click', function () { snapshot(); fillPaper(); });
+      document.getElementById('drawSave').addEventListener('click', function () {
+        var a = document.createElement('a'); a.download = 'sketch.png'; a.href = cv.toDataURL('image/png');
+        document.body.appendChild(a); a.click(); a.remove();
+      });
     })();
   </script>
 </body>
