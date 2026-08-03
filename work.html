@@ -422,6 +422,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       lbVid.style.display = 'none';
       lbVid.pause();
       lbVid.removeAttribute('src');
+      lbVid.removeAttribute('poster');
     }
 
     function openLightbox(index) {
@@ -449,6 +450,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         lbVideo.src = item.embed;
         lbVideo.style.display = 'block';
       } else if (item.mp4) {
+        if (item.img) lbVid.poster = item.img;   // show the thumbnail until the video paints a frame
         lbVid.src = item.mp4;
         lbVid.style.display = 'block';
         lbVid.play();
