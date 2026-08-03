@@ -481,7 +481,7 @@
     {
       "title": "Dark Nest — Video 01",
       "size": "wide",
-      "img": "https://cdna.artstation.com/p/assets/images/images/034/865/380/large/miki-butler-mikibutler-darknest-05.jpg?1613459719",
+      "img": "https://cdnb.artstation.com/p/assets/video_clips/images/034/899/421/large/miki-butler-thumb.jpg?1613548956",
       "mp4": "https://cdn.artstation.com/p/video_sources/000/266/436/egg-01.mp4",
       "category": "personal",
       "home": false,
@@ -491,7 +491,7 @@
     {
       "title": "Dark Nest — Video 02",
       "size": "wide",
-      "img": "https://cdnb.artstation.com/p/assets/images/images/034/865/379/large/miki-butler-mikibutler-darknest-04.jpg?1613459714",
+      "img": "https://cdna.artstation.com/p/assets/video_clips/images/034/899/492/large/miki-butler-thumb.jpg?1613549353",
       "mp4": "https://cdn.artstation.com/p/video_sources/000/266/441/egg-02.mp4",
       "category": "personal",
       "home": false,
@@ -1229,7 +1229,8 @@
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/021/337/612/large/miki-butler-minecart.jpg?1571279592",
       "category": "pvz",
-      "group": "PvZ Cheese Mines"
+      "group": "PvZ Cheese Mines",
+      "home": false
     },
     {
       "title": "PvZ Cheese Mines — Pickaxe Preview",
