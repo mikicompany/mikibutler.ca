@@ -840,6 +840,7 @@
             <th class="col-prev">Preview</th>
             <th>Title</th>
             <th>Tag</th>
+            <th>Blurb / Info</th>
             <th>Image URL / Path</th>
             <th>Video / YouTube (optional)</th>
             <th style="width:48px">Logo</th>
@@ -1774,6 +1775,7 @@ function renderProtected() {
       <td><span class="prot-prev" title="Edit preview — crop & zoom" onclick="openProtEditor(${i})">${thumbCell(item.img)}<span class="prot-prev-edit">✎ crop</span></span></td>
       <td><input class="cell-input" value="${esc(item.title || '')}" oninput="protectedItems[${i}].title=this.value;protectedDirty=true" placeholder="Title" /></td>
       <td><input class="cell-input" style="max-width:90px" value="${esc(item.tag || '')}" oninput="protectedItems[${i}].tag=this.value;protectedDirty=true" placeholder="NDA" /></td>
+      <td><input class="cell-input" style="min-width:220px" value="${esc(item.blurb || item.description || '')}" oninput="protectedItems[${i}].blurb=this.value;protectedDirty=true" placeholder="Info shown on the tile (e.g. asset optimization notes)" /></td>
       <td><input class="cell-input" style="min-width:200px" value="${esc(item.img || '')}" oninput="protectedItems[${i}].img=this.value;updateThumb(this);protectedDirty=true" placeholder="image URL (or video poster)" /></td>
       <td><input class="cell-input" style="min-width:200px" value="${esc(item.video || item.embed || '')}" oninput="setProtVideo(${i}, this)" placeholder="mp4 URL or YouTube link" /></td>
       <td>

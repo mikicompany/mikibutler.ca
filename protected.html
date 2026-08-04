@@ -65,9 +65,11 @@
     .lock-spark { position: fixed; width: 6px; height: 6px; border-radius: 1px; pointer-events: none; z-index: 99999; }
     #pw-gate { transition: opacity .45s ease, transform .45s ease; }
     #pw-gate.opened { opacity: 0; transform: scale(.96); pointer-events: none; }
+    /* info blurb under a media (video/embed) protected tile */
+    .pv-blurb { font-size: 11.5px; color: #9aa2ad; line-height: 1.5; margin-top: 7px; }
     @media (prefers-reduced-motion: reduce) {
-      .lock-logo .mshackle { transition: stroke .3s ease; } .lock-logo.wrong { animation: none; }
-      .lock-logo.unlocked::after, .lock-logo.unlocked .mini-lock { animation: none; } #pw-gate { transition: opacity .2s ease; }
+      .lock-stack .shackle { transition: stroke .3s ease; } .lock-stack.wrong { animation: none; }
+      .lock-stack.unlocked .logo-wrap::after, .lock-stack.unlocked .padlock { animation: none; } #pw-gate { transition: opacity .2s ease; }
     }
   </style>
 </head>
@@ -185,17 +187,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           const logo = owner
             ? `<div class="pv-owner"><img src="${attr(owner.icon)}" alt="" /><span>Property of ${owner.name}</span></div>`
             : '';
+          const blurb = item.blurb || item.description || '';
           if (isMedia) {
-            div.innerHTML = media + logo + `<div class="pv-caption"></div>`;
+            div.innerHTML = media + logo + `<div class="pv-caption"></div>` + (blurb ? `<div class="pv-blurb"></div>` : '');
             div.querySelector('.pv-caption').textContent = [item.tag, item.title].filter(Boolean).join(' · ');
+            if (blurb) div.querySelector('.pv-blurb').textContent = blurb;
           } else {
             div.innerHTML = media + logo + `
               <div class="item-overlay">
                 <span class="item-tag"></span>
                 <span class="item-title"></span>
+                ${blurb ? '<span class="item-desc"></span>' : ''}
               </div>`;
             div.querySelector('.item-tag').textContent = item.tag || '';
             div.querySelector('.item-title').textContent = item.title || '';
+            if (blurb) div.querySelector('.item-desc').textContent = blurb;
           }
           grid.appendChild(div);
         });
