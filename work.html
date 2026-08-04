@@ -466,6 +466,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     function openLightbox(index) {
       lightboxIndex = index;
       const item = lightboxItems[index];
+      // ArtStation's Marmoset viewer defers its large .mview file behind an
+      // in-iframe load button we can't trigger cross-origin — so opening it in
+      // the lightbox always needs a second click. Open it directly instead:
+      // one click on the tile takes you straight into the interactive viewer.
+      if (item.embed && /artstation\.com\/embed/.test(item.embed)) {
+        window.open(embedSrc(item.embed), '_blank', 'noopener');
+        return;
+      }
       lbCaption.textContent = item.title;
       // Show the piece's blurb top-left, re-triggering the slide-in animation.
       if (item.blurb) {
