@@ -617,6 +617,31 @@ main {
   .masonry-item:hover .play-badge { transform: translate(-50%, -50%); }
 }
 
+/* 3D-model marker: a small cube + "3D" chip, top-left, so a model preview
+   reads as interactive 3D rather than a video. Sits opposite the item-count. */
+.masonry-item .model-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.68);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  padding: 4px 9px 4px 7px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+  z-index: 2;
+  transition: background 0.2s, color 0.2s;
+}
+.masonry-item .model-tag svg { color: var(--accent, #a0ff00); display: block; }
+.masonry-item:hover .model-tag { background: var(--accent, #a0ff00); color: #0b0d10; border-color: transparent; }
+.masonry-item:hover .model-tag svg { color: #0b0d10; }
+
 .masonry-item .item-count {
   position: absolute;
   top: 10px;

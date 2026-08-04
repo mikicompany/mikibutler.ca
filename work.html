@@ -288,6 +288,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         ? '<span class="play-badge" aria-hidden="true"></span>' : '';
     }
 
+    // A "preview" that's an interactive 3D model (Sketchfab / Marmoset / glTF),
+    // not a video — so we can mark it with a cube instead of just a play arrow.
+    function is3D(item) {
+      const e = String(item.embed || item.model || '').toLowerCase();
+      return item.threed === true || /sketchfab\.com|marmoset|mview|artstation\.com\/embed|\.glb|\.gltf|model-viewer/.test(e);
+    }
+    // Corner cube chip that reads "3D" — sits next to the play badge.
+    function modelTag() {
+      return '<span class="model-tag" title="Interactive 3D model" aria-label="Interactive 3D model">' +
+        '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">' +
+        '<path d="M12 2.5 L20.5 7 L20.5 17 L12 21.5 L3.5 17 L3.5 7 Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>' +
+        '<path d="M3.5 7 L12 11.6 L20.5 7 M12 11.6 L12 21.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>' +
+        '</svg>3D</span>';
+    }
+
     // Repeating size pattern that always fills complete rows (2+1+1+4 = 8
     // cells = two full rows of 4), so the grid can never leave holes no
     // matter how tiles are ordered.
@@ -320,6 +335,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       div.className = `masonry-item size-${sizeOf(cover)}`;
       div.innerHTML = `
         <img src="${thumb(cover.img)}" alt="${g.name}" loading="lazy"${tileStyle(cover)} />
+        ${is3D(cover) ? modelTag() : ''}
         ${multi ? `<span class="item-count">${g.items.length}</span>` : mediaBadge(cover)}
         <div class="item-overlay">
           <span class="item-tag">${CATEGORY_LABELS[g.category] || g.category || ''}</span>
@@ -394,6 +410,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         div.className = `masonry-item size-${subSizeOf(item)}`;
         div.innerHTML = `
           <img src="${thumb(item.img)}" alt="${item.title}" loading="lazy"${tileStyle(item)} />
+          ${is3D(item) ? modelTag() : ''}
           ${mediaBadge(item)}
           <div class="item-overlay">
             <span class="item-tag">${CATEGORY_LABELS[item.category] || item.category || ''}</span>
