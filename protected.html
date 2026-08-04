@@ -61,6 +61,29 @@
       0%,100% { transform: translateX(0); } 15% { transform: translateX(-9px); } 30% { transform: translateX(8px); }
       45% { transform: translateX(-6px); } 60% { transform: translateX(5px); } 75% { transform: translateX(-3px); }
     }
+    /* wrong-password glitch: slice the gate into jittering bands + RGB split + colour flashes */
+    #pw-gate.glitch { animation: gateGlitch .5s steps(1) 1; }
+    @keyframes gateGlitch {
+      0%   { transform: translate(0,0); filter: none; clip-path: inset(0 0 0 0); }
+      10%  { transform: translate(-5px,2px); filter: hue-rotate(90deg) saturate(2); clip-path: inset(0 0 62% 0); }
+      20%  { transform: translate(6px,-2px); filter: none; clip-path: inset(42% 0 22% 0); }
+      30%  { transform: translate(-7px,1px); filter: invert(1) hue-rotate(180deg); clip-path: inset(72% 0 4% 0); }
+      40%  { transform: translate(5px,-3px); filter: none; clip-path: inset(12% 0 70% 0); }
+      50%  { transform: translate(-4px,2px); filter: hue-rotate(-90deg) saturate(2.4); clip-path: inset(0 0 0 0); }
+      65%  { transform: translate(3px,1px); filter: none; clip-path: inset(55% 0 30% 0); }
+      80%  { transform: translate(-2px,0); filter: none; clip-path: inset(0 0 0 0); }
+      100% { transform: translate(0,0); filter: none; clip-path: inset(0 0 0 0); }
+    }
+    #pw-gate.glitch h1, #pw-gate.glitch #pw-error, #pw-gate.glitch .padlock {
+      text-shadow: -2px 0 #ff003c, 2px 0 #00e5ff; animation: rgbJit .5s steps(1) 1;
+    }
+    @keyframes rgbJit {
+      0%,100% { text-shadow: -2px 0 #ff003c, 2px 0 #00e5ff; }
+      25% { text-shadow: 3px 0 #ff003c, -3px 0 #00e5ff; }
+      50% { text-shadow: -4px 0 #ff003c, 2px 0 #00e5ff; }
+      75% { text-shadow: 2px 0 #ff003c, -3px 0 #00e5ff; }
+    }
+    #pw-gate.glitch .padlock svg { filter: drop-shadow(-2px 0 #ff003c) drop-shadow(2px 0 #00e5ff); }
     /* green sparkle bits flung out on unlock */
     .lock-spark { position: fixed; width: 6px; height: 6px; border-radius: 1px; pointer-events: none; z-index: 99999; }
     #pw-gate { transition: opacity .45s ease, transform .45s ease; }
@@ -70,6 +93,8 @@
     @media (prefers-reduced-motion: reduce) {
       .lock-stack .shackle { transition: stroke .3s ease; } .lock-stack.wrong { animation: none; }
       .lock-stack.unlocked .logo-wrap::after, .lock-stack.unlocked .padlock { animation: none; } #pw-gate { transition: opacity .2s ease; }
+      #pw-gate.glitch, #pw-gate.glitch h1, #pw-gate.glitch #pw-error, #pw-gate.glitch .padlock { animation: none; text-shadow: none; }
+      #pw-gate.glitch .padlock svg { filter: none; }
     }
   </style>
 </head>
@@ -227,6 +252,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         } catch (e) {}
       }
 
+      function glitchSound() {
+        try {
+          var ac = new (window.AudioContext || window.webkitAudioContext)();
+          var now = ac.currentTime;
+          // gritty descending buzz
+          function buzz(f0, f1, d, w, v) {
+            var o = ac.createOscillator(), g = ac.createGain(), s = now + w;
+            o.type = 'sawtooth';
+            o.frequency.setValueAtTime(f0, s);
+            o.frequency.linearRampToValueAtTime(f1, s + d);
+            g.gain.setValueAtTime(v, s); g.gain.exponentialRampToValueAtTime(0.0001, s + d);
+            o.connect(g); g.connect(ac.destination); o.start(s); o.stop(s + d);
+          }
+          buzz(180, 60, 0.18, 0, 0.06);
+          buzz(90, 40, 0.22, 0.05, 0.05);
+          // short white-noise crackle
+          var len = Math.floor(ac.sampleRate * 0.12);
+          var buf = ac.createBuffer(1, len, ac.sampleRate), ch = buf.getChannelData(0);
+          for (var i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / len);
+          var src = ac.createBufferSource(), ng = ac.createGain();
+          src.buffer = buf; ng.gain.setValueAtTime(0.05, now); ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+          src.connect(ng); ng.connect(ac.destination); src.start(now); src.stop(now + 0.12);
+        } catch (e) {}
+      }
+
       function unlockSparkles(el) {
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         var r = el.getBoundingClientRect();
@@ -284,6 +334,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             ? 'Protected content is unavailable.' : 'Incorrect password.';
           const lock = document.getElementById('lock');
           lock.classList.remove('wrong'); void lock.offsetWidth; lock.classList.add('wrong');
+          const gate = document.getElementById('pw-gate');
+          gate.classList.remove('glitch'); void gate.offsetWidth; gate.classList.add('glitch');
+          gate.addEventListener('animationend', function h() { gate.classList.remove('glitch'); gate.removeEventListener('animationend', h); });
+          glitchSound();
         } finally {
           button.disabled = false;
           if (button.textContent === 'Checking…') button.textContent = 'Enter';
