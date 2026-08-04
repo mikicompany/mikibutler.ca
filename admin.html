@@ -844,6 +844,7 @@
             <th>Image URL / Path</th>
             <th>Video / YouTube (optional)</th>
             <th style="width:48px">Logo</th>
+            <th style="width:44px" title="Hide this item from the protected page (kept in the data)">Hide</th>
             <th class="col-del"></th>
           </tr>
         </thead>
@@ -1770,6 +1771,7 @@ function renderProtected() {
   tbody.innerHTML = '';
   protectedItems.forEach((item, i) => {
     const tr = document.createElement('tr');
+    tr.style.opacity = item.hidden ? '0.42' : '';
     tr.innerHTML = `
       <td class="row-num">${i + 1}</td>
       <td><span class="prot-prev" title="Edit preview — crop & zoom" onclick="openProtEditor(${i})">${thumbCell(item.img)}<span class="prot-prev-edit">✎ crop</span></span></td>
@@ -1784,6 +1786,7 @@ function renderProtected() {
             `<option value="${v}"${(item.logo || '') === v ? ' selected' : ''}>${label}</option>`).join('')}
         </select>
       </td>
+      <td style="text-align:center"><input type="checkbox" ${item.hidden ? 'checked' : ''} title="Hide from the protected page" onchange="protectedItems[${i}].hidden=this.checked;protectedDirty=true;this.closest('tr').style.opacity=this.checked?'0.42':''" /></td>
       <td><button class="btn-del" onclick="delProtected(${i})" title="Delete">×</button></td>
     `;
     tbody.appendChild(tr);
