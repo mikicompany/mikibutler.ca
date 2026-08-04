@@ -47,7 +47,7 @@
     .float-field { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
     .float-card { position:absolute; transform:translate(var(--px,0px), var(--py,0px)); will-change:transform; }
     .float-card img {
-      display:block; width:var(--w,320px); max-width:56vw; border-radius:14px;
+      display:block; width:var(--w,480px); max-width:82vw; border-radius:14px;
       opacity:.14; box-shadow:0 14px 40px rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.06);
       transform:rotate(var(--rot,0deg)) scale(var(--sc,1));
       animation:fcbob var(--dur,8s) ease-in-out var(--delay,0s) infinite;
@@ -103,7 +103,7 @@
           var img = document.createElement('img');
           img.src = u; img.alt = ''; img.loading = 'lazy';
           img.onerror = function () { wrap.remove(); };
-          img.style.setProperty('--w', (280 + (Math.random() * 180 | 0)) + 'px');
+          img.style.setProperty('--w', (420 + (Math.random() * 270 | 0)) + 'px');
           img.style.setProperty('--rot', '0deg');
           img.style.setProperty('--sc', (0.8 + Math.random() * 0.5).toFixed(2));
           img.style.setProperty('--dur', (6 + Math.random() * 4).toFixed(1) + 's');
