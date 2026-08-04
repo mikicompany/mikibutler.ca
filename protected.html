@@ -27,6 +27,30 @@
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* Animated padlock on the password gate */
+    .lock { width: 86px; height: 104px; display: block; margin: 0 auto 26px; overflow: visible; }
+    .lock .shackle {
+      fill: none; stroke: #8b9080; stroke-width: 9; stroke-linecap: round;
+      transform-box: fill-box; transform-origin: 90% 96%;
+      transition: transform .6s cubic-bezier(.34,1.56,.64,1), stroke .3s ease;
+    }
+    .lock .body { fill: #191d15; stroke: #8b9080; stroke-width: 3; transition: stroke .3s ease, filter .3s ease; }
+    .lock .hole { fill: #8b9080; transition: fill .3s ease; }
+    .lock.unlocked .shackle { transform: translateY(-13px) rotate(38deg); stroke: var(--accent, #a0ff00); }
+    .lock.unlocked .body { stroke: var(--accent, #a0ff00); filter: drop-shadow(0 0 11px rgba(160,255,0,.65)); }
+    .lock.unlocked .hole { fill: var(--accent, #a0ff00); }
+    .lock.wrong { animation: lockShake .45s ease; }
+    @keyframes lockShake {
+      0%,100% { transform: translateX(0); } 15% { transform: translateX(-9px); } 30% { transform: translateX(8px); }
+      45% { transform: translateX(-6px); } 60% { transform: translateX(5px); } 75% { transform: translateX(-3px); }
+    }
+    #pw-gate { transition: opacity .45s ease, transform .45s ease; }
+    #pw-gate.opened { opacity: 0; transform: scale(.96); pointer-events: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .lock .shackle { transition: stroke .3s ease; } .lock.wrong { animation: none; } #pw-gate { transition: opacity .2s ease; }
+    }
+  </style>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -46,9 +70,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <main>
     <div class="protected-page">
       <div class="protected-inner" id="pw-gate">
-        <div style="margin-bottom:28px">
-          <img src="images/logo512.jpg" alt="Miki Butler" style="width:72px;height:72px;border-radius:50%;object-fit:contain;display:block;margin:0 auto" />
-        </div>
+        <svg class="lock" id="lock" viewBox="0 0 100 116" aria-hidden="true">
+          <path class="shackle" d="M32 58 V40 a18 18 0 0 1 36 0 V58" />
+          <rect class="body" x="24" y="56" width="52" height="52" rx="11" />
+          <circle class="hole" cx="50" cy="76" r="6" />
+          <rect class="hole" x="47" y="78" width="6" height="16" rx="2" />
+        </svg>
         <h1>Protected Work</h1>
         <form class="protected-form" id="pw-form">
           <input type="password" id="pw-input" placeholder="Password" autocomplete="current-password" />
@@ -149,6 +176,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (window.refreshLightbox) window.refreshLightbox();
       }
 
+      function unlockSound() {
+        try {
+          var ac = new (window.AudioContext || window.webkitAudioContext)();
+          function t(f, d, ty, v, w) {
+            var o = ac.createOscillator(), g = ac.createGain(), s = ac.currentTime + (w || 0);
+            o.type = ty || 'square'; o.frequency.setValueAtTime(f, s);
+            g.gain.setValueAtTime(v || 0.05, s); g.gain.exponentialRampToValueAtTime(0.0001, s + d);
+            o.connect(g); g.connect(ac.destination); o.start(s); o.stop(s + d);
+          }
+          t(1200, 0.04, 'square', 0.05, 0);      // click
+          t(320, 0.15, 'triangle', 0.06, 0.05);  // clunk
+          t(760, 0.10, 'square', 0.05, 0.17);    // unlocked chime
+        } catch (e) {}
+      }
+
       form.addEventListener('submit', async e => {
         e.preventDefault();
         error.textContent = '';
@@ -161,14 +203,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           });
           const payload = await decrypt(blob, input.value);
           render(payload.items || []);
-          document.getElementById('protected-content').style.display = 'block';
-          document.getElementById('pw-gate').style.display = 'none';
+          // Unlock: pop the padlock open, then fade the gate out to reveal the work.
+          const lock = document.getElementById('lock');
+          const gate = document.getElementById('pw-gate');
+          lock.classList.remove('wrong');
+          lock.classList.add('unlocked');
+          unlockSound();
+          button.textContent = 'Unlocked';
+          setTimeout(() => {
+            gate.classList.add('opened');
+            setTimeout(() => {
+              document.getElementById('protected-content').style.display = 'block';
+              gate.style.display = 'none';
+            }, 460);
+          }, 700);
+          return; // keep the gate/button as-is through the animation
         } catch (err) {
           error.textContent = err.message === 'missing'
             ? 'Protected content is unavailable.' : 'Incorrect password.';
+          const lock = document.getElementById('lock');
+          lock.classList.remove('wrong'); void lock.offsetWidth; lock.classList.add('wrong');
         } finally {
           button.disabled = false;
-          button.textContent = 'Enter';
+          if (button.textContent === 'Checking…') button.textContent = 'Enter';
         }
       });
     })();
