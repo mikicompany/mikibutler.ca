@@ -90,6 +90,35 @@
     #pw-gate.opened { opacity: 0; transform: scale(.96); pointer-events: none; }
     /* info blurb under a media (video/embed) protected tile */
     .pv-blurb { font-size: 11.5px; color: #9aa2ad; line-height: 1.5; margin-top: 7px; }
+    /* Protected image tiles: hover slides the text in BIG (like the Hangar tile, scaled up). */
+    #protected-grid .item-overlay {
+      padding: 26px;
+      background: linear-gradient(to top, rgba(0,0,0,.92) 0%, rgba(0,0,0,.55) 48%, transparent 82%);
+    }
+    #protected-grid .item-overlay .item-tag {
+      font-size: 12px; letter-spacing: .1em; margin-bottom: 7px;
+      transform: translateY(28px); transition: transform .42s cubic-bezier(.2,.9,.3,1) .02s, opacity .3s ease;
+      opacity: 0;
+    }
+    #protected-grid .item-overlay .item-title {
+      font-size: clamp(19px, 2.4vw, 26px); letter-spacing: .03em; line-height: 1.15;
+      transform: translateY(28px); transition: transform .42s cubic-bezier(.2,.9,.3,1) .07s, opacity .3s ease;
+      opacity: 0;
+    }
+    #protected-grid .item-overlay .item-desc {
+      font-size: clamp(13.5px, 1.4vw, 16px); line-height: 1.55; color: #e2e4e0; margin-top: 10px;
+      max-width: 46ch; display: block; -webkit-line-clamp: unset; -webkit-box-orient: unset; overflow: visible;
+      transform: translateY(28px); transition: transform .42s cubic-bezier(.2,.9,.3,1) .12s, opacity .3s ease;
+      opacity: 0;
+    }
+    #protected-grid .masonry-item:hover .item-tag,
+    #protected-grid .masonry-item:hover .item-title,
+    #protected-grid .masonry-item:hover .item-desc { transform: translateY(0); opacity: 1; }
+    @media (prefers-reduced-motion: reduce) {
+      #protected-grid .item-overlay .item-tag,
+      #protected-grid .item-overlay .item-title,
+      #protected-grid .item-overlay .item-desc { transition: opacity .2s ease; transform: none; }
+    }
     @media (prefers-reduced-motion: reduce) {
       .lock-stack .shackle { transition: stroke .3s ease; } .lock-stack.wrong { animation: none; }
       .lock-stack.unlocked .logo-wrap::after, .lock-stack.unlocked .padlock { animation: none; } #pw-gate { transition: opacity .2s ease; }
