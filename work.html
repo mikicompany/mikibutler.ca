@@ -171,14 +171,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       });
     }
 
-    // Category chips are in-page jump links to each section — no filtering,
-    // you stay on the page. (Listener attached once.)
-    document.getElementById('filters').addEventListener('click', e => {
-      const btn = e.target.closest('.filter-btn');
-      if (!btn) return;
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const cat = btn.dataset.filter;
+    // Number keys 1–5 jump to a section (matches the chip order the user wants).
+    const NUM_JUMP = { '1': 'starship-troopers', '2': 'pvz', '3': 'squad', '4': 'star-trek-legends', '5': 'personal' };
+
+    // Highlight the matching chip and smooth-scroll to that section header.
+    function jumpToCategory(cat) {
+      if (!cat) return;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === cat));
       const jump = () => {
         const h = document.getElementById('cat-' + cat);
         if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -186,6 +185,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // If we're inside an album, return to the main grid first, then jump.
       if (currentGroup) { currentGroup = null; render(); requestAnimationFrame(jump); }
       else jump();
+    }
+
+    // Category chips are in-page jump links to each section — no filtering,
+    // you stay on the page. (Listener attached once.)
+    document.getElementById('filters').addEventListener('click', e => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      jumpToCategory(btn.dataset.filter);
     });
 
     function getGroups() {
@@ -293,6 +300,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     function is3D(item) {
       const e = String(item.embed || item.model || '').toLowerCase();
       return item.threed === true || /sketchfab\.com|marmoset|mview|artstation\.com\/embed|\.glb|\.gltf|model-viewer/.test(e);
+    }
+    // Sketchfab has its own in-viewer "play" step; autostart=1 loads and starts
+    // the 3D scene right away so opening the lightbox is the only click needed.
+    function embedSrc(url) {
+      if (/sketchfab\.com/.test(url)) {
+        const sep = url.includes('?') ? '&' : '?';
+        return url + sep + 'autostart=1&preload=1&ui_hint=0';
+      }
+      return url;
     }
     // Corner cube chip that reads "3D" — sits next to the play badge.
     function modelTag() {
@@ -464,7 +480,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         lbVideo.style.display = 'block';
       } else if (item.embed) {
         lbVideo.title = item.title;
-        lbVideo.src = item.embed;
+        lbVideo.src = embedSrc(item.embed);
         lbVideo.style.display = 'block';
       } else if (item.mp4) {
         if (item.img) lbVid.poster = item.img;   // show the thumbnail until the video paints a frame
@@ -526,6 +542,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Don't hijack Enter when a button/link/field is focused (e.g. a filter
       // chip or the album's back button already handle it).
       const onControl = ['INPUT', 'TEXTAREA', 'BUTTON', 'A', 'SELECT'].includes((e.target.tagName || ''));
+      // 1–5 jump to a section (Starship / PvZ / Squad / Star Trek / Personal).
+      if (!onControl && !e.metaKey && !e.ctrlKey && !e.altKey &&
+          !lightbox.classList.contains('open') && NUM_JUMP[e.key]) {
+        e.preventDefault();
+        jumpToCategory(NUM_JUMP[e.key]);
+        return;
+      }
       if (lightbox.classList.contains('open')) {
         if (e.key === 'Escape') closeLightbox();
         if (e.key === 'ArrowLeft') navigate(-1);
