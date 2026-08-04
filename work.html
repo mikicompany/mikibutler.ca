@@ -543,8 +543,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // chip or the album's back button already handle it).
       const onControl = ['INPUT', 'TEXTAREA', 'BUTTON', 'A', 'SELECT'].includes((e.target.tagName || ''));
       // 1–5 jump to a section (Starship / PvZ / Squad / Star Trek / Personal).
+      // Only on the main works grid — not inside an album or the lightbox.
       if (!onControl && !e.metaKey && !e.ctrlKey && !e.altKey &&
-          !lightbox.classList.contains('open') && NUM_JUMP[e.key]) {
+          !currentGroup && !lightbox.classList.contains('open') && NUM_JUMP[e.key]) {
         e.preventDefault();
         jumpToCategory(NUM_JUMP[e.key]);
         return;
