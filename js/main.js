@@ -12,12 +12,22 @@ if (lightbox) {
   let items = [];
   let current = 0;
 
+  const escapeHtml = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
   function openLightbox(index) {
     current = index;
     const item = items[current];
     lbImg.src = item.src;
     lbImg.alt = item.title;
-    if (lbCaption) lbCaption.textContent = item.title;
+    if (lbCaption) {
+      const tag = item.tag ? `<span class="lb-cap-tag">${escapeHtml(item.tag)}</span>` : '';
+      const title = item.title ? `<span class="lb-cap-title">${escapeHtml(item.title)}</span>` : '';
+      const blurb = item.blurb ? `<span class="lb-cap-blurb">${escapeHtml(item.blurb)}</span>` : '';
+      // Rebuild the nodes each open so the slide-in animation replays.
+      lbCaption.innerHTML = tag + title + blurb;
+      lbCaption.classList.toggle('has-blurb', !!item.blurb);
+    }
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -41,7 +51,7 @@ if (lightbox) {
       // Video / embedded tiles play inline — skip them (no image to zoom).
       if (!img || el.querySelector('video, iframe')) return;
       const idx = items.length;
-      items.push({ src: img.src, title: el.dataset.title || '' });
+      items.push({ src: img.src, title: el.dataset.title || '', tag: el.dataset.tag || '', blurb: el.dataset.blurb || '' });
       el.onclick = () => openLightbox(idx);
     });
   };

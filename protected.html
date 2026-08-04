@@ -232,6 +232,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           const isMedia = !!(item.video || item.embed);
           div.className = 'masonry-item' + (isMedia ? ' size-large pv-media-tile' : '');
           div.dataset.title = item.title || '';
+          div.dataset.tag = item.tag || '';
           const media = item.embed
             ? `<div class="pv-media"><iframe src="${attr(item.embed)}" title="${attr(item.title)}" frameborder="0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`
             : item.video
@@ -242,6 +243,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             ? `<div class="pv-owner"><img src="${attr(owner.icon)}" alt="" /><span>Property of ${owner.name}</span></div>`
             : '';
           const blurb = item.blurb || item.description || '';
+          div.dataset.blurb = blurb;
           if (isMedia) {
             div.innerHTML = media + logo + `<div class="pv-caption"></div>` + (blurb ? `<div class="pv-blurb"></div>` : '');
             div.querySelector('.pv-caption').textContent = [item.tag, item.title].filter(Boolean).join(' · ');

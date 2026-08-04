@@ -737,10 +737,56 @@ main {
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
+  width: min(90vw, 720px);
+  text-align: center;
   font-size: 12px;
   color: #aaa;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+.lightbox-caption:empty { display: none; }
+.lightbox-caption .lb-cap-tag {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--accent, #a0ff00);
+  margin-bottom: 6px;
+}
+.lightbox-caption .lb-cap-title {
+  display: block;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: #fff;
+}
+.lightbox-caption .lb-cap-blurb {
+  display: block;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: #d6d9d2;
+}
+/* Each open rebuilds these nodes, so the slide-up + fade replays every time. */
+.lightbox-caption .lb-cap-tag,
+.lightbox-caption .lb-cap-title,
+.lightbox-caption .lb-cap-blurb {
+  opacity: 0;
+  transform: translateY(26px);
+  animation: lbCapIn 0.55s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+.lightbox-caption .lb-cap-tag   { animation-delay: 0.10s; }
+.lightbox-caption .lb-cap-title { animation-delay: 0.16s; }
+.lightbox-caption .lb-cap-blurb { animation-delay: 0.24s; }
+@keyframes lbCapIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lightbox-caption .lb-cap-tag,
+  .lightbox-caption .lb-cap-title,
+  .lightbox-caption .lb-cap-blurb {
+    animation: none; opacity: 1; transform: none;
+  }
 }
 
 /* When the shown image is a project cover, clicking it opens the project. */
