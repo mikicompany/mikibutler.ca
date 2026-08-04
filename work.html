@@ -301,12 +301,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const e = String(item.embed || item.model || '').toLowerCase();
       return item.threed === true || /sketchfab\.com|marmoset|mview|artstation\.com\/embed|\.glb|\.gltf|model-viewer/.test(e);
     }
-    // Sketchfab has its own in-viewer "play" step; autostart=1 loads and starts
-    // the 3D scene right away so opening the lightbox is the only click needed.
+    // 3D embeds have their own in-viewer "play" step; try to auto-start so
+    // opening the lightbox is the only click needed. Sketchfab honours
+    // autostart=1; ArtStation's Marmoset viewer defers the (large) .mview file
+    // and may still need a click, so we pass its best-effort auto params too.
     function embedSrc(url) {
+      const sep = url.includes('?') ? '&' : '?';
       if (/sketchfab\.com/.test(url)) {
-        const sep = url.includes('?') ? '&' : '?';
         return url + sep + 'autostart=1&preload=1&ui_hint=0';
+      }
+      if (/artstation\.com\/embed/.test(url)) {
+        return url + sep + 'autoplay=1&autostart=1';
       }
       return url;
     }
