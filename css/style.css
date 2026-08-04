@@ -1374,6 +1374,15 @@ main {
   backdrop-filter: blur(6px);
 }
 
+/* NDA / usage disclaimer under the unlocked "Protected Work" heading */
+.protected-disclaimer {
+  max-width: 640px;
+  margin: 8px auto 0;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--text-muted, #9aa2ad);
+}
+
 .protected-inner h1 {
   font-size: 22px;
   font-weight: 700;
@@ -1476,6 +1485,15 @@ main {
   }
   /* Video / embed tiles have no static child, so give them a height */
   .masonry-item.pv-media-tile { aspect-ratio: 16 / 9; }
+
+  /* Protected page: the flex-centered container shrink-wraps the grid on
+     mobile, leaving the images tiny. Switch to block so the grid (and its
+     images) fill the screen width; keep the password card centered. */
+  .protected-page { display: block; padding: 0 0 48px; }
+  .protected-inner { margin: 52px auto; max-width: min(380px, calc(100vw - 28px)); }
+  #protected-content { width: 100%; }
+  #protected-grid { padding: 8px; }
+  .protected-disclaimer { padding: 0 14px; font-size: 12px; }
 
   /* Arcade */
   .arcade-page { padding: 28px 16px 64px; }
