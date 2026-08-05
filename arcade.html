@@ -345,6 +345,16 @@
     .reelboy-wrap .lcd .crt { position:absolute; inset:0; pointer-events:none; z-index:3;
       background:repeating-linear-gradient(rgba(0,0,0,.10) 0 1px, transparent 1px 3px); mix-blend-mode:multiply; }
     .reelboy-wrap .lcd .tint { position:absolute; inset:0; pointer-events:none; z-index:3; background:rgba(120,150,20,.10); mix-blend-mode:soft-light; }
+    /* On-screen reel switchers, sitting over the video's left/right edges so the
+       centre stays tappable for play. */
+    .reelboy-wrap .reel-nav { position:absolute; top:0; bottom:0; width:36px; z-index:5; border:0; cursor:pointer;
+      background:rgba(0,0,0,.30); color:#fff; font-size:24px; font-weight:700; line-height:1;
+      display:flex; align-items:center; justify-content:center; opacity:.6; text-shadow:0 1px 3px rgba(0,0,0,.7);
+      transition:opacity .18s ease, background .18s ease; -webkit-tap-highlight-color:transparent; }
+    .reelboy-wrap .reel-nav:hover { opacity:1; background:rgba(0,0,0,.5); }
+    .reelboy-wrap .reel-nav:active { transform:scale(.92); }
+    .reelboy-wrap .reel-nav.prev { left:0; border-radius:6px 0 0 6px; }
+    .reelboy-wrap .reel-nav.next { right:0; border-radius:0 6px 6px 0; }
     .reelboy-wrap .gb-brand { text-align:center; margin-top:12px; }
     .reelboy-wrap .gb-brand .word { font-family:'Press Start 2P', monospace; font-size:15px; color:#cfccc3; letter-spacing:1px; }
     .reelboy-wrap .gb-brand .word span { color:#ef5c86; }
@@ -537,6 +547,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               </div>
               <div class="tint"></div>
               <div class="crt"></div>
+              <button class="reel-nav prev" id="reelNavPrev" type="button" aria-label="Previous reel">‹</button>
+              <button class="reel-nav next" id="reelNavNext" type="button" aria-label="Next reel">›</button>
             </div>
             <div class="gb-brand">
               <div class="word">MIKI <span>BOY</span></div>
@@ -1176,8 +1188,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         reels.push({ permalink: url }); render(reels.length - 1);
       }
 
-      document.getElementById('rbNext').addEventListener('click', function () { if (reels.length) render(idx + 1); });
-      document.getElementById('rbPrev').addEventListener('click', function () { if (reels.length) render(idx - 1); });
+      function goNext() { if (reels.length) render(idx + 1); }
+      function goPrev() { if (reels.length) render(idx - 1); }
+      document.getElementById('rbNext').addEventListener('click', goNext);
+      document.getElementById('rbPrev').addEventListener('click', goPrev);
+      document.getElementById('reelNavNext').addEventListener('click', goNext);
+      document.getElementById('reelNavPrev').addEventListener('click', goPrev);
       document.getElementById('rbA').addEventListener('click', play);
       document.getElementById('phPlay').addEventListener('click', play);
       document.getElementById('rbB').addEventListener('click', stop);
