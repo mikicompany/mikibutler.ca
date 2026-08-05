@@ -326,7 +326,7 @@
       /* IG embed crop: how far to pull the embed up (hides the header + centres
          the video) and how much extra height to add (pushes the caption/action
          bar below the screen so only the reel shows). Tune these two if needed. */
-      --reel-shift: 128px; --reel-over: 460px; }
+      --reel-shift: 118px; --reel-over: 460px; --reel-mask: 54px; }
     .reelboy-wrap .lcd iframe { position:absolute; inset:0; width:100%; height:100%; border:0; background:#000; }
     .reelboy-wrap .reel-ph { position:absolute; inset:0; display:flex; flex-direction:column; }
     .reelboy-wrap .reel-ph img { width:100%; height:100%; object-fit:cover; }
@@ -347,6 +347,11 @@
     .reelboy-wrap .lcd .tint { position:absolute; inset:0; pointer-events:none; z-index:3; background:rgba(120,150,20,.10); mix-blend-mode:soft-light; }
     /* On-screen reel switchers, sitting over the video's left/right edges so the
        centre stays tappable for play. */
+    /* Opaque cover over the bottom of the screen — hides Instagram's action /
+       caption bar that peeks in (START already opens the reel on Instagram). */
+    .reelboy-wrap .lcd .mask-bot { position:absolute; left:0; right:0; bottom:0; height:var(--reel-mask,54px);
+      z-index:4; pointer-events:none;
+      background:linear-gradient(to top, #0a0c0f 0%, #0a0c0f 58%, rgba(10,12,15,0) 100%); }
     .reelboy-wrap .reel-nav { position:absolute; top:0; bottom:0; width:36px; z-index:5; border:0; cursor:pointer;
       background:rgba(0,0,0,.30); color:#fff; font-size:24px; font-weight:700; line-height:1;
       display:flex; align-items:center; justify-content:center; opacity:.6; text-shadow:0 1px 3px rgba(0,0,0,.7);
@@ -547,6 +552,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               </div>
               <div class="tint"></div>
               <div class="crt"></div>
+              <div class="mask-bot"></div>
               <button class="reel-nav prev" id="reelNavPrev" type="button" aria-label="Previous reel">‹</button>
               <button class="reel-nav next" id="reelNavNext" type="button" aria-label="Next reel">›</button>
             </div>
