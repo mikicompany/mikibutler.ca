@@ -1198,15 +1198,36 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         });
         return out;
       }
+      function loadReels(list) {
+        if (!list.length) return false;
+        reels = list;
+        if (reels[0].thumb) phCover.src = reels[0].thumb;   // freshen placeholder to latest reel
+        counter.textContent = reels.length + ' reel' + (reels.length > 1 ? 's' : '') + ' — press A to play';
+        return true;
+      }
+
+      // reels.json is the reel source: a plain list of your reel links (or
+      // objects). Adding a new reel = add one line to that file. A Behold feed
+      // (or a scheduled job) can later write the same shape for hands-off auto
+      // updates. normalizeSimple accepts bare URL strings or {permalink,...}.
+      function normalizeSimple(list) {
+        return (list || []).map(function (it) {
+          if (typeof it === 'string') return { permalink: it };
+          return { permalink: it.permalink || it.url || '', video: it.video || '',
+                   thumb: it.thumb || it.thumbnail || '', caption: it.caption || '' };
+        }).filter(function (x) { return shortcode(x.permalink) || x.video; });
+      }
+
       if (BEHOLD_FEED) {
         counter.textContent = 'Loading reels…';
         fetch(BEHOLD_FEED).then(function (r) { return r.json(); }).then(function (json) {
-          var list = normalize(json);
-          if (!list.length) { counter.textContent = 'No reels found in the feed yet'; return; }
-          reels = list;
-          if (reels[0].thumb) phCover.src = reels[0].thumb;   // freshen placeholder to latest reel
-          counter.textContent = reels.length + ' reel' + (reels.length > 1 ? 's' : '') + ' — press A to play';
+          if (!loadReels(normalize(json))) counter.textContent = 'No reels found in the feed yet';
         }).catch(function () { counter.textContent = 'Placeholder reel — paste your reel links'; });
+      } else {
+        // No feed configured — pull the manual list from reels.json.
+        fetch('reels.json').then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (list) { loadReels(normalizeSimple(list)); })
+          .catch(function () {});
       }
     })();
   </script>
