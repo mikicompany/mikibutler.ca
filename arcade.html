@@ -446,6 +446,17 @@
     .draw-sw { width: 22px; height: 22px; border-radius: 5px; cursor: pointer; border: 2px solid #2a2f37; box-sizing: border-box; padding: 0; }
     .draw-sw.sel { border-color: var(--accent); box-shadow: 0 0 6px rgba(160,255,0,.5); }
     #drawColor { width: 34px; height: 30px; border: 1px solid #2a2f37; border-radius: 8px; background: #1c2128; cursor: pointer; padding: 2px; }
+    .draw-layers-head { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; max-width: 560px; margin: 16px auto 8px; }
+    .draw-layers-head > span:first-child { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+    .draw-layers { display: flex; flex-direction: column; gap: 5px; max-width: 560px; margin: 0 auto; }
+    .draw-layer { display: flex; align-items: center; gap: 8px; background: #1c2128; border: 1px solid #2a2f37; border-radius: 8px; padding: 6px 9px; cursor: pointer; font-size: 12px; color: #cfd4db; }
+    .draw-layer.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+    .draw-layer .eye { width: 20px; text-align: center; cursor: pointer; }
+    .draw-layer .eye.off { opacity: 0.32; }
+    .draw-layer .lname { flex: 1; font-weight: 600; }
+    .draw-layer .lmeta { font-size: 10px; color: #8a9099; white-space: nowrap; }
+    .draw-layer .ldel { border: 0; background: transparent; color: #8a9099; cursor: pointer; font-size: 13px; padding: 0 2px; }
+    .draw-layer .ldel:hover { color: #e23b3b; }
   </style>
 </head>
 <body>
@@ -683,7 +694,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- Sketch Pad -->
         <div class="tool-block">
           <div class="tool-title">Sketch Pad ✏️</div>
-          <p class="tool-desc">Doodle right here — pick a colour and brush, flip on pixel mode for retro art, then save it.</p>
+          <p class="tool-desc">Doodle right here — with layers, blend modes &amp; opacity, brush and pixel modes. Draw, then save it.</p>
           <div class="tool-stage draw-stage" style="min-height:0">
             <canvas id="drawCanvas" width="840" height="520"></canvas>
           </div>
@@ -694,9 +705,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <button type="button" id="drawErase">Eraser</button>
             <button type="button" id="drawPixel">Pixel</button>
             <button type="button" id="drawUndo">↶ Undo</button>
-            <button type="button" id="drawClear">Clear</button>
+            <button type="button" id="drawClear">Clear layer</button>
             <button type="button" id="drawSave">⬇ Save PNG</button>
           </div>
+          <div class="draw-layers-head">
+            <span>Layers</span>
+            <button type="button" id="drawAddLayer">＋ Layer</button>
+            <label class="tool-slider">Blend
+              <select id="drawBlend" style="background:#111418;border:1px solid #2a2f37;color:#e8eaed;border-radius:8px;padding:6px 8px;font-size:12px;font-family:inherit"></select>
+            </label>
+            <label class="tool-slider">Opacity <input type="range" id="drawOpacity" min="0" max="100" step="1" value="100" /> <b id="drawOpacityV">100</b></label>
+          </div>
+          <div class="draw-layers" id="drawLayers"></div>
         </div>
 
         <!-- LinkedIn Banner Maker -->
@@ -1543,33 +1563,53 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </script>
 
   <script>
-    // Sketch Pad — a simple in-browser drawing tool (brush / eraser / pixel /
-    // undo / clear / save PNG). Draws on a white paper canvas.
+    // Sketch Pad — in-browser drawing with layers, blend modes & opacity.
+    // Each layer is its own offscreen canvas; the visible canvas is the
+    // composite (white paper + layers stacked with their blend/opacity).
     (function () {
       var cv = document.getElementById('drawCanvas'); if (!cv) return;
-      var ctx = cv.getContext('2d', { willReadFrequently: true });
+      var view = cv.getContext('2d', { willReadFrequently: true });
+      var Wd = cv.width, Hd = cv.height;
       var color = '#111111', size = 6, erasing = false, pixel = false;
-      var drawing = false, lastX = 0, lastY = 0, undo = [];
+      var drawing = false, lastX = 0, lastY = 0;
 
-      function fillPaper() { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cv.width, cv.height); }
-      fillPaper();
-      function snapshot() { try { undo.push(ctx.getImageData(0, 0, cv.width, cv.height)); if (undo.length > 24) undo.shift(); } catch (e) {} }
-      function pos(e) { var r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * cv.width, y: (e.clientY - r.top) / r.height * cv.height }; }
+      var BLENDS = ['source-over', 'multiply', 'screen', 'overlay', 'darken', 'lighten',
+        'color-dodge', 'color-burn', 'hard-light', 'soft-light', 'difference', 'exclusion',
+        'hue', 'saturation', 'color', 'luminosity'];
+      function blendLabel(b) { return b === 'source-over' ? 'Normal' : b[0].toUpperCase() + b.slice(1).replace(/-/g, ' '); }
+      var layers = [], active = 0, layerSeq = 0, undo = [];
+
+      function newLayer(name) {
+        var c = document.createElement('canvas'); c.width = Wd; c.height = Hd;
+        return { canvas: c, ctx: c.getContext('2d', { willReadFrequently: true }),
+          name: name || ('Layer ' + (++layerSeq)), opacity: 1, blend: 'source-over', visible: true };
+      }
+      function actx() { return layers[active].ctx; }
+      function composite() {
+        view.globalAlpha = 1; view.globalCompositeOperation = 'source-over';
+        view.fillStyle = '#ffffff'; view.fillRect(0, 0, Wd, Hd);
+        layers.forEach(function (L) {
+          if (!L.visible) return;
+          view.globalAlpha = L.opacity; view.globalCompositeOperation = L.blend;
+          view.drawImage(L.canvas, 0, 0);
+        });
+        view.globalAlpha = 1; view.globalCompositeOperation = 'source-over';
+      }
+      function snapshot() { try { undo.push({ layer: active, data: actx().getImageData(0, 0, Wd, Hd) }); if (undo.length > 24) undo.shift(); } catch (e) {} }
+      function pos(e) { var r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * Wd, y: (e.clientY - r.top) / r.height * Hd }; }
       function paint(x0, y0, x1, y1) {
-        var c = erasing ? '#ffffff' : color;
+        var g = actx();
+        g.globalCompositeOperation = erasing ? 'destination-out' : 'source-over';
         if (pixel) {
-          var g = Math.max(3, size);
-          ctx.fillStyle = c;
-          // step along the segment so fast drags stay continuous
-          var dx = x1 - x0, dy = y1 - y0, steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / (g * 0.6)));
-          for (var s = 0; s <= steps; s++) {
-            var px = x0 + dx * s / steps, py = y0 + dy * s / steps;
-            ctx.fillRect(Math.floor(px / g) * g, Math.floor(py / g) * g, g, g);
-          }
+          var gs = Math.max(3, size); g.fillStyle = erasing ? '#000' : color;
+          var dx = x1 - x0, dy = y1 - y0, steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / (gs * 0.6)));
+          for (var s = 0; s <= steps; s++) { var px = x0 + dx * s / steps, py = y0 + dy * s / steps; g.fillRect(Math.floor(px / gs) * gs, Math.floor(py / gs) * gs, gs, gs); }
         } else {
-          ctx.strokeStyle = c; ctx.lineWidth = size; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-          ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+          g.strokeStyle = erasing ? '#000' : color; g.lineWidth = size; g.lineCap = 'round'; g.lineJoin = 'round';
+          g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
         }
+        g.globalCompositeOperation = 'source-over';
+        composite();
       }
       cv.addEventListener('pointerdown', function (e) {
         drawing = true; snapshot(); var p = pos(e); lastX = p.x; lastY = p.y; paint(p.x, p.y, p.x, p.y);
@@ -1579,15 +1619,40 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       function end(e) { drawing = false; try { cv.releasePointerCapture(e.pointerId); } catch (_) {} }
       cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
 
-      // palette
+      // ── Layers UI ──
+      var layerListEl = document.getElementById('drawLayers');
+      var blendSel = document.getElementById('drawBlend');
+      var opac = document.getElementById('drawOpacity'), opacV = document.getElementById('drawOpacityV');
+      BLENDS.forEach(function (b) { var o = document.createElement('option'); o.value = b; o.textContent = blendLabel(b); blendSel.appendChild(o); });
+      function syncActive() { var L = layers[active]; blendSel.value = L.blend; opac.value = Math.round(L.opacity * 100); opacV.textContent = opac.value; }
+      function renderLayers() {
+        layerListEl.innerHTML = '';
+        for (var i = layers.length - 1; i >= 0; i--) (function (i) {
+          var L = layers[i];
+          var row = document.createElement('div'); row.className = 'draw-layer' + (i === active ? ' active' : '');
+          row.innerHTML = '<span class="eye' + (L.visible ? '' : ' off') + '">' + (L.visible ? '👁' : '🚫') + '</span>' +
+            '<span class="lname"></span><span class="lmeta">' + blendLabel(L.blend) + ' · ' + Math.round(L.opacity * 100) + '%</span>' +
+            (layers.length > 1 ? '<button class="ldel" title="Delete layer">✕</button>' : '');
+          row.querySelector('.lname').textContent = L.name;
+          row.addEventListener('click', function () { active = i; syncActive(); renderLayers(); });
+          row.querySelector('.eye').addEventListener('click', function (e) { e.stopPropagation(); L.visible = !L.visible; composite(); renderLayers(); });
+          var del = row.querySelector('.ldel');
+          if (del) del.addEventListener('click', function (e) { e.stopPropagation(); layers.splice(i, 1); if (active >= layers.length) active = layers.length - 1; composite(); syncActive(); renderLayers(); });
+          layerListEl.appendChild(row);
+        })(i);
+      }
+      blendSel.addEventListener('change', function () { layers[active].blend = blendSel.value; composite(); renderLayers(); });
+      opac.addEventListener('input', function () { layers[active].opacity = +opac.value / 100; opacV.textContent = opac.value; composite(); renderLayers(); });
+      document.getElementById('drawAddLayer').addEventListener('click', function () { layers.push(newLayer()); active = layers.length - 1; composite(); syncActive(); renderLayers(); });
+
+      layers.push(newLayer()); active = 0; composite(); syncActive(); renderLayers();
+
+      // ── Palette + tools ──
       var PAL = ['#111111', '#ffffff', '#e23b3b', '#f5a623', '#ffd84a', '#2ecc71', '#3aa0ff', '#a0ff00', '#b967ff', '#8a5a2b'];
       var palEl = document.getElementById('drawPal');
       var colorEl = document.getElementById('drawColor');
       var eraseBtn = document.getElementById('drawErase');
-      function selectSwatch(node) {
-        var kids = palEl.children;
-        for (var i = 0; i < kids.length; i++) kids[i].classList.toggle('sel', kids[i] === node);
-      }
+      function selectSwatch(node) { var k = palEl.children; for (var i = 0; i < k.length; i++) k[i].classList.toggle('sel', k[i] === node); }
       PAL.forEach(function (c, i) {
         var sw = document.createElement('button'); sw.type = 'button'; sw.className = 'draw-sw' + (i === 0 ? ' sel' : '');
         sw.style.background = c; sw.title = c;
@@ -1599,8 +1664,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       sz.addEventListener('input', function () { size = +sz.value; szv.textContent = size; });
       eraseBtn.addEventListener('click', function () { erasing = !erasing; this.classList.toggle('on', erasing); });
       document.getElementById('drawPixel').addEventListener('click', function () { pixel = !pixel; this.classList.toggle('on', pixel); });
-      document.getElementById('drawUndo').addEventListener('click', function () { if (undo.length) ctx.putImageData(undo.pop(), 0, 0); });
-      document.getElementById('drawClear').addEventListener('click', function () { snapshot(); fillPaper(); });
+      document.getElementById('drawUndo').addEventListener('click', function () { if (undo.length) { var u = undo.pop(); if (layers[u.layer]) { layers[u.layer].ctx.putImageData(u.data, 0, 0); composite(); } } });
+      document.getElementById('drawClear').addEventListener('click', function () { snapshot(); actx().clearRect(0, 0, Wd, Hd); composite(); });
       document.getElementById('drawSave').addEventListener('click', function () {
         var a = document.createElement('a'); a.download = 'sketch.png'; a.href = cv.toDataURL('image/png');
         document.body.appendChild(a); a.click(); a.remove();
