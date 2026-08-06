@@ -714,8 +714,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div class="lb-thumbs" id="lbThumbs"></div>
           <div class="tool-controls">
             <label class="tool-slider">Gap <input type="range" id="lbGap" min="0" max="40" step="1" value="8" /> <b id="lbGapV">8</b></label>
+            <label class="tool-slider">Slant <input type="range" id="lbSlant" min="0" max="160" step="2" value="0" /> <b id="lbSlantV">0</b></label>
+            <button type="button" id="lbSlantDir" title="Flip slant direction">⟋</button>
             <label class="tool-slider">Zoom <input type="range" id="lbZoom" min="100" max="220" step="1" value="100" /> <b id="lbZoomV">100</b></label>
             <button type="button" id="lbText" class="on">Name overlay</button>
+            <button type="button" id="lbLogo" class="on">Logo</button>
             <button type="button" id="lbAccent" class="on">Accent bar</button>
             <label class="tool-slider" title="Background behind gaps">BG <input type="color" id="lbBg" value="#0d0f12" /></label>
             <button type="button" id="lbSave">⬇ Save PNG</button>
@@ -1551,7 +1554,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var ctx = canvas.getContext('2d');
       var W = 1584, H = 396;
       var items = [];
-      var opts = { gap: 8, zoom: 1, text: true, accent: true, bg: '#0d0f12' };
+      var opts = { gap: 8, slant: 0, slantDir: 1, zoom: 1, text: true, logo: true, accent: true, bg: '#0d0f12' };
+      var logoImg = new Image(); var logoReady = false;
+      logoImg.onload = function () { logoReady = true; redraw(); };
+      logoImg.src = 'images/logo512.jpg';
       var empty  = document.getElementById('lbEmpty');
       var thumbs = document.getElementById('lbThumbs');
       var picker = document.getElementById('lbPicker');
@@ -1562,14 +1568,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         return c || '#a0ff00';
       }
 
-      function drawCover(img, x, y, w, h, zoom) {
+      // Clip to an arbitrary polygon (so tiles can be parallelograms for a
+      // diagonal split), then cover-fit the image across the polygon's bounds.
+      function drawCoverPoly(img, poly, zoom) {
         var iw = img.naturalWidth, ih = img.naturalHeight;
         if (!iw || !ih) return;
-        var scale = Math.max(w / iw, h / ih) * zoom;
-        var dw = iw * scale, dh = ih * scale;
-        ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
-        ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+        var xs = poly.map(function (p) { return p[0]; });
+        var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+        var w = maxX - minX, h = H;
+        var scale = Math.max(w / iw, h / ih) * zoom, dw = iw * scale, dh = ih * scale;
+        ctx.save();
+        ctx.beginPath(); ctx.moveTo(poly[0][0], poly[0][1]);
+        for (var i = 1; i < poly.length; i++) ctx.lineTo(poly[i][0], poly[i][1]);
+        ctx.closePath(); ctx.clip();
+        ctx.drawImage(img, minX + (w - dw) / 2, (h - dh) / 2, dw, dh);
         ctx.restore();
+      }
+      function drawLogo() {
+        if (!logoReady) return;
+        var d = 108, m = 30, cx = W - m - d / 2, cy = H - m - d / 2;
+        ctx.save();
+        ctx.beginPath(); ctx.arc(cx, cy, d / 2, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+        ctx.drawImage(logoImg, cx - d / 2, cy - d / 2, d, d);
+        ctx.restore();
+        ctx.beginPath(); ctx.arc(cx, cy, d / 2, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 2; ctx.stroke();
       }
       function drawText() {
         var g = ctx.createLinearGradient(0, H, 0, H - 210);
@@ -1588,9 +1611,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         canvas.style.display = items.length ? 'block' : 'none';
         empty.style.display  = items.length ? 'none' : '';
         if (!items.length) return;
-        var n = items.length, gap = opts.gap, tileW = (W - gap * (n - 1)) / n, x = 0;
-        items.forEach(function (o) { drawCover(o.img, x, 0, tileW, H, opts.zoom); x += tileW + gap; });
+        var n = items.length, gap = opts.gap, s = opts.slant / 2, dir = opts.slantDir, step = W / n;
+        // Outer edges stay vertical (fill to the banner edges); internal
+        // separators slant by ±s at top vs bottom for a diagonal cut.
+        function sepX(k, atTop) {
+          if (k <= 0) return 0;
+          if (k >= n) return W;
+          return k * step + (atTop ? s * dir : -s * dir);
+        }
+        items.forEach(function (o, i) {
+          var TL = sepX(i, true), TR = sepX(i + 1, true), BR = sepX(i + 1, false), BL = sepX(i, false);
+          if (i > 0)     { TL += gap / 2; BL += gap / 2; }
+          if (i < n - 1) { TR -= gap / 2; BR -= gap / 2; }
+          drawCoverPoly(o.img, [[TL, 0], [TR, 0], [BR, H], [BL, H]], opts.zoom);
+        });
         if (opts.accent) { ctx.fillStyle = accentColor(); ctx.fillRect(0, H - 7, W, 7); }
+        if (opts.logo) drawLogo();
         if (opts.text) drawText();
       }
       function renderThumbs() {
@@ -1662,10 +1698,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       var gap = document.getElementById('lbGap'), gapV = document.getElementById('lbGapV');
       gap.addEventListener('input', function () { opts.gap = +gap.value; gapV.textContent = gap.value; redraw(); });
+      var slant = document.getElementById('lbSlant'), slantV = document.getElementById('lbSlantV');
+      slant.addEventListener('input', function () { opts.slant = +slant.value; slantV.textContent = slant.value; redraw(); });
+      var slantDir = document.getElementById('lbSlantDir');
+      slantDir.addEventListener('click', function () { opts.slantDir *= -1; slantDir.textContent = opts.slantDir > 0 ? '⟋' : '⟍'; redraw(); });
       var zoom = document.getElementById('lbZoom'), zoomV = document.getElementById('lbZoomV');
       zoom.addEventListener('input', function () { opts.zoom = zoom.value / 100; zoomV.textContent = zoom.value; redraw(); });
       var tBtn = document.getElementById('lbText');
       tBtn.addEventListener('click', function () { opts.text = !opts.text; tBtn.classList.toggle('on', opts.text); redraw(); });
+      var gBtn = document.getElementById('lbLogo');
+      gBtn.addEventListener('click', function () { opts.logo = !opts.logo; gBtn.classList.toggle('on', opts.logo); redraw(); });
       var aBtn = document.getElementById('lbAccent');
       aBtn.addEventListener('click', function () { opts.accent = !opts.accent; aBtn.classList.toggle('on', opts.accent); redraw(); });
       var bg = document.getElementById('lbBg');
