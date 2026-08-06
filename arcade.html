@@ -714,6 +714,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </label>
             <span id="lbSizeDim" style="font-size:11px;color:#8a9099"></span>
           </div>
+          <div class="tool-controls" style="margin-bottom:2px">
+            <span style="font-size:11px;color:#8a9099">Preset</span>
+            <select id="lbPresetSel" style="background:#111418;border:1px solid #2a2f37;color:#e8eaed;border-radius:8px;padding:7px 9px;font-size:12px;font-family:inherit"><option value="">—</option></select>
+            <button type="button" id="lbPresetSave">💾 Save current</button>
+            <button type="button" id="lbPresetDel" title="Delete selected preset">🗑</button>
+          </div>
           <div class="lb-picker" id="lbPicker" hidden></div>
           <div class="tool-stage">
             <canvas id="lbCanvas" width="1584" height="396" style="width:100%;height:auto;border-radius:6px;display:block;cursor:pointer"></canvas>
@@ -1979,6 +1985,68 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       function applySize(i) { var sz = SIZES[i]; sizeDim.textContent = sz[1] + ' × ' + sz[2]; setSize(sz[1], sz[2]); }
       sizeSel.addEventListener('change', function () { applySize(+sizeSel.value); });
       sizeDim.textContent = W + ' × ' + H;
+
+      // ── Presets (saved to this browser) ──
+      // Push current opts + W/H into the UI controls (after loading a preset).
+      function syncControls() {
+        gap.value = opts.gap; gapV.textContent = opts.gap;
+        slant.value = opts.slant; slantV.textContent = opts.slant;
+        slantDir.textContent = opts.slantDir > 0 ? '⟋' : '⟍';
+        zoom.value = 100; zoomV.textContent = '100';
+        tBtn.classList.toggle('on', opts.text);
+        gBtn.classList.toggle('on', opts.logo);
+        aBtn.classList.toggle('on', opts.accent);
+        Object.keys(layBtns).forEach(function (m) { layBtns[m].classList.toggle('on', m === opts.layout); });
+        nameIn.value = opts.name || ''; titleIn.value = opts.title || '';
+        bg.value = /^#/.test(opts.bg) ? opts.bg : '#0d0f12';
+        var mi = SIZES.findIndex(function (s) { return s[1] === W && s[2] === H; });
+        if (mi >= 0) sizeSel.value = mi;
+        sizeDim.textContent = W + ' × ' + H;
+      }
+      function gatherState() {
+        return { size: [W, H], opts: Object.assign({}, opts),
+          items: items.map(function (o) { return { url: o.url, zoom: o.zoom || 1, ox: o.ox || 0, oy: o.oy || 0 }; }) };
+      }
+      function loadPreset(st) {
+        if (!st) return;
+        items = []; selected = -1;
+        for (var k in st.opts) opts[k] = st.opts[k];
+        setSize(st.size[0], st.size[1]);
+        syncControls();
+        var chain = Promise.resolve();
+        (st.items || []).forEach(function (im) {
+          chain = chain.then(function () {
+            var cross = !/^data:/.test(im.url);
+            return addImage(im.url, cross).then(function (ok) {
+              if (ok) { var it = items[items.length - 1]; it.zoom = im.zoom || 1; it.ox = im.ox || 0; it.oy = im.oy || 0; }
+            });
+          });
+        });
+        chain.then(function () { updateHint(); renderThumbs(); redraw(); });
+      }
+      var presetSel = document.getElementById('lbPresetSel');
+      function readPresets() { try { return JSON.parse(localStorage.getItem('lb-presets') || '{}'); } catch (e) { return {}; } }
+      function writePresets(o) { localStorage.setItem('lb-presets', JSON.stringify(o)); }
+      function refreshPresets(sel) {
+        var ps = readPresets(); presetSel.innerHTML = '';
+        var o0 = document.createElement('option'); o0.value = ''; o0.textContent = Object.keys(ps).length ? '— saved presets —' : '— none saved —'; presetSel.appendChild(o0);
+        Object.keys(ps).forEach(function (n) { var o = document.createElement('option'); o.value = n; o.textContent = n; presetSel.appendChild(o); });
+        if (sel) presetSel.value = sel;
+      }
+      presetSel.addEventListener('change', function () { if (presetSel.value) loadPreset(readPresets()[presetSel.value]); });
+      document.getElementById('lbPresetSave').addEventListener('click', function () {
+        if (!items.length) { showErr('Add some images before saving a preset.'); return; }
+        var ps = readPresets();
+        var name = prompt('Name this preset:', presetSel.value || ('Preset ' + (Object.keys(ps).length + 1)));
+        if (!name) return;
+        ps[name] = gatherState();
+        try { writePresets(ps); } catch (e) { showErr('Couldn’t save — preset too large. Uploaded images use lots of space; presets are lightest with portfolio images.'); return; }
+        showErr(''); refreshPresets(name);
+      });
+      document.getElementById('lbPresetDel').addEventListener('click', function () {
+        var ps = readPresets(); if (presetSel.value && ps[presetSel.value]) { delete ps[presetSel.value]; writePresets(ps); refreshPresets(); }
+      });
+      refreshPresets();
 
       updateHint();
       fitCanvasDisplay();
