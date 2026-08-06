@@ -712,6 +712,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div class="tool-empty" id="lbEmpty">Add a few images to build your banner</div>
           </div>
           <div class="lb-thumbs" id="lbThumbs"></div>
+          <div class="tool-in" style="max-width:640px;margin-top:14px">
+            <input type="text" id="lbName" placeholder="Name" value="Miki Butler" />
+            <input type="text" id="lbTitle" placeholder="Title / tagline" value="Senior Environment Artist · Vancouver" />
+          </div>
+          <div class="tool-controls" style="margin-top:12px">
+            <button type="button" id="lbLayFilm" class="on">▦ Filmstrip</button>
+            <button type="button" id="lbLayHero">◪ Hero</button>
+            <button type="button" id="lbLaySingle">▭ Single</button>
+          </div>
           <div class="tool-controls">
             <label class="tool-slider">Gap <input type="range" id="lbGap" min="0" max="40" step="1" value="8" /> <b id="lbGapV">8</b></label>
             <label class="tool-slider">Slant <input type="range" id="lbSlant" min="0" max="160" step="2" value="0" /> <b id="lbSlantV">0</b></label>
@@ -719,6 +728,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <label class="tool-slider">Zoom <input type="range" id="lbZoom" min="100" max="220" step="1" value="100" /> <b id="lbZoomV">100</b></label>
             <button type="button" id="lbText" class="on">Name overlay</button>
             <button type="button" id="lbLogo" class="on">Logo</button>
+            <button type="button" id="lbLogoPos" title="Move logo to another corner">◱ corner</button>
             <button type="button" id="lbAccent" class="on">Accent bar</button>
             <label class="tool-slider" title="Background behind gaps">BG <input type="color" id="lbBg" value="#0d0f12" /></label>
             <button type="button" id="lbSave">⬇ Save PNG</button>
@@ -1554,7 +1564,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var ctx = canvas.getContext('2d');
       var W = 1584, H = 396;
       var items = [];
-      var opts = { gap: 8, slant: 0, slantDir: 1, zoom: 1, text: true, logo: true, accent: true, bg: '#0d0f12' };
+      var opts = { gap: 8, slant: 0, slantDir: 1, zoom: 1, layout: 'film', logoPos: 'br',
+                   name: 'Miki Butler', title: 'Senior Environment Artist · Vancouver',
+                   text: true, logo: true, accent: true, bg: '#0d0f12' };
       var logoImg = new Image(); var logoReady = false;
       logoImg.onload = function () { logoReady = true; redraw(); };
       logoImg.src = 'images/logo512.jpg';
@@ -1586,7 +1598,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
       function drawLogo() {
         if (!logoReady) return;
-        var d = 108, m = 30, cx = W - m - d / 2, cy = H - m - d / 2;
+        var d = 108, m = 30;
+        var cx = (opts.logoPos === 'br' || opts.logoPos === 'tr') ? W - m - d / 2 : m + d / 2;
+        var cy = (opts.logoPos === 'br' || opts.logoPos === 'bl') ? H - m - d / 2 : m + d / 2;
         ctx.save();
         ctx.beginPath(); ctx.arc(cx, cy, d / 2, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
         ctx.drawImage(logoImg, cx - d / 2, cy - d / 2, d, d);
@@ -1595,31 +1609,54 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 2; ctx.stroke();
       }
       function drawText() {
+        var hasTitle = !!opts.title;
         var g = ctx.createLinearGradient(0, H, 0, H - 210);
         g.addColorStop(0, 'rgba(0,0,0,.75)'); g.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = g; ctx.fillRect(0, H - 210, 980, 210);
         ctx.textBaseline = 'alphabetic';
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '700 66px Arial, Helvetica, sans-serif';
-        ctx.fillText('Miki Butler', 54, H - 74);
-        ctx.fillStyle = '#d7dbe1';
-        ctx.font = '500 30px Arial, Helvetica, sans-serif';
-        ctx.fillText('Senior Environment Artist · Vancouver', 56, H - 34);
+        if (opts.name) {
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '700 66px Arial, Helvetica, sans-serif';
+          ctx.fillText(opts.name, 54, hasTitle ? H - 74 : H - 40);
+        }
+        if (hasTitle) {
+          ctx.fillStyle = '#d7dbe1';
+          ctx.font = '500 30px Arial, Helvetica, sans-serif';
+          ctx.fillText(opts.title, 56, H - 34);
+        }
+      }
+      // Nominal tile boundaries (x at mid-height) for the current layout.
+      function computeBounds(n, layout) {
+        var b = [], i;
+        if (layout === 'hero' && n >= 2) {
+          var heroW = W * 0.56, restW = W - heroW, rn = n - 1;
+          b.push(0); b.push(heroW);
+          for (i = 2; i <= n; i++) b.push(heroW + (i - 1) * (restW / rn));
+          return b;
+        }
+        for (i = 0; i <= n; i++) b.push(i * W / n);
+        return b;
       }
       function redraw() {
         ctx.fillStyle = opts.bg; ctx.fillRect(0, 0, W, H);
-        canvas.style.display = items.length ? 'block' : 'none';
-        empty.style.display  = items.length ? 'none' : '';
-        if (!items.length) return;
-        var n = items.length, gap = opts.gap, s = opts.slant / 2, dir = opts.slantDir, step = W / n;
+        var has = items.length > 0;
+        canvas.style.display = has ? 'block' : 'none';
+        empty.style.display  = has ? 'none' : '';
+        if (!has) return;
+        var layout = opts.layout;
+        var draw = (layout === 'single') ? [items[0]] : items;
+        var n = draw.length;
+        if (layout === 'hero' && n < 2) layout = 'film';
+        var bounds = computeBounds(n, layout);
+        var gap = opts.gap, s = opts.slant / 2, dir = opts.slantDir;
         // Outer edges stay vertical (fill to the banner edges); internal
         // separators slant by ±s at top vs bottom for a diagonal cut.
         function sepX(k, atTop) {
           if (k <= 0) return 0;
           if (k >= n) return W;
-          return k * step + (atTop ? s * dir : -s * dir);
+          return bounds[k] + (atTop ? s * dir : -s * dir);
         }
-        items.forEach(function (o, i) {
+        draw.forEach(function (o, i) {
           var TL = sepX(i, true), TR = sepX(i + 1, true), BR = sepX(i + 1, false), BL = sepX(i, false);
           if (i > 0)     { TL += gap / 2; BL += gap / 2; }
           if (i < n - 1) { TR -= gap / 2; BR -= gap / 2; }
@@ -1708,6 +1745,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       tBtn.addEventListener('click', function () { opts.text = !opts.text; tBtn.classList.toggle('on', opts.text); redraw(); });
       var gBtn = document.getElementById('lbLogo');
       gBtn.addEventListener('click', function () { opts.logo = !opts.logo; gBtn.classList.toggle('on', opts.logo); redraw(); });
+      var LOGO_CORNERS = ['br', 'bl', 'tl', 'tr'];
+      document.getElementById('lbLogoPos').addEventListener('click', function () {
+        opts.logoPos = LOGO_CORNERS[(LOGO_CORNERS.indexOf(opts.logoPos) + 1) % 4];
+        if (!opts.logo) { opts.logo = true; gBtn.classList.add('on'); }
+        redraw();
+      });
+      // Layout presets (radio-style).
+      var layBtns = { film: document.getElementById('lbLayFilm'), hero: document.getElementById('lbLayHero'), single: document.getElementById('lbLaySingle') };
+      function setLayout(k) { opts.layout = k; Object.keys(layBtns).forEach(function (m) { layBtns[m].classList.toggle('on', m === k); }); redraw(); }
+      layBtns.film.addEventListener('click', function () { setLayout('film'); });
+      layBtns.hero.addEventListener('click', function () { setLayout('hero'); });
+      layBtns.single.addEventListener('click', function () { setLayout('single'); });
+      // Editable name / title.
+      var nameIn = document.getElementById('lbName'), titleIn = document.getElementById('lbTitle');
+      nameIn.addEventListener('input', function () { opts.name = nameIn.value; if (!opts.text) { opts.text = true; tBtn.classList.add('on'); } redraw(); });
+      titleIn.addEventListener('input', function () { opts.title = titleIn.value; redraw(); });
       var aBtn = document.getElementById('lbAccent');
       aBtn.addEventListener('click', function () { opts.accent = !opts.accent; aBtn.classList.toggle('on', opts.accent); redraw(); });
       var bg = document.getElementById('lbBg');
