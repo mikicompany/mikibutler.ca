@@ -917,9 +917,14 @@ let dragSrc = null;
 // ── INIT ──
 // Cache-bust so a reload always pulls the freshly-committed data.json — GitHub
 // Pages/CDN otherwise serves a stale copy, making a just-saved edit look lost.
+// Snapshot of data.json as it was when this admin page loaded. Used to detect
+// if the file changed on GitHub (e.g. edited elsewhere) before a save would
+// blindly overwrite it.
+let loadedSnapshot = null;
+function snapshot(obj) { try { return JSON.stringify(obj); } catch (e) { return null; } }
 fetch('data.json?t=' + Date.now())
   .then(r => r.json())
-  .then(d => { data = d; render(); restoreDock(); })
+  .then(d => { data = d; loadedSnapshot = snapshot(d); render(); restoreDock(); })
   .catch(() => render());
 
 // ── TABS ──
@@ -1673,7 +1678,32 @@ async function saveViaGitHub() {
     return;
   }
   if (!cur.ok) throw new Error('could not read current data.json (HTTP ' + cur.status + ')');
-  const { sha } = await cur.json();
+  const curJson = await cur.json();
+  const sha = curJson.sha;
+  // ── Overwrite guard ──
+  // If the file on GitHub differs from what this page loaded, something changed
+  // it since (edited elsewhere / by Claude). Saving now would wipe that. Warn.
+  if (loadedSnapshot && curJson.content) {
+    let remoteSnap = null;
+    try {
+      const bytes = Uint8Array.from(atob(curJson.content.replace(/\s/g, '')), c => c.charCodeAt(0));
+      remoteSnap = snapshot(JSON.parse(new TextDecoder().decode(bytes)));
+    } catch (e) { remoteSnap = null; }
+    if (remoteSnap && remoteSnap !== loadedSnapshot) {
+      const proceed = confirm(
+        '⚠️ data.json changed on GitHub since you opened this admin page ' +
+        '(it was edited elsewhere — e.g. by Claude, or another tab).\n\n' +
+        'Saving now will OVERWRITE those changes with what you have here.\n\n' +
+        '• Click Cancel to stop — then reload this page (Cmd/Ctrl-Shift-R) to get ' +
+        'the latest, and redo your edits on top.\n' +
+        '• Click OK only if you deliberately want to overwrite.'
+      );
+      if (!proceed) {
+        showSaveError('Save cancelled to avoid overwriting newer data. <b>Reload this page</b> (Cmd/Ctrl-Shift-R) to pull the latest, then re-apply your changes.');
+        return;
+      }
+    }
+  }
   const res = await fetch(GH_API, {
     method: 'PUT',
     headers,
@@ -1688,6 +1718,7 @@ async function saveViaGitHub() {
     const detail = (await res.json().catch(() => ({}))).message || 'HTTP ' + res.status;
     throw new Error(detail);
   }
+  loadedSnapshot = snapshot(data);   // we're now in sync with the remote
   markSaved('Committed ✓ — site updates in ~1 min');
   showToast('Committed to GitHub! Pages will redeploy in about a minute.');
 }
