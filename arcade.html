@@ -420,6 +420,23 @@
       background: rgba(0,0,0,.6); color: #fff; padding: 2px 5px; border-radius: 3px; opacity: 0; transition: opacity .2s; pointer-events: none; }
     .pal-sw.copied::after { opacity: 1; }
 
+    /* ── LinkedIn Banner maker ── */
+    .tool-block:has(#lbCanvas) .tool-stage { max-width: 760px; }
+    .lb-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 6px; max-width: 760px;
+      margin: 0 auto 16px; max-height: 224px; overflow-y: auto; padding: 8px; background: #0c0f13; border: 1px solid #23272e; border-radius: 10px; }
+    .lb-picker img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 6px; cursor: pointer;
+      border: 2px solid transparent; transition: border-color .15s, transform .15s; }
+    .lb-picker img:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .lb-thumbs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 760px; margin: 14px auto 0; }
+    .lb-thumb { position: relative; width: 72px; height: 52px; border-radius: 6px; overflow: hidden; border: 1px solid #2a2f37; }
+    .lb-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .lb-thumb .rm { position: absolute; top: 2px; right: 2px; width: 17px; height: 17px; border: 0; border-radius: 50%;
+      background: rgba(0,0,0,.72); color: #fff; font-size: 12px; line-height: 15px; cursor: pointer; padding: 0; }
+    .lb-thumb .mv { position: absolute; bottom: 0; width: 50%; height: 17px; border: 0; background: rgba(0,0,0,.55);
+      color: #fff; font-size: 12px; line-height: 15px; cursor: pointer; padding: 0; opacity: 0; transition: opacity .15s; }
+    .lb-thumb:hover .mv { opacity: 1; }
+    .lb-thumb .mv.l { left: 0; } .lb-thumb .mv.r { right: 0; }
+
     /* ── Sketch Pad ── */
     .draw-stage { padding: 12px; }
     .draw-stage canvas { width: 100%; max-width: 560px; background: #fff; border-radius: 10px; cursor: crosshair; touch-action: none; display: block; }
@@ -678,6 +695,32 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <button type="button" id="drawClear">Clear</button>
             <button type="button" id="drawSave">⬇ Save PNG</button>
           </div>
+        </div>
+
+        <!-- LinkedIn Banner Maker -->
+        <div class="tool-block">
+          <div class="tool-title">LinkedIn Banner 🖼️</div>
+          <p class="tool-desc">Build a LinkedIn banner (1584×396, 4:1) from your work. Add images, arrange them into a strip, drop your name on top, export a PNG. Uploads always export; portfolio images export when the host allows it.</p>
+          <div class="tool-in">
+            <label>⬆ Add images<input type="file" accept="image/*" id="lbFiles" hidden multiple /></label>
+            <button type="button" id="lbPortfolio">＋ From my portfolio</button>
+            <button type="button" id="lbClear">Clear</button>
+          </div>
+          <div class="lb-picker" id="lbPicker" hidden></div>
+          <div class="tool-stage">
+            <canvas id="lbCanvas" width="1584" height="396" style="width:100%;height:auto;border-radius:6px;display:block"></canvas>
+            <div class="tool-empty" id="lbEmpty">Add a few images to build your banner</div>
+          </div>
+          <div class="lb-thumbs" id="lbThumbs"></div>
+          <div class="tool-controls">
+            <label class="tool-slider">Gap <input type="range" id="lbGap" min="0" max="40" step="1" value="8" /> <b id="lbGapV">8</b></label>
+            <label class="tool-slider">Zoom <input type="range" id="lbZoom" min="100" max="220" step="1" value="100" /> <b id="lbZoomV">100</b></label>
+            <button type="button" id="lbText" class="on">Name overlay</button>
+            <button type="button" id="lbAccent" class="on">Accent bar</button>
+            <label class="tool-slider" title="Background behind gaps">BG <input type="color" id="lbBg" value="#0d0f12" /></label>
+            <button type="button" id="lbSave">⬇ Save PNG</button>
+          </div>
+          <p class="cmp-err" id="lbErr"></p>
         </div>
       </section>
 
@@ -1494,6 +1537,156 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         var a = document.createElement('a'); a.download = 'sketch.png'; a.href = cv.toDataURL('image/png');
         document.body.appendChild(a); a.click(); a.remove();
       });
+    })();
+  </script>
+
+  <script>
+    // LinkedIn Banner maker — compose a 1584×396 (4:1) banner from uploaded or
+    // portfolio images, drop the name on top, export a PNG. Uploaded images are
+    // same-origin so they always export; portfolio images load with CORS when
+    // the host allows it (else they still preview, but export is blocked).
+    (function () {
+      var canvas = document.getElementById('lbCanvas');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var W = 1584, H = 396;
+      var items = [];
+      var opts = { gap: 8, zoom: 1, text: true, accent: true, bg: '#0d0f12' };
+      var empty  = document.getElementById('lbEmpty');
+      var thumbs = document.getElementById('lbThumbs');
+      var picker = document.getElementById('lbPicker');
+      var err    = document.getElementById('lbErr');
+      function showErr(m) { err.textContent = m || ''; }
+      function accentColor() {
+        var c = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+        return c || '#a0ff00';
+      }
+
+      function drawCover(img, x, y, w, h, zoom) {
+        var iw = img.naturalWidth, ih = img.naturalHeight;
+        if (!iw || !ih) return;
+        var scale = Math.max(w / iw, h / ih) * zoom;
+        var dw = iw * scale, dh = ih * scale;
+        ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+        ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+        ctx.restore();
+      }
+      function drawText() {
+        var g = ctx.createLinearGradient(0, H, 0, H - 210);
+        g.addColorStop(0, 'rgba(0,0,0,.75)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g; ctx.fillRect(0, H - 210, 980, 210);
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 66px Arial, Helvetica, sans-serif';
+        ctx.fillText('Miki Butler', 54, H - 74);
+        ctx.fillStyle = '#d7dbe1';
+        ctx.font = '500 30px Arial, Helvetica, sans-serif';
+        ctx.fillText('Senior Environment Artist · Vancouver', 56, H - 34);
+      }
+      function redraw() {
+        ctx.fillStyle = opts.bg; ctx.fillRect(0, 0, W, H);
+        canvas.style.display = items.length ? 'block' : 'none';
+        empty.style.display  = items.length ? 'none' : '';
+        if (!items.length) return;
+        var n = items.length, gap = opts.gap, tileW = (W - gap * (n - 1)) / n, x = 0;
+        items.forEach(function (o) { drawCover(o.img, x, 0, tileW, H, opts.zoom); x += tileW + gap; });
+        if (opts.accent) { ctx.fillStyle = accentColor(); ctx.fillRect(0, H - 7, W, 7); }
+        if (opts.text) drawText();
+      }
+      function renderThumbs() {
+        thumbs.innerHTML = '';
+        items.forEach(function (o, i) {
+          var d = document.createElement('div'); d.className = 'lb-thumb';
+          d.innerHTML = '<img src="' + o.url + '">' +
+            '<button class="rm" title="Remove">×</button>' +
+            (i > 0 ? '<button class="mv l" title="Move left">‹</button>' : '') +
+            (i < items.length - 1 ? '<button class="mv r" title="Move right">›</button>' : '');
+          d.querySelector('.rm').onclick = function () { items.splice(i, 1); renderThumbs(); redraw(); };
+          var l = d.querySelector('.mv.l'); if (l) l.onclick = function () { var t = items[i]; items[i] = items[i - 1]; items[i - 1] = t; renderThumbs(); redraw(); };
+          var r = d.querySelector('.mv.r'); if (r) r.onclick = function () { var t = items[i]; items[i] = items[i + 1]; items[i + 1] = t; renderThumbs(); redraw(); };
+          thumbs.appendChild(d);
+        });
+      }
+      function addImage(url, cross) {
+        return new Promise(function (res) {
+          function load(useCross) {
+            var img = new Image();
+            if (useCross) img.crossOrigin = 'anonymous';
+            img.onload  = function () { items.push({ img: img, url: url }); res(true); };
+            img.onerror = function () { useCross ? load(false) : res(false); };
+            img.src = url;
+          }
+          load(!!cross);
+        });
+      }
+      function large(u) { return String(u).replace(/\/(4k|1920x1080|medium|small)\//, '/large/'); }
+
+      document.getElementById('lbFiles').addEventListener('change', function (e) {
+        showErr('');
+        var files = Array.prototype.slice.call(e.target.files || []), chain = Promise.resolve();
+        files.forEach(function (f) {
+          chain = chain.then(function () {
+            return new Promise(function (res) {
+              var fr = new FileReader();
+              fr.onload = function () { addImage(fr.result, false).then(function () { res(); }); };
+              fr.readAsDataURL(f);
+            });
+          });
+        });
+        chain.then(function () { renderThumbs(); redraw(); });
+        e.target.value = '';
+      });
+
+      var pickerLoaded = false;
+      document.getElementById('lbPortfolio').addEventListener('click', function () {
+        if (!picker.hidden) { picker.hidden = true; return; }
+        picker.hidden = false;
+        if (pickerLoaded) return;
+        pickerLoaded = true;
+        picker.innerHTML = '<div style="grid-column:1/-1;color:#8a9099;font-size:12px;padding:6px">Loading your work…</div>';
+        fetch('data.json').then(function (r) { return r.json(); }).then(function (d) {
+          var arr = (d.work || d.items || []).filter(function (it) { return it.img && !it.video && !it.embed; });
+          var seen = {}, out = [];
+          arr.forEach(function (it) { var u = large(it.img); if (!seen[u]) { seen[u] = 1; out.push(u); } });
+          picker.innerHTML = '';
+          out.slice(0, 80).forEach(function (u) {
+            var im = document.createElement('img'); im.src = u; im.loading = 'lazy';
+            im.onclick = function () { showErr(''); addImage(u, true).then(function (ok) { if (ok) { renderThumbs(); redraw(); } else showErr('That image could not be added — try downloading it and using ⬆ Add images.'); }); };
+            picker.appendChild(im);
+          });
+          if (!out.length) picker.innerHTML = '<div style="grid-column:1/-1;color:#8a9099;font-size:12px;padding:6px">No images found.</div>';
+        }).catch(function () { picker.innerHTML = '<div style="grid-column:1/-1;color:#c66;font-size:12px;padding:6px">Couldn’t load portfolio.</div>'; });
+      });
+
+      document.getElementById('lbClear').addEventListener('click', function () { items = []; renderThumbs(); redraw(); showErr(''); });
+
+      var gap = document.getElementById('lbGap'), gapV = document.getElementById('lbGapV');
+      gap.addEventListener('input', function () { opts.gap = +gap.value; gapV.textContent = gap.value; redraw(); });
+      var zoom = document.getElementById('lbZoom'), zoomV = document.getElementById('lbZoomV');
+      zoom.addEventListener('input', function () { opts.zoom = zoom.value / 100; zoomV.textContent = zoom.value; redraw(); });
+      var tBtn = document.getElementById('lbText');
+      tBtn.addEventListener('click', function () { opts.text = !opts.text; tBtn.classList.toggle('on', opts.text); redraw(); });
+      var aBtn = document.getElementById('lbAccent');
+      aBtn.addEventListener('click', function () { opts.accent = !opts.accent; aBtn.classList.toggle('on', opts.accent); redraw(); });
+      var bg = document.getElementById('lbBg');
+      bg.addEventListener('input', function () { opts.bg = bg.value; redraw(); });
+
+      document.getElementById('lbSave').addEventListener('click', function () {
+        if (!items.length) { showErr('Add some images first.'); return; }
+        showErr('');
+        try {
+          canvas.toBlob(function (blob) {
+            if (!blob) { showErr('Export blocked — a portfolio image is cross-origin. Download those images and re-add via ⬆ Add images to export.'); return; }
+            var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = 'miki-butler-linkedin-banner.png'; document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+          }, 'image/png');
+        } catch (e) {
+          showErr('Export blocked — a portfolio image is cross-origin. Download those images and re-add via ⬆ Add images to export.');
+        }
+      });
+
+      redraw();
     })();
   </script>
 </body>
