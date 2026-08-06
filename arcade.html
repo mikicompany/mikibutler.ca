@@ -739,6 +739,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <label class="tool-slider">Slant <input type="range" id="lbSlant" min="0" max="160" step="2" value="0" /> <b id="lbSlantV">0</b></label>
             <button type="button" id="lbSlantDir" title="Flip slant direction">⟋</button>
             <label class="tool-slider" title="Zooms the selected image (or all if none selected)">Zoom <input type="range" id="lbZoom" min="100" max="260" step="1" value="100" /> <b id="lbZoomV">100</b></label>
+            <span class="tool-slider" style="gap:4px" title="Move the selected image (or drag it on the preview)">Move
+              <button type="button" id="lbPanL">◀</button>
+              <button type="button" id="lbPanU">▲</button>
+              <button type="button" id="lbPanD">▼</button>
+              <button type="button" id="lbPanR">▶</button>
+            </span>
             <button type="button" id="lbText" class="on">Name overlay</button>
             <button type="button" id="lbLogo" class="on">Logo</button>
             <button type="button" id="lbLogoPos" title="Move logo to another corner">◱ corner</button>
@@ -1622,18 +1628,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       // Clip to an arbitrary polygon (so tiles can be parallelograms for a
       // diagonal split), then cover-fit the image across the polygon's bounds.
-      function drawCoverPoly(img, poly, zoom) {
+      function drawCoverPoly(img, poly, zoom, ox, oy) {
         var iw = img.naturalWidth, ih = img.naturalHeight;
         if (!iw || !ih) return;
         var xs = poly.map(function (p) { return p[0]; });
         var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
         var w = maxX - minX, h = H;
         var scale = Math.max(w / iw, h / ih) * zoom, dw = iw * scale, dh = ih * scale;
+        // Pan offset, clamped to the cover overflow so no background shows.
+        var ovX = Math.max(0, (dw - w) / 2), ovY = Math.max(0, (dh - h) / 2);
+        var cx = Math.max(-ovX, Math.min(ovX, ox || 0));
+        var cy = Math.max(-ovY, Math.min(ovY, oy || 0));
         ctx.save();
         ctx.beginPath(); ctx.moveTo(poly[0][0], poly[0][1]);
         for (var i = 1; i < poly.length; i++) ctx.lineTo(poly[i][0], poly[i][1]);
         ctx.closePath(); ctx.clip();
-        ctx.drawImage(img, minX + (w - dw) / 2, (h - dh) / 2, dw, dh);
+        ctx.drawImage(img, minX + (w - dw) / 2 + cx, (h - dh) / 2 + cy, dw, dh);
         ctx.restore();
       }
       // Overlay elements are sized in "banner units" then scaled by the canvas
@@ -1707,7 +1717,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           if (i > 0)     { TL += gap / 2; BL += gap / 2; }
           if (i < n - 1) { TR -= gap / 2; BR -= gap / 2; }
           var poly = [[TL, 0], [TR, 0], [BR, H], [BL, H]];
-          drawCoverPoly(o.img, poly, o.zoom || 1);
+          drawCoverPoly(o.img, poly, o.zoom || 1, o.ox || 0, o.oy || 0);
           if (selected === i) {
             ctx.save();
             ctx.beginPath(); ctx.moveTo(poly[0][0], poly[0][1]);
@@ -1868,14 +1878,41 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         else items.forEach(function (o) { o.zoom = z; });                 // nothing selected → all
         redraw();
       });
-      // Tap the preview to select a tile (per-image zoom + replace target).
-      canvas.addEventListener('click', function (e) {
+      // Tap the preview to select a tile; drag the selected tile to reposition
+      // (pan) the image inside it — like a thumbnail crop editor.
+      function canvasPt(e) { var r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H }; }
+      var dragItem = -1, dragStart = null, dragging = false, dragMoved = false;
+      canvas.addEventListener('pointerdown', function (e) {
         if (!items.length) return;
-        var r = canvas.getBoundingClientRect();
-        var cx = (e.clientX - r.left) / r.width * W, cy = (e.clientY - r.top) / r.height * H;
-        var i = tileAt(cx, cy);
-        selectTile(i < 0 ? -1 : (selected === i ? -1 : i));
+        var pt = canvasPt(e); dragItem = tileAt(pt.x, pt.y); dragStart = pt; dragMoved = false;
+        dragging = (dragItem >= 0 && dragItem === selected);   // pan only the already-selected tile
+        if (dragging) canvas.setPointerCapture(e.pointerId);
       });
+      canvas.addEventListener('pointermove', function (e) {
+        if (dragItem < 0 || !dragStart) return;
+        var pt = canvasPt(e), dx = pt.x - dragStart.x, dy = pt.y - dragStart.y;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
+        if (dragging && selected >= 0 && items[selected]) {
+          var it = items[selected]; it.ox = (it.ox || 0) + dx; it.oy = (it.oy || 0) + dy;
+          dragStart = pt; redraw();
+        }
+      });
+      function endDrag() {
+        if (dragItem >= 0 && !dragMoved) selectTile(dragItem === selected ? -1 : dragItem);
+        dragItem = -1; dragStart = null; dragging = false; dragMoved = false;
+      }
+      canvas.addEventListener('pointerup', endDrag);
+      canvas.addEventListener('pointercancel', endDrag);
+      // Arrow nudge buttons move the selected image.
+      function nudge(dx, dy) {
+        if (selected < 0 || !items[selected]) { showErr('Tap an image first to move it.'); return; }
+        showErr(''); var it = items[selected]; it.ox = (it.ox || 0) + dx; it.oy = (it.oy || 0) + dy; redraw();
+      }
+      var STEP = function () { return Math.round(W * 0.03); };
+      document.getElementById('lbPanL').addEventListener('click', function () { nudge(-STEP(), 0); });
+      document.getElementById('lbPanR').addEventListener('click', function () { nudge(STEP(), 0); });
+      document.getElementById('lbPanU').addEventListener('click', function () { nudge(0, -STEP()); });
+      document.getElementById('lbPanD').addEventListener('click', function () { nudge(0, STEP()); });
       // Auto-arrange by value / saturation (repeat click flips ascending/descending).
       function sortItems(key) {
         sortState.dir = (sortState.key === key) ? -sortState.dir : 1;
@@ -1919,15 +1956,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       document.getElementById('lbSave').addEventListener('click', function () {
         if (!items.length) { showErr('Add some images first.'); return; }
         showErr('');
+        var savedSel = selected;
+        selected = -1; redraw();   // don't bake the selection highlight into the export
+        function restore() { selected = savedSel; redraw(); }
         try {
           canvas.toBlob(function (blob) {
-            if (!blob) { showErr('Export blocked — a portfolio image is cross-origin. Download those images and re-add via ⬆ Add images to export.'); return; }
+            if (!blob) { showErr('Export blocked — a portfolio image is cross-origin. Download those images and re-add via ⬆ Add images to export.'); restore(); return; }
             var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
             a.download = 'miki-butler-linkedin-banner.png'; document.body.appendChild(a); a.click(); a.remove();
             setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+            restore();
           }, 'image/png');
         } catch (e) {
           showErr('Export blocked — a portfolio image is cross-origin. Download those images and re-add via ⬆ Add images to export.');
+          restore();
         }
       });
 
