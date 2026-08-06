@@ -1724,7 +1724,7 @@ async function saveViaGitHub() {
 }
 
 // Generic committer for any repo file (reuses the saved GitHub token).
-async function ghCommit(path, contentStr, message) {
+async function ghCommit(path, contentStr, message, guardBaseline) {
   const token = localStorage.getItem('gh-token');
   if (!token) { openTokenModal(); return false; }
   const headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
@@ -1735,9 +1735,26 @@ async function ghCommit(path, contentStr, message) {
     openTokenModal('That token was rejected — generate a fresh one and paste it here.');
     return false;
   }
-  let sha;
-  if (cur.ok) sha = (await cur.json()).sha;
+  let sha, curData = null;
+  if (cur.ok) { curData = await cur.json(); sha = curData.sha; }
   else if (cur.status !== 404) throw new Error('read ' + path + ' failed (HTTP ' + cur.status + ')');
+  // Overwrite guard: if the remote JSON changed since this page loaded it, warn.
+  if (guardBaseline && curData && curData.content) {
+    let remoteSnap = null;
+    try {
+      const bytes = Uint8Array.from(atob(curData.content.replace(/\s/g, '')), c => c.charCodeAt(0));
+      remoteSnap = snapshot(JSON.parse(new TextDecoder().decode(bytes)));
+    } catch (e) { remoteSnap = null; }
+    if (remoteSnap && remoteSnap !== guardBaseline) {
+      const proceed = confirm(
+        '⚠️ ' + path + ' changed on GitHub since you opened this admin page ' +
+        '(edited elsewhere).\n\nSaving now will OVERWRITE those changes.\n\n' +
+        '• Click Cancel to stop — reload this page (Cmd/Ctrl-Shift-R) to get the latest first.\n' +
+        '• Click OK only if you deliberately want to overwrite.'
+      );
+      if (!proceed) { showToast('Save cancelled — reload to get the latest first.'); return false; }
+    }
+  }
   const res = await fetch(api, {
     method: 'PUT', headers,
     body: JSON.stringify({ message, content: b64utf8(contentStr), sha, branch: 'master' })
@@ -1753,6 +1770,7 @@ const PROT_ITER = 600000;
 let protectedItems = [];
 let protectedPw = '';
 let protectedDirty = false; // true once protected items are edited this session
+let protectedLoadedSnapshot = null; // protected-data.json blob as loaded (overwrite guard)
 
 const _pb64 = buf => { let s = ''; const b = new Uint8Array(buf); for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); };
 const _punb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -1782,10 +1800,13 @@ async function unlockProtected() {
   try {
     const r = await fetch('protected-data.json?t=' + Date.now());
     if (r.ok) {
-      const payload = await decryptProtected(await r.json(), pw); // throws on wrong pw
+      const blob = await r.json();
+      protectedLoadedSnapshot = snapshot(blob);           // baseline for the overwrite guard
+      const payload = await decryptProtected(blob, pw);   // throws on wrong pw
       protectedItems = payload.items || [];
     } else {
       protectedItems = []; // no file yet — first-time setup with this password
+      protectedLoadedSnapshot = null;
     }
     protectedPw = pw;
     document.getElementById('prot-locked').style.display = 'none';
@@ -1928,8 +1949,9 @@ async function saveProtected() {
   }
   try {
     showToast('Encrypting & committing protected-data.json…');
-    if (await ghCommit('protected-data.json', blobStr + '\n', 'Update protected-data.json from admin')) {
+    if (await ghCommit('protected-data.json', blobStr + '\n', 'Update protected-data.json from admin', protectedLoadedSnapshot)) {
       protectedPw = pw; protectedDirty = false; document.getElementById('prot-newpw').value = '';
+      try { protectedLoadedSnapshot = snapshot(JSON.parse(blobStr)); } catch (e) {} // now in sync
       showToast(newPw ? 'Saved with the NEW password! Redeploys in ~1 min.' : 'Protected works committed! Redeploys in ~1 min.');
     }
   } catch (e) { showToast('Save failed: ' + e.message); }
