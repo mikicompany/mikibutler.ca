@@ -708,6 +708,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <button type="button" id="lbPortfolio">＋ From my portfolio</button>
             <button type="button" id="lbClear">Clear</button>
           </div>
+          <div class="tool-controls" style="margin-bottom:2px">
+            <label class="tool-slider">Size
+              <select id="lbSize" style="background:#111418;border:1px solid #2a2f37;color:#e8eaed;border-radius:8px;padding:7px 9px;font-size:12px;font-family:inherit"></select>
+            </label>
+            <span id="lbSizeDim" style="font-size:11px;color:#8a9099"></span>
+          </div>
           <div class="lb-picker" id="lbPicker" hidden></div>
           <div class="tool-stage">
             <canvas id="lbCanvas" width="1584" height="396" style="width:100%;height:auto;border-radius:6px;display:block;cursor:pointer"></canvas>
@@ -1591,6 +1597,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         return c || '#a0ff00';
       }
 
+      // Common social sizes: [label, width, height]
+      var SIZES = [
+        ['LinkedIn Banner',     1584, 396],
+        ['ArtStation Cover',    2560, 1440],
+        ['Instagram Post',      1080, 1080],
+        ['Instagram Portrait',  1080, 1350],
+        ['Story / Reel',        1080, 1920],
+        ['X / Twitter Header',  1500, 500],
+        ['Facebook Cover',      1640, 856],
+        ['YouTube Banner',      2560, 1440]
+      ];
+      // Fit the canvas element inside the stage while preserving aspect.
+      function fitCanvasDisplay() {
+        var stage = canvas.parentElement, maxW = (stage && stage.clientWidth) || 700;
+        var maxH = Math.max(160, window.innerHeight * 0.66), ar = W / H;
+        var dw = maxW, dh = dw / ar;
+        if (dh > maxH) { dh = maxH; dw = dh * ar; }
+        canvas.style.width = Math.round(dw) + 'px';
+        canvas.style.height = Math.round(dh) + 'px';
+      }
+      function setSize(w, h) { W = w; H = h; canvas.width = w; canvas.height = h; fitCanvasDisplay(); redraw(); }
+      window.addEventListener('resize', fitCanvasDisplay);
+
       // Clip to an arbitrary polygon (so tiles can be parallelograms for a
       // diagonal split), then cover-fit the image across the polygon's bounds.
       function drawCoverPoly(img, poly, zoom) {
@@ -1607,9 +1636,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         ctx.drawImage(img, minX + (w - dw) / 2, (h - dh) / 2, dw, dh);
         ctx.restore();
       }
+      // Overlay elements are sized in "banner units" then scaled by the canvas
+      // diagonal relative to the base banner's — balances text/logo size across
+      // wide banners, squares and tall stories (height-only scaling overshoots).
+      function uscale() { return Math.sqrt(W * W + H * H) / 1632.75; }
       function drawLogo() {
         if (!logoReady) return;
-        var d = 108, m = 30;
+        var s = uscale(), d = 108 * s, m = 30 * s;
         var cx = (opts.logoPos === 'br' || opts.logoPos === 'tr') ? W - m - d / 2 : m + d / 2;
         var cy = (opts.logoPos === 'br' || opts.logoPos === 'bl') ? H - m - d / 2 : m + d / 2;
         ctx.save();
@@ -1617,23 +1650,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         ctx.drawImage(logoImg, cx - d / 2, cy - d / 2, d, d);
         ctx.restore();
         ctx.beginPath(); ctx.arc(cx, cy, d / 2, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 2 * s; ctx.stroke();
       }
       function drawText() {
-        var hasTitle = !!opts.title;
-        var g = ctx.createLinearGradient(0, H, 0, H - 210);
+        var s = uscale(), hasTitle = !!opts.title;
+        var scrimH = 210 * s, scrimW = Math.min(W, 980 * s);
+        var g = ctx.createLinearGradient(0, H, 0, H - scrimH);
         g.addColorStop(0, 'rgba(0,0,0,.75)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = g; ctx.fillRect(0, H - 210, 980, 210);
+        ctx.fillStyle = g; ctx.fillRect(0, H - scrimH, scrimW, scrimH);
         ctx.textBaseline = 'alphabetic';
         if (opts.name) {
           ctx.fillStyle = '#ffffff';
-          ctx.font = '700 66px Arial, Helvetica, sans-serif';
-          ctx.fillText(opts.name, 54, hasTitle ? H - 74 : H - 40);
+          ctx.font = '700 ' + (66 * s) + 'px Arial, Helvetica, sans-serif';
+          ctx.fillText(opts.name, 54 * s, hasTitle ? H - 74 * s : H - 40 * s);
         }
         if (hasTitle) {
           ctx.fillStyle = '#d7dbe1';
-          ctx.font = '500 30px Arial, Helvetica, sans-serif';
-          ctx.fillText(opts.title, 56, H - 34);
+          ctx.font = '500 ' + (30 * s) + 'px Arial, Helvetica, sans-serif';
+          ctx.fillText(opts.title, 56 * s, H - 34 * s);
         }
       }
       // Nominal tile boundaries (x at mid-height) for the current layout.
@@ -1679,11 +1713,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             ctx.beginPath(); ctx.moveTo(poly[0][0], poly[0][1]);
             for (var k = 1; k < poly.length; k++) ctx.lineTo(poly[k][0], poly[k][1]);
             ctx.closePath();
-            ctx.strokeStyle = accentColor(); ctx.lineWidth = 6; ctx.stroke();
+            ctx.strokeStyle = accentColor(); ctx.lineWidth = 6 * uscale(); ctx.stroke();
             ctx.restore();
           }
         });
-        if (opts.accent) { ctx.fillStyle = accentColor(); ctx.fillRect(0, H - 7, W, 7); }
+        if (opts.accent) { var ab = 7 * uscale(); ctx.fillStyle = accentColor(); ctx.fillRect(0, H - ab, W, ab); }
         if (opts.logo) drawLogo();
         if (opts.text) drawText();
       }
@@ -1742,22 +1776,35 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           return { value: L / n, sat: S / n };
         } catch (e) { return { value: null, sat: null }; }
       }
+      // Route cross-origin (portfolio) images through a CORS-enabled image proxy
+      // so the exported canvas isn't tainted. Uploads (data URLs) load directly.
+      function proxied(u) { return 'https://wsrv.nl/?url=' + encodeURIComponent(u); }
       function addImage(url, cross, replaceIdx) {
         return new Promise(function (res) {
-          function load(useCross) {
-            var img = new Image();
-            if (useCross) img.crossOrigin = 'anonymous';
-            img.onload = function () {
-              var a = analyze(img);
-              var it = { img: img, url: url, zoom: 1, value: a.value, sat: a.sat };
-              if (replaceIdx != null && replaceIdx >= 0 && replaceIdx < items.length) items[replaceIdx] = it;
-              else items.push(it);
-              res(true);
-            };
-            img.onerror = function () { useCross ? load(false) : res(false); };
-            img.src = url;
+          function finish(img) {
+            var a = analyze(img);
+            var it = { img: img, url: url, zoom: 1, value: a.value, sat: a.sat };
+            if (replaceIdx != null && replaceIdx >= 0 && replaceIdx < items.length) items[replaceIdx] = it;
+            else items.push(it);
+            res(true);
           }
-          load(!!cross);
+          if (!cross) { // upload / same-origin
+            var im0 = new Image();
+            im0.onload = function () { finish(im0); };
+            im0.onerror = function () { res(false); };
+            im0.src = url;
+            return;
+          }
+          // 1) CORS proxy (keeps canvas exportable) → 2) direct (may taint, still previews)
+          var im = new Image(); im.crossOrigin = 'anonymous';
+          im.onload = function () { finish(im); };
+          im.onerror = function () {
+            var im2 = new Image();
+            im2.onload = function () { finish(im2); };
+            im2.onerror = function () { res(false); };
+            im2.src = url;
+          };
+          im.src = proxied(url);
         });
       }
       function large(u) { return String(u).replace(/\/(4k|1920x1080|medium|small)\//, '/large/'); }
@@ -1884,7 +1931,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
       });
 
+      // Size presets.
+      var sizeSel = document.getElementById('lbSize'), sizeDim = document.getElementById('lbSizeDim');
+      SIZES.forEach(function (sz, i) { var o = document.createElement('option'); o.value = i; o.textContent = sz[0]; sizeSel.appendChild(o); });
+      function applySize(i) { var sz = SIZES[i]; sizeDim.textContent = sz[1] + ' × ' + sz[2]; setSize(sz[1], sz[2]); }
+      sizeSel.addEventListener('change', function () { applySize(+sizeSel.value); });
+      sizeDim.textContent = W + ' × ' + H;
+
       updateHint();
+      fitCanvasDisplay();
       redraw();
     })();
   </script>
