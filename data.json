@@ -479,14 +479,6 @@
       "home": false
     },
     {
-      "title": "The Queen's Throne — Detail Mats",
-      "size": "small",
-      "img": "https://cdna.artstation.com/p/assets/images/images/040/934/672/4k/miki-butler-miki-butler-queensthrone-detail-mats.jpg?1630313416",
-      "category": "personal",
-      "group": "The Queen's Throne",
-      "home": false
-    },
-    {
       "title": "The Queen's Throne — Video",
       "size": "wide",
       "img": "https://cdnb.artstation.com/p/assets/images/images/041/001/025/large/miki-butler-miki-butler-thequeensthrone-main.jpg?1630484617",
@@ -519,6 +511,14 @@
       "size": "wide",
       "img": "https://cdna.artstation.com/p/assets/images/images/041/001/012/large/miki-butler-miki-butler-thequeensthrone-front02.jpg?1630484581",
       "mp4": "https://cdn.artstation.com/p/video_sources/000/466/151/engine-2021.mp4",
+      "category": "personal",
+      "group": "The Queen's Throne",
+      "home": false
+    },
+    {
+      "title": "The Queen's Throne — Detail Mats",
+      "size": "small",
+      "img": "https://cdna.artstation.com/p/assets/images/images/040/934/672/4k/miki-butler-miki-butler-queensthrone-detail-mats.jpg?1630313416",
       "category": "personal",
       "group": "The Queen's Throne",
       "home": false
