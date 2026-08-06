@@ -760,6 +760,36 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
           <p class="cmp-err" id="lbErr"></p>
         </div>
+
+        <!-- Glitch Studio -->
+        <div class="tool-block">
+          <div class="tool-title">Glitch Studio 📺</div>
+          <p class="tool-desc">Datamosh any image — RGB split, slice tearing, scanlines &amp; noise, all live. Dial the amount, zoom &amp; speed, then export it as a video.</p>
+          <div class="tool-in">
+            <label>⬆ Upload<input type="file" accept="image/*" id="glFile" hidden /></label>
+            <button type="button" id="glPortfolio">＋ From my portfolio</button>
+          </div>
+          <div class="lb-picker" id="glPicker" hidden></div>
+          <div class="tool-stage">
+            <canvas id="glCanvas" width="16" height="9" style="width:100%;height:auto;border-radius:6px;display:none"></canvas>
+            <div class="tool-empty" id="glEmpty">Load an image to start glitching</div>
+          </div>
+          <div class="tool-controls">
+            <label class="tool-slider">Amount <input type="range" id="glAmt" min="0" max="100" step="1" value="45" /> <b id="glAmtV">45</b></label>
+            <label class="tool-slider">Zoom <input type="range" id="glZoom" min="100" max="260" step="1" value="100" /> <b id="glZoomV">100</b></label>
+            <label class="tool-slider">Speed <input type="range" id="glSpeed" min="1" max="10" step="1" value="5" /> <b id="glSpeedV">5</b></label>
+          </div>
+          <div class="tool-controls">
+            <button type="button" id="glRGB" class="on">RGB split</button>
+            <button type="button" id="glScan" class="on">Scanlines</button>
+            <button type="button" id="glNoise" class="on">Noise</button>
+            <button type="button" id="glShake">Shake</button>
+            <label class="tool-slider">Clip <input type="range" id="glDur" min="2" max="10" step="1" value="5" /> <b id="glDurV">5</b>s</label>
+            <button type="button" id="glExport">⬇ Save video</button>
+          </div>
+          <p class="cmp-err" id="glErr"></p>
+          <p class="cmp-err" id="glStatus" style="color:#8a9099"></p>
+        </div>
       </section>
 
       <div class="arcade-tools">
@@ -2051,6 +2081,186 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       updateHint();
       fitCanvasDisplay();
       redraw();
+    })();
+  </script>
+
+  <script>
+    // Glitch Studio — live datamosh (RGB split, slice tearing, scanlines, noise)
+    // on any image, with amount/zoom/speed controls and video export.
+    (function () {
+      var canvas = document.getElementById('glCanvas');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var empty = document.getElementById('glEmpty');
+      var picker = document.getElementById('glPicker');
+      var err = document.getElementById('glErr');
+      var statusEl = document.getElementById('glStatus');
+      var W = 16, H = 9, img = null, chR = null, chG = null, chB = null, scanPat = null;
+      var opts = { amt: 45, zoom: 1, speed: 5, rgb: true, scan: true, noise: true, shake: false };
+      var raf = 0, frame = 0, glitch = null;
+      function setErr(m) { err.textContent = m || ''; }
+      function setStatus(m) { statusEl.textContent = m || ''; }
+      function proxied(u) { return /^data:/.test(u) ? u : 'https://wsrv.nl/?url=' + encodeURIComponent(u); }
+
+      function makeChannels(im) {
+        var cap = 1280, s = Math.min(1, cap / im.naturalWidth);
+        W = Math.round(im.naturalWidth * s / 2) * 2;
+        H = Math.round(im.naturalHeight * s / 2) * 2;
+        canvas.width = W; canvas.height = H;
+        // scanline pattern (cheap per-frame fill)
+        var sc = document.createElement('canvas'); sc.width = 1; sc.height = 3;
+        sc.getContext('2d').fillStyle = 'rgba(0,0,0,0.22)'; sc.getContext('2d').fillRect(0, 2, 1, 1);
+        scanPat = ctx.createPattern(sc, 'repeat');
+        // per-channel copies for a real RGB split (needs a CORS-clean image)
+        chR = chG = chB = null;
+        try {
+          var base = document.createElement('canvas'); base.width = W; base.height = H;
+          base.getContext('2d').drawImage(im, 0, 0, W, H);
+          var d = base.getContext('2d').getImageData(0, 0, W, H);
+          function chan(kR, kG, kB) {
+            var c = document.createElement('canvas'); c.width = W; c.height = H;
+            var id = new ImageData(new Uint8ClampedArray(d.data), W, H), a = id.data;
+            for (var i = 0; i < a.length; i += 4) { if (!kR) a[i] = 0; if (!kG) a[i + 1] = 0; if (!kB) a[i + 2] = 0; }
+            c.getContext('2d').putImageData(id, 0, 0); return c;
+          }
+          chR = chan(1, 0, 0); chG = chan(0, 1, 0); chB = chan(0, 0, 1);
+        } catch (e) { chR = chG = chB = null; }  // tainted → plain draw, no split
+      }
+
+      function regen() {
+        var amt = opts.amt / 100;
+        var n = Math.round(amt * 12), slices = [];
+        for (var i = 0; i < n; i++) slices.push({
+          y: Math.random() * H, h: 2 + Math.random() * (H * 0.12 * amt + 4),
+          dx: (Math.random() * 2 - 1) * amt * W * 0.16
+        });
+        glitch = {
+          slices: slices, rgbOff: amt * Math.min(W, H) * 0.03 * (0.4 + Math.random()),
+          shakeX: opts.shake ? (Math.random() * 2 - 1) * amt * 22 : 0,
+          shakeY: opts.shake ? (Math.random() * 2 - 1) * amt * 12 : 0
+        };
+      }
+
+      function drawFrame() {
+        if (!img) return;
+        var amt = opts.amt / 100;
+        var zw = W * opts.zoom, zh = H * opts.zoom, zx = (W - zw) / 2, zy = (H - zh) / 2;
+        var sx = glitch ? glitch.shakeX : 0, sy = glitch ? glitch.shakeY : 0;
+        var off = glitch ? glitch.rgbOff : 0;
+        ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+        if (opts.rgb && chR) {
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.drawImage(chR, zx + sx + off, zy + sy, zw, zh);
+          ctx.drawImage(chG, zx + sx, zy + sy, zw, zh);
+          ctx.drawImage(chB, zx + sx - off, zy + sy, zw, zh);
+          ctx.globalCompositeOperation = 'source-over';
+        } else {
+          ctx.drawImage(img, zx + sx, zy + sy, zw, zh);
+        }
+        if (glitch) glitch.slices.forEach(function (sl) {
+          var y = sl.y | 0, h = Math.max(1, sl.h | 0);
+          if (y + h > H) h = H - y;
+          if (h > 0) { try { ctx.drawImage(canvas, 0, y, W, h, sl.dx, y, W, h); } catch (e) {} }
+        });
+        if (opts.scan && scanPat) { ctx.fillStyle = scanPat; ctx.fillRect(0, 0, W, H); }
+        if (opts.noise) {
+          var nn = Math.round(amt * W * 0.25);
+          for (var i = 0; i < nn; i++) {
+            ctx.fillStyle = Math.random() < 0.5 ? 'rgba(255,255,255,' + (Math.random() * 0.5) + ')' : 'rgba(0,0,0,' + (Math.random() * 0.5) + ')';
+            ctx.fillRect(Math.random() * W | 0, Math.random() * H | 0, 1 + Math.random() * 3, 1);
+          }
+        }
+      }
+
+      function loop() {
+        frame++;
+        var every = Math.max(1, 11 - opts.speed);
+        if (!glitch || frame % every === 0) regen();
+        drawFrame();
+        raf = requestAnimationFrame(loop);
+      }
+
+      function loadImg(src, cross) {
+        function go(useCross) {
+          var im = new Image();
+          if (useCross) im.crossOrigin = 'anonymous';
+          im.onload = function () {
+            img = im; makeChannels(im);
+            empty.style.display = 'none'; canvas.style.display = 'block'; setErr('');
+            if (!raf) loop();
+          };
+          im.onerror = function () { useCross ? go(false) : setErr('Could not load that image.'); };
+          im.src = src;
+        }
+        go(!!cross);
+      }
+
+      document.getElementById('glFile').addEventListener('change', function (e) {
+        var f = e.target.files && e.target.files[0]; if (!f) return;
+        var fr = new FileReader(); fr.onload = function () { loadImg(fr.result, false); }; fr.readAsDataURL(f);
+        e.target.value = '';
+      });
+      var glPickerLoaded = false;
+      document.getElementById('glPortfolio').addEventListener('click', function () {
+        if (!picker.hidden) { picker.hidden = true; return; }
+        picker.hidden = false; if (glPickerLoaded) return; glPickerLoaded = true;
+        picker.innerHTML = '<div style="grid-column:1/-1;color:#8a9099;font-size:12px;padding:6px">Loading your work…</div>';
+        fetch('data.json').then(function (r) { return r.json(); }).then(function (d) {
+          var arr = (d.work || []).filter(function (it) { return it.img && !it.video && !it.embed; });
+          var seen = {}, out = [];
+          arr.forEach(function (it) { var u = it.img.replace(/\/(4k|1920x1080|medium|small)\//, '/large/'); if (!seen[u]) { seen[u] = 1; out.push(u); } });
+          picker.innerHTML = '';
+          out.forEach(function (u) {
+            var im = document.createElement('img'); im.src = u; im.loading = 'lazy';
+            im.onclick = function () { setErr(''); loadImg(proxied(u), true); picker.hidden = true; };
+            picker.appendChild(im);
+          });
+        }).catch(function () { picker.innerHTML = '<div style="grid-column:1/-1;color:#c66;font-size:12px;padding:6px">Couldn’t load portfolio.</div>'; });
+      });
+
+      function bindSlider(id, key, div, fn) {
+        var el = document.getElementById(id), out = document.getElementById(div);
+        el.addEventListener('input', function () { opts[key] = fn ? fn(+el.value) : +el.value; out.textContent = el.value; });
+      }
+      bindSlider('glAmt', 'amt', 'glAmtV');
+      bindSlider('glZoom', 'zoom', 'glZoomV', function (v) { return v / 100; });
+      bindSlider('glSpeed', 'speed', 'glSpeedV');
+      function bindToggle(id, key) { var b = document.getElementById(id); b.addEventListener('click', function () { opts[key] = !opts[key]; b.classList.toggle('on', opts[key]); }); }
+      bindToggle('glRGB', 'rgb'); bindToggle('glScan', 'scan'); bindToggle('glNoise', 'noise'); bindToggle('glShake', 'shake');
+      var glDur = document.getElementById('glDur'), glDurV = document.getElementById('glDurV');
+      glDur.addEventListener('input', function () { glDurV.textContent = glDur.value; });
+
+      function pickMime() {
+        var c = ['video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+        for (var i = 0; i < c.length; i++) if (window.MediaRecorder && MediaRecorder.isTypeSupported(c[i])) return c[i];
+        return '';
+      }
+      document.getElementById('glExport').addEventListener('click', function () {
+        if (!img) { setErr('Load an image first.'); return; }
+        if (!window.MediaRecorder) { setErr('Video export isn’t supported in this browser.'); return; }
+        var mime = pickMime(); if (!mime) { setErr('This browser can’t record video.'); return; }
+        setErr('');
+        var btn = document.getElementById('glExport'); btn.disabled = true; btn.classList.add('rec');
+        var dur = +glDur.value;
+        var stream = canvas.captureStream(30), rec, chunks = [];
+        try { rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 9000000 }); }
+        catch (e) { setErr('Couldn’t start the recorder.'); btn.disabled = false; btn.classList.remove('rec'); return; }
+        rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+        rec.onstop = function () {
+          var isMp4 = mime.indexOf('mp4') !== -1;
+          var blob = new Blob(chunks, { type: isMp4 ? 'video/mp4' : 'video/webm' });
+          var url = URL.createObjectURL(blob), a = document.createElement('a');
+          a.href = url; a.download = 'glitch.' + (isMp4 ? 'mp4' : 'webm');
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+          btn.disabled = false; btn.classList.remove('rec');
+          setStatus(isMp4 ? 'Saved glitch.mp4 ✓' : 'Saved glitch.webm ✓ (browser can’t do MP4)');
+          setTimeout(function () { setStatus(''); }, 6000);
+        };
+        rec.start();
+        setStatus('● Recording ' + dur + 's — keep this tab in front…');
+        setTimeout(function () { rec.stop(); }, dur * 1000);
+      });
     })();
   </script>
 </body>
