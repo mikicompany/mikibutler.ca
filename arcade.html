@@ -699,6 +699,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <canvas id="drawCanvas" width="840" height="520"></canvas>
           </div>
           <div class="tool-controls">
+            <label class="tool-slider">Palette
+              <select id="drawPalette" style="background:#111418;border:1px solid #2a2f37;color:#e8eaed;border-radius:8px;padding:6px 8px;font-size:12px;font-family:inherit"></select>
+            </label>
             <span class="draw-pal" id="drawPal"></span>
             <input type="color" id="drawColor" value="#111111" title="Custom colour" />
             <label class="tool-slider">Size <input type="range" id="drawSize" min="1" max="48" step="1" value="6" /> <b id="drawSizeVal">6</b></label>
@@ -1650,17 +1653,32 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       layers.push(newLayer()); active = 0; composite(); syncActive(); renderLayers();
 
       // ── Palette + tools ──
-      var PAL = ['#111111', '#ffffff', '#e23b3b', '#f5a623', '#ffd84a', '#2ecc71', '#3aa0ff', '#a0ff00', '#b967ff', '#8a5a2b'];
+      var PALETTES = {
+        'Classic':   ['#111111', '#ffffff', '#e23b3b', '#f5a623', '#ffd84a', '#2ecc71', '#3aa0ff', '#a0ff00', '#b967ff', '#8a5a2b'],
+        'Game Boy':  ['#0f380f', '#306230', '#8bac0f', '#9bbc0f', '#e0f8d0', '#ffffff'],
+        'PICO-8':    ['#000000', '#1d2b53', '#7e2553', '#008751', '#ab5236', '#5f574f', '#c2c3c7', '#fff1e8', '#ff004d', '#ffa300', '#ffec27', '#00e436', '#29adff', '#83769c', '#ff77a8', '#ffccaa'],
+        'Pastel':    ['#ffd1dc', '#ffe5b4', '#fff5ba', '#c1f0c1', '#b5ead7', '#c7ceea', '#e0bbe4', '#ffdfd3', '#ffffff', '#5a5a5a'],
+        'Neon':      ['#ff00a0', '#00fff7', '#a0ff00', '#ffe600', '#ff3b3b', '#7b00ff', '#00ff85', '#ff8a00', '#ffffff', '#0a0a0a'],
+        'Earth':     ['#2e2a24', '#3b2f2f', '#6b4f3a', '#8a6d3b', '#a9925a', '#c9b18b', '#5a6650', '#7c8a5a', '#b0a171', '#d8c9a3'],
+        'Grayscale': ['#000000', '#2b2b2b', '#555555', '#7f7f7f', '#a9a9a9', '#d4d4d4', '#ffffff']
+      };
       var palEl = document.getElementById('drawPal');
+      var palSel = document.getElementById('drawPalette');
       var colorEl = document.getElementById('drawColor');
       var eraseBtn = document.getElementById('drawErase');
       function selectSwatch(node) { var k = palEl.children; for (var i = 0; i < k.length; i++) k[i].classList.toggle('sel', k[i] === node); }
-      PAL.forEach(function (c, i) {
-        var sw = document.createElement('button'); sw.type = 'button'; sw.className = 'draw-sw' + (i === 0 ? ' sel' : '');
-        sw.style.background = c; sw.title = c;
-        sw.addEventListener('click', function () { color = c; erasing = false; eraseBtn.classList.remove('on'); colorEl.value = c; selectSwatch(sw); });
-        palEl.appendChild(sw);
-      });
+      function buildPalette(name) {
+        palEl.innerHTML = '';
+        (PALETTES[name] || []).forEach(function (c, i) {
+          var sw = document.createElement('button'); sw.type = 'button'; sw.className = 'draw-sw' + (i === 0 ? ' sel' : '');
+          sw.style.background = c; sw.title = c;
+          sw.addEventListener('click', function () { color = c; erasing = false; eraseBtn.classList.remove('on'); colorEl.value = c; selectSwatch(sw); });
+          palEl.appendChild(sw);
+        });
+      }
+      Object.keys(PALETTES).forEach(function (n) { var o = document.createElement('option'); o.value = n; o.textContent = n; palSel.appendChild(o); });
+      palSel.addEventListener('change', function () { buildPalette(palSel.value); });
+      buildPalette('Classic');
       colorEl.addEventListener('input', function () { color = this.value; erasing = false; eraseBtn.classList.remove('on'); selectSwatch(null); });
       var sz = document.getElementById('drawSize'), szv = document.getElementById('drawSizeVal');
       sz.addEventListener('input', function () { size = +sz.value; szv.textContent = size; });
