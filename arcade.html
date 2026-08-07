@@ -699,6 +699,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <canvas id="drawCanvas" width="840" height="520"></canvas>
           </div>
           <div class="tool-controls">
+            <label class="tool-slider">Canvas
+              <select id="drawCanvasSize" style="background:#111418;border:1px solid #2a2f37;color:#e8eaed;border-radius:8px;padding:6px 8px;font-size:12px;font-family:inherit"></select>
+            </label>
             <label class="tool-slider">Palette
               <select id="drawPalette" style="background:#111418;border:1px solid #2a2f37;color:#e8eaed;border-radius:8px;padding:6px 8px;font-size:12px;font-family:inherit"></select>
               <span id="drawPalDay" style="font-size:10px;color:var(--accent)" title="A new palette is picked automatically each day"></span>
@@ -707,6 +710,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <input type="color" id="drawColor" value="#111111" title="Custom colour" />
             <label class="tool-slider">Size <input type="range" id="drawSize" min="1" max="48" step="1" value="6" /> <b id="drawSizeVal">6</b></label>
             <button type="button" id="drawErase">Eraser</button>
+            <button type="button" id="drawFill">🪣 Fill</button>
             <button type="button" id="drawPixel">Pixel</button>
             <button type="button" id="drawUndo">↶ Undo</button>
             <button type="button" id="drawClear">Clear layer</button>
@@ -1576,7 +1580,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var cv = document.getElementById('drawCanvas'); if (!cv) return;
       var view = cv.getContext('2d', { willReadFrequently: true });
       var Wd = cv.width, Hd = cv.height;
-      var color = '#111111', size = 6, erasing = false, pixel = false;
+      var color = '#111111', size = 6, erasing = false, pixel = false, filling = false;
       var drawing = false, lastX = 0, lastY = 0;
 
       var BLENDS = ['source-over', 'multiply', 'screen', 'overlay', 'darken', 'lighten',
@@ -1617,8 +1621,36 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         g.globalCompositeOperation = 'source-over';
         composite();
       }
+      function hexRgb(h) { h = h.replace('#', ''); if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join(''); var n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+      // Flood-fill the contiguous region under (sx,sy) on the active layer.
+      function floodFill(sx, sy) {
+        var g = actx(); sx = Math.floor(sx); sy = Math.floor(sy);
+        if (sx < 0 || sy < 0 || sx >= Wd || sy >= Hd) return;
+        var imgD = g.getImageData(0, 0, Wd, Hd), data = imgD.data;
+        var si = (sy * Wd + sx) * 4;
+        var tr = data[si], tg = data[si + 1], tb = data[si + 2], ta = data[si + 3];
+        var fc = hexRgb(color), fa = 255, tol = 32;
+        if (Math.abs(tr - fc[0]) < 1 && Math.abs(tg - fc[1]) < 1 && Math.abs(tb - fc[2]) < 1 && ta === fa) return;
+        function match(i) { return Math.abs(data[i] - tr) <= tol && Math.abs(data[i + 1] - tg) <= tol && Math.abs(data[i + 2] - tb) <= tol && Math.abs(data[i + 3] - ta) <= tol; }
+        var stack = [[sx, sy]];
+        while (stack.length) {
+          var pt = stack.pop(), x = pt[0], y = pt[1], i0 = (y * Wd + x) * 4;
+          if (!match(i0)) continue;
+          var xl = x; while (xl > 0 && match((y * Wd + (xl - 1)) * 4)) xl--;
+          var xr = x; while (xr < Wd - 1 && match((y * Wd + (xr + 1)) * 4)) xr++;
+          for (var xx = xl; xx <= xr; xx++) {
+            var j = (y * Wd + xx) * 4;
+            data[j] = fc[0]; data[j + 1] = fc[1]; data[j + 2] = fc[2]; data[j + 3] = fa;
+            if (y > 0 && match(((y - 1) * Wd + xx) * 4)) stack.push([xx, y - 1]);
+            if (y < Hd - 1 && match(((y + 1) * Wd + xx) * 4)) stack.push([xx, y + 1]);
+          }
+        }
+        g.putImageData(imgD, 0, 0); composite();
+      }
       cv.addEventListener('pointerdown', function (e) {
-        drawing = true; snapshot(); var p = pos(e); lastX = p.x; lastY = p.y; paint(p.x, p.y, p.x, p.y);
+        var p = pos(e); snapshot();
+        if (filling) { floodFill(p.x, p.y); return; }   // bucket: one click, no drag
+        drawing = true; lastX = p.x; lastY = p.y; paint(p.x, p.y, p.x, p.y);
         try { cv.setPointerCapture(e.pointerId); } catch (_) {}
       });
       cv.addEventListener('pointermove', function (e) { if (!drawing) return; var p = pos(e); paint(lastX, lastY, p.x, p.y); lastX = p.x; lastY = p.y; });
@@ -1701,8 +1733,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       colorEl.addEventListener('input', function () { color = this.value; erasing = false; eraseBtn.classList.remove('on'); selectSwatch(null); });
       var sz = document.getElementById('drawSize'), szv = document.getElementById('drawSizeVal');
       sz.addEventListener('input', function () { size = +sz.value; szv.textContent = size; });
-      eraseBtn.addEventListener('click', function () { erasing = !erasing; this.classList.toggle('on', erasing); });
+      eraseBtn.addEventListener('click', function () { erasing = !erasing; this.classList.toggle('on', erasing); if (erasing) { filling = false; fillBtn.classList.remove('on'); } });
+      var fillBtn = document.getElementById('drawFill');
+      fillBtn.addEventListener('click', function () { filling = !filling; this.classList.toggle('on', filling); if (filling) { erasing = false; eraseBtn.classList.remove('on'); } });
       document.getElementById('drawPixel').addEventListener('click', function () { pixel = !pixel; this.classList.toggle('on', pixel); });
+
+      // ── Canvas size ──
+      var CANVAS_SIZES = [
+        ['Default (840×520)', 840, 520], ['Square (800×800)', 800, 800],
+        ['Landscape (960×540)', 960, 540], ['Portrait (600×900)', 600, 900],
+        ['Wide (1200×400)', 1200, 400], ['Small (500×500)', 500, 500]
+      ];
+      var csSel = document.getElementById('drawCanvasSize');
+      CANVAS_SIZES.forEach(function (s, i) { var o = document.createElement('option'); o.value = i; o.textContent = s[0]; csSel.appendChild(o); });
+      csSel.addEventListener('change', function () {
+        var s = CANVAS_SIZES[+csSel.value], w = s[1], h = s[2];
+        Wd = w; Hd = h; cv.width = w; cv.height = h;
+        layers.forEach(function (L) {   // re-home each layer's pixels onto a new sized canvas
+          var nc = document.createElement('canvas'); nc.width = w; nc.height = h;
+          var g = nc.getContext('2d', { willReadFrequently: true });
+          g.drawImage(L.canvas, 0, 0);
+          L.canvas = nc; L.ctx = g;
+        });
+        undo.length = 0;   // old snapshots are the wrong size now
+        composite();
+      });
       document.getElementById('drawUndo').addEventListener('click', function () { if (undo.length) { var u = undo.pop(); if (layers[u.layer]) { layers[u.layer].ctx.putImageData(u.data, 0, 0); composite(); } } });
       document.getElementById('drawClear').addEventListener('click', function () { snapshot(); actx().clearRect(0, 0, Wd, Hd); composite(); });
       document.getElementById('drawSave').addEventListener('click', function () {
