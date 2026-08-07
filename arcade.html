@@ -711,6 +711,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <label class="tool-slider">Size <input type="range" id="drawSize" min="1" max="48" step="1" value="6" /> <b id="drawSizeVal">6</b></label>
             <button type="button" id="drawErase">Eraser</button>
             <button type="button" id="drawFill">🪣 Fill</button>
+            <button type="button" id="drawPick">💧 Pick</button>
             <button type="button" id="drawPixel">Pixel</button>
             <button type="button" id="drawUndo">↶ Undo</button>
             <button type="button" id="drawClear">Clear layer</button>
@@ -1580,7 +1581,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var cv = document.getElementById('drawCanvas'); if (!cv) return;
       var view = cv.getContext('2d', { willReadFrequently: true });
       var Wd = cv.width, Hd = cv.height;
-      var color = '#111111', size = 6, erasing = false, pixel = false, filling = false;
+      var color = '#111111', size = 6, erasing = false, pixel = false, filling = false, picking = false;
       var drawing = false, lastX = 0, lastY = 0;
 
       var BLENDS = ['source-over', 'multiply', 'screen', 'overlay', 'darken', 'lighten',
@@ -1647,8 +1648,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
         g.putImageData(imgD, 0, 0); composite();
       }
+      function pickColor(x, y) {
+        x = Math.max(0, Math.min(Wd - 1, Math.floor(x))); y = Math.max(0, Math.min(Hd - 1, Math.floor(y)));
+        var d = view.getImageData(x, y, 1, 1).data;   // sample the composite (what you see)
+        var hex = '#' + [d[0], d[1], d[2]].map(function (n) { return ('0' + n.toString(16)).slice(-2); }).join('');
+        color = hex; colorEl.value = hex; erasing = false; eraseBtn.classList.remove('on'); selectSwatch(null);
+      }
       cv.addEventListener('pointerdown', function (e) {
-        var p = pos(e); snapshot();
+        var p = pos(e);
+        if (picking) { pickColor(p.x, p.y); picking = false; pickBtn.classList.remove('on'); return; } // eyedropper: one-shot
+        snapshot();
         if (filling) { floodFill(p.x, p.y); return; }   // bucket: one click, no drag
         drawing = true; lastX = p.x; lastY = p.y; paint(p.x, p.y, p.x, p.y);
         try { cv.setPointerCapture(e.pointerId); } catch (_) {}
@@ -1735,7 +1744,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       sz.addEventListener('input', function () { size = +sz.value; szv.textContent = size; });
       eraseBtn.addEventListener('click', function () { erasing = !erasing; this.classList.toggle('on', erasing); if (erasing) { filling = false; fillBtn.classList.remove('on'); } });
       var fillBtn = document.getElementById('drawFill');
-      fillBtn.addEventListener('click', function () { filling = !filling; this.classList.toggle('on', filling); if (filling) { erasing = false; eraseBtn.classList.remove('on'); } });
+      var pickBtn = document.getElementById('drawPick');
+      fillBtn.addEventListener('click', function () { filling = !filling; this.classList.toggle('on', filling); if (filling) { erasing = false; eraseBtn.classList.remove('on'); picking = false; pickBtn.classList.remove('on'); } });
+      pickBtn.addEventListener('click', function () { picking = !picking; this.classList.toggle('on', picking); if (picking) { erasing = false; eraseBtn.classList.remove('on'); filling = false; fillBtn.classList.remove('on'); } });
       document.getElementById('drawPixel').addEventListener('click', function () { pixel = !pixel; this.classList.toggle('on', pixel); });
 
       // ── Canvas size ──
