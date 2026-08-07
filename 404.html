@@ -63,6 +63,11 @@
       box-shadow:0 18px 52px rgba(160,255,0,.28), 0 14px 40px rgba(0,0,0,.6);
     }
     @media (prefers-reduced-motion:reduce) { .float-card img { animation:none; } }
+    /* Mobile: fewer + smaller floaters (JS also thins the count) so they don't
+       pile up and overlap. Desktop is untouched. */
+    @media (max-width:768px) {
+      .float-card img { max-width:38vw; border-radius:10px; box-shadow:0 8px 22px rgba(0,0,0,.6); }
+    }
   </style>
 </head>
 <body>
@@ -90,7 +95,12 @@
       var base = (location.hostname.indexOf('github.io') !== -1 && seg) ? '/' + seg + '/' : '/';
       var field = document.getElementById('floatField');
       var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var slots = [[6,14],[22,66],[9,82],[31,20],[70,15],[86,58],[74,84],[57,74],[93,28],[45,88],[15,42],[82,38]];
+      // On phones, use a smaller, well-spread set so the floaters don't overlap.
+      var mobile = matchMedia('(max-width: 768px)').matches;
+      var slots = mobile
+        ? [[7,11],[70,15],[15,46],[76,52],[40,80]]
+        : [[6,14],[22,66],[9,82],[31,20],[70,15],[86,58],[74,84],[57,74],[93,28],[45,88],[15,42],[82,38]];
+      var wBase = mobile ? 150 : 420, wRand = mobile ? 90 : 270;
       var cards = [];
 
       function buildCards(urls) {
@@ -103,7 +113,7 @@
           var img = document.createElement('img');
           img.src = u; img.alt = ''; img.loading = 'lazy';
           img.onerror = function () { wrap.remove(); };
-          img.style.setProperty('--w', (420 + (Math.random() * 270 | 0)) + 'px');
+          img.style.setProperty('--w', (wBase + (Math.random() * wRand | 0)) + 'px');
           img.style.setProperty('--rot', '0deg');
           img.style.setProperty('--sc', (0.8 + Math.random() * 0.5).toFixed(2));
           img.style.setProperty('--dur', (6 + Math.random() * 4).toFixed(1) + 's');
