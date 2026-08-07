@@ -1298,7 +1298,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             'top:calc(-1 * var(--reel-shift,148px));' +
             'height:calc(100% + var(--reel-over,460px));' +
             'border:0;background:#000;';
-          node.src = 'https://www.instagram.com/reel/' + code + '/embed/';
+          // The post path (/p/) often plays inline where /reel/ shows only a
+          // "Watch on Instagram" cover. captioned=false keeps the chrome minimal.
+          node.src = 'https://www.instagram.com/p/' + code + '/embed/';
           lcd.insertBefore(node, lcd.firstChild);
         }
         ph.style.display = 'none';
