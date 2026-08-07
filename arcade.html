@@ -701,6 +701,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div class="tool-controls">
             <label class="tool-slider">Palette
               <select id="drawPalette" style="background:#111418;border:1px solid #2a2f37;color:#e8eaed;border-radius:8px;padding:6px 8px;font-size:12px;font-family:inherit"></select>
+              <span id="drawPalDay" style="font-size:10px;color:var(--accent)" title="A new palette is picked automatically each day"></span>
             </label>
             <span class="draw-pal" id="drawPal"></span>
             <input type="color" id="drawColor" value="#111111" title="Custom colour" />
@@ -1660,7 +1661,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         'Pastel':    ['#ffd1dc', '#ffe5b4', '#fff5ba', '#c1f0c1', '#b5ead7', '#c7ceea', '#e0bbe4', '#ffdfd3', '#ffffff', '#5a5a5a'],
         'Neon':      ['#ff00a0', '#00fff7', '#a0ff00', '#ffe600', '#ff3b3b', '#7b00ff', '#00ff85', '#ff8a00', '#ffffff', '#0a0a0a'],
         'Earth':     ['#2e2a24', '#3b2f2f', '#6b4f3a', '#8a6d3b', '#a9925a', '#c9b18b', '#5a6650', '#7c8a5a', '#b0a171', '#d8c9a3'],
-        'Grayscale': ['#000000', '#2b2b2b', '#555555', '#7f7f7f', '#a9a9a9', '#d4d4d4', '#ffffff']
+        'Grayscale': ['#000000', '#2b2b2b', '#555555', '#7f7f7f', '#a9a9a9', '#d4d4d4', '#ffffff'],
+        'Sunset':    ['#2b1b3a', '#5c2a4d', '#a13d63', '#e0607e', '#f4976c', '#ffd8a9', '#fff3d6', '#ffffff'],
+        'Ocean':     ['#03045e', '#023e8a', '#0077b6', '#0096c7', '#00b4d8', '#48cae4', '#90e0ef', '#caf0f8'],
+        'Forest':    ['#1b2a1a', '#2d4a22', '#4f7942', '#6a994e', '#a7c957', '#dda15e', '#8a5a2b', '#f2e8cf'],
+        'Vaporwave': ['#20003c', '#5b2a86', '#9d4edd', '#ff5d8f', '#ff9ec6', '#00f5d4', '#00bbf9', '#ffffff'],
+        'Autumn':    ['#3d1f00', '#6b2b06', '#9c3d00', '#c1440e', '#e2711d', '#ffb627', '#ffd97d', '#fff3c4'],
+        'Candy':     ['#ff4d6d', '#ff8fab', '#ffb3c6', '#ffccd5', '#fde2e4', '#a2d2ff', '#bde0fe', '#ffffff'],
+        'Mono Blue': ['#081c33', '#12395e', '#1f5f8b', '#2e86ab', '#54a0c4', '#8ec6e0', '#c9e6f4', '#ffffff'],
+        'Coffee':    ['#1b1210', '#3b2417', '#5c3a21', '#7f5539', '#a68a64', '#c8b6a6', '#e6ccb2', '#f5ebe0'],
+        'Sakura':    ['#4a2545', '#7b2d5e', '#c05299', '#e56b9f', '#f4a5c0', '#ffd1e3', '#fff0f5', '#ffffff'],
+        'Cyberpunk': ['#0d0221', '#241734', '#ff2a6d', '#05d9e8', '#d1f7ff', '#f9f871', '#7b2ff7', '#ffffff'],
+        'Terminal':  ['#001100', '#003b00', '#00ff41', '#39ff14', '#9dff00', '#c8ff00', '#e8ffd0', '#ffffff'],
+        'Dusk':      ['#0b1026', '#2a1a4a', '#4a3f6b', '#7d6b91', '#b98ea7', '#e6a4b4', '#f3c98b', '#fef9c7']
       };
       var palEl = document.getElementById('drawPal');
       var palSel = document.getElementById('drawPalette');
@@ -1676,9 +1689,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           palEl.appendChild(sw);
         });
       }
-      Object.keys(PALETTES).forEach(function (n) { var o = document.createElement('option'); o.value = n; o.textContent = n; palSel.appendChild(o); });
-      palSel.addEventListener('change', function () { buildPalette(palSel.value); });
-      buildPalette('Classic');
+      var palNames = Object.keys(PALETTES);
+      palNames.forEach(function (n) { var o = document.createElement('option'); o.value = n; o.textContent = n; palSel.appendChild(o); });
+      palSel.addEventListener('change', function () { buildPalette(palSel.value); document.getElementById('drawPalDay').textContent = ''; });
+      // Palette of the day — rotates automatically at local midnight.
+      var d0 = new Date(); d0.setHours(0, 0, 0, 0);
+      var todayPalette = palNames[Math.floor(d0.getTime() / 86400000) % palNames.length];
+      palSel.value = todayPalette;
+      buildPalette(todayPalette);
+      document.getElementById('drawPalDay').textContent = '· today';
       colorEl.addEventListener('input', function () { color = this.value; erasing = false; eraseBtn.classList.remove('on'); selectSwatch(null); });
       var sz = document.getElementById('drawSize'), szv = document.getElementById('drawSizeVal');
       sz.addEventListener('input', function () { size = +sz.value; szv.textContent = size; });
