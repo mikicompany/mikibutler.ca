@@ -426,6 +426,32 @@
       background: rgba(0,0,0,.6); color: #fff; padding: 2px 5px; border-radius: 3px; opacity: 0; transition: opacity .2s; pointer-events: none; }
     .pal-sw.copied::after { opacity: 1; }
 
+    /* ── IG Palette & Value Study ── */
+    .ig-actions { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0 0 14px; }
+    .ig-upload { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; background: #1c2128; border: 1px solid #2a2f37;
+      color: #cfd4db; border-radius: 8px; padding: 8px 13px; font-size: 12px; font-weight: 600; transition: border-color .2s, color .2s; }
+    .ig-upload:hover { border-color: var(--accent); color: #fff; }
+    .ig-note { font-size: 11px; color: #6b7580; }
+    .ig-signature { max-width: 760px; margin: 0 auto; }
+    .ig-sig-h { font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #8a9099; text-align: center; margin-bottom: 8px; }
+    .ig-sig-row { display: flex; border-radius: 10px; overflow: hidden; border: 1px solid #23272e; }
+    .ig-sig-sw { flex: 1; height: 54px; cursor: pointer; position: relative; }
+    .ig-sig-sw span { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-family: monospace; font-size: 9px;
+      background: rgba(0,0,0,.55); color: #fff; padding: 1px 4px; border-radius: 3px; opacity: 0; transition: opacity .15s; white-space: nowrap; }
+    .ig-sig-sw:hover span { opacity: 1; }
+    .ig-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 20px; margin: 12px auto 4px; }
+    .ig-stat { text-align: center; font-size: 11px; color: #8a9099; }
+    .ig-stat b { display: block; font-size: 15px; color: #eef1f5; font-weight: 700; margin-bottom: 1px; }
+    .ig-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; max-width: 760px; margin: 22px auto 0; }
+    .ig-card { background: #14171b; border: 1px solid #23272e; border-radius: 10px; overflow: hidden; }
+    .ig-card-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; background: #0a0c0f; }
+    .ig-card-sw { display: flex; height: 22px; }
+    .ig-card-sw > i { flex: 1; cursor: pointer; }
+    .ig-card-val { display: flex; height: 10px; }
+    .ig-card-val > i { display: block; }
+    .ig-card-meta { font-size: 10px; color: #7a828c; padding: 6px 8px; display: flex; justify-content: space-between; gap: 6px; }
+    @media (max-width: 520px) { .ig-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
+
     /* ── LinkedIn Banner maker ── */
     .tool-block:has(#lbCanvas) .tool-stage { max-width: 760px; }
     .lb-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 6px; max-width: 760px;
@@ -904,6 +930,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <p class="tool-desc">An interactive version of my résumé — everything here is driven by <code>resume-data.json</code>, so it's a one-file edit to update.</p>
           <div class="rz-actions"><button type="button" id="rzPdf" class="rz-pdf">⬇ Download PDF</button></div>
           <div class="rz" id="rz"><div class="tool-empty">Loading résumé…</div></div>
+        </div>
+
+        <!-- IG Palette & Value Study (data-driven from ig-swatches.json) -->
+        <div class="tool-block" data-tool="igstudy">
+          <div class="tool-title">IG Study 🎞️</div>
+          <p class="tool-desc">The colour DNA of <a href="https://www.instagram.com/mikicompany" target="_blank" rel="noopener">@mikicompany</a> — palette &amp; value breakdown per post, plus a signature palette across the whole grid. Add more via <code>ig-swatches.json</code> or drop in images.</p>
+          <div class="ig-actions">
+            <label class="ig-upload">⬆ Add images<input type="file" id="igFile" accept="image/*" multiple hidden></label>
+            <span class="ig-note" id="igCount"></span>
+          </div>
+          <div class="ig-signature" id="igSignature"></div>
+          <div class="ig-grid" id="igGrid"><div class="tool-empty">Loading @mikicompany…</div></div>
         </div>
       </section>
 
@@ -1656,6 +1694,150 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }, function () { err.textContent = 'Couldn’t load that image — try uploading the file.'; });
       }
       toolBind('palUrl', 'palFile', load);
+    })();
+
+    // ── IG Palette & Value Study — colour DNA of @mikicompany ──
+    // Data-driven from ig-swatches.json (a list of image URLs, like reels.json).
+    // External URLs go through the wsrv.nl proxy so the canvas stays CORS-clean.
+    (function () {
+      var grid = document.getElementById('igGrid'); if (!grid) return;
+      var sigHost = document.getElementById('igSignature');
+      var countEl = document.getElementById('igCount');
+      var fileInput = document.getElementById('igFile');
+      var items = []; // { coarse: {key:{n,r,g,b}}, avgL, avgSat, warm }
+
+      function hex(r, g, b) { return '#' + [r, g, b].map(function (x) { return ('0' + Math.round(x).toString(16)).slice(-2); }).join(''); }
+      function srcFor(u) {
+        if (/^(data:|blob:)/.test(u)) return u;
+        if (/^https?:\/\//i.test(u)) {
+          try { if (new URL(u).origin === location.origin) return u; } catch (e) {}
+          return 'https://wsrv.nl/?url=' + encodeURIComponent(u) + '&n=-1';
+        }
+        return u; // same-origin relative path
+      }
+      // Pick up to `max` dominant, visually-distinct colours from a coarse histogram.
+      function topColors(map, max, minDist) {
+        var arr = Object.keys(map).map(function (k) { var m = map[k]; return { n: m.n, r: m.r / m.n, g: m.g / m.n, b: m.b / m.n }; });
+        arr.sort(function (a, b) { return b.n - a.n; });
+        var out = [];
+        for (var j = 0; j < arr.length && out.length < max; j++) {
+          var c = arr[j], ok = true;
+          for (var k = 0; k < out.length; k++) {
+            var dr = c.r - out[k].r, dg = c.g - out[k].g, db = c.b - out[k].b;
+            if (Math.sqrt(dr * dr + dg * dg + db * db) < minDist) { ok = false; break; }
+          }
+          if (ok) out.push(c);
+        }
+        return out;
+      }
+      function analyze(im) {
+        var S = 96, w = S, h = Math.max(1, Math.round(im.naturalHeight * S / im.naturalWidth));
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        var cx = c.getContext('2d', { willReadFrequently: true });
+        cx.drawImage(im, 0, 0, w, h);
+        var d = cx.getImageData(0, 0, w, h).data; // throws on taint -> caught by caller
+        var map = {}, bands = [0, 0, 0, 0, 0], n = 0, sumL = 0, sumSat = 0, warm = 0;
+        for (var i = 0; i < d.length; i += 4) {
+          if (d[i + 3] < 128) continue;
+          var r = d[i], g = d[i + 1], b = d[i + 2];
+          var key = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
+          var m = map[key] || (map[key] = { n: 0, r: 0, g: 0, b: 0 });
+          m.n++; m.r += r; m.g += g; m.b += b;
+          var l = 0.299 * r + 0.587 * g + 0.114 * b;
+          bands[Math.min(4, Math.floor(l / 256 * 5))]++;
+          var mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+          sumL += l; sumSat += mx ? (mx - mn) / mx : 0; if (r >= b) warm++;
+          n++;
+        }
+        if (!n) return null;
+        return { coarse: map, bands: bands.map(function (x) { return x / n; }),
+          avgL: sumL / n / 255, avgSat: sumSat / n, warm: warm / n };
+      }
+      function valBar(bands) {
+        var lv = ['#111', '#444', '#7a7a7a', '#b6b6b6', '#f2f2f2'];
+        return bands.map(function (f, i) { return '<i style="width:' + (f * 100).toFixed(2) + '%;background:' + lv[i] + '"></i>'; }).join('');
+      }
+      function keyLabel(l) { return l < 0.4 ? 'Low key' : l > 0.6 ? 'High key' : 'Mid key'; }
+      function copyHex(hx) {
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(hx.toUpperCase());
+      }
+      function addCard(displaySrc, a) {
+        var sw = topColors(a.coarse, 6, 30);
+        var card = document.createElement('div'); card.className = 'ig-card';
+        var swHtml = sw.map(function (c) { var hx = hex(c.r, c.g, c.b); return '<i style="background:' + hx + '" data-hex="' + hx + '" title="' + hx.toUpperCase() + '"></i>'; }).join('');
+        card.innerHTML =
+          '<img class="ig-card-img" src="' + displaySrc + '" alt="" loading="lazy">' +
+          '<div class="ig-card-sw">' + swHtml + '</div>' +
+          '<div class="ig-card-val">' + valBar(a.bands) + '</div>' +
+          '<div class="ig-card-meta"><span>' + keyLabel(a.avgL) + '</span><span>' + (a.warm >= 0.5 ? '🔥 warm' : '❄️ cool') + '</span></div>';
+        card.querySelectorAll('.ig-card-sw i').forEach(function (el) {
+          el.addEventListener('click', function () { copyHex(el.dataset.hex); el.style.outline = '2px solid #fff'; setTimeout(function () { el.style.outline = ''; }, 500); });
+        });
+        grid.appendChild(card);
+      }
+      function renderSignature() {
+        if (!items.length) { sigHost.innerHTML = ''; return; }
+        var merged = {};
+        items.forEach(function (it) {
+          Object.keys(it.coarse).forEach(function (k) {
+            var s = it.coarse[k], m = merged[k] || (merged[k] = { n: 0, r: 0, g: 0, b: 0 });
+            m.n += s.n; m.r += s.r; m.g += s.g; m.b += s.b;
+          });
+        });
+        var sig = topColors(merged, 8, 26);
+        var avgL = avg('avgL'), avgSat = avg('avgSat'), warm = avg('warm');
+        var swHtml = sig.map(function (c) { var hx = hex(c.r, c.g, c.b); return '<div class="ig-sig-sw" style="background:' + hx + '" data-hex="' + hx + '"><span>' + hx.toUpperCase() + '</span></div>'; }).join('');
+        sigHost.innerHTML =
+          '<div class="ig-sig-h">Signature palette · ' + items.length + ' post' + (items.length > 1 ? 's' : '') + '</div>' +
+          '<div class="ig-sig-row">' + swHtml + '</div>' +
+          '<div class="ig-stats">' +
+            '<div class="ig-stat"><b>' + Math.round(avgL * 100) + '</b>lightness · ' + keyLabel(avgL).replace(' key', '') + '</div>' +
+            '<div class="ig-stat"><b>' + Math.round(avgSat * 100) + '</b>saturation · ' + (avgSat < 0.35 ? 'muted' : avgSat > 0.6 ? 'vivid' : 'balanced') + '</div>' +
+            '<div class="ig-stat"><b>' + Math.round(warm * 100) + '%</b>warm · ' + (warm >= 0.5 ? 'warm-leaning' : 'cool-leaning') + '</div>' +
+          '</div>';
+        sigHost.querySelectorAll('.ig-sig-sw').forEach(function (el) {
+          el.addEventListener('click', function () { copyHex(el.dataset.hex); var s = el.querySelector('span'); s.textContent = 'copied ✓'; setTimeout(function () { s.textContent = el.dataset.hex.toUpperCase(); }, 900); });
+        });
+      }
+      function avg(field) { return items.reduce(function (s, it) { return s + it[field]; }, 0) / items.length; }
+
+      function ingest(url, displaySrc) {
+        return new Promise(function (res) {
+          var im = new Image(); im.crossOrigin = 'anonymous';
+          im.onload = function () {
+            var a; try { a = analyze(im); } catch (e) { a = null; }
+            if (a) { items.push(a); addCard(displaySrc || im.src, a); }
+            res(!!a);
+          };
+          im.onerror = function () { res(false); };
+          im.src = url;
+        });
+      }
+
+      // Load the curated grid, then reveal.
+      fetch('ig-swatches.json').then(function (r) { return r.ok ? r.json() : []; }).then(function (list) {
+        list = Array.isArray(list) ? list : [];
+        if (!list.length) { grid.innerHTML = '<div class="tool-empty">No posts yet — add image URLs to <code>ig-swatches.json</code> or ⬆ drop in images.</div>'; return; }
+        grid.innerHTML = '';
+        var chain = Promise.resolve();
+        list.forEach(function (u) { chain = chain.then(function () { return ingest(srcFor(u), srcFor(u)); }); });
+        chain.then(function () {
+          if (!items.length) grid.innerHTML = '<div class="tool-empty">Couldn’t read those images (CORS) — ⬆ drop the files in instead.</div>';
+          renderSignature();
+          countEl.textContent = items.length ? items.length + ' posts analysed' : '';
+        });
+      }).catch(function () { grid.innerHTML = '<div class="tool-empty">Couldn’t load ig-swatches.json.</div>'; });
+
+      // Manual uploads — always CORS-clean.
+      fileInput.addEventListener('change', function (e) {
+        var files = Array.prototype.slice.call(e.target.files || []);
+        if (!files.length) return;
+        if (grid.querySelector('.tool-empty')) grid.innerHTML = '';
+        var chain = Promise.resolve();
+        files.forEach(function (f) { var u = URL.createObjectURL(f); chain = chain.then(function () { return ingest(u, u); }); });
+        chain.then(function () { renderSignature(); countEl.textContent = items.length + ' posts analysed'; });
+        fileInput.value = '';
+      });
     })();
   </script>
 
@@ -2533,7 +2715,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         sketch: 'Draw with layers & palettes',
         banner: 'Build a LinkedIn banner',
         glitch: 'RGB glitch + video export',
-        resume: 'Interactive résumé + PDF'
+        resume: 'Interactive résumé + PDF',
+        igstudy: 'Colour DNA of @mikicompany'
       };
       var acc = document.createElement('div');
       acc.className = 'tool-acc';
