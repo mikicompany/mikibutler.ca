@@ -1,0 +1,50 @@
+{
+  "name": "Miki Butler",
+  "title": "Senior Environment Artist",
+  "current": "Next Level Games",
+  "location": "Vancouver, Canada",
+  "years": 18,
+  "email": "hello@mikicompany.com",
+  "links": {
+    "Website": "https://mikibutler.ca",
+    "ArtStation": "https://www.artstation.com/mikicompany",
+    "LinkedIn": "https://www.linkedin.com/in/mikicbutler",
+    "Instagram": "https://www.instagram.com/mikicompany"
+  },
+  "summary": "Senior Environment Artist based in Vancouver, Canada, with 18 years crafting immersive game worlds. Shipped titles across PC, PlayStation, Xbox, Nintendo and mobile — for studios including Capcom, EA, Ubisoft, Offworld Industries and Next Level Games — working in Unreal Engine, Unity, Frostbite and a range of proprietary tech. Specializing in environment and prop art across a wide range of styles and teams.",
+  "experience": [
+    { "role": "Senior Environment Artist", "company": "Next Level Games", "location": "Vancouver, BC", "start": "", "end": "Present", "bullets": [] },
+    { "role": "Environment Artist", "company": "Offworld Industries", "location": "Vancouver, BC", "start": "", "end": "", "bullets": [] },
+    { "role": "Environment Artist", "company": "Capcom Vancouver", "location": "Vancouver, BC", "start": "", "end": "", "bullets": [] },
+    { "role": "Environment Artist", "company": "EA", "location": "", "start": "", "end": "", "bullets": [] },
+    { "role": "3D Artist", "company": "Ubisoft", "location": "", "start": "", "end": "", "bullets": [] }
+  ],
+  "education": [
+    { "program": "", "school": "", "years": "" }
+  ],
+  "skills": [
+    "3D Modeling", "Digital Sculpting", "Environment Modeling", "Prop Modeling",
+    "High-poly Modeling", "Retopology", "Texture Baking", "Texturing",
+    "Digital Painting", "Digital Drawing", "3D Animation", "Stop-motion Animation"
+  ],
+  "software": [
+    "Unreal Engine", "Unity", "Substance 3D Painter", "Substance 3D Designer",
+    "ZBrush", "Maya", "3ds Max", "Photoshop", "Marmoset Toolbag", "Perforce"
+  ],
+  "gameography": [
+    { "title": "Starship Troopers Extermination", "role": "Environment Artist", "platform": "PC", "img": "images/gameography/starship-troopers.jpg" },
+    { "title": "Squad", "role": "Environment Artist", "platform": "PC", "img": "images/gameography/squad.jpg" },
+    { "title": "Star Trek Legends", "role": "Environment Artist", "platform": "iOS / Android", "img": "images/gameography/star-trek-legends.jpg" },
+    { "title": "Tomb Raider Reloaded", "role": "Environment Artist", "platform": "iOS / Android", "img": "images/gameography/tomb-raider-reloaded.jpg" },
+    { "title": "Mad Streets (Game Pass)", "role": "Environment Artist", "platform": "PC", "img": "images/gameography/mad-streets.jpg" },
+    { "title": "Plants vs Zombies: Battle for Neighborville", "role": "Environment Artist", "platform": "PS4 / XOne / PC", "img": "images/gameography/pvz-bfn.jpg" },
+    { "title": "Dead Rising 4", "role": "Environment Artist", "platform": "XOne / PS4 / PC", "img": "images/gameography/dead-rising-4.jpg" },
+    { "title": "Skara: The Blade Remains", "role": "Environment Artist", "platform": "PC", "img": "images/gameography/skara.jpg" },
+    { "title": "ESPN Sports Connection", "role": "Environment Artist", "platform": "WiiU", "img": "images/gameography/espn-sports-connection.jpg" },
+    { "title": "The Adventures of Tintin (X360)", "role": "3D Artist, UI", "platform": "X360", "img": "images/gameography/tintin-x360.jpg" },
+    { "title": "The Adventures of Tintin (3DS)", "role": "3D Artist", "platform": "3DS", "img": "images/gameography/tintin-3ds.jpg" },
+    { "title": "Motion Sports", "role": "3D Artist", "platform": "X360 Kinect", "img": "images/gameography/motion-sports.jpg" },
+    { "title": "Your Shape Feat. Jenny McCarthy", "role": "3D Artist", "platform": "Wii / PC", "img": "images/gameography/your-shape.jpg" }
+  ],
+  "mentoring": "Mentor at Think Tank Training Centre — guiding aspiring environment and 3D artists through portfolio development, production workflows and industry-ready game art."
+}
