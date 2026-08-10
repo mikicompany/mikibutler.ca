@@ -236,6 +236,12 @@
     .cab-caption { margin-top: 26px; font-size: 12px; color: #777; text-align: center; }
     .cab-caption b { color: var(--accent); }
 
+    /* Desktop: scale the whole arcade (cabinet, games, tools) up ~25% for a
+       bigger, more immersive feel. Mobile/tablet stay as-is. */
+    @media (min-width: 1000px) {
+      .arcade-page { zoom: 1.25; }
+    }
+
     /* Fit the cabinet to phone widths */
     @media (max-width: 640px) {
       /* A too-wide nav bar can stretch main past the screen — cap it. */
