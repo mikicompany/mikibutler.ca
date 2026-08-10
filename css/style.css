@@ -1031,8 +1031,8 @@ main {
 
 .gp-card {
   position: absolute;
-  width: 220px;
-  height: 330px;
+  width: 100%;
+  height: 100%;
   border-radius: 10px;
   overflow: hidden;
   background: #111;
@@ -1525,8 +1525,8 @@ main {
   }
 
   .gp-card {
-    width: 120px;
-    height: 180px;
+    width: 100%;
+    height: 100%;
   }
 
   /* Skills */
