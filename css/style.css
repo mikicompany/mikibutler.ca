@@ -973,6 +973,31 @@ main {
   text-decoration: none;
 }
 
+.resume-avatar-link { display: inline-block; flex-shrink: 0; }
+
+.resume-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.resume-links a {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  border: 1px solid rgba(160, 255, 0, 0.35);
+  border-radius: 999px;
+  padding: 5px 12px;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.resume-links a:hover {
+  background: rgba(160, 255, 0, 0.12);
+  box-shadow: 0 0 12px rgba(160, 255, 0, 0.2);
+}
+
 .resume-bio {
   font-size: 13px;
   line-height: 1.8;
