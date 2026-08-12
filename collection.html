@@ -86,7 +86,12 @@
     .rc-sys .dot { width: 8px; height: 8px; border-radius: 50%; background: hsl(var(--h,90) 65% 55%); flex-shrink: 0; }
     .rc-card h2 { font-size: 14.5px; font-weight: 700; line-height: 1.25; }
     .rc-card:hover h2 { color: var(--accent); }
-    .rc-meta { font-size: 11.5px; color: var(--text-muted); }
+    .rc-meta { font-size: 11.5px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+    .rc-price { font-weight: 800; color: #fff; font-size: 13px; }
+    .rc-loc { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: var(--accent);
+      border: 1px solid rgba(160,255,0,.3); border-radius: 999px; padding: 1px 7px; }
+    .rc-chips.era { margin-bottom: 12px; }
+    .rc-chips.era .rc-chip.active { background: #1c2a08; color: var(--accent); border-color: var(--accent); }
     .rc-empty { color: var(--text-muted); font-size: 15px; padding: 40px 0; }
 
     /* Detail */
@@ -108,6 +113,47 @@
     .rc-notes { font-size: 14.5px; line-height: 1.65; color: #c9c9c9; }
 
     @media (max-width: 680px) { .rc-detail { grid-template-columns: 1fr; gap: 22px; } main { padding: 40px 18px 80px; } }
+
+    /* ── Lightbox browse ── */
+    .lb { position: fixed; inset: 0; z-index: 90; display: none; background: rgba(6,7,5,.93); backdrop-filter: blur(7px); }
+    .lb.open { display: flex; flex-direction: column; }
+    .lb-top { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; }
+    .lb-count { font-family: 'Press Start 2P', monospace; font-size: 11px; color: var(--accent); }
+    .lb-close { font-size: 28px; line-height: 1; color: #bbb; background: none; border: 0; cursor: pointer; }
+    .lb-close:hover { color: #fff; }
+    .lb-stage { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.5fr .9fr; gap: 34px; align-items: center; padding: 0 74px; }
+    .lb-media { height: min(70vh, 640px); border-radius: 16px; overflow: hidden; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 30px 80px rgba(0,0,0,.6), 0 0 70px hsl(var(--h,90) 70% 32% / .38);
+      animation: lbpop .26s ease; }
+    .lb-media img { max-width: 100%; max-height: 100%; object-fit: contain; background: #000; }
+    .lb-media.noimg { width: 100%; background: linear-gradient(150deg, hsl(var(--h,90) 32% 22%), hsl(var(--h,90) 40% 10%)); }
+    .lb-media.noimg .rc-plate { font-size: clamp(18px, 3vw, 34px); }
+    @keyframes lbpop { from { transform: scale(.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .lb-info h2 { font-size: clamp(20px, 3vw, 27px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.12; }
+    .lb-info .d-sys { margin: 8px 0 16px; color: var(--accent); font-weight: 700; font-size: 14px; }
+    .lb-info .spec { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    .lb-info .spec th, .lb-info .spec td { text-align: left; padding: 8px 0; border-bottom: 1px solid #242424; font-size: 13.5px; vertical-align: top; }
+    .lb-info .spec th { color: var(--text-muted); font-weight: 600; width: 46%; }
+    .lb-info .spec td { color: #e6e6e6; }
+    .lb-info .rc-notes { font-size: 14px; line-height: 1.6; color: #c6c6c6; }
+    .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%;
+      border: 1px solid #333; background: rgba(18,18,18,.72); color: #fff; font-size: 22px; cursor: pointer; z-index: 2; }
+    .lb-nav:hover { border-color: var(--accent); color: var(--accent); }
+    .lb-nav.prev { left: 16px; } .lb-nav.next { right: 16px; }
+    .lb-strip { display: flex; gap: 8px; overflow-x: auto; padding: 14px 20px 20px; scrollbar-width: thin; scrollbar-color: #444 transparent; }
+    .lb-strip button { flex: 0 0 auto; width: 58px; height: 58px; border-radius: 9px; overflow: hidden; border: 2px solid transparent;
+      background: #161616; cursor: pointer; padding: 0; opacity: .5; transition: opacity .15s ease, border-color .15s ease; }
+    .lb-strip button:hover { opacity: .9; }
+    .lb-strip button.active { opacity: 1; border-color: var(--accent); }
+    .lb-strip button img { width: 100%; height: 100%; object-fit: cover; }
+    .lb-strip .mini-plate { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; text-align: center;
+      font-family: 'Press Start 2P', monospace; font-size: 7px; line-height: 1.3; color: hsl(var(--h,90) 80% 78%);
+      background: linear-gradient(150deg, hsl(var(--h,90) 32% 22%), hsl(var(--h,90) 40% 10%)); }
+    @media (max-width: 760px) {
+      .lb-stage { grid-template-columns: 1fr; padding: 0 16px; gap: 14px; overflow-y: auto; align-content: start; }
+      .lb-media { height: 44vh; width: 100%; }
+      .lb-nav { top: auto; bottom: 96px; transform: none; }
+    }
   </style>
 </head>
 <body>
@@ -138,48 +184,57 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     var DATA = { items: [], note: '' };
     var byslug = {};
-    var state = { system: 'all', q: '' };
+    var state = { system: 'all', era: 'all', q: '' };
     var wrap = document.getElementById('rc-wrap');
-
-    function thumb(it, big){
-      var h = hue(it.system);
-      if (it.image) return '<div class="media' + (big?'':'')+'"><img src="'+esc(it.image)+'" alt="'+esc(it.title)+'" loading="lazy" /></div>';
-      return '<div class="'+(big?'media noimg':'rc-thumb noimg')+'" style="--h:'+h+'"><span class="rc-plate">'+esc(it.system||'?')+'</span></div>';
-    }
+    var view = [];          // the items currently shown (filtered) — what the lightbox walks
+    var lb = null, lbIndex = -1;
 
     function statNums(items){
       var qty = items.reduce(function(a,it){ return a + (it.qty||1); }, 0);
       var systems = new Set(items.map(function(it){ return it.system; }).filter(Boolean)).size;
-      var cib = items.filter(function(it){ return it.cib; }).reduce(function(a,it){ return a+(it.qty||1); }, 0);
-      return { qty: qty, systems: systems, cib: cib };
+      var retro = items.filter(function(it){ return it.era === 'retro'; }).length;
+      return { qty: qty, systems: systems, retro: retro };
     }
 
     function renderList(){
       var all = DATA.items;
-      var systems = ['all'].concat(Array.from(new Set(all.map(function(it){ return it.system; }).filter(Boolean))).sort());
+      // Era facet first (All / Retro / Modern), then systems within that era.
+      var eraSet = all.filter(function(it){ return state.era==='all' ? true : it.era===state.era; });
+      var systems = ['all'].concat(Array.from(new Set(eraSet.map(function(it){ return it.system; }).filter(Boolean))).sort());
+      if (systems.indexOf(state.system) < 0) state.system = 'all';   // reset if era hid it
       var q = state.q.trim().toLowerCase();
-      var items = all.filter(function(it){
+      var items = eraSet.filter(function(it){
         if (state.system !== 'all' && it.system !== state.system) return false;
         if (!q) return true;
-        return (it.title+' '+it.system+' '+(it.category||'')+' '+(it.notes||'')).toLowerCase().indexOf(q) >= 0;
+        return (it.title+' '+it.system+' '+(it.notes||'')+' '+(it.location||'')).toLowerCase().indexOf(q) >= 0;
       });
       var s = statNums(all);
+      var hasEras = all.some(function(it){ return it.era==='retro'; }) && all.some(function(it){ return it.era==='modern'; });
+      var eraChips = hasEras ? '<div class="rc-chips era">' + ['all','retro','modern'].map(function(e){
+        var lbl = e==='all' ? 'Everything' : (e==='retro' ? 'Retro' : 'Modern');
+        return '<button class="rc-chip'+(e===state.era?' active':'')+'" data-era="'+e+'">'+lbl+'</button>';
+      }).join('') + '</div>' : '';
       var chips = systems.map(function(sys){
-        var lbl = sys==='all' ? 'All' : sys;
+        var lbl = sys==='all' ? 'All systems' : sys;
         return '<button class="rc-chip'+(sys===state.system?' active':'')+'" data-sys="'+esc(sys)+'">'+esc(lbl)+'</button>';
       }).join('');
       var cards = items.map(function(it){
         var h = hue(it.system);
-        var flag = it.cib ? '<span class="cond-flag cib">CIB</span>' : '<span class="cond-flag loose">'+esc(it.condition||'Loose')+'</span>';
+        var flag = it.cib ? '<span class="cond-flag cib">CIB</span>'
+          : (it.condition ? '<span class="cond-flag loose">'+esc(it.condition)+'</span>' : '');
         var img = it.image
           ? '<div class="rc-thumb"><img src="'+esc(it.image)+'" alt="'+esc(it.title)+'" loading="lazy" />'+flag+'</div>'
           : '<div class="rc-thumb noimg" style="--h:'+h+'"><span class="rc-plate">'+esc(it.system||'?')+'</span>'+flag+'</div>';
+        var sub = [it.system, it.year].filter(Boolean).map(esc).join(' · ');
         return '<a class="rc-card" href="?item='+encodeURIComponent(it.slug)+'" style="--h:'+h+'">'+
           img +
           '<div class="rc-cbody">'+
-            '<div class="rc-sys"><i class="dot"></i>'+esc(it.system||'')+(it.year?' · '+esc(it.year):'')+'</div>'+
+            '<div class="rc-sys"><i class="dot"></i>'+sub+'</div>'+
             '<h2>'+esc(it.title)+'</h2>'+
-            '<div class="rc-meta">'+[it.category, it.condition].filter(Boolean).map(esc).join(' · ')+(it.qty>1?' · ×'+it.qty:'')+'</div>'+
+            '<div class="rc-meta">'+
+              (it.price ? '<span class="rc-price">'+esc(it.price)+'</span>' : '')+
+              (it.location ? '<span class="rc-loc">'+esc(it.location)+'</span>' : '')+
+            '</div>'+
           '</div>'+
         '</a>';
       }).join('');
@@ -190,16 +245,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           '<div class="rc-stats">'+
             '<div class="rc-stat"><b>'+s.qty+'</b><span>Items</span></div>'+
             '<div class="rc-stat"><b>'+s.systems+'</b><span>Systems</span></div>'+
-            '<div class="rc-stat"><b>'+s.cib+'</b><span>Complete-in-box</span></div>'+
+            '<div class="rc-stat"><b>'+s.retro+'</b><span>Retro titles</span></div>'+
           '</div>'+
         '</div>'+
         (DATA.note ? '<div class="sketch-banner">🚧 '+esc(DATA.note)+'</div>' : '')+
         '<div class="rc-controls"><input class="rc-search" id="rc-search" type="search" placeholder="Search title, system, notes…" value="'+esc(state.q)+'" /></div>'+
+        eraChips +
         '<div class="rc-chips">'+chips+'</div>'+
         (cards ? '<div class="rc-grid">'+cards+'</div>' : '<div class="rc-empty">No items match.</div>');
 
-      wrap.querySelectorAll('.rc-chip').forEach(function(b){
+      wrap.querySelectorAll('.rc-chip[data-era]').forEach(function(b){
+        b.addEventListener('click', function(){ state.era = b.dataset.era; state.system = 'all'; renderList(); });
+      });
+      wrap.querySelectorAll('.rc-chip[data-sys]').forEach(function(b){
         b.addEventListener('click', function(){ state.system = b.dataset.sys; renderList(); });
+      });
+      // This filtered set is what the lightbox browses; cards open it in place.
+      view = items;
+      wrap.querySelectorAll('.rc-card').forEach(function(a, idx){
+        a.addEventListener('click', function(e){ e.preventDefault(); openLightbox(idx); });
       });
       var search = document.getElementById('rc-search');
       search.addEventListener('input', function(){ state.q = search.value; renderList(); });
@@ -209,35 +273,89 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
 
     function row(label, val){ return val || val===0 ? '<tr><th>'+esc(label)+'</th><td>'+esc(val)+'</td></tr>' : ''; }
-    function renderDetail(it){
-      var h = hue(it.system);
-      wrap.innerHTML =
-        '<a class="rc-back" href="collection.html">‹ Back to collection</a>'+
-        '<div class="rc-detail" style="--h:'+h+'">'+
-          thumb(it, true)+
-          '<div class="rc-info">'+
-            '<h1>'+esc(it.title)+'</h1>'+
-            '<div class="d-sys">'+esc(it.system||'')+(it.year?' · '+esc(it.year):'')+'</div>'+
-            '<table class="spec">'+
-              row('Category', it.category)+
-              row('Year', it.year)+
-              row('Region', it.region)+
-              row('Condition', it.condition)+
-              row('Complete in box', it.cib ? 'Yes' : 'No')+
-              row('Quantity', it.qty || 1)+
-            '</table>'+
-            (it.notes ? '<div class="rc-notes">'+esc(it.notes)+'</div>' : '')+
-          '</div>'+
-        '</div>';
-      document.title = it.title + ' — Retro Collection';
-      window.scrollTo(0,0);
+
+    // ── Lightbox: immersive browse over `view` with a thumbnail filmstrip ──
+    function ensureLB(){
+      if (lb) return;
+      lb = document.createElement('div');
+      lb.className = 'lb';
+      lb.innerHTML =
+        '<div class="lb-top"><span class="lb-count" id="lb-count"></span>' +
+          '<button class="lb-close" id="lb-close" aria-label="Close">&times;</button></div>' +
+        '<button class="lb-nav prev" id="lb-prev" aria-label="Previous">&#8249;</button>' +
+        '<div class="lb-stage"><div class="lb-media" id="lb-media"></div><div class="lb-info" id="lb-info"></div></div>' +
+        '<button class="lb-nav next" id="lb-next" aria-label="Next">&#8250;</button>' +
+        '<div class="lb-strip" id="lb-strip"></div>';
+      document.body.appendChild(lb);
+      lb.querySelector('#lb-close').addEventListener('click', closeLB);
+      lb.querySelector('#lb-prev').addEventListener('click', function(){ navLB(-1); });
+      lb.querySelector('#lb-next').addEventListener('click', function(){ navLB(1); });
+      lb.addEventListener('click', function(e){ if (e.target === lb) closeLB(); });
     }
+    function buildStrip(){
+      var strip = lb.querySelector('#lb-strip');
+      strip.innerHTML = view.map(function(it, idx){
+        var h = hue(it.system);
+        var inner = it.image ? '<img src="'+esc(it.image)+'" alt="" loading="lazy" />'
+          : '<span class="mini-plate" style="--h:'+h+'">'+esc(it.system||'?')+'</span>';
+        return '<button data-idx="'+idx+'" aria-label="'+esc(it.title)+'">'+inner+'</button>';
+      }).join('');
+      strip.querySelectorAll('button').forEach(function(b){
+        b.addEventListener('click', function(){ showLB(+b.dataset.idx); });
+      });
+    }
+    function showLB(i){
+      lbIndex = (i + view.length) % view.length;
+      var it = view[lbIndex], h = hue(it.system);
+      lb.style.setProperty('--h', h);
+      var media = lb.querySelector('#lb-media');
+      media.className = 'lb-media' + (it.image ? '' : ' noimg');
+      media.style.setProperty('--h', h);
+      media.innerHTML = it.image ? '<img src="'+esc(it.image)+'" alt="'+esc(it.title)+'" />'
+        : '<span class="rc-plate">'+esc(it.system||'?')+'</span>';
+      media.style.animation = 'none'; void media.offsetWidth; media.style.animation = '';
+      lb.querySelector('#lb-count').textContent = (lbIndex+1) + ' / ' + view.length;
+      lb.querySelector('#lb-info').innerHTML =
+        '<h2>'+esc(it.title)+'</h2>'+
+        '<div class="d-sys">'+esc(it.system||'')+(it.year?' · '+esc(it.year):'')+'</div>'+
+        '<table class="spec">'+
+          row('System', it.system)+ row('Price', it.price)+ row('Category', it.category)+
+          row('Year', it.year)+ row('Region', it.region)+ row('Condition', it.condition)+
+          (typeof it.cib === 'boolean' ? row('Complete in box', it.cib ? 'Yes' : 'No') : '')+
+          (it.qty>1 ? row('Quantity', it.qty) : '')+ row('Location', it.location)+
+        '</table>'+
+        (it.notes ? '<div class="rc-notes">'+esc(it.notes)+'</div>' : '');
+      var strip = lb.querySelector('#lb-strip');
+      strip.querySelectorAll('button').forEach(function(b, idx){ b.classList.toggle('active', idx === lbIndex); });
+      var act = strip.children[lbIndex];
+      if (act && act.scrollIntoView) act.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+      history.replaceState(null, '', '?item=' + encodeURIComponent(it.slug));
+      document.title = it.title + ' — Retro Collection';
+    }
+    function openLightbox(i){ ensureLB(); buildStrip(); lb.classList.add('open'); document.body.style.overflow = 'hidden'; showLB(i); }
+    function navLB(d){ showLB(lbIndex + d); }
+    function closeLB(){
+      if (!lb) return;
+      lb.classList.remove('open'); document.body.style.overflow = '';
+      history.replaceState(null, '', 'collection.html');
+      document.title = 'Retro Collection — Miki Butler';
+    }
+    document.addEventListener('keydown', function(e){
+      if (!lb || !lb.classList.contains('open')) return;
+      if (e.key === 'Escape') closeLB();
+      else if (e.key === 'ArrowLeft') navLB(-1);
+      else if (e.key === 'ArrowRight') navLB(1);
+    });
 
     fetch('collection.json?t=' + Date.now()).then(function(r){ return r.ok ? r.json() : DATA; }).then(function(d){
       DATA = { items: d.items || [], note: d.note || '' };
       DATA.items.forEach(function(it){ byslug[it.slug] = it; });
+      renderList();
       var slug = new URLSearchParams(location.search).get('item');
-      if (slug && byslug[slug]) renderDetail(byslug[slug]); else renderList();
+      if (slug && byslug[slug]) {
+        var i = view.findIndex(function(it){ return it.slug === slug; });
+        if (i >= 0) openLightbox(i);
+      }
     }).catch(function(){
       wrap.innerHTML = '<div class="rc-head"><h1>Retro Collection<span class="dot">.</span></h1></div>'+
         '<div class="sketch-banner">Couldn’t load the collection right now.</div>';

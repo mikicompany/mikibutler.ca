@@ -1,13 +1,925 @@
 {
-  "note": "Placeholder items — swap these for your spreadsheet export. Each item: title, system, category, year, region, condition, cib (complete-in-box), qty, image (optional), notes.",
+  "note": "",
   "items": [
-    { "slug": "smb3-nes", "title": "Super Mario Bros. 3", "system": "NES", "category": "Game", "year": 1990, "region": "NTSC", "condition": "Very Good", "cib": true, "qty": 1, "image": "", "notes": "Cart + box + manual. Box has light shelf wear." },
-    { "slug": "chrono-trigger-snes", "title": "Chrono Trigger", "system": "SNES", "category": "Game", "year": 1995, "region": "NTSC", "condition": "Mint", "cib": true, "qty": 1, "image": "", "notes": "Complete, near-mint. One of the crown jewels." },
-    { "slug": "sonic2-genesis", "title": "Sonic the Hedgehog 2", "system": "Genesis", "category": "Game", "year": 1992, "region": "NTSC", "condition": "Good", "cib": false, "qty": 2, "image": "", "notes": "Two loose carts, both tested working." },
-    { "slug": "zelda-oot-n64", "title": "The Legend of Zelda: Ocarina of Time", "system": "N64", "category": "Game", "year": 1998, "region": "NTSC", "condition": "Very Good", "cib": true, "qty": 1, "image": "", "notes": "Gold cart, boxed with manual." },
-    { "slug": "gameboy-dmg", "title": "Game Boy (DMG-01)", "system": "Game Boy", "category": "Console", "year": 1989, "region": "NTSC", "condition": "Good", "cib": false, "qty": 1, "image": "", "notes": "Original brick. Screen clean, one dead line." },
-    { "slug": "snes-console", "title": "Super Nintendo (SNS-001)", "system": "SNES", "category": "Console", "year": 1991, "region": "NTSC", "condition": "Very Good", "cib": false, "qty": 1, "image": "", "notes": "Not yellowed. Includes one OEM controller." },
-    { "slug": "ps1-scph1001", "title": "PlayStation (SCPH-1001)", "system": "PS1", "category": "Console", "year": 1995, "region": "NTSC", "condition": "Good", "cib": false, "qty": 1, "image": "", "notes": "Original fat model with RCA out." },
-    { "slug": "ff7-ps1", "title": "Final Fantasy VII", "system": "PS1", "category": "Game", "year": 1997, "region": "NTSC", "condition": "Very Good", "cib": true, "qty": 1, "image": "", "notes": "Black-label, 3 discs, all manuals present." }
+    {
+      "title": "SUPER MARIO BROS 3",
+      "system": "NES",
+      "price": "$180",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "super-mario-bros-3-nes"
+    },
+    {
+      "title": "SUPER MARIO LAND 1 and 2",
+      "system": "Game Boy",
+      "price": "$120",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "super-mario-land-1-and-2-game-boy"
+    },
+    {
+      "title": "home alonr",
+      "system": "Genesis",
+      "price": "$40",
+      "location": "HOME",
+      "era": "retro",
+      "slug": "home-alonr-genesis"
+    },
+    {
+      "title": "caveman games",
+      "system": "NES",
+      "price": "$90",
+      "location": "HOME",
+      "era": "retro",
+      "slug": "caveman-games-nes"
+    },
+    {
+      "title": "Simpsons hit n run",
+      "system": "PS2",
+      "price": "$79",
+      "location": "HOME",
+      "era": "retro",
+      "slug": "simpsons-hit-n-run-ps2"
+    },
+    {
+      "title": "paperboy",
+      "system": "Game Boy",
+      "price": "$55",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "paperboy-game-boy"
+    },
+    {
+      "title": "Lost Vikings",
+      "system": "Genesis",
+      "price": "$49",
+      "location": "HOME",
+      "era": "retro",
+      "slug": "lost-vikings-genesis"
+    },
+    {
+      "title": "Luigis mansion",
+      "system": "GameCube",
+      "price": "$89.99",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "luigis-mansion-gamecube"
+    },
+    {
+      "title": "Mario Paint",
+      "system": "SNES",
+      "price": "$20",
+      "cib": false,
+      "condition": "Loose (no box)",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "mario-paint-snes"
+    },
+    {
+      "title": "Chrono Trigger",
+      "system": "SNES",
+      "price": "$80",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "chrono-trigger-snes"
+    },
+    {
+      "title": "Donkey Kong",
+      "system": "NES",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "donkey-kong-nes"
+    },
+    {
+      "title": "Strider",
+      "system": "NES",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "strider-nes"
+    },
+    {
+      "title": "T2",
+      "system": "Genesis",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "t2-genesis"
+    },
+    {
+      "title": "Super mario worllkd",
+      "system": "SNES",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "super-mario-worllkd-snes"
+    },
+    {
+      "title": "Back to the future",
+      "system": "NES",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "back-to-the-future-nes"
+    },
+    {
+      "title": "Crazy Taxi",
+      "system": "PS1",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "crazy-taxi-ps1"
+    },
+    {
+      "title": "Tintin",
+      "system": "3DS",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "tintin-3ds"
+    },
+    {
+      "title": "Dark Moon",
+      "system": "3DS",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "dark-moon-3ds"
+    },
+    {
+      "title": "Hit n Run",
+      "system": "PS2",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "hit-n-run-ps2"
+    },
+    {
+      "title": "Duck Tales",
+      "system": "NES",
+      "cib": false,
+      "condition": "Loose (no box)",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "duck-tales-nes"
+    },
+    {
+      "title": "Bubble Bobble",
+      "system": "NES",
+      "cib": false,
+      "condition": "Loose (no box)",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "bubble-bobble-nes"
+    },
+    {
+      "title": "Doraemon",
+      "system": "Game Boy",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "doraemon-game-boy"
+    },
+    {
+      "title": "Blacksad: Under the Skin",
+      "system": "Switch",
+      "price": "$29.99",
+      "notes": "Adventure game based on the comic series.",
+      "era": "modern",
+      "slug": "blacksad-under-the-skin-switch"
+    },
+    {
+      "title": "La-Mulana 1 & 2: Hidden Treasures Edition",
+      "system": "Switch",
+      "price": "$49.99",
+      "notes": "Includes both La-Mulana games.",
+      "era": "modern",
+      "slug": "la-mulana-1-2-hidden-treasures-edition-switch"
+    },
+    {
+      "title": "The Legend of Zelda: Breath of the Wild",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Popular action-adventure game.",
+      "era": "modern",
+      "slug": "the-legend-of-zelda-breath-of-the-wild-switch"
+    },
+    {
+      "title": "Super Mario Odyssey",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Highly acclaimed platform game.",
+      "era": "modern",
+      "slug": "super-mario-odyssey-switch"
+    },
+    {
+      "title": "Mario Kart 8 Deluxe",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Best-selling racing game.",
+      "era": "modern",
+      "slug": "mario-kart-8-deluxe-switch"
+    },
+    {
+      "title": "Dead Cells",
+      "system": "Switch",
+      "price": "$34.99",
+      "notes": "Roguelike-metroidvania hybrid.",
+      "era": "modern",
+      "slug": "dead-cells-switch"
+    },
+    {
+      "title": "Celeste",
+      "system": "Switch",
+      "price": "$19.99",
+      "notes": "Critically acclaimed platformer.",
+      "era": "modern",
+      "slug": "celeste-switch"
+    },
+    {
+      "title": "Bayonetta 2",
+      "system": "Switch",
+      "price": "$49.99",
+      "notes": "Action hack and slash game.",
+      "era": "modern",
+      "slug": "bayonetta-2-switch"
+    },
+    {
+      "title": "Super Smash Bros. Ultimate",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Crossover fighting game.",
+      "era": "modern",
+      "slug": "super-smash-bros-ultimate-switch"
+    },
+    {
+      "title": "Pokémon Sword",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "RPG with new Pokémon and adventures.",
+      "era": "modern",
+      "slug": "pok-mon-sword-switch"
+    },
+    {
+      "title": "Luigi’s Mansion 3",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Action-adventure game with ghost hunting.",
+      "era": "modern",
+      "slug": "luigi-s-mansion-3-switch"
+    },
+    {
+      "title": "Animal Crossing: New Horizons",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Social simulation game.",
+      "era": "modern",
+      "slug": "animal-crossing-new-horizons-switch"
+    },
+    {
+      "title": "Octopath Traveler",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Role-playing game with eight unique stories.",
+      "era": "modern",
+      "slug": "octopath-traveler-switch"
+    },
+    {
+      "title": "Fire Emblem: Three Houses",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Tactical role-playing game.",
+      "era": "modern",
+      "slug": "fire-emblem-three-houses-switch"
+    },
+    {
+      "title": "Xenoblade Chronicles 2",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Open-world action RPG.",
+      "era": "modern",
+      "slug": "xenoblade-chronicles-2-switch"
+    },
+    {
+      "title": "Splatoon 2",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Third-person shooter with ink battles.",
+      "era": "modern",
+      "slug": "splatoon-2-switch"
+    },
+    {
+      "title": "Donkey Kong Country: Tropical Freeze",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Platform game with Donkey Kong.",
+      "era": "modern",
+      "slug": "donkey-kong-country-tropical-freeze-switch"
+    },
+    {
+      "title": "Yoshi's Crafted World",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Platform game with crafted materials theme.",
+      "era": "modern",
+      "slug": "yoshi-s-crafted-world-switch"
+    },
+    {
+      "title": "The Elder Scrolls V: Skyrim",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Open-world action RPG.",
+      "era": "modern",
+      "slug": "the-elder-scrolls-v-skyrim-switch"
+    },
+    {
+      "title": "Dragon Quest XI S: Echoes of an Elusive Age",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Role-playing game with classic JRPG elements.",
+      "era": "modern",
+      "slug": "dragon-quest-xi-s-echoes-of-an-elusive-age-switch"
+    },
+    {
+      "title": "Hollow Knight",
+      "system": "Switch",
+      "price": "$14.99",
+      "notes": "Action-adventure game in a vast interconnected world.",
+      "era": "modern",
+      "slug": "hollow-knight-switch"
+    },
+    {
+      "title": "Diablo III: Eternal Collection",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Action RPG with dungeon crawling elements.",
+      "era": "modern",
+      "slug": "diablo-iii-eternal-collection-switch"
+    },
+    {
+      "title": "The Legend of Zelda: Link's Awakening",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Remake of the classic Zelda game.",
+      "era": "modern",
+      "slug": "the-legend-of-zelda-link-s-awakening-switch"
+    },
+    {
+      "title": "New Super Mario Bros. U Deluxe",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Enhanced port of the Wii U game.",
+      "era": "modern",
+      "slug": "new-super-mario-bros-u-deluxe-switch"
+    },
+    {
+      "title": "Captain Toad: Treasure Tracker",
+      "system": "Switch",
+      "price": "$39.99",
+      "notes": "Puzzle game with adventure elements.",
+      "era": "modern",
+      "slug": "captain-toad-treasure-tracker-switch"
+    },
+    {
+      "title": "Super Mario Party",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Party game with various mini-games.",
+      "era": "modern",
+      "slug": "super-mario-party-switch"
+    },
+    {
+      "title": "Mario + Rabbids Kingdom Battle",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Crossover turn-based strategy game.",
+      "era": "modern",
+      "slug": "mario-rabbids-kingdom-battle-switch"
+    },
+    {
+      "title": "Kirby Star Allies",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Platform game with cooperative multiplayer.",
+      "era": "modern",
+      "slug": "kirby-star-allies-switch"
+    },
+    {
+      "title": "The World Ends with You: Final Remix",
+      "system": "Switch",
+      "price": "$49.99",
+      "notes": "Action RPG with a unique combat system.",
+      "era": "modern",
+      "slug": "the-world-ends-with-you-final-remix-switch"
+    },
+    {
+      "title": "The Legend of Zelda: Twilight Princess HD",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Remastered version of the classic game.",
+      "era": "modern",
+      "slug": "the-legend-of-zelda-twilight-princess-hd-switch"
+    },
+    {
+      "title": "Ni no Kuni: Wrath of the White Witch",
+      "system": "Switch",
+      "price": "$49.99",
+      "notes": "Role-playing game with Studio Ghibli's involvement.",
+      "era": "modern",
+      "slug": "ni-no-kuni-wrath-of-the-white-witch-switch"
+    },
+    {
+      "title": "Trials of Mana",
+      "system": "Switch",
+      "price": "$49.99",
+      "notes": "Action RPG, remake of Seiken Densetsu 3.",
+      "era": "modern",
+      "slug": "trials-of-mana-switch"
+    },
+    {
+      "title": "Hyrule Warriors: Definitive Edition",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Hack and slash game set in the Zelda universe.",
+      "era": "modern",
+      "slug": "hyrule-warriors-definitive-edition-switch"
+    },
+    {
+      "title": "Astral Chain",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Action game with a dual-character system.",
+      "era": "modern",
+      "slug": "astral-chain-switch"
+    },
+    {
+      "title": "Tokyo Mirage Sessions FE Encore",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Crossover RPG with Fire Emblem and Shin Megami Tensei.",
+      "era": "modern",
+      "slug": "tokyo-mirage-sessions-fe-encore-switch"
+    },
+    {
+      "title": "Xenoblade Chronicles: Definitive Edition",
+      "system": "Switch",
+      "price": "$59.99",
+      "notes": "Remastered version of the classic RPG.",
+      "era": "modern",
+      "slug": "xenoblade-chronicles-definitive-edition-switch"
+    },
+    {
+      "title": "The Witcher 3: Wild Hunt Complete Edition",
+      "system": "Switch",
+      "era": "modern",
+      "slug": "the-witcher-3-wild-hunt-complete-edition-switch"
+    },
+    {
+      "title": "Battlefield 1",
+      "system": "Xbox One",
+      "price": "$19.99",
+      "notes": "First-person shooter set in World War I.",
+      "era": "modern",
+      "slug": "battlefield-1-xbox-one"
+    },
+    {
+      "title": "Battlefield 4",
+      "system": "Xbox One",
+      "price": "$19.99",
+      "notes": "First-person shooter set in modern-day.",
+      "era": "modern",
+      "slug": "battlefield-4-xbox-one"
+    },
+    {
+      "title": "Final Fantasy XV",
+      "system": "Xbox One",
+      "price": "$29.99",
+      "notes": "Action role-playing game.",
+      "era": "modern",
+      "slug": "final-fantasy-xv-xbox-one"
+    },
+    {
+      "title": "Resident Evil 7: Biohazard",
+      "system": "Xbox One",
+      "price": "$29.99",
+      "notes": "Survival horror game.",
+      "era": "modern",
+      "slug": "resident-evil-7-biohazard-xbox-one"
+    },
+    {
+      "title": "Fallout 4",
+      "system": "Xbox One",
+      "price": "$19.99",
+      "notes": "Open-world RPG.",
+      "era": "modern",
+      "slug": "fallout-4-xbox-one"
+    },
+    {
+      "title": "Prey",
+      "system": "Xbox One",
+      "price": "$29.99",
+      "notes": "First-person action-adventure game.",
+      "era": "modern",
+      "slug": "prey-xbox-one"
+    },
+    {
+      "title": "Mortal Kombat XL",
+      "system": "Xbox One",
+      "price": "$19.99",
+      "notes": "Fighting game.",
+      "era": "modern",
+      "slug": "mortal-kombat-xl-xbox-one"
+    },
+    {
+      "title": "Injustice 2",
+      "system": "Xbox One",
+      "price": "$19.99",
+      "notes": "Fighting game featuring DC Comics characters.",
+      "era": "modern",
+      "slug": "injustice-2-xbox-one"
+    },
+    {
+      "title": "The Witcher 3: Wild Hunt",
+      "system": "Xbox One",
+      "price": "$39.99",
+      "notes": "Open-world RPG.",
+      "era": "modern",
+      "slug": "the-witcher-3-wild-hunt-xbox-one"
+    },
+    {
+      "title": "Dishonored 2",
+      "system": "Xbox One",
+      "price": "$29.99",
+      "notes": "Action-adventure game.",
+      "era": "modern",
+      "slug": "dishonored-2-xbox-one"
+    },
+    {
+      "title": "Assassin's Creed Origins",
+      "system": "PS4",
+      "price": "$29.99",
+      "notes": "Action-adventure game set in Ancient Egypt.",
+      "era": "modern",
+      "slug": "assassin-s-creed-origins-ps4"
+    },
+    {
+      "title": "Shadow of the Colossus",
+      "system": "PS4",
+      "price": "$39.99",
+      "notes": "Remake of the classic action-adventure game.",
+      "era": "modern",
+      "slug": "shadow-of-the-colossus-ps4"
+    },
+    {
+      "title": "Days Gone",
+      "system": "PS4",
+      "price": "$39.99",
+      "notes": "Action-adventure survival horror game.",
+      "era": "modern",
+      "slug": "days-gone-ps4"
+    },
+    {
+      "title": "Detroit: Become Human",
+      "system": "PS4",
+      "price": "$29.99",
+      "notes": "Interactive drama and action-adventure game.",
+      "era": "modern",
+      "slug": "detroit-become-human-ps4"
+    },
+    {
+      "title": "Uncharted 4: A Thief's End",
+      "system": "PS4",
+      "price": "$19.99",
+      "notes": "Action-adventure game.",
+      "era": "modern",
+      "slug": "uncharted-4-a-thief-s-end-ps4"
+    },
+    {
+      "title": "Final Fantasy XV",
+      "system": "PS4",
+      "price": "$29.99",
+      "notes": "Action role-playing game.",
+      "era": "modern",
+      "slug": "final-fantasy-xv-ps4"
+    },
+    {
+      "title": "Dragon Ball FighterZ",
+      "system": "PS4",
+      "price": "$29.99",
+      "notes": "Fighting game.",
+      "era": "modern",
+      "slug": "dragon-ball-fighterz-ps4"
+    },
+    {
+      "title": "Persona 5",
+      "system": "PS4",
+      "price": "$59.99",
+      "notes": "Role-playing game.",
+      "era": "modern",
+      "slug": "persona-5-ps4"
+    },
+    {
+      "title": "Nioh",
+      "system": "PS4",
+      "price": "$19.99",
+      "notes": "Action role-playing game.",
+      "era": "modern",
+      "slug": "nioh-ps4"
+    },
+    {
+      "title": "Horizon Zero Dawn",
+      "system": "PS4",
+      "price": "$19.99",
+      "notes": "Action role-playing game set in a post-apocalyptic world.",
+      "era": "modern",
+      "slug": "horizon-zero-dawn-ps4"
+    },
+    {
+      "title": "Bloodborne",
+      "system": "PS4",
+      "price": "$19.99",
+      "notes": "Action RPG from the creators of Dark Souls.",
+      "era": "modern",
+      "slug": "bloodborne-ps4"
+    },
+    {
+      "title": "The Last of Us Remastered",
+      "system": "PS4",
+      "price": "$19.99",
+      "notes": "Remastered version of the critically acclaimed game.",
+      "era": "modern",
+      "slug": "the-last-of-us-remastered-ps4"
+    },
+    {
+      "title": "Dark Souls III",
+      "system": "PS4",
+      "price": "$19.99",
+      "notes": "Action role-playing game.",
+      "era": "modern",
+      "slug": "dark-souls-iii-ps4"
+    },
+    {
+      "title": "NieR: Automata",
+      "system": "PS4",
+      "price": "$39.99",
+      "notes": "Action RPG with a unique storytelling approach.",
+      "era": "modern",
+      "slug": "nier-automata-ps4"
+    },
+    {
+      "title": "Resident Evil 2",
+      "system": "PS4",
+      "price": "$29.99",
+      "notes": "Remake of the classic survival horror game.",
+      "era": "modern",
+      "slug": "resident-evil-2-ps4"
+    },
+    {
+      "title": "The Last Guardian",
+      "system": "PS4",
+      "price": "$29.99",
+      "notes": "Action-adventure game with puzzle elements.",
+      "era": "modern",
+      "slug": "the-last-guardian-ps4"
+    },
+    {
+      "title": "Tales of Arise",
+      "system": "PS4",
+      "price": "$59.99",
+      "notes": "Action role-playing game.",
+      "era": "modern",
+      "slug": "tales-of-arise-ps4"
+    },
+    {
+      "title": "Red Dead Redemption 2",
+      "system": "PS4",
+      "price": "$59.99",
+      "notes": "Open-world action-adventure game.",
+      "era": "modern",
+      "slug": "red-dead-redemption-2-ps4"
+    },
+    {
+      "title": "The Last of Us Part II",
+      "system": "PS4",
+      "price": "$39.99",
+      "notes": "Action-adventure game.",
+      "era": "modern",
+      "slug": "the-last-of-us-part-ii-ps4"
+    },
+    {
+      "title": "Hunt: Showdown",
+      "system": "PS4",
+      "price": "$39.99",
+      "notes": "First-person shooter with PvP and PvE elements.",
+      "era": "modern",
+      "slug": "hunt-showdown-ps4"
+    },
+    {
+      "title": "Devil May Cry 5",
+      "system": "PS4",
+      "price": "$29.99",
+      "notes": "Action-adventure hack and slash game.",
+      "era": "modern",
+      "slug": "devil-may-cry-5-ps4"
+    },
+    {
+      "title": "Concrete Genie",
+      "system": "PS4",
+      "price": "$29.99",
+      "notes": "Action-adventure game with creative painting mechanics.",
+      "era": "modern",
+      "slug": "concrete-genie-ps4"
+    },
+    {
+      "title": "Crash Bandicoot 4: It's About Time",
+      "system": "PS4",
+      "price": "$59.99",
+      "notes": "Platform game.",
+      "era": "modern",
+      "slug": "crash-bandicoot-4-it-s-about-time-ps4"
+    },
+    {
+      "title": "Spider-Man",
+      "system": "PS4",
+      "price": "$39.99",
+      "notes": "Action-adventure game set in the Marvel Universe.",
+      "era": "modern",
+      "slug": "spider-man-ps4"
+    },
+    {
+      "title": "Ghost of Tsushima",
+      "system": "PS4",
+      "price": "$59.99",
+      "notes": "Action-adventure game set in feudal Japan.",
+      "era": "modern",
+      "slug": "ghost-of-tsushima-ps4"
+    },
+    {
+      "title": "Kingdom Hearts III",
+      "system": "PS4",
+      "price": "$39.99",
+      "notes": "Action RPG.",
+      "era": "modern",
+      "slug": "kingdom-hearts-iii-ps4"
+    },
+    {
+      "title": "Final Fantasy VII Remake",
+      "system": "PS4",
+      "price": "$59.99",
+      "notes": "Remake of the classic JRPG.",
+      "era": "modern",
+      "slug": "final-fantasy-vii-remake-ps4"
+    },
+    {
+      "title": "Sekiro: Shadows Die Twice",
+      "system": "PS4",
+      "price": "$59.99",
+      "notes": "Action-adventure game with challenging combat.",
+      "era": "modern",
+      "slug": "sekiro-shadows-die-twice-ps4"
+    },
+    {
+      "title": "Resident Evil Village",
+      "system": "PS4",
+      "price": "$59.99",
+      "notes": "Survival horror game.",
+      "era": "modern",
+      "slug": "resident-evil-village-ps4"
+    },
+    {
+      "title": "Uncharted: The Lost Legacy",
+      "system": "PS4",
+      "price": "$19.99",
+      "notes": "Action-adventure game.",
+      "era": "modern",
+      "slug": "uncharted-the-lost-legacy-ps4"
+    },
+    {
+      "title": "Yakuza 0",
+      "system": "PS4",
+      "price": "$19.99",
+      "notes": "Action-adventure game set in the Japanese underworld.",
+      "era": "modern",
+      "slug": "yakuza-0-ps4"
+    },
+    {
+      "title": "Metal Gear Solid V: The Phantom Pain",
+      "system": "PS4",
+      "price": "$29.99",
+      "notes": "Action-adventure stealth game.",
+      "era": "modern",
+      "slug": "metal-gear-solid-v-the-phantom-pain-ps4"
+    },
+    {
+      "title": "Nioh 2",
+      "system": "PS4",
+      "price": "$59.99",
+      "notes": "Action role-playing game.",
+      "era": "modern",
+      "slug": "nioh-2-ps4"
+    },
+    {
+      "title": "The Evil Within 2",
+      "system": "PS4",
+      "price": "$29.99",
+      "notes": "Survival horror game.",
+      "era": "modern",
+      "slug": "the-evil-within-2-ps4"
+    },
+    {
+      "title": "Dark Souls Remastered",
+      "system": "PS4",
+      "price": "$39.99",
+      "notes": "Remastered version of the classic action RPG.",
+      "era": "modern",
+      "slug": "dark-souls-remastered-ps4"
+    },
+    {
+      "title": "Shadow of the Tomb Raider",
+      "system": "PS4",
+      "price": "$39.99",
+      "notes": "Action-adventure game.",
+      "era": "modern",
+      "slug": "shadow-of-the-tomb-raider-ps4"
+    },
+    {
+      "title": "Final Fantasy X/X-2 HD Remaster",
+      "system": "PS4",
+      "price": "$39.99",
+      "notes": "Remastered collection of the two classic RPGs.",
+      "era": "modern",
+      "slug": "final-fantasy-x-x-2-hd-remaster-ps4"
+    },
+    {
+      "title": "Okami HD",
+      "system": "PS4",
+      "price": "$19.99",
+      "notes": "Remastered version of the classic action-adventure game.",
+      "era": "modern",
+      "slug": "okami-hd-ps4"
+    },
+    {
+      "title": "Darksiders III",
+      "system": "PS4",
+      "price": "$39.99",
+      "notes": "Action-adventure hack and slash game.",
+      "era": "modern",
+      "slug": "darksiders-iii-ps4"
+    },
+    {
+      "title": "Ni no Kuni II: Revenant Kingdom",
+      "system": "PS4",
+      "price": "$59.99",
+      "notes": "Role-playing game.",
+      "era": "modern",
+      "slug": "ni-no-kuni-ii-revenant-kingdom-ps4"
+    },
+    {
+      "title": "The Dark Pictures Anthology: Man of Medan",
+      "system": "PS4",
+      "price": "$29.99",
+      "notes": "Interactive drama and horror game.",
+      "era": "modern",
+      "slug": "the-dark-pictures-anthology-man-of-medan-ps4"
+    },
+    {
+      "title": "The Dark Pictures Anthology: Little Hope",
+      "system": "PS4",
+      "price": "$29.99",
+      "notes": "Interactive drama and horror game.",
+      "era": "modern",
+      "slug": "the-dark-pictures-anthology-little-hope-ps4"
+    },
+    {
+      "title": "The Dark Pictures Anthology: House of Ashes",
+      "system": "PS4",
+      "price": "$29.99",
+      "notes": "Interactive drama and horror game.",
+      "era": "modern",
+      "slug": "the-dark-pictures-anthology-house-of-ashes-ps4"
+    },
+    {
+      "title": "The Quarry",
+      "system": "PS4",
+      "price": "$59.99",
+      "notes": "Interactive drama and horror game.",
+      "era": "modern",
+      "slug": "the-quarry-ps4"
+    },
+    {
+      "title": "God of War",
+      "system": "PS4",
+      "price": "$39.99",
+      "notes": "Action-adventure game.",
+      "era": "modern",
+      "slug": "god-of-war-ps4"
+    },
+    {
+      "title": "Yakuza 6: The Song of Life",
+      "system": "PS4",
+      "price": "$39.99",
+      "notes": "Action-adventure game.",
+      "era": "modern",
+      "slug": "yakuza-6-the-song-of-life-ps4"
+    },
+    {
+      "title": "Shadow of the Colossus",
+      "system": "PS2",
+      "price": "$39.99",
+      "notes": "Classic action-adventure game.",
+      "era": "modern",
+      "slug": "shadow-of-the-colossus-ps2"
+    }
   ]
 }
