@@ -554,6 +554,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         } else { window.prompt('Copy this link', url); }
       });
     })();
+
+    // Dev tool: visit collection.html?covers=export, scroll so covers load,
+    // then tap to copy a {slug: coverURL} map of everything your browser
+    // resolved — paste it back and those covers get baked in permanently.
+    (function(){
+      if (new URLSearchParams(location.search).get('covers') !== 'export') return;
+      var host = document.querySelector('.rc-share-wrap'); if (!host) return;
+      var b = document.createElement('button');
+      b.className = 'rc-share'; b.style.marginLeft = '10px'; b.type = 'button';
+      b.textContent = '⤓ Copy resolved covers';
+      b.addEventListener('click', function(){
+        var out = {};
+        (DATA.items || []).forEach(function(it){
+          if (it.image) return;
+          var u = coverCache[coverKey(it)];
+          if (u) out[it.slug] = u;
+        });
+        var txt = JSON.stringify(out);
+        var ok = function(){ b.textContent = 'Copied ' + Object.keys(out).length + ' covers — paste to Claude'; };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok).catch(function(){ window.prompt('Copy this', txt); });
+        else window.prompt('Copy this', txt);
+      });
+      host.appendChild(b);
+    })();
   </script>
 </body>
 </html>
