@@ -254,6 +254,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var view = [];          // the items currently shown (filtered) — what the lightbox walks
     var lb = null, lbIndex = -1;
 
+    // Any cover that fails to load reverts its tile to the title plate — no
+    // broken-image icons, ever. (error doesn't bubble, so capture.)
+    wrap.addEventListener('error', function(e){
+      var img = e.target;
+      if (img && img.tagName === 'IMG' && img.classList && img.classList.contains('cover-img')) {
+        if (img.parentNode && img.parentNode.classList) img.parentNode.classList.remove('has-cover');
+        img.remove();
+      }
+    }, true);
+
     // ── Cover art ─────────────────────────────────────────────────────────
     // No photos in the sheet, so covers are fetched in the visitor's browser
     // from Wikipedia's image API (keyless, CORS-enabled), lazy-loaded as tiles
@@ -412,6 +422,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       lb.querySelector('#lb-prev').addEventListener('click', function(){ navLB(-1); });
       lb.querySelector('#lb-next').addEventListener('click', function(){ navLB(1); });
       lb.addEventListener('click', function(e){ if (e.target === lb) closeLB(); });
+      // A failed cover in the lightbox or filmstrip falls back to text.
+      lb.addEventListener('error', function(e){
+        var img = e.target; if (!img || img.tagName !== 'IMG') return;
+        var par = img.parentNode; if (!par) return;
+        if (par.classList.contains('lb-media')) {
+          var it = view[lbIndex];
+          par.classList.add('noimg');
+          par.innerHTML = '<span class="rc-plate">' + esc(it ? it.title : '') + '</span>';
+        } else if (par.classList.contains('mini') || (par.parentNode && par.parentNode.id === 'lb-strip')) {
+          var it2 = view[+par.dataset.idx];
+          if (it2) par.innerHTML = '<span class="mini-plate" style="--h:'+hue(it2.system)+'">'+esc(it2.system||'?')+'</span>';
+        }
+      }, true);
     }
     function buildStrip(){
       var strip = lb.querySelector('#lb-strip');
