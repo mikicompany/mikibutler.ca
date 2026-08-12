@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-W7JWP3TR');</script>
+  <!-- End Google Tag Manager -->
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png" />
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+  <title>Blog — Miki Butler</title>
+  <!-- Not linked in the nav yet; keep it out of search until it's ready. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Notes, breakdowns and process from Miki Butler — environment artist." />
+  <meta id="og-type" property="og:type" content="website" />
+  <meta property="og:site_name" content="Miki Butler" />
+  <meta id="og-title" property="og:title" content="Blog — Miki Butler" />
+  <meta id="og-desc" property="og:description" content="Notes, breakdowns and process from an environment artist." />
+  <meta id="og-url" property="og:url" content="https://mikibutler.ca/blog.html" />
+  <meta id="og-image" property="og:image" content="https://mikibutler.ca/images/og-card.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta id="tw-title" name="twitter:title" content="Blog — Miki Butler" />
+  <meta id="tw-desc" name="twitter:description" content="Notes, breakdowns and process from an environment artist." />
+  <meta id="tw-image" name="twitter:image" content="https://mikibutler.ca/images/og-card.jpg" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --blog-max: 760px; }
+    main { padding: 64px 28px 96px; }
+    .blog-wrap { max-width: var(--blog-max); margin: 0 auto; }
+
+    /* ── Header ── */
+    .blog-head { margin-bottom: 40px; }
+    .blog-head h1 { font-size: clamp(38px, 6vw, 60px); font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+    .blog-head h1 .dot { color: var(--accent); }
+    .blog-head p { margin-top: 14px; color: var(--text-muted); font-size: 16px; line-height: 1.6; max-width: 52ch; }
+
+    /* ── Post list ── */
+    .post-list { display: flex; flex-direction: column; gap: 18px; }
+    .post-card {
+      display: grid; grid-template-columns: 1fr; gap: 6px; text-decoration: none; color: inherit;
+      background: var(--card-bg); border: 1px solid #262626; border-radius: 14px; padding: 22px 24px;
+      transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+    }
+    .post-card:hover { border-color: var(--accent); transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0,0,0,.5), 0 0 0 1px var(--accent); }
+    .post-card.has-cover { grid-template-columns: 150px 1fr; gap: 22px; align-items: center; }
+    .post-card .cover { width: 150px; height: 100px; border-radius: 10px; object-fit: cover; display: block; }
+    .post-meta { font-size: 12px; color: var(--text-muted); letter-spacing: .02em; }
+    .post-card h2 { font-size: 21px; font-weight: 700; line-height: 1.25; margin: 4px 0 2px; }
+    .post-card:hover h2 { color: var(--accent); }
+    .post-card .excerpt { font-size: 14.5px; color: #b4b4b4; line-height: 1.55; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .tag { font-size: 11px; letter-spacing: .04em; text-transform: lowercase; color: var(--accent);
+      border: 1px solid rgba(160,255,0,.35); border-radius: 999px; padding: 3px 10px; }
+
+    .blog-empty { color: var(--text-muted); font-size: 15px; padding: 40px 0; }
+
+    /* ── Single post ── */
+    .post-back {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;
+      color: var(--text-muted); text-decoration: none; margin-bottom: 26px; transition: color .15s ease;
+    }
+    .post-back:hover { color: var(--accent); }
+    article.post > header { margin-bottom: 30px; border-bottom: 1px solid #262626; padding-bottom: 24px; }
+    article.post h1 { font-size: clamp(30px, 5vw, 46px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.08; }
+    article.post .post-meta { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    article.post .cover-full { width: 100%; border-radius: 14px; margin: 4px 0 8px; display: block; }
+
+    /* Prose typography */
+    .prose { font-size: 17px; line-height: 1.72; color: #d8d8d8; }
+    .prose > * + * { margin-top: 1.15em; }
+    .prose h2 { font-size: 25px; font-weight: 700; color: #fff; margin-top: 1.8em; letter-spacing: -0.01em; }
+    .prose h3 { font-size: 20px; font-weight: 700; color: #fff; margin-top: 1.5em; }
+    .prose a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(160,255,0,.3); }
+    .prose a:hover { border-bottom-color: var(--accent); }
+    .prose strong { color: #fff; font-weight: 700; }
+    .prose ul, .prose ol { padding-left: 1.3em; }
+    .prose li { margin: .35em 0; }
+    .prose li::marker { color: var(--accent); }
+    .prose blockquote {
+      border-left: 3px solid var(--accent); padding: 4px 0 4px 20px; margin-left: 0;
+      color: #cfcfcf; font-style: italic; font-size: 18px;
+    }
+    .prose code { font-family: 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
+      font-size: .88em; background: #202020; border: 1px solid #2e2e2e; border-radius: 5px; padding: 1px 6px; color: #e6e6e6; }
+    .prose pre { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 16px 18px; overflow-x: auto; }
+    .prose pre code { background: none; border: 0; padding: 0; font-size: 13.5px; line-height: 1.6; }
+    .prose img { max-width: 100%; border-radius: 12px; display: block; }
+    .prose hr { border: 0; border-top: 1px solid #2a2a2a; margin: 2em 0; }
+
+    /* Share + footer of a post */
+    .post-foot { margin-top: 44px; padding-top: 24px; border-top: 1px solid #262626; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .post-share {
+      display: inline-flex; align-items: center; gap: 7px; font: inherit; font-size: 13px; font-weight: 700;
+      letter-spacing: .03em; color: var(--accent); background: transparent; cursor: pointer;
+      border: 1px solid rgba(160,255,0,.4); border-radius: 999px; padding: 9px 18px;
+      transition: background .15s ease, box-shadow .15s ease, transform .15s ease;
+    }
+    .post-share:hover { background: rgba(160,255,0,.12); box-shadow: 0 0 16px rgba(160,255,0,.25); }
+    .post-share:active { transform: translateY(1px); }
+    .post-share.copied { background: var(--accent); color: #0a0b08; border-color: var(--accent); }
+    .post-foot .foot-note { font-size: 13px; color: var(--text-muted); }
+
+    @media (max-width: 560px) {
+      main { padding: 40px 18px 72px; }
+      .post-card.has-cover { grid-template-columns: 1fr; }
+      .post-card .cover { width: 100%; height: 160px; }
+    }
+  </style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W7JWP3TR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo" aria-label="Miki Butler home"><img src="images/logo512.jpg" alt="Miki Butler" /></a>
+    <nav id="sidebar-nav"></nav>
+    <div class="sidebar-socials" id="sidebar-socials"></div>
+    <p class="sidebar-copy">© All rights reserved<br>Miki Butler</p>
+  </aside>
+
+  <main>
+    <div class="blog-wrap" id="blog-wrap">
+      <div class="blog-empty">Loading…</div>
+    </div>
+  </main>
+
+  <script src="js/sidebar.js"></script>
+  <script src="js/fx.js" defer></script>
+  <script>
+    // ── Tiny Markdown renderer ────────────────────────────────────────────
+    // Covers the blocks a blog post needs: headings, paragraphs, lists,
+    // blockquotes, fenced code, rules, and inline bold/italic/code/links/
+    // images. Content is escaped first, so post bodies are plain Markdown
+    // (no raw HTML) — safe and easy to author in blog.json.
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function inline(s) {
+      var codes = [];
+      s = s.replace(/`([^`]+)`/g, function (_, c) { codes.push(c); return '~#~' + (codes.length - 1) + '~#~'; });
+      s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g, '<img src="$2" alt="$1" loading="lazy" />');
+      s = s.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g, function (_, txt, url) {
+        var ext = /^https?:\/\//.test(url);
+        return '<a href="' + url + '"' + (ext ? ' target="_blank" rel="noopener"' : '') + '>' + txt + '</a>';
+      });
+      s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+      s = s.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+      s = s.replace(/(^|[\s(])_([^_\n]+)_/g, '$1<em>$2</em>');
+      s = s.replace(/~#~(\d+)~#~/g, function (_, n) { return '<code>' + codes[+n] + '</code>'; });
+      return s;
+    }
+    function markdown(src) {
+      var lines = String(src || '').replace(/\r\n?/g, '\n').split('\n');
+      var out = '', i = 0;
+      function isBlank(l) { return /^\s*$/.test(l); }
+      while (i < lines.length) {
+        var line = lines[i];
+        if (/^\s*```/.test(line)) {
+          i++; var buf = [];
+          while (i < lines.length && !/^\s*```/.test(lines[i])) { buf.push(lines[i]); i++; }
+          i++; out += '<pre><code>' + esc(buf.join('\n')) + '</code></pre>'; continue;
+        }
+        if (isBlank(line)) { i++; continue; }
+        var h = line.match(/^(#{1,6})\s+(.*)$/);
+        if (h) { var lvl = h[1].length; out += '<h' + lvl + '>' + inline(esc(h[2])) + '</h' + lvl + '>'; i++; continue; }
+        if (/^\s*(---|\*\*\*|___)\s*$/.test(line)) { out += '<hr />'; i++; continue; }
+        if (/^\s*>\s?/.test(line)) {
+          var q = [];
+          while (i < lines.length && /^\s*>\s?/.test(lines[i])) { q.push(lines[i].replace(/^\s*>\s?/, '')); i++; }
+          out += '<blockquote>' + inline(esc(q.join(' '))) + '</blockquote>'; continue;
+        }
+        if (/^\s*[-*+]\s+/.test(line)) {
+          var ul = [];
+          while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i])) { ul.push(lines[i].replace(/^\s*[-*+]\s+/, '')); i++; }
+          out += '<ul>' + ul.map(function (t) { return '<li>' + inline(esc(t)) + '</li>'; }).join('') + '</ul>'; continue;
+        }
+        if (/^\s*\d+\.\s+/.test(line)) {
+          var ol = [];
+          while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) { ol.push(lines[i].replace(/^\s*\d+\.\s+/, '')); i++; }
+          out += '<ol>' + ol.map(function (t) { return '<li>' + inline(esc(t)) + '</li>'; }).join('') + '</ol>'; continue;
+        }
+        var para = [];
+        while (i < lines.length && !isBlank(lines[i]) && !/^\s*(#{1,6}\s|[-*+]\s|\d+\.\s|>|```)/.test(lines[i])) {
+          para.push(lines[i]); i++;
+        }
+        out += '<p>' + inline(esc(para.join(' '))) + '</p>';
+      }
+      return out;
+    }
+
+    // ── Helpers ──
+    function fmtDate(iso) {
+      var d = new Date(iso + 'T00:00:00');
+      if (isNaN(d)) return iso;
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    function readingTime(body) {
+      var words = String(body || '').trim().split(/\s+/).length;
+      return Math.max(1, Math.round(words / 200)) + ' min read';
+    }
+    function tagsHTML(tags) {
+      if (!tags || !tags.length) return '';
+      return '<div class="tags">' + tags.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('') + '</div>';
+    }
+
+    var wrap = document.getElementById('blog-wrap');
+
+    // ── Views ──
+    function renderList(posts) {
+      document.title = 'Blog — Miki Butler';
+      if (!posts.length) {
+        wrap.innerHTML = '<div class="blog-head"><h1>Blog<span class="dot">.</span></h1></div>' +
+          '<div class="blog-empty">No posts yet — check back soon.</div>';
+        return;
+      }
+      var cards = posts.map(function (p) {
+        var cover = p.cover
+          ? '<img class="cover" src="' + esc(p.cover) + '" alt="" loading="lazy" />' : '';
+        return '<a class="post-card' + (p.cover ? ' has-cover' : '') + '" href="?post=' + encodeURIComponent(p.slug) + '">' +
+          cover +
+          '<div>' +
+            '<div class="post-meta">' + fmtDate(p.date) + ' · ' + readingTime(p.body) + '</div>' +
+            '<h2>' + esc(p.title) + '</h2>' +
+            '<div class="excerpt">' + esc(p.excerpt || '') + '</div>' +
+            tagsHTML(p.tags) +
+          '</div>' +
+        '</a>';
+      }).join('');
+      wrap.innerHTML =
+        '<div class="blog-head">' +
+          '<h1>Blog<span class="dot">.</span></h1>' +
+          '<p>Notes, breakdowns and the odd rabbit hole from the environment-art trenches.</p>' +
+        '</div>' +
+        '<div class="post-list">' + cards + '</div>';
+    }
+
+    function setMeta(post) {
+      var url = location.origin + location.pathname + '?post=' + encodeURIComponent(post.slug);
+      var img = post.cover ? (location.origin + '/' + post.cover.replace(/^\//, '')) : 'https://mikibutler.ca/images/og-card.jpg';
+      document.title = post.title + ' — Miki Butler';
+      var set = function (id, val) { var el = document.getElementById(id); if (el) el.setAttribute('content', val); };
+      set('og-type', 'article'); set('og-title', post.title); set('tw-title', post.title);
+      set('og-desc', post.excerpt || ''); set('tw-desc', post.excerpt || '');
+      set('og-url', url); set('og-image', img); set('tw-image', img);
+    }
+
+    function renderPost(post) {
+      setMeta(post);
+      var cover = post.cover ? '<img class="cover-full" src="' + esc(post.cover) + '" alt="" />' : '';
+      wrap.innerHTML =
+        '<a class="post-back" href="blog.html">‹ All posts</a>' +
+        '<article class="post">' +
+          '<header>' +
+            '<h1>' + esc(post.title) + '</h1>' +
+            '<div class="post-meta">' + fmtDate(post.date) + ' · ' + readingTime(post.body) + tagsHTML(post.tags) + '</div>' +
+          '</header>' +
+          cover +
+          '<div class="prose">' + markdown(post.body) + '</div>' +
+          '<div class="post-foot">' +
+            '<button class="post-share" id="post-share" type="button">⤴ <span id="post-share-label">Share this post</span></button>' +
+            '<span class="foot-note">Thanks for reading — more soon.</span>' +
+          '</div>' +
+        '</article>';
+      wireShare(post);
+      window.scrollTo(0, 0);
+    }
+
+    function wireShare(post) {
+      var btn = document.getElementById('post-share');
+      if (!btn) return;
+      var label = document.getElementById('post-share-label');
+      var url = location.origin + location.pathname + '?post=' + encodeURIComponent(post.slug);
+      var data = { title: post.title, text: post.excerpt || post.title, url: url };
+      var timer = 0;
+      btn.addEventListener('click', function () {
+        if (navigator.share) { navigator.share(data).catch(function () {}); return; }
+        var done = function () {
+          var prev = label.textContent; label.textContent = 'Link copied!'; btn.classList.add('copied');
+          clearTimeout(timer); timer = setTimeout(function () { label.textContent = prev; btn.classList.remove('copied'); }, 1700);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done).catch(function () { window.prompt('Copy this link', url); });
+        } else { window.prompt('Copy this link', url); }
+      });
+    }
+
+    // ── Router ──
+    fetch('blog.json?t=' + Date.now()).then(function (r) { return r.ok ? r.json() : { posts: [] }; })
+      .then(function (data) {
+        var posts = (data.posts || []).slice().sort(function (a, b) { return (a.date < b.date) ? 1 : -1; });
+        var slug = new URLSearchParams(location.search).get('post');
+        var post = slug && posts.find(function (p) { return p.slug === slug; });
+        if (post) renderPost(post); else renderList(posts);
+      })
+      .catch(function () {
+        wrap.innerHTML = '<div class="blog-head"><h1>Blog<span class="dot">.</span></h1></div>' +
+          '<div class="blog-empty">Couldn’t load posts right now.</div>';
+      });
+
+    // Support back/forward between list and post without a full reload feel.
+    window.addEventListener('popstate', function () { location.reload(); });
+  </script>
+</body>
+</html>

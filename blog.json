@@ -1,0 +1,13 @@
+{
+  "posts": [
+    {
+      "slug": "placeholder",
+      "title": "Your posts will show up here",
+      "date": "2026-08-12",
+      "tags": ["placeholder"],
+      "excerpt": "This is a placeholder so you can see the layout. Replace it with your real ArtStation posts (see the note inside).",
+      "cover": "",
+      "body": "This post is just a **placeholder** so the blog isn't empty while it's wired up. Nothing here is published or searchable yet.\n\n## How to add real posts\n\nEach post is one entry in `blog.json`. Copy this block and fill it in:\n\n```\n{\n  \"slug\": \"my-post-url\",\n  \"title\": \"My post title\",\n  \"date\": \"2026-08-12\",\n  \"tags\": [\"environment art\", \"process\"],\n  \"excerpt\": \"One line that shows on the list.\",\n  \"cover\": \"images/gameography/starship-troopers.jpg\",\n  \"body\": \"Markdown goes here.\"\n}\n```\n\nThe `body` is plain **Markdown** — headings with `#`, `**bold**`, `*italic*`, `- lists`, `> quotes`, `[links](https://example.com)`, `![images](path.jpg)`, and fenced code. Newest posts sort to the top automatically by `date`.\n\n## Pulling from ArtStation\n\nYour ArtStation blog lives at [artstation.com/mikicompany/blog](https://www.artstation.com/mikicompany/blog). Once the posts are copied in here, delete this placeholder entry and you're live (on the arcade only — still not searchable)."
+    }
+  ]
+}
