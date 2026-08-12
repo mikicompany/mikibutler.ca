@@ -79,8 +79,15 @@
     @keyframes coverfade { from { opacity: 0; } to { opacity: 1; } }
     .rc-thumb.noimg { display: flex; align-items: center; justify-content: center; text-align: center; padding: 14px;
       background: linear-gradient(150deg, hsl(var(--h,90) 32% 22%), hsl(var(--h,90) 40% 10%)); }
-    .rc-plate { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
-    .pxc { width: 62%; max-width: 104px; height: auto; image-rendering: pixelated; filter: drop-shadow(0 2px 0 rgba(0,0,0,.35)); }
+    /* Title fallback shown on a tile until its cover art loads. */
+    .rc-plate { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 10px;
+      overflow: hidden; text-align: center; font-size: 12px; font-weight: 700; line-height: 1.25; color: #ededed;
+      text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+    .pxc { display: block; height: auto; image-rendering: pixelated; }
+    /* Pixel console icon inside a system filter chip. */
+    .rc-chip.sys { display: inline-flex; align-items: center; gap: 6px; }
+    .chip-ico { display: inline-flex; width: 18px; height: 18px; }
+    .chip-ico .pxc { width: 100%; filter: drop-shadow(0 1px 0 rgba(0,0,0,.35)); }
     .cond-flag { position: absolute; top: 9px; right: 9px; z-index: 2; font-size: 10px; font-weight: 800; letter-spacing: .04em;
       padding: 3px 8px; border-radius: 999px; }
     .cond-flag.cib { background: var(--accent); color: #0a0b08; }
@@ -254,21 +261,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // nothing is found. An item can force a specific art with "image", or a
     // better search term with "search".
     var coverCache = {};
-    try { coverCache = JSON.parse(localStorage.getItem('mb-covers-v1') || '{}'); } catch (_) {}
-    function saveCovers(){ try { localStorage.setItem('mb-covers-v1', JSON.stringify(coverCache)); } catch (_) {} }
+    try { coverCache = JSON.parse(localStorage.getItem('mb-covers-v2') || '{}'); } catch (_) {}
+    function saveCovers(){ try { localStorage.setItem('mb-covers-v2', JSON.stringify(coverCache)); } catch (_) {} }
     function coverKey(it){ return (it.search || it.title) + '|' + (it.system || ''); }
     function cachedCover(it){ return it.image || coverCache[coverKey(it)] || ''; }
     function fetchCover(it, cb){
       if (it.image) { cb(it.image); return; }
       var key = coverKey(it);
       if (key in coverCache) { cb(coverCache[key]); return; }
-      var q = encodeURIComponent((it.search || it.title) + ' video game');
-      var url = 'https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages' +
-                '&piprop=thumbnail&pithumbsize=400&generator=search&gsrsearch=' + q +
-                '&gsrlimit=1&origin=*';
+      // Wikipedia REST search returns the top page's thumbnail directly, with
+      // permissive CORS. Upscale the little thumb to ~400px via the URL.
+      var q = encodeURIComponent(it.search || it.title);
+      var url = 'https://en.wikipedia.org/w/rest.php/v1/search/page?q=' + q + '&limit=1';
       fetch(url).then(function(r){ return r.json(); }).then(function(d){
-        var src = '', pages = d && d.query && d.query.pages;
-        if (pages) { var k = Object.keys(pages)[0]; if (k && pages[k].thumbnail) src = pages[k].thumbnail.source; }
+        var p = d && d.pages && d.pages[0];
+        var src = (p && p.thumbnail && p.thumbnail.url) ? p.thumbnail.url : '';
+        if (src) {
+          if (src.indexOf('//') === 0) src = 'https:' + src;
+          src = src.replace(/\/\d+px-/, '/400px-');
+        }
         coverCache[key] = src || ''; saveCovers(); cb(src || '');
       }).catch(function(){ cb(''); });
     }
@@ -284,8 +295,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           fetchCover(it, function(src){
             if (!src || !el.isConnected) return;
             var img = new Image();
-            img.className = 'cover-img'; img.alt = it.title; img.src = src;
+            img.className = 'cover-img'; img.alt = it.title; img.referrerPolicy = 'no-referrer';
+            // Attach handlers BEFORE src so a cached image can't finish loading
+            // before onload is wired (which would drop the insert).
             img.onload = function(){ el.insertBefore(img, el.firstChild); el.classList.add('has-cover'); };
+            img.onerror = function(){};
+            img.src = src;
           });
         });
       }, { rootMargin: '300px' });
@@ -319,16 +334,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }).join('') + '</div>' : '';
       var chips = systems.map(function(sys){
         var lbl = sys==='all' ? 'All systems' : sys;
-        return '<button class="rc-chip'+(sys===state.system?' active':'')+'" data-sys="'+esc(sys)+'">'+esc(lbl)+'</button>';
+        var ico = sys==='all' ? '' : '<span class="chip-ico">'+pxc(sys)+'</span>';
+        return '<button class="rc-chip sys'+(sys===state.system?' active':'')+'" data-sys="'+esc(sys)+'">'+ico+esc(lbl)+'</button>';
       }).join('');
       var cards = items.map(function(it){
         var h = hue(it.system);
         var flag = it.cib ? '<span class="cond-flag cib">CIB</span>'
           : (it.condition ? '<span class="cond-flag loose">'+esc(it.condition)+'</span>' : '');
         var cov = cachedCover(it);
+        var plate = '<span class="rc-plate">'+esc(it.title)+'</span>';
         var img = cov
-          ? '<div class="rc-thumb has-cover" style="--h:'+h+'" data-slug="'+esc(it.slug)+'"><img class="cover-img" src="'+esc(cov)+'" alt="'+esc(it.title)+'" loading="lazy" /><span class="rc-plate">'+pxc(it.system)+'</span>'+flag+'</div>'
-          : '<div class="rc-thumb noimg" style="--h:'+h+'" data-slug="'+esc(it.slug)+'"><span class="rc-plate">'+pxc(it.system)+'</span>'+flag+'</div>';
+          ? '<div class="rc-thumb has-cover" style="--h:'+h+'" data-slug="'+esc(it.slug)+'"><img class="cover-img" src="'+esc(cov)+'" alt="'+esc(it.title)+'" loading="lazy" referrerpolicy="no-referrer" />'+plate+flag+'</div>'
+          : '<div class="rc-thumb noimg" style="--h:'+h+'" data-slug="'+esc(it.slug)+'">'+plate+flag+'</div>';
         var sub = [it.system, it.year].filter(Boolean).map(esc).join(' · ');
         return '<a class="rc-card" href="?item='+encodeURIComponent(it.slug)+'" style="--h:'+h+'">'+
           img +
@@ -402,8 +419,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       strip.innerHTML = view.map(function(it, idx){
         var h = hue(it.system);
         var cov = cachedCover(it);
-        var inner = cov ? '<img src="'+esc(cov)+'" alt="" loading="lazy" />'
-          : '<span class="mini-plate" style="--h:'+h+'">'+pxc(it.system)+'</span>';
+        var inner = cov ? '<img src="'+esc(cov)+'" alt="" loading="lazy" referrerpolicy="no-referrer" />'
+          : '<span class="mini-plate" style="--h:'+h+'">'+esc(it.system||'?')+'</span>';
         return '<button data-idx="'+idx+'" aria-label="'+esc(it.title)+'">'+inner+'</button>';
       }).join('');
       strip.querySelectorAll('button').forEach(function(b){
@@ -418,8 +435,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var cov = cachedCover(it);
       media.className = 'lb-media' + (cov ? '' : ' noimg');
       media.style.setProperty('--h', h);
-      media.innerHTML = cov ? '<img src="'+esc(cov)+'" alt="'+esc(it.title)+'" />'
-        : '<span class="rc-plate">'+pxc(it.system)+'</span>';
+      media.innerHTML = cov ? '<img src="'+esc(cov)+'" alt="'+esc(it.title)+'" referrerpolicy="no-referrer" />'
+        : '<span class="rc-plate">'+esc(it.title)+'</span>';
       media.style.animation = 'none'; void media.offsetWidth; media.style.animation = '';
       if (!cov) {                      // try to upgrade the plate to real art
         var at = lbIndex;
