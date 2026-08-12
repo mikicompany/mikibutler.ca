@@ -87,6 +87,58 @@
     .price .cur { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-left: 4px; }
     .buy-hint { font-size: 12px; color: var(--accent); font-weight: 600; }
 
+    /* ── Differentiate the two worlds ─────────────────────────────────────
+       Digital = "bytes": dark card, faint green data-grid, mono price.
+       Physical = "paper": warm cream stock with a speckle grain, dark ink. */
+    .product-card.digital .product-body {
+      background-color: #0f130c;
+      background-image:
+        repeating-linear-gradient(0deg, rgba(160,255,0,.055) 0 1px, transparent 1px 5px),
+        repeating-linear-gradient(90deg, rgba(160,255,0,.04) 0 1px, transparent 1px 5px);
+    }
+    .product-card.digital .price { font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: -.02em; }
+
+    .product-card.physical .product-body {
+      background-color: #ece6d6;
+      background-image:
+        radial-gradient(rgba(60,50,30,.05) 1px, transparent 1.4px),
+        radial-gradient(rgba(60,50,30,.035) 1px, transparent 1.4px);
+      background-size: 7px 7px, 11px 11px;
+      background-position: 0 0, 3px 4px;
+    }
+    .product-card.physical .product-body h2 { color: #1b1a15; }
+    .product-card.physical:hover .product-body h2 { color: #3f6100; }
+    .product-card.physical .product-body .excerpt { color: #5c5749; }
+    .product-card.physical .price { color: #1b1a15; }
+    .product-card.physical .price .cur { color: #8a8474; }
+    .product-card.physical .buy-hint { color: #4a7000; }
+    /* Little corner fold to sell the "paper" idea. */
+    .product-card.physical .product-body { position: relative; }
+    .product-card.physical .product-body::after {
+      content: ""; position: absolute; top: 0; right: 0; width: 16px; height: 16px;
+      background: linear-gradient(225deg, var(--bg) 0 50%, transparent 50%);
+      border-left: 1px solid rgba(0,0,0,.12); border-bottom: 1px solid rgba(0,0,0,.12);
+    }
+
+    /* Detail pages carry the same two textures. */
+    .detail.physical .media {
+      background: #ece6d6; padding: 18px; border-radius: 16px;
+      background-image:
+        radial-gradient(rgba(60,50,30,.05) 1px, transparent 1.4px),
+        radial-gradient(rgba(60,50,30,.035) 1px, transparent 1.4px);
+      background-size: 7px 7px, 11px 11px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.08), 0 14px 32px rgba(0,0,0,.5);
+    }
+    .detail.physical .media img { border-radius: 6px; box-shadow: 0 5px 16px rgba(0,0,0,.35); }
+    .detail.digital .media { position: relative; }
+    .detail.digital .media::before {
+      content: ""; position: absolute; inset: -10px; z-index: -1; border-radius: 18px;
+      background:
+        repeating-linear-gradient(0deg, rgba(160,255,0,.07) 0 1px, transparent 1px 6px),
+        repeating-linear-gradient(90deg, rgba(160,255,0,.05) 0 1px, transparent 1px 6px);
+    }
+    .detail.digital .fmt { font-family: ui-monospace, Menlo, Consolas, monospace; }
+
     /* Detail */
     .store-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;
       color: var(--text-muted); text-decoration: none; margin-bottom: 24px; transition: color .15s ease; }
@@ -253,7 +305,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         return '<button class="store-tab'+(f===filter?' active':'')+'" data-filter="'+f+'">'+lbl+'</button>';
       }).join('');
       var cards = items.map(function(p){
-        return '<a class="product-card" href="?item='+encodeURIComponent(p.slug)+'">'+
+        return '<a class="product-card '+p.type+'" href="?item='+encodeURIComponent(p.slug)+'">'+
           '<div class="thumb">'+typeBadge(p.type)+'<img src="'+esc(p.image)+'" alt="'+esc(p.title)+'" loading="lazy" /></div>'+
           '<div class="product-body">'+
             '<h2>'+esc(p.title)+'</h2>'+
@@ -296,7 +348,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         ? '<div class="formats">'+p.formats.map(function(f){return '<span class="fmt">'+esc(f)+'</span>';}).join('')+'</div>' : '';
       wrap.innerHTML =
         '<a class="store-back" href="store.html">‹ Back to store</a>'+
-        '<div class="detail">'+
+        '<div class="detail '+p.type+'">'+
           '<div class="media">'+typeBadgeless()+'<img src="'+esc(p.image)+'" alt="'+esc(p.title)+'" /></div>'+
           '<div class="info">'+
             typeBadge(p.type)+
