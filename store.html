@@ -155,7 +155,11 @@
     .cart-total { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; font-weight: 800; font-size: 17px; }
     .cart-note { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
     .checkout-btn { width: 100%; font: inherit; font-size: 15px; font-weight: 800; padding: 14px; border-radius: 12px; border: 0;
-      background: #2a2a2a; color: #888; cursor: not-allowed; }
+      background: var(--accent); color: #0a0b08; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+    .checkout-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(160,255,0,.3); }
+    .checkout-btn:disabled { background: #2a2a2a; color: #888; cursor: not-allowed; transform: none; box-shadow: none; }
+    .checkout-result { margin-top: 12px; font-size: 12.5px; line-height: 1.5; color: #b6c79a; white-space: pre-wrap; }
+    .checkout-result.err { color: #d99; }
 
     @media (max-width: 720px) { .detail { grid-template-columns: 1fr; gap: 24px; } main { padding: 40px 18px 100px; } }
   </style>
@@ -189,8 +193,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="cart-items" id="cart-items"></div>
     <div class="cart-foot">
       <div class="cart-total"><span>Subtotal</span><span id="cart-subtotal">$0</span></div>
-      <div class="cart-note" id="cart-note">Checkout isn't wired up yet — this store is a sketch.</div>
-      <button class="checkout-btn" id="checkout-btn" type="button" disabled>Checkout — coming soon</button>
+      <div class="cart-note" id="cart-note">Sketch mode — no provider connected, so nothing is charged.</div>
+      <button class="checkout-btn" id="checkout-btn" type="button">Checkout</button>
+      <div class="checkout-result" id="checkout-result" role="status" aria-live="polite"></div>
     </div>
   </aside>
 
@@ -361,7 +366,91 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     document.getElementById('cart-fab').addEventListener('click', openCart);
     document.getElementById('cart-close').addEventListener('click', closeCart);
     document.getElementById('cart-overlay').addEventListener('click', closeCart);
-    document.getElementById('checkout-btn').addEventListener('click', function(){ /* sketch — intentionally inert */ });
+
+    // ── Checkout skeleton ───────────────────────────────────────────────
+    // The structure is here; only the provider call is missing. To go live,
+    // set CHECKOUT.provider and fill in that one branch below. Everything
+    // upstream — cart, line items, digital/physical split, totals — is done.
+    var CHECKOUT = {
+      provider: 'none',            // 'none' | 'stripe' | 'gumroad' | 'shopify' | 'lemonsqueezy'
+      // Where the provider bits go once you pick one:
+      stripe:       { publishableKey: '', checkoutEndpoint: '/api/create-checkout-session' },
+      gumroad:      { permalinks: {} },   // { productSlug: 'gumroadPermalink' }
+      shopify:      { domain: '', storefrontToken: '', variants: {} }, // { slug::option: 'variantId' }
+      lemonsqueezy: { variants: {} }      // { slug::option: 'variantId' }
+    };
+
+    // Turn the cart into clean, provider-agnostic line items.
+    function buildLineItems(){
+      return Object.keys(cart).map(function(k){
+        var slug = k.split('::')[0], option = k.split('::')[1] || '';
+        var p = byslug[slug]; if(!p) return null;
+        return {
+          key: k, slug: slug, title: p.title, type: p.type,
+          option: option, unitPrice: p.price, qty: cart[k],
+          lineTotal: p.price * cart[k],
+          fulfilment: p.type === 'digital' ? 'download' : 'ship'
+        };
+      }).filter(Boolean);
+    }
+
+    function buildOrder(){
+      var items = buildLineItems();
+      return {
+        currency: STORE.currency,
+        items: items,
+        subtotal: items.reduce(function(s,it){ return s + it.lineTotal; }, 0),
+        hasPhysical: items.some(function(it){ return it.type === 'physical'; }),
+        hasDigital: items.some(function(it){ return it.type === 'digital'; })
+      };
+    }
+
+    function setResult(msg, isErr){
+      var el = document.getElementById('checkout-result');
+      el.textContent = msg; el.classList.toggle('err', !!isErr);
+    }
+
+    function checkout(){
+      var order = buildOrder();
+      if(!order.items.length){ setResult('Your cart is empty.', true); return; }
+
+      switch(CHECKOUT.provider){
+        case 'stripe':
+          // TODO: POST `order` to CHECKOUT.stripe.checkoutEndpoint (a serverless
+          // function that creates a Stripe Checkout Session) and redirect to the
+          // returned session URL. Digital items fulfil via webhook; physical
+          // items collect a shipping address in the Session.
+          // fetch(endpoint,{method:'POST',body:JSON.stringify(order)})...
+          setResult('Stripe not configured yet.'); return;
+
+        case 'gumroad':
+          // TODO: map each item to a Gumroad permalink and open the overlay /
+          // hosted cart. Best for digital-only.
+          setResult('Gumroad not configured yet.'); return;
+
+        case 'shopify':
+          // TODO: build a Storefront API cart from CHECKOUT.shopify.variants and
+          // redirect to the returned checkoutUrl. Best when physical + shipping.
+          setResult('Shopify not configured yet.'); return;
+
+        case 'lemonsqueezy':
+          // TODO: open Lemon Squeezy checkout for the mapped variant(s).
+          setResult('Lemon Squeezy not configured yet.'); return;
+
+        default:
+          // Sketch mode: no provider. Show the order this WOULD place so the
+          // whole flow is verifiable end-to-end, minus the payment call.
+          console.log('[store] order payload →', order);
+          var lines = order.items.map(function(it){
+            return '• ' + it.qty + '× ' + it.title + (it.option ? ' (' + it.option + ')' : '') +
+                   ' — ' + money(it.lineTotal);
+          }).join('\n');
+          setResult('Sketch mode — no payment provider connected.\n\nThis order would be placed:\n' +
+                    lines + '\nSubtotal: ' + money(order.subtotal) +
+                    (order.hasPhysical ? '\n(+ shipping for physical items)' : ''));
+      }
+    }
+    document.getElementById('checkout-btn').addEventListener('click', checkout);
 
     // ── Router ──
     fetch('store.json?t=' + Date.now()).then(function(r){ return r.ok ? r.json() : STORE; }).then(function(data){
