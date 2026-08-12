@@ -124,6 +124,16 @@
     .crt-caption b { color: var(--accent); }
     .crt-share-msg { margin-left: 8px; color: var(--accent); font-weight: 700; opacity: 0; transition: opacity .2s ease; }
     .crt-share-msg.show { opacity: 1; }
+    /* Page-level share button in the arcade header. */
+    .arcade-share {
+      margin-top: 16px; display: inline-flex; align-items: center; gap: 7px; font: inherit;
+      font-size: 13px; font-weight: 700; letter-spacing: .03em; color: var(--accent);
+      background: transparent; cursor: pointer; border: 1px solid rgba(160,255,0,.4);
+      border-radius: 999px; padding: 9px 18px; transition: background .15s ease, box-shadow .15s ease, transform .15s ease;
+    }
+    .arcade-share:hover { background: rgba(160,255,0,.12); box-shadow: 0 0 16px rgba(160,255,0,.25); }
+    .arcade-share:active { transform: translateY(1px); }
+    .arcade-share.copied { background: var(--accent); color: #0a0b08; border-color: var(--accent); }
 
     @media (max-width: 640px) {
       .crt-tv { flex-direction: column; }
@@ -581,6 +591,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="arcade-head">
         <h1>Arcade <span aria-hidden="true">🕹️</span></h1>
         <p>Browser games I've worked on — pick one and play. (Desktop recommended.)</p>
+        <button class="arcade-share" id="arcade-share" type="button">⤴ <span id="arcade-share-label">Share the arcade</span></button>
       </div>
       <div class="cab-wrap">
         <div class="cab">
@@ -656,7 +667,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       <section class="reelboy-wrap" id="reels">
         <div class="tools-heading">Reels 🎮</div>
-        <p class="tools-sub">My Instagram reels, on a Game Boy. ◀ ▶ switch reels · tap the screen to play · START opens it on Instagram.</p>
+        <p class="tools-sub">My Instagram reels, on a Game Boy. ◀ ▶ switch reels · tap the screen to play · SELECT shares · START opens it on Instagram.</p>
 
         <div class="gb" id="gb">
           <div class="gb-screen-frame">
@@ -969,6 +980,41 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <script src="js/sidebar.js"></script>
   <script src="js/fx.js" defer></script>
   <script>
+    // One share path for every arcade widget. Native share sheet where it
+    // exists (mobile); copy-to-clipboard with a callback for inline "copied"
+    // feedback (desktop); a prompt as the last resort.
+    window.arcadeShare = function (data, onCopy) {
+      if (navigator.share) { navigator.share(data).catch(function () {}); return; }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(data.url)
+          .then(function () { if (onCopy) onCopy(); })
+          .catch(function () { window.prompt('Copy this link', data.url); });
+        return;
+      }
+      window.prompt('Copy this link', data.url);
+    };
+
+    // Page-level share: the arcade itself.
+    (function () {
+      var btn = document.getElementById('arcade-share');
+      if (!btn) return;
+      var label = document.getElementById('arcade-share-label');
+      var timer = 0;
+      btn.addEventListener('click', function () {
+        arcadeShare({
+          title: 'Miki’s Arcade 🕹️',
+          text: 'Browser games, a Game Boy of reels and a pixel-art telly — come play.',
+          url: location.origin + location.pathname
+        }, function () {
+          var prev = label.textContent;
+          label.textContent = 'Link copied!'; btn.classList.add('copied');
+          clearTimeout(timer);
+          timer = setTimeout(function () { label.textContent = prev; btn.classList.remove('copied'); }, 1700);
+        });
+      });
+    })();
+  </script>
+  <script>
     // Old-TV channel switcher: 1-2 are YouTube; 3 is the demo reel rendered as
     // pixel art (video → low-res canvas → CSS nearest-neighbour scale up). The
     // colour knob cycles the palette: full colour → Game Boy → 16-colour.
@@ -1115,16 +1161,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                  url: 'https://youtu.be/' + VIDS[cur] };
       }
       shareBtn.addEventListener('click', function () {
-        var s = currentShare();
-        if (navigator.share) {
-          navigator.share(s).catch(function () {});
-        } else if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(s.url)
-            .then(function () { flashMsg('Link copied!'); })
-            .catch(function () { window.prompt('Copy this link', s.url); });
-        } else {
-          window.prompt('Copy this link', s.url);
-        }
+        arcadeShare(currentShare(), function () { flashMsg('Link copied!'); });
       });
 
       applyPalette();
@@ -1510,6 +1547,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         var url = (reels.length && idx >= 0) ? reels[idx].permalink : 'https://www.instagram.com/mikicompany/reels/';
         window.open(url, '_blank', 'noopener');
       }
+      // SELECT shares the current reel (or the reels page if none is playing).
+      function shareReel() {
+        var url = (reels.length && idx >= 0) ? reels[idx].permalink : 'https://www.instagram.com/mikicompany/reels/';
+        arcadeShare(
+          { title: 'MIKI BOY — Instagram reel', text: 'Watch this reel on Miki’s Game Boy 🎮', url: url },
+          function () {
+            var prev = counter.textContent;
+            counter.textContent = 'Link copied!';
+            setTimeout(function () { counter.textContent = prev; }, 1600);
+          }
+        );
+      }
       function addManual(url) {
         var code = shortcode(url);
         if (!code) { counter.textContent = 'That doesn’t look like a reel link'; return; }
@@ -1526,7 +1575,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       document.getElementById('phPlay').addEventListener('click', play);
       document.getElementById('rbB').addEventListener('click', stop);
       document.getElementById('rbStart').addEventListener('click', openIG);
-      document.getElementById('rbSelect').addEventListener('click', openIG);
+      document.getElementById('rbSelect').addEventListener('click', shareReel);
       document.getElementById('rbAdd').addEventListener('click', function () {
         var el = document.getElementById('rbUrl'); addManual(el.value); el.value = '';
       });
