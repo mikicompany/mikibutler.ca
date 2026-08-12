@@ -65,7 +65,7 @@
     .rc-chip.active { background: var(--accent); color: #0a0b08; border-color: var(--accent); }
 
     /* Grid */
-    .rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px; }
+    .rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
     .rc-card { display: flex; flex-direction: column; text-decoration: none; color: inherit; overflow: hidden;
       background: var(--card-bg); border: 1px solid #262626; border-radius: 14px;
       transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease; }
@@ -73,11 +73,15 @@
       box-shadow: 0 14px 32px rgba(0,0,0,.5), 0 0 0 1px var(--accent); }
     .rc-thumb { position: relative; aspect-ratio: 1 / 1; overflow: hidden; }
     .rc-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* Cover fetched from the web, laid over the pixel-plate once it loads. */
+    .rc-thumb .cover-img { position: absolute; inset: 0; z-index: 1; animation: coverfade .3s ease; }
+    .rc-thumb.has-cover .rc-plate { display: none; }
+    @keyframes coverfade { from { opacity: 0; } to { opacity: 1; } }
     .rc-thumb.noimg { display: flex; align-items: center; justify-content: center; text-align: center; padding: 14px;
       background: linear-gradient(150deg, hsl(var(--h,90) 32% 22%), hsl(var(--h,90) 40% 10%)); }
     .rc-plate { font-family: 'Press Start 2P', monospace; font-size: 13px; line-height: 1.5;
       color: hsl(var(--h,90) 80% 78%); text-shadow: 0 2px 0 rgba(0,0,0,.35); }
-    .cond-flag { position: absolute; top: 9px; right: 9px; font-size: 10px; font-weight: 800; letter-spacing: .04em;
+    .cond-flag { position: absolute; top: 9px; right: 9px; z-index: 2; font-size: 10px; font-weight: 800; letter-spacing: .04em;
       padding: 3px 8px; border-radius: 999px; }
     .cond-flag.cib { background: var(--accent); color: #0a0b08; }
     .cond-flag.loose { background: rgba(20,20,20,.8); color: #ddd; border: 1px solid rgba(255,255,255,.25); }
@@ -113,6 +117,20 @@
     .rc-notes { font-size: 14.5px; line-height: 1.65; color: #c9c9c9; }
 
     @media (max-width: 680px) { .rc-detail { grid-template-columns: 1fr; gap: 22px; } main { padding: 40px 18px 80px; } }
+    /* Phones: denser 2-up grid, smaller type, tighter chrome. */
+    @media (max-width: 560px) {
+      main { padding: 28px 14px 80px; }
+      .rc-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .rc-card h2 { font-size: 12.5px; line-height: 1.2; }
+      .rc-sys { font-size: 10.5px; }
+      .rc-plate { font-size: 10px; }
+      .rc-cbody { padding: 9px 10px 11px; gap: 2px; }
+      .rc-price { font-size: 12px; }
+      .rc-stats { gap: 18px; }
+      .rc-stat b { font-size: 20px; }
+      .cond-flag { font-size: 8.5px; padding: 2px 6px; top: 6px; right: 6px; }
+    }
+    @media (max-width: 380px) { .rc-grid { gap: 8px; } }
 
     /* ── Lightbox browse ── */
     .lb { position: fixed; inset: 0; z-index: 90; display: none; background: rgba(6,7,5,.93); backdrop-filter: blur(7px); }
@@ -189,6 +207,51 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var view = [];          // the items currently shown (filtered) — what the lightbox walks
     var lb = null, lbIndex = -1;
 
+    // ── Cover art ─────────────────────────────────────────────────────────
+    // No photos in the sheet, so covers are fetched in the visitor's browser
+    // from Wikipedia's image API (keyless, CORS-enabled), lazy-loaded as tiles
+    // scroll in and cached in localStorage. Falls back to the pixel-plate when
+    // nothing is found. An item can force a specific art with "image", or a
+    // better search term with "search".
+    var coverCache = {};
+    try { coverCache = JSON.parse(localStorage.getItem('mb-covers-v1') || '{}'); } catch (_) {}
+    function saveCovers(){ try { localStorage.setItem('mb-covers-v1', JSON.stringify(coverCache)); } catch (_) {} }
+    function coverKey(it){ return (it.search || it.title) + '|' + (it.system || ''); }
+    function cachedCover(it){ return it.image || coverCache[coverKey(it)] || ''; }
+    function fetchCover(it, cb){
+      if (it.image) { cb(it.image); return; }
+      var key = coverKey(it);
+      if (key in coverCache) { cb(coverCache[key]); return; }
+      var q = encodeURIComponent((it.search || it.title) + ' video game');
+      var url = 'https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages' +
+                '&piprop=thumbnail&pithumbsize=400&generator=search&gsrsearch=' + q +
+                '&gsrlimit=1&origin=*';
+      fetch(url).then(function(r){ return r.json(); }).then(function(d){
+        var src = '', pages = d && d.query && d.query.pages;
+        if (pages) { var k = Object.keys(pages)[0]; if (k && pages[k].thumbnail) src = pages[k].thumbnail.source; }
+        coverCache[key] = src || ''; saveCovers(); cb(src || '');
+      }).catch(function(){ cb(''); });
+    }
+    var coverIO = null;
+    function observeCovers(){
+      if (!('IntersectionObserver' in window)) return;
+      if (coverIO) coverIO.disconnect();
+      coverIO = new IntersectionObserver(function(entries){
+        entries.forEach(function(en){
+          if (!en.isIntersecting) return;
+          var el = en.target; coverIO.unobserve(el);
+          var it = byslug[el.dataset.slug]; if (!it) return;
+          fetchCover(it, function(src){
+            if (!src || !el.isConnected) return;
+            var img = new Image();
+            img.className = 'cover-img'; img.alt = it.title; img.src = src;
+            img.onload = function(){ el.insertBefore(img, el.firstChild); el.classList.add('has-cover'); };
+          });
+        });
+      }, { rootMargin: '300px' });
+      wrap.querySelectorAll('.rc-thumb.noimg[data-slug]').forEach(function(el){ coverIO.observe(el); });
+    }
+
     function statNums(items){
       var qty = items.reduce(function(a,it){ return a + (it.qty||1); }, 0);
       var systems = new Set(items.map(function(it){ return it.system; }).filter(Boolean)).size;
@@ -222,9 +285,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         var h = hue(it.system);
         var flag = it.cib ? '<span class="cond-flag cib">CIB</span>'
           : (it.condition ? '<span class="cond-flag loose">'+esc(it.condition)+'</span>' : '');
-        var img = it.image
-          ? '<div class="rc-thumb"><img src="'+esc(it.image)+'" alt="'+esc(it.title)+'" loading="lazy" />'+flag+'</div>'
-          : '<div class="rc-thumb noimg" style="--h:'+h+'"><span class="rc-plate">'+esc(it.system||'?')+'</span>'+flag+'</div>';
+        var cov = cachedCover(it);
+        var img = cov
+          ? '<div class="rc-thumb has-cover" style="--h:'+h+'" data-slug="'+esc(it.slug)+'"><img class="cover-img" src="'+esc(cov)+'" alt="'+esc(it.title)+'" loading="lazy" /><span class="rc-plate">'+esc(it.system||'?')+'</span>'+flag+'</div>'
+          : '<div class="rc-thumb noimg" style="--h:'+h+'" data-slug="'+esc(it.slug)+'"><span class="rc-plate">'+esc(it.system||'?')+'</span>'+flag+'</div>';
         var sub = [it.system, it.year].filter(Boolean).map(esc).join(' · ');
         return '<a class="rc-card" href="?item='+encodeURIComponent(it.slug)+'" style="--h:'+h+'">'+
           img +
@@ -265,6 +329,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       wrap.querySelectorAll('.rc-card').forEach(function(a, idx){
         a.addEventListener('click', function(e){ e.preventDefault(); openLightbox(idx); });
       });
+      observeCovers();   // lazily pull cover art for tiles without one
       var search = document.getElementById('rc-search');
       search.addEventListener('input', function(){ state.q = search.value; renderList(); });
       // keep focus + caret after re-render
@@ -296,7 +361,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var strip = lb.querySelector('#lb-strip');
       strip.innerHTML = view.map(function(it, idx){
         var h = hue(it.system);
-        var inner = it.image ? '<img src="'+esc(it.image)+'" alt="" loading="lazy" />'
+        var cov = cachedCover(it);
+        var inner = cov ? '<img src="'+esc(cov)+'" alt="" loading="lazy" />'
           : '<span class="mini-plate" style="--h:'+h+'">'+esc(it.system||'?')+'</span>';
         return '<button data-idx="'+idx+'" aria-label="'+esc(it.title)+'">'+inner+'</button>';
       }).join('');
@@ -309,11 +375,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var it = view[lbIndex], h = hue(it.system);
       lb.style.setProperty('--h', h);
       var media = lb.querySelector('#lb-media');
-      media.className = 'lb-media' + (it.image ? '' : ' noimg');
+      var cov = cachedCover(it);
+      media.className = 'lb-media' + (cov ? '' : ' noimg');
       media.style.setProperty('--h', h);
-      media.innerHTML = it.image ? '<img src="'+esc(it.image)+'" alt="'+esc(it.title)+'" />'
+      media.innerHTML = cov ? '<img src="'+esc(cov)+'" alt="'+esc(it.title)+'" />'
         : '<span class="rc-plate">'+esc(it.system||'?')+'</span>';
       media.style.animation = 'none'; void media.offsetWidth; media.style.animation = '';
+      if (!cov) {                      // try to upgrade the plate to real art
+        var at = lbIndex;
+        fetchCover(it, function(src){
+          if (src && lbIndex === at && lb.classList.contains('open')) {
+            media.className = 'lb-media';
+            media.innerHTML = '<img src="'+esc(src)+'" alt="'+esc(it.title)+'" />';
+          }
+        });
+      }
       lb.querySelector('#lb-count').textContent = (lbIndex+1) + ' / ' + view.length;
       lb.querySelector('#lb-info').innerHTML =
         '<h2>'+esc(it.title)+'</h2>'+
