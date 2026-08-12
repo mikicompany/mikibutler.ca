@@ -284,26 +284,32 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // nothing is found. An item can force a specific art with "image", or a
     // better search term with "search".
     var coverCache = {};
-    try { coverCache = JSON.parse(localStorage.getItem('mb-covers-v3') || '{}'); } catch (_) {}
-    function saveCovers(){ try { localStorage.setItem('mb-covers-v3', JSON.stringify(coverCache)); } catch (_) {} }
+    try { coverCache = JSON.parse(localStorage.getItem('mb-covers-v4') || '{}'); } catch (_) {}
+    function saveCovers(){ try { localStorage.setItem('mb-covers-v4', JSON.stringify(coverCache)); } catch (_) {} }
     function coverKey(it){ return (it.search || it.title) + '|' + (it.system || ''); }
     function cachedCover(it){ return it.image || coverCache[coverKey(it)] || ''; }
+    // One Wikipedia search → top page's box art. Action API with origin=*
+    // returns proper anonymous-CORS headers (the REST endpoint does not).
+    function wikiThumb(term){
+      var url = 'https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages' +
+                '&piprop=thumbnail&pithumbsize=400&generator=search&gsrsearch=' +
+                encodeURIComponent(term) + '&gsrlimit=1&origin=*';
+      return fetch(url).then(function(r){ return r.json(); }).then(function(d){
+        var src = '', pages = d && d.query && d.query.pages;
+        if (pages) { var k = Object.keys(pages)[0]; if (k && pages[k].thumbnail) src = pages[k].thumbnail.source; }
+        return src;
+      }).catch(function(){ return ''; });
+    }
     function fetchCover(it, cb){
       if (it.image) { cb(it.image); return; }
       var key = coverKey(it);
       if (key in coverCache) { cb(coverCache[key]); return; }
-      // Action API with origin=* returns proper anonymous-CORS headers (the
-      // REST endpoint does not, which is why fetched covers weren't loading).
-      // generator=search finds the game's page; pageimages gives its box art.
-      var q = encodeURIComponent((it.search || it.title) + ' video game');
-      var url = 'https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages' +
-                '&piprop=thumbnail&pithumbsize=400&generator=search&gsrsearch=' + q +
-                '&gsrlimit=1&origin=*';
-      fetch(url).then(function(r){ return r.json(); }).then(function(d){
-        var src = '', pages = d && d.query && d.query.pages;
-        if (pages) { var k = Object.keys(pages)[0]; if (k && pages[k].thumbnail) src = pages[k].thumbnail.source; }
-        coverCache[key] = src || ''; saveCovers(); cb(src || '');
-      }).catch(function(){ cb(''); });
+      var base = it.search || it.title;
+      var sys = it.system ? ' ' + it.system : '';
+      // Try a few phrasings before giving up, so more titles resolve.
+      wikiThumb(base + ' video game').then(function(s){ return s || wikiThumb(base + sys + ' game'); })
+        .then(function(s){ return s || wikiThumb(base); })
+        .then(function(src){ coverCache[key] = src || ''; saveCovers(); cb(src || ''); });
     }
     var coverIO = null;
     function observeCovers(){
@@ -375,7 +381,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             '<div class="rc-sys"><i class="dot"></i>'+sub+'</div>'+
             '<h2>'+esc(it.title)+'</h2>'+
             '<div class="rc-meta">'+
-              (it.price ? '<span class="rc-price">'+esc(it.price)+'</span>' : '')+
               (it.location ? '<span class="rc-loc">'+esc(it.location)+'</span>' : '')+
             '</div>'+
           '</div>'+
@@ -487,7 +492,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         '<h2>'+esc(it.title)+'</h2>'+
         '<div class="d-sys">'+esc(it.system||'')+(it.year?' · '+esc(it.year):'')+'</div>'+
         '<table class="spec">'+
-          row('System', it.system)+ row('Price', it.price)+ row('Category', it.category)+
+          row('System', it.system)+ row('Category', it.category)+
           row('Year', it.year)+ row('Region', it.region)+ row('Condition', it.condition)+
           (typeof it.cib === 'boolean' ? row('Complete in box', it.cib ? 'Yes' : 'No') : '')+
           (it.qty>1 ? row('Quantity', it.qty) : '')+ row('Location', it.location)+
