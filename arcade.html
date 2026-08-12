@@ -529,6 +529,27 @@
     .draw-layer .lmeta { font-size: 10px; color: #8a9099; white-space: nowrap; }
     .draw-layer .ldel { border: 0; background: transparent; color: #8a9099; cursor: pointer; font-size: 13px; padding: 0 2px; }
     .draw-layer .ldel:hover { color: #e23b3b; }
+    /* Dot stamp tool — three preset sizes shown as filled circles. */
+    .draw-dots { display: inline-flex; align-items: center; gap: 7px; padding: 0 4px; }
+    .draw-dots.on { filter: drop-shadow(0 0 5px rgba(160,255,0,.6)); }
+    .dotbtn { width: 26px; height: 26px; border: 1px solid #2a2f37; border-radius: 6px; background: #12161c; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+    .dotbtn::before { content: ""; width: var(--d,12px); height: var(--d,12px); border-radius: 50%; background: #cfd4db; }
+    .dotbtn:hover { border-color: var(--accent); }
+    .dotbtn.sel { border-color: var(--accent); box-shadow: 0 0 6px rgba(160,255,0,.5); }
+    .dotbtn.sel::before { background: var(--accent); }
+    /* Long-press radial menu */
+    .draw-radial { position: fixed; inset: 0; z-index: 9999; display: none; }
+    .draw-radial.open { display: block; }
+    .draw-radial-ring { position: absolute; width: 0; height: 0; }
+    .draw-radial-btn { position: absolute; transform: translate(-50%,-50%) scale(0.4); opacity: 0;
+      width: 54px; height: 54px; border-radius: 50%; border: 1px solid #2a2f37; background: #12161c; color: #e8eaed;
+      font-size: 21px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 22px rgba(0,0,0,.55); transition: transform .16s ease, opacity .16s ease, border-color .12s ease; }
+    .draw-radial.open .draw-radial-btn { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+    .draw-radial-btn:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 8px 22px rgba(0,0,0,.55); }
+    .draw-radial-hint { position: absolute; transform: translate(-50%,-50%); font-size: 9px; letter-spacing: .1em;
+      text-transform: uppercase; color: #8a9099; white-space: nowrap; }
 
     /* ── Tool tabs: one tool visible at a time ── */
     .tool-tabs { display: none; }
@@ -838,7 +859,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- Sketch Pad -->
         <div class="tool-block" data-tool="sketch">
           <div class="tool-title">Sketch Pad ✏️</div>
-          <p class="tool-desc">Doodle right here — with layers, blend modes &amp; opacity, brush and pixel modes. Draw, then save it.</p>
+          <p class="tool-desc">Doodle right here — layers, blend modes &amp; opacity, brush, pixel and dot tools. <b>Hold the canvas 2s</b> for a quick radial menu. Save a PNG, or export your process as a 🎬 10-second video.</p>
           <div class="tool-stage draw-stage" style="min-height:0">
             <canvas id="drawCanvas" width="840" height="520"></canvas>
           </div>
@@ -853,6 +874,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <span class="draw-pal" id="drawPal"></span>
             <input type="color" id="drawColor" value="#111111" title="Custom colour" />
             <label class="tool-slider">Size <input type="range" id="drawSize" min="1" max="48" step="1" value="6" /> <b id="drawSizeVal">6</b></label>
+            <span class="draw-dots" id="drawDots" title="Dot stamp — three sizes">
+              <button type="button" class="dotbtn" data-r="6" style="--d:8px"></button>
+              <button type="button" class="dotbtn" data-r="13" style="--d:16px"></button>
+              <button type="button" class="dotbtn" data-r="22" style="--d:24px"></button>
+            </span>
             <button type="button" id="drawErase">Eraser</button>
             <button type="button" id="drawFill">🪣 Fill</button>
             <button type="button" id="drawPick">💧 Pick</button>
@@ -860,6 +886,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <button type="button" id="drawUndo">↶ Undo</button>
             <button type="button" id="drawClear">Clear layer</button>
             <button type="button" id="drawSave">⬇ Save PNG</button>
+            <button type="button" id="drawVideo" title="Export your drawing process as a 10-second video">🎬 Process (10s)</button>
           </div>
           <div class="draw-layers-head">
             <span>Layers</span>
@@ -2059,17 +2086,56 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         var hex = '#' + [d[0], d[1], d[2]].map(function (n) { return ('0' + n.toString(16)).slice(-2); }).join('');
         color = hex; colorEl.value = hex; erasing = false; eraseBtn.classList.remove('on'); selectSwatch(null);
       }
+      // Dot stamp: one filled circle per click (three preset radii).
+      var dotMode = false, dotR = 13;
+      function stampDot(x, y) {
+        var g = actx();
+        g.globalCompositeOperation = erasing ? 'destination-out' : 'source-over';
+        g.fillStyle = erasing ? '#000' : color;
+        g.beginPath(); g.arc(x, y, dotR, 0, Math.PI * 2); g.fill();
+        g.globalCompositeOperation = 'source-over'; composite();
+      }
+      function pushUndoData(img) { try { undo.push({ layer: active, data: img }); if (undo.length > 24) undo.shift(); } catch (e) {} }
+
+      // Long-press (hold still 2s) opens a radial quick-tool menu.
+      var longTimer = null, preImg = null, downCX = 0, downCY = 0, moved = false;
       cv.addEventListener('pointerdown', function (e) {
         var p = pos(e);
-        if (picking) { pickColor(p.x, p.y); picking = false; pickBtn.classList.remove('on'); return; } // eyedropper: one-shot
-        snapshot();
-        if (filling) { floodFill(p.x, p.y); return; }   // bucket: one click, no drag
-        drawing = true; lastX = p.x; lastY = p.y; paint(p.x, p.y, p.x, p.y);
+        if (picking) { pickColor(p.x, p.y); picking = false; pickBtn.classList.remove('on'); return; }
+        if (dotMode) { snapshot(); stampDot(p.x, p.y); recordFrame(true); return; }
+        if (filling) { snapshot(); floodFill(p.x, p.y); recordFrame(true); return; }
+        try { preImg = actx().getImageData(0, 0, Wd, Hd); } catch (_) { preImg = null; }
+        drawing = true; moved = false; lastX = p.x; lastY = p.y; downCX = e.clientX; downCY = e.clientY;
+        paint(p.x, p.y, p.x, p.y);
         try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+        clearTimeout(longTimer);
+        longTimer = setTimeout(function () { triggerRadial(e.clientX, e.clientY); }, 2000);
       });
-      cv.addEventListener('pointermove', function (e) { if (!drawing) return; var p = pos(e); paint(lastX, lastY, p.x, p.y); lastX = p.x; lastY = p.y; });
-      function end(e) { drawing = false; try { cv.releasePointerCapture(e.pointerId); } catch (_) {} }
+      cv.addEventListener('pointermove', function (e) {
+        if (!drawing) return;
+        var p = pos(e);
+        if (!moved && Math.hypot(e.clientX - downCX, e.clientY - downCY) > 8) {
+          moved = true; clearTimeout(longTimer); if (preImg) pushUndoData(preImg); // it's a real stroke
+        }
+        paint(lastX, lastY, p.x, p.y); lastX = p.x; lastY = p.y;
+        if (moved) recordFrame(false);
+      });
+      function end(e) {
+        clearTimeout(longTimer);
+        if (drawing) {
+          if (!moved && preImg) pushUndoData(preImg);   // a tap/dot — keep it undoable
+          recordFrame(true);
+        }
+        drawing = false; preImg = null;
+        try { cv.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
       cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+      function triggerRadial(cx, cy) {
+        drawing = false;
+        if (preImg) { try { actx().putImageData(preImg, 0, 0); composite(); } catch (_) {} } // undo the initial dab
+        preImg = null;
+        openRadial(cx, cy);
+      }
 
       // ── Layers UI ──
       var layerListEl = document.getElementById('drawLayers');
@@ -2147,11 +2213,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       colorEl.addEventListener('input', function () { color = this.value; erasing = false; eraseBtn.classList.remove('on'); selectSwatch(null); });
       var sz = document.getElementById('drawSize'), szv = document.getElementById('drawSizeVal');
       sz.addEventListener('input', function () { size = +sz.value; szv.textContent = size; });
-      eraseBtn.addEventListener('click', function () { erasing = !erasing; this.classList.toggle('on', erasing); if (erasing) { filling = false; fillBtn.classList.remove('on'); } });
+      function clearDot() { dotMode = false; if (dotsWrap) { dotsWrap.classList.remove('on'); dotsWrap.querySelectorAll('.dotbtn').forEach(function (o) { o.classList.remove('sel'); }); } }
+      eraseBtn.addEventListener('click', function () { erasing = !erasing; this.classList.toggle('on', erasing); if (erasing) { filling = false; fillBtn.classList.remove('on'); clearDot(); } });
       var fillBtn = document.getElementById('drawFill');
       var pickBtn = document.getElementById('drawPick');
-      fillBtn.addEventListener('click', function () { filling = !filling; this.classList.toggle('on', filling); if (filling) { erasing = false; eraseBtn.classList.remove('on'); picking = false; pickBtn.classList.remove('on'); } });
-      pickBtn.addEventListener('click', function () { picking = !picking; this.classList.toggle('on', picking); if (picking) { erasing = false; eraseBtn.classList.remove('on'); filling = false; fillBtn.classList.remove('on'); } });
+      fillBtn.addEventListener('click', function () { filling = !filling; this.classList.toggle('on', filling); if (filling) { erasing = false; eraseBtn.classList.remove('on'); picking = false; pickBtn.classList.remove('on'); clearDot(); } });
+      pickBtn.addEventListener('click', function () { picking = !picking; this.classList.toggle('on', picking); if (picking) { erasing = false; eraseBtn.classList.remove('on'); filling = false; fillBtn.classList.remove('on'); clearDot(); } });
       document.getElementById('drawPixel').addEventListener('click', function () { pixel = !pixel; this.classList.toggle('on', pixel); });
 
       // ── Canvas size ──
@@ -2180,6 +2247,135 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         var a = document.createElement('a'); a.download = 'sketch.png'; a.href = cv.toDataURL('image/png');
         document.body.appendChild(a); a.click(); a.remove();
       });
+
+      // ── Mode switching (shared by buttons + the radial menu) ──
+      var dotsWrap = document.getElementById('drawDots');
+      function setMode(m) {
+        erasing = false; filling = false; picking = false; dotMode = false; pixel = false;
+        eraseBtn.classList.remove('on'); fillBtn.classList.remove('on'); pickBtn.classList.remove('on');
+        document.getElementById('drawPixel').classList.remove('on');
+        if (dotsWrap) dotsWrap.classList.remove('on');
+        if (m === 'erase') { erasing = true; eraseBtn.classList.add('on'); }
+        else if (m === 'fill') { filling = true; fillBtn.classList.add('on'); }
+        else if (m === 'dot') { dotMode = true; if (dotsWrap) dotsWrap.classList.add('on'); }
+        // 'brush' leaves everything off
+      }
+      // Dot-size presets pick the stamp radius and switch to dot mode.
+      if (dotsWrap) {
+        var dotBtns = dotsWrap.querySelectorAll('.dotbtn');
+        dotBtns.forEach(function (b) {
+          b.addEventListener('click', function () {
+            dotR = +b.dataset.r; setMode('dot');
+            dotBtns.forEach(function (o) { o.classList.toggle('sel', o === b); });
+          });
+        });
+      }
+
+      // ── Long-press radial menu ──
+      var radial = null;
+      function ensureRadial() {
+        if (radial) return;
+        radial = document.createElement('div'); radial.className = 'draw-radial';
+        var ring = document.createElement('div'); ring.className = 'draw-radial-ring'; radial.appendChild(ring);
+        var items = [
+          { icon: '✏️', title: 'Brush', act: function () { setMode('brush'); } },
+          { icon: '🧽', title: 'Eraser', act: function () { setMode('erase'); } },
+          { icon: '🪣', title: 'Fill', act: function () { setMode('fill'); } },
+          { icon: '⚫', title: 'Dot', act: function () { setMode('dot'); } }
+        ];
+        var R = 52;
+        items.forEach(function (it, i) {
+          var ang = (-90 + i * (360 / items.length)) * Math.PI / 180;
+          var b = document.createElement('button'); b.type = 'button'; b.className = 'draw-radial-btn';
+          b.textContent = it.icon; b.title = it.title;
+          b.style.left = (Math.cos(ang) * R) + 'px'; b.style.top = (Math.sin(ang) * R) + 'px';
+          b.style.transitionDelay = (i * 0.03) + 's';
+          b.addEventListener('click', function (ev) { ev.stopPropagation(); it.act(); closeRadial(); });
+          ring.appendChild(b);
+        });
+        var hint = document.createElement('div'); hint.className = 'draw-radial-hint'; hint.textContent = 'pick a tool';
+        hint.style.top = (R + 26) + 'px'; ring.appendChild(hint);
+        radial.addEventListener('pointerdown', function (ev) { if (ev.target === radial) closeRadial(); });
+        document.body.appendChild(radial);
+      }
+      function openRadial(cx, cy) {
+        ensureRadial();
+        var ring = radial.querySelector('.draw-radial-ring');
+        ring.style.left = cx + 'px'; ring.style.top = cy + 'px';
+        radial.classList.add('open');
+      }
+      function closeRadial() { if (radial) radial.classList.remove('open'); }
+
+      // ── Process recording → 10-second video ──
+      // Frames are captured as light JPEG blobs (downscaled) as you draw, then
+      // replayed onto an offscreen canvas over exactly 10s and captured with
+      // MediaRecorder. No fetch, no libraries.
+      var frames = [], lastFrameT = 0, FRAME_CAP = 150;
+      function recordFrame(force) {
+        var now = performance.now();
+        if (!force && now - lastFrameT < 120) return;
+        lastFrameT = now;
+        var scale = Math.min(1, 512 / Math.max(Wd, Hd));
+        var fw = Math.max(1, Math.round(Wd * scale)), fh = Math.max(1, Math.round(Hd * scale));
+        var fc = document.createElement('canvas'); fc.width = fw; fc.height = fh;
+        fc.getContext('2d').drawImage(cv, 0, 0, fw, fh);
+        try {
+          fc.toBlob(function (b) {
+            if (!b) return;
+            frames.push(b);
+            if (frames.length > FRAME_CAP) {   // halve older frames, keep the tail
+              var nf = []; for (var i = 0; i < frames.length; i++) { if (i % 2 === 0 || i >= frames.length - 8) nf.push(frames[i]); }
+              frames = nf;
+            }
+          }, 'image/jpeg', 0.7);
+        } catch (_) {}
+      }
+      recordFrame(true);   // frame 0 = blank paper
+
+      var videoBtn = document.getElementById('drawVideo');
+      function flashBtn(el, msg) { var old = el.textContent; el.textContent = msg; setTimeout(function () { el.textContent = old; }, 1600); }
+      videoBtn.addEventListener('click', function () {
+        if (frames.length < 2) { flashBtn(videoBtn, 'Draw something first'); return; }
+        if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { flashBtn(videoBtn, 'Not supported here'); return; }
+        var old = videoBtn.textContent; videoBtn.disabled = true; videoBtn.textContent = '⏳ Rendering…';
+        var shots = frames.slice();
+        Promise.all(shots.map(function (b) { return createImageBitmap(b); })).then(function (bmps) {
+          var ow = Wd, oh = Hd;
+          var oc = document.createElement('canvas'); oc.width = ow; oc.height = oh;
+          var octx = oc.getContext('2d');
+          octx.fillStyle = '#fff'; octx.fillRect(0, 0, ow, oh);
+          var mime = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4']
+            .filter(function (m) { try { return MediaRecorder.isTypeSupported(m); } catch (_) { return false; } })[0] || '';
+          var stream = oc.captureStream(30);
+          var rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+          var chunks = [];
+          rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+          rec.onstop = function () {
+            var type = chunks.length ? chunks[0].type : 'video/webm';
+            var blob = new Blob(chunks, { type: type });
+            var ext = type.indexOf('mp4') >= 0 ? 'mp4' : 'webm';
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a'); a.download = 'sketch-process.' + ext; a.href = url;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+            bmps.forEach(function (b) { if (b.close) b.close(); });
+            videoBtn.disabled = false; videoBtn.textContent = old;
+          };
+          rec.start();
+          var total = bmps.length, dur = 10000, per = dur / total, start = performance.now();
+          (function frame() {
+            var t = performance.now() - start;
+            var idx = Math.min(total - 1, Math.floor(t / per));
+            octx.fillStyle = '#fff'; octx.fillRect(0, 0, ow, oh);
+            octx.drawImage(bmps[idx], 0, 0, ow, oh);
+            if (t < dur) requestAnimationFrame(frame);
+            else setTimeout(function () { try { rec.stop(); } catch (_) {} }, 250);
+          })();
+        }).catch(function () { videoBtn.disabled = false; videoBtn.textContent = old; flashBtn(videoBtn, 'Render failed'); });
+      });
+
+      // Capture a frame after fill/clear too (stroke ends already record).
+      document.getElementById('drawClear').addEventListener('click', function () { recordFrame(true); });
     })();
   </script>
 
