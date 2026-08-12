@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-W7JWP3TR');</script>
+  <!-- End Google Tag Manager -->
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png" />
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+  <title>Store — Miki Butler</title>
+  <!-- Sketch, not launched: keep it out of search and off the nav for now. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Store sketch — digital packs and physical prints from Miki Butler." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Miki Butler" />
+  <meta property="og:title" content="Store — Miki Butler" />
+  <meta property="og:description" content="Digital packs and physical prints — a work-in-progress store." />
+  <meta property="og:url" content="https://mikibutler.ca/store.html" />
+  <meta property="og:image" content="https://mikibutler.ca/images/og-card.jpg" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --store-max: 1000px; }
+    main { padding: 60px 28px 110px; }
+    .store-wrap { max-width: var(--store-max); margin: 0 auto; }
+
+    /* Header */
+    .store-head { margin-bottom: 8px; }
+    .store-head h1 { font-size: clamp(38px, 6vw, 60px); font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+    .store-head h1 .dot { color: var(--accent); }
+    .store-head p { margin-top: 14px; color: var(--text-muted); font-size: 16px; line-height: 1.6; max-width: 56ch; }
+    .sketch-banner {
+      margin: 20px 0 30px; font-size: 13px; color: #d9e6c2; background: rgba(160,255,0,.08);
+      border: 1px dashed rgba(160,255,0,.4); border-radius: 10px; padding: 10px 14px;
+    }
+
+    /* Filter tabs */
+    .store-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 26px; }
+    .store-tab {
+      font: inherit; font-size: 13.5px; font-weight: 600; letter-spacing: .02em; cursor: pointer;
+      color: #cfcfcf; background: var(--card-bg); border: 1px solid #2a2a2a; border-radius: 999px; padding: 9px 18px;
+      transition: all .15s ease;
+    }
+    .store-tab:hover { border-color: var(--accent); color: #fff; }
+    .store-tab.active { background: var(--accent); color: #0a0b08; border-color: var(--accent); }
+
+    /* Product grid */
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; }
+    .product-card {
+      display: flex; flex-direction: column; text-decoration: none; color: inherit; overflow: hidden;
+      background: var(--card-bg); border: 1px solid #262626; border-radius: 14px;
+      transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+    }
+    .product-card:hover { border-color: var(--accent); transform: translateY(-3px);
+      box-shadow: 0 14px 34px rgba(0,0,0,.5), 0 0 0 1px var(--accent); }
+    .product-card .thumb { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #0e0e0e; }
+    .product-card .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+    .product-card:hover .thumb img { transform: scale(1.05); }
+    .type-badge {
+      position: absolute; top: 10px; left: 10px; font-size: 11px; font-weight: 700; letter-spacing: .03em;
+      padding: 4px 9px; border-radius: 999px; backdrop-filter: blur(4px);
+    }
+    .type-badge.digital { background: rgba(160,255,0,.9); color: #0a0b08; }
+    .type-badge.physical { background: rgba(20,20,20,.82); color: #fff; border: 1px solid rgba(255,255,255,.25); }
+    .product-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .product-body h2 { font-size: 16px; font-weight: 700; line-height: 1.25; }
+    .product-card:hover .product-body h2 { color: var(--accent); }
+    .product-body .excerpt { font-size: 13px; color: #a9a9a9; line-height: 1.5; flex: 1; }
+    .product-body .price-row { display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px; }
+    .price { font-size: 18px; font-weight: 800; color: #fff; }
+    .price .cur { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-left: 4px; }
+    .buy-hint { font-size: 12px; color: var(--accent); font-weight: 600; }
+
+    /* Detail */
+    .store-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;
+      color: var(--text-muted); text-decoration: none; margin-bottom: 24px; transition: color .15s ease; }
+    .store-back:hover { color: var(--accent); }
+    .detail { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: start; }
+    .detail .media img { width: 100%; border-radius: 16px; display: block; }
+    .detail h1 { font-size: clamp(26px, 4vw, 38px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+    .detail .d-meta { margin: 10px 0 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .detail .price-lg { font-size: 28px; font-weight: 800; color: #fff; }
+    .detail .price-lg .cur { font-size: 14px; color: var(--text-muted); font-weight: 600; margin-left: 5px; }
+    .fulfil-note { font-size: 13px; color: #b6c79a; margin-bottom: 20px; display: flex; align-items: center; gap: 7px; }
+    .opt-row { margin-bottom: 18px; }
+    .opt-row label { display: block; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+    .opt-row select, .qty select {
+      font: inherit; font-size: 14px; color: #fff; background: #161616; border: 1px solid #333; border-radius: 9px; padding: 9px 12px;
+    }
+    .formats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+    .fmt { font-size: 11px; color: #cfcfcf; border: 1px solid #333; border-radius: 6px; padding: 3px 9px; }
+    .buy-actions { display: flex; gap: 12px; align-items: center; }
+    .btn-primary {
+      font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; color: #0a0b08; background: var(--accent);
+      border: 0; border-radius: 999px; padding: 13px 26px; transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(160,255,0,.35); }
+    .detail .prose { grid-column: 1 / -1; max-width: 720px; margin-top: 8px; }
+
+    /* Prose (reused from blog) */
+    .prose { font-size: 16px; line-height: 1.7; color: #d2d2d2; }
+    .prose > * + * { margin-top: 1.1em; }
+    .prose h2 { font-size: 22px; font-weight: 700; color: #fff; margin-top: 1.6em; }
+    .prose strong { color: #fff; }
+    .prose ul { padding-left: 1.3em; } .prose li { margin: .3em 0; } .prose li::marker { color: var(--accent); }
+    .prose code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .88em; background: #202020;
+      border: 1px solid #2e2e2e; border-radius: 5px; padding: 1px 6px; }
+
+    /* Cart button + drawer */
+    .cart-fab {
+      position: fixed; bottom: 24px; right: 24px; z-index: 60; display: inline-flex; align-items: center; gap: 8px;
+      font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; color: #0a0b08; background: var(--accent);
+      border: 0; border-radius: 999px; padding: 12px 18px; box-shadow: 0 10px 28px rgba(0,0,0,.5);
+    }
+    .cart-fab .count { background: #0a0b08; color: var(--accent); border-radius: 999px; font-size: 12px; padding: 1px 8px; }
+    .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 70; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+    .cart-overlay.open { opacity: 1; pointer-events: auto; }
+    .cart-drawer {
+      position: fixed; top: 0; right: 0; height: 100%; width: min(400px, 92vw); z-index: 80; background: #131313;
+      border-left: 1px solid #2a2a2a; transform: translateX(100%); transition: transform .25s ease;
+      display: flex; flex-direction: column;
+    }
+    .cart-drawer.open { transform: translateX(0); }
+    .cart-drawer header { padding: 20px; border-bottom: 1px solid #262626; display: flex; align-items: center; justify-content: space-between; }
+    .cart-drawer header h3 { font-size: 17px; font-weight: 800; }
+    .cart-close { font-size: 22px; line-height: 1; color: var(--text-muted); background: none; border: 0; cursor: pointer; }
+    .cart-close:hover { color: #fff; }
+    .cart-items { flex: 1; overflow-y: auto; padding: 8px 20px; }
+    .cart-empty { color: var(--text-muted); font-size: 14px; padding: 40px 0; text-align: center; }
+    .cart-item { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; padding: 14px 0; border-bottom: 1px solid #222; }
+    .cart-item img { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; }
+    .cart-item .ci-title { font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+    .cart-item .ci-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .ci-qty { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; }
+    .ci-qty button { width: 22px; height: 22px; border-radius: 6px; border: 1px solid #333; background: #1c1c1c; color: #fff; cursor: pointer; font-size: 13px; }
+    .ci-price { font-weight: 700; font-size: 14px; }
+    .ci-remove { display: block; margin-top: 6px; font-size: 11px; color: #d66; background: none; border: 0; cursor: pointer; text-align: right; width: 100%; }
+    .cart-foot { padding: 18px 20px 22px; border-top: 1px solid #262626; }
+    .cart-total { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; font-weight: 800; font-size: 17px; }
+    .cart-note { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+    .checkout-btn { width: 100%; font: inherit; font-size: 15px; font-weight: 800; padding: 14px; border-radius: 12px; border: 0;
+      background: #2a2a2a; color: #888; cursor: not-allowed; }
+
+    @media (max-width: 720px) { .detail { grid-template-columns: 1fr; gap: 24px; } main { padding: 40px 18px 100px; } }
+  </style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W7JWP3TR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo" aria-label="Miki Butler home"><img src="images/logo512.jpg" alt="Miki Butler" /></a>
+    <nav id="sidebar-nav"></nav>
+    <div class="sidebar-socials" id="sidebar-socials"></div>
+    <p class="sidebar-copy">© All rights reserved<br>Miki Butler</p>
+  </aside>
+
+  <main>
+    <div class="store-wrap" id="store-wrap">
+      <div class="store-head"><h1>Store<span class="dot">.</span></h1></div>
+    </div>
+  </main>
+
+  <button class="cart-fab" id="cart-fab" type="button" aria-label="Open cart">🛒 Cart <span class="count" id="cart-count">0</span></button>
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <aside class="cart-drawer" id="cart-drawer" aria-label="Cart">
+    <header>
+      <h3>Your cart</h3>
+      <button class="cart-close" id="cart-close" aria-label="Close">&times;</button>
+    </header>
+    <div class="cart-items" id="cart-items"></div>
+    <div class="cart-foot">
+      <div class="cart-total"><span>Subtotal</span><span id="cart-subtotal">$0</span></div>
+      <div class="cart-note" id="cart-note">Checkout isn't wired up yet — this store is a sketch.</div>
+      <button class="checkout-btn" id="checkout-btn" type="button" disabled>Checkout — coming soon</button>
+    </div>
+  </aside>
+
+  <script src="js/sidebar.js"></script>
+  <script src="js/fx.js" defer></script>
+  <script>
+    // ── Tiny Markdown renderer (same as the blog) ──
+    function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    function inline(s){
+      var codes=[];
+      s=s.replace(/`([^`]+)`/g,function(_,c){codes.push(c);return '~#~'+(codes.length-1)+'~#~';});
+      s=s.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,'<img src="$2" alt="$1" loading="lazy" />');
+      s=s.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,function(_,t,u){var e=/^https?:\/\//.test(u);return '<a href="'+u+'"'+(e?' target="_blank" rel="noopener"':'')+'>'+t+'</a>';});
+      s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/__([^_]+)__/g,'<strong>$1</strong>');
+      s=s.replace(/\*([^*\n]+)\*/g,'<em>$1</em>').replace(/(^|[\s(])_([^_\n]+)_/g,'$1<em>$2</em>');
+      s=s.replace(/~#~(\d+)~#~/g,function(_,n){return '<code>'+codes[+n]+'</code>';});
+      return s;
+    }
+    function markdown(src){
+      var lines=String(src||'').replace(/\r\n?/g,'\n').split('\n'),out='',i=0;
+      var blank=function(l){return /^\s*$/.test(l);};
+      while(i<lines.length){
+        var line=lines[i];
+        if(/^\s*```/.test(line)){i++;var b=[];while(i<lines.length&&!/^\s*```/.test(lines[i])){b.push(lines[i]);i++;}i++;out+='<pre><code>'+esc(b.join('\n'))+'</code></pre>';continue;}
+        if(blank(line)){i++;continue;}
+        var h=line.match(/^(#{1,6})\s+(.*)$/);
+        if(h){var l=h[1].length;out+='<h'+l+'>'+inline(esc(h[2]))+'</h'+l+'>';i++;continue;}
+        if(/^\s*(---|\*\*\*|___)\s*$/.test(line)){out+='<hr />';i++;continue;}
+        if(/^\s*>\s?/.test(line)){var q=[];while(i<lines.length&&/^\s*>\s?/.test(lines[i])){q.push(lines[i].replace(/^\s*>\s?/,''));i++;}out+='<blockquote>'+inline(esc(q.join(' ')))+'</blockquote>';continue;}
+        if(/^\s*[-*+]\s+/.test(line)){var ul=[];while(i<lines.length&&/^\s*[-*+]\s+/.test(lines[i])){ul.push(lines[i].replace(/^\s*[-*+]\s+/,''));i++;}out+='<ul>'+ul.map(function(t){return '<li>'+inline(esc(t))+'</li>';}).join('')+'</ul>';continue;}
+        if(/^\s*\d+\.\s+/.test(line)){var ol=[];while(i<lines.length&&/^\s*\d+\.\s+/.test(lines[i])){ol.push(lines[i].replace(/^\s*\d+\.\s+/,''));i++;}out+='<ol>'+ol.map(function(t){return '<li>'+inline(esc(t))+'</li>';}).join('')+'</ol>';continue;}
+        var p=[];while(i<lines.length&&!blank(lines[i])&&!/^\s*(#{1,6}\s|[-*+]\s|\d+\.\s|>|```)/.test(lines[i])){p.push(lines[i]);i++;}
+        out+='<p>'+inline(esc(p.join(' ')))+'</p>';
+      }
+      return out;
+    }
+
+    // ── State ──
+    var STORE = { currency: 'USD', symbol: '$', products: [], note: '' };
+    var byslug = {};
+    var CART_KEY = 'mb-store-cart-v1';
+    var cart = loadCart();
+    var wrap = document.getElementById('store-wrap');
+
+    function loadCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY)) || {}; } catch(_) { return {}; } }
+    function saveCart(){ try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch(_){} }
+    function money(n){ return STORE.symbol + Number(n).toLocaleString('en-US'); }
+    function typeBadge(t){ return '<span class="type-badge '+t+'">'+(t==='digital'?'⬇ Digital':'📦 Physical')+'</span>'; }
+
+    // ── Views ──
+    function renderList(filter){
+      var items = STORE.products.filter(function(p){ return filter==='all' ? true : p.type===filter; });
+      var tabs = ['all','digital','physical'].map(function(f){
+        var lbl = f==='all'?'All':(f==='digital'?'⬇ Digital':'📦 Physical');
+        return '<button class="store-tab'+(f===filter?' active':'')+'" data-filter="'+f+'">'+lbl+'</button>';
+      }).join('');
+      var cards = items.map(function(p){
+        return '<a class="product-card" href="?item='+encodeURIComponent(p.slug)+'">'+
+          '<div class="thumb">'+typeBadge(p.type)+'<img src="'+esc(p.image)+'" alt="'+esc(p.title)+'" loading="lazy" /></div>'+
+          '<div class="product-body">'+
+            '<h2>'+esc(p.title)+'</h2>'+
+            '<div class="excerpt">'+esc(p.excerpt||'')+'</div>'+
+            '<div class="price-row"><span class="price">'+money(p.price)+'<span class="cur">'+STORE.currency+'</span></span>'+
+              '<span class="buy-hint">View →</span></div>'+
+          '</div>'+
+        '</a>';
+      }).join('');
+      wrap.innerHTML =
+        '<div class="store-head">'+
+          '<h1>Store<span class="dot">.</span></h1>'+
+          '<p>Digital packs you download instantly, and physical prints &amp; goods shipped worldwide.</p>'+
+        '</div>'+
+        (STORE.note ? '<div class="sketch-banner">🚧 '+esc(STORE.note)+'</div>' : '')+
+        '<div class="store-tabs">'+tabs+'</div>'+
+        '<div class="product-grid">'+cards+'</div>';
+      wrap.querySelectorAll('.store-tab').forEach(function(b){
+        b.addEventListener('click', function(){
+          history.replaceState(null,'', b.dataset.filter==='all'?'store.html':'?type='+b.dataset.filter);
+          renderList(b.dataset.filter);
+        });
+      });
+      document.title = 'Store — Miki Butler';
+    }
+
+    function renderDetail(p){
+      var digital = p.type==='digital';
+      var fulfil = digital
+        ? '⬇ Instant download after checkout'
+        : '📦 Ships worldwide · made to order';
+      var optRow = p.options
+        ? '<div class="opt-row"><label>'+esc(p.options.label)+'</label><select id="d-option">'+
+            p.options.values.map(function(v){return '<option>'+esc(v)+'</option>';}).join('')+'</select></div>'
+        : '';
+      var qtyRow = digital ? '' :
+        '<div class="opt-row qty"><label>Qty</label><select id="d-qty">'+
+        [1,2,3,4,5].map(function(n){return '<option>'+n+'</option>';}).join('')+'</select></div>';
+      var formats = (digital && p.formats)
+        ? '<div class="formats">'+p.formats.map(function(f){return '<span class="fmt">'+esc(f)+'</span>';}).join('')+'</div>' : '';
+      wrap.innerHTML =
+        '<a class="store-back" href="store.html">‹ Back to store</a>'+
+        '<div class="detail">'+
+          '<div class="media">'+typeBadgeless()+'<img src="'+esc(p.image)+'" alt="'+esc(p.title)+'" /></div>'+
+          '<div class="info">'+
+            typeBadge(p.type)+
+            '<h1>'+esc(p.title)+'</h1>'+
+            '<div class="d-meta"><span class="price-lg">'+money(p.price)+'<span class="cur">'+STORE.currency+'</span></span></div>'+
+            '<div class="fulfil-note">'+fulfil+'</div>'+
+            formats+ optRow + qtyRow +
+            '<div class="buy-actions"><button class="btn-primary" id="add-btn" type="button">Add to cart</button></div>'+
+          '</div>'+
+          '<div class="prose">'+markdown(p.body||'')+'</div>'+
+        '</div>';
+      document.getElementById('add-btn').addEventListener('click', function(){
+        var opt = document.getElementById('d-option');
+        var qtySel = document.getElementById('d-qty');
+        var qty = qtySel ? parseInt(qtySel.value,10) : 1;
+        addToCart(p.slug, qty, opt ? opt.value : '');
+        openCart();
+      });
+      document.title = p.title + ' — Store — Miki Butler';
+      window.scrollTo(0,0);
+    }
+    // The media panel doesn't need a floating badge (the info column shows one).
+    function typeBadgeless(){ return ''; }
+
+    // ── Cart ──
+    function cartKey(slug, opt){ return opt ? slug + '::' + opt : slug; }
+    function addToCart(slug, qty, opt){
+      var k = cartKey(slug, opt);
+      cart[k] = (cart[k] || 0) + (qty || 1);
+      saveCart(); refreshCart();
+    }
+    function setQty(k, q){ if(q<=0){ delete cart[k]; } else { cart[k]=q; } saveCart(); refreshCart(); }
+    function cartCount(){ return Object.keys(cart).reduce(function(a,k){return a+cart[k];},0); }
+    function cartSubtotal(){
+      return Object.keys(cart).reduce(function(sum,k){
+        var slug=k.split('::')[0], p=byslug[slug]; return sum + (p ? p.price*cart[k] : 0);
+      },0);
+    }
+    function refreshCart(){
+      document.getElementById('cart-count').textContent = cartCount();
+      document.getElementById('cart-subtotal').textContent = money(cartSubtotal());
+      var host = document.getElementById('cart-items');
+      var keys = Object.keys(cart);
+      if(!keys.length){ host.innerHTML = '<div class="cart-empty">Your cart is empty.</div>'; return; }
+      host.innerHTML = keys.map(function(k){
+        var slug=k.split('::')[0], opt=k.split('::')[1]||'', p=byslug[slug];
+        if(!p) return '';
+        return '<div class="cart-item">'+
+          '<img src="'+esc(p.image)+'" alt="" />'+
+          '<div><div class="ci-title">'+esc(p.title)+'</div>'+
+            (opt?'<div class="ci-sub">'+esc(opt)+'</div>':'<div class="ci-sub">'+(p.type==='digital'?'Digital download':'Physical')+'</div>')+
+            '<div class="ci-qty"><button data-k="'+esc(k)+'" data-d="-1">−</button><span>'+cart[k]+'</span><button data-k="'+esc(k)+'" data-d="1">+</button></div>'+
+          '</div>'+
+          '<div><div class="ci-price">'+money(p.price*cart[k])+'</div>'+
+            '<button class="ci-remove" data-rm="'+esc(k)+'">remove</button></div>'+
+        '</div>';
+      }).join('');
+      host.querySelectorAll('.ci-qty button').forEach(function(b){
+        b.addEventListener('click', function(){ var k=b.dataset.k; setQty(k, (cart[k]||0)+parseInt(b.dataset.d,10)); });
+      });
+      host.querySelectorAll('.ci-remove').forEach(function(b){
+        b.addEventListener('click', function(){ setQty(b.dataset.rm, 0); });
+      });
+    }
+    function openCart(){ document.getElementById('cart-drawer').classList.add('open'); document.getElementById('cart-overlay').classList.add('open'); }
+    function closeCart(){ document.getElementById('cart-drawer').classList.remove('open'); document.getElementById('cart-overlay').classList.remove('open'); }
+    document.getElementById('cart-fab').addEventListener('click', openCart);
+    document.getElementById('cart-close').addEventListener('click', closeCart);
+    document.getElementById('cart-overlay').addEventListener('click', closeCart);
+    document.getElementById('checkout-btn').addEventListener('click', function(){ /* sketch — intentionally inert */ });
+
+    // ── Router ──
+    fetch('store.json?t=' + Date.now()).then(function(r){ return r.ok ? r.json() : STORE; }).then(function(data){
+      STORE = { currency: data.currency||'USD', symbol: data.symbol||'$', products: data.products||[], note: data.note||'' };
+      STORE.products.forEach(function(p){ byslug[p.slug]=p; });
+      var params = new URLSearchParams(location.search);
+      var slug = params.get('item');
+      var type = params.get('type');
+      if(slug && byslug[slug]) renderDetail(byslug[slug]);
+      else renderList(['digital','physical'].indexOf(type)>=0 ? type : 'all');
+      refreshCart();
+    }).catch(function(){
+      wrap.innerHTML = '<div class="store-head"><h1>Store<span class="dot">.</span></h1></div>'+
+        '<div class="sketch-banner">Couldn’t load the store right now.</div>';
+    });
+    window.addEventListener('popstate', function(){ location.reload(); });
+  </script>
+</body>
+</html>
