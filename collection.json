@@ -195,7 +195,8 @@
       "price": "$29.99",
       "notes": "Adventure game based on the comic series.",
       "era": "modern",
-      "slug": "blacksad-under-the-skin-switch"
+      "slug": "blacksad-under-the-skin-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/80181966879605311688b6ad25f16d9675760170734b2f37d5a656832a92c1d0.jpg"
     },
     {
       "title": "La-Mulana 1 & 2: Hidden Treasures Edition",
@@ -203,7 +204,8 @@
       "price": "$49.99",
       "notes": "Includes both La-Mulana games.",
       "era": "modern",
-      "slug": "la-mulana-1-2-hidden-treasures-edition-switch"
+      "slug": "la-mulana-1-2-hidden-treasures-edition-switch",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/835430/library_600x900.jpg"
     },
     {
       "title": "The Legend of Zelda: Breath of the Wild",
@@ -211,7 +213,8 @@
       "price": "$59.99",
       "notes": "Popular action-adventure game.",
       "era": "modern",
-      "slug": "the-legend-of-zelda-breath-of-the-wild-switch"
+      "slug": "the-legend-of-zelda-breath-of-the-wild-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/d3c210e61e8487200fc4c344987243a60257838187a69a6a81c42d7447d5d192.jpg"
     },
     {
       "title": "Super Mario Odyssey",
@@ -219,7 +222,8 @@
       "price": "$59.99",
       "notes": "Highly acclaimed platform game.",
       "era": "modern",
-      "slug": "super-mario-odyssey-switch"
+      "slug": "super-mario-odyssey-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/ad4d31f664a1ce704f0219da2805f8459595bc3c01c3f04df2e32ba34a05b8c6.jpg"
     },
     {
       "title": "Mario Kart 8 Deluxe",
@@ -227,7 +231,8 @@
       "price": "$59.99",
       "notes": "Best-selling racing game.",
       "era": "modern",
-      "slug": "mario-kart-8-deluxe-switch"
+      "slug": "mario-kart-8-deluxe-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/55e0720b1a064e28b5df173d30b343ecd91287dc86942f833ffbf979a7a66ec9.jpg"
     },
     {
       "title": "Dead Cells",
@@ -235,7 +240,8 @@
       "price": "$34.99",
       "notes": "Roguelike-metroidvania hybrid.",
       "era": "modern",
-      "slug": "dead-cells-switch"
+      "slug": "dead-cells-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/da66204a9af95bdab454b895166749f11ff5b492febfb274607e58f3ff07fe21.jpg"
     },
     {
       "title": "Celeste",
@@ -243,7 +249,8 @@
       "price": "$19.99",
       "notes": "Critically acclaimed platformer.",
       "era": "modern",
-      "slug": "celeste-switch"
+      "slug": "celeste-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/64a18f84f1ff5bdcf5ccfe4c89a8b1fc4642d8afc281001cc62b36f0396aef4b.jpg"
     },
     {
       "title": "Bayonetta 2",
@@ -251,7 +258,8 @@
       "price": "$49.99",
       "notes": "Action hack and slash game.",
       "era": "modern",
-      "slug": "bayonetta-2-switch"
+      "slug": "bayonetta-2-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/415c0b34a1a3b802767a633ed85b4fd0ccece7ab6185d33c5b5c4ed1524727a5.jpg"
     },
     {
       "title": "Super Smash Bros. Ultimate",
@@ -259,7 +267,8 @@
       "price": "$59.99",
       "notes": "Crossover fighting game.",
       "era": "modern",
-      "slug": "super-smash-bros-ultimate-switch"
+      "slug": "super-smash-bros-ultimate-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/08af58551a19df2a73ccb36f720388434a1965776b34675c6f69af3f93280330.jpg"
     },
     {
       "title": "Pokémon Sword",
@@ -267,7 +276,8 @@
       "price": "$59.99",
       "notes": "RPG with new Pokémon and adventures.",
       "era": "modern",
-      "slug": "pok-mon-sword-switch"
+      "slug": "pok-mon-sword-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/0bf4bca3b619ae6ef04ca08214df7b2a438a8fec8616934b03ae73de839bd518.jpg"
     },
     {
       "title": "Luigi’s Mansion 3",
@@ -275,7 +285,8 @@
       "price": "$59.99",
       "notes": "Action-adventure game with ghost hunting.",
       "era": "modern",
-      "slug": "luigi-s-mansion-3-switch"
+      "slug": "luigi-s-mansion-3-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/60601a0a7cd4f96b7b736dd4fe6da14bcefc9f1d3b649084302dcd409618f23f.jpg"
     },
     {
       "title": "Animal Crossing: New Horizons",
@@ -283,7 +294,8 @@
       "price": "$59.99",
       "notes": "Social simulation game.",
       "era": "modern",
-      "slug": "animal-crossing-new-horizons-switch"
+      "slug": "animal-crossing-new-horizons-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/4a320d37cd85f49d6e4a675b6d7b82f5ad13ae10b212d5b220fe4208c7d7c2f8.jpg"
     },
     {
       "title": "Octopath Traveler",
@@ -291,7 +303,8 @@
       "price": "$59.99",
       "notes": "Role-playing game with eight unique stories.",
       "era": "modern",
-      "slug": "octopath-traveler-switch"
+      "slug": "octopath-traveler-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/f38062570be139c883707da030a5ae16e645369c64f8628445fa47e40e5b6e18.jpg"
     },
     {
       "title": "Fire Emblem: Three Houses",
@@ -299,7 +312,8 @@
       "price": "$59.99",
       "notes": "Tactical role-playing game.",
       "era": "modern",
-      "slug": "fire-emblem-three-houses-switch"
+      "slug": "fire-emblem-three-houses-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/11c6f71a52f1ac7282fe02ef9b96e0db42f7f664fc694be5bff744becd79894d.jpg"
     },
     {
       "title": "Xenoblade Chronicles 2",
@@ -307,7 +321,8 @@
       "price": "$59.99",
       "notes": "Open-world action RPG.",
       "era": "modern",
-      "slug": "xenoblade-chronicles-2-switch"
+      "slug": "xenoblade-chronicles-2-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/0edb5a2abf375dfb0d29cf9e7c723450a93bf4d66f090dde4f3bdb68c4698ed9.jpg"
     },
     {
       "title": "Splatoon 2",
@@ -315,7 +330,8 @@
       "price": "$59.99",
       "notes": "Third-person shooter with ink battles.",
       "era": "modern",
-      "slug": "splatoon-2-switch"
+      "slug": "splatoon-2-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/a0af3e5f59b543af010e54c664c53fa17f66c37098418ba73b45aa6b43ac6f0d.jpg"
     },
     {
       "title": "Donkey Kong Country: Tropical Freeze",
@@ -323,7 +339,8 @@
       "price": "$59.99",
       "notes": "Platform game with Donkey Kong.",
       "era": "modern",
-      "slug": "donkey-kong-country-tropical-freeze-switch"
+      "slug": "donkey-kong-country-tropical-freeze-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/1370a702e715506557628f669adc9108529ce211d62eae628954331e26c8fd2e.jpg"
     },
     {
       "title": "Yoshi's Crafted World",
@@ -331,7 +348,8 @@
       "price": "$59.99",
       "notes": "Platform game with crafted materials theme.",
       "era": "modern",
-      "slug": "yoshi-s-crafted-world-switch"
+      "slug": "yoshi-s-crafted-world-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/eb4db2538ac3d439fce167fe2c23d2a58b09a80fdf1a8d00d1cbae50481f374f.jpg"
     },
     {
       "title": "The Elder Scrolls V: Skyrim",
@@ -339,7 +357,8 @@
       "price": "$59.99",
       "notes": "Open-world action RPG.",
       "era": "modern",
-      "slug": "the-elder-scrolls-v-skyrim-switch"
+      "slug": "the-elder-scrolls-v-skyrim-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/e9b1545083c46c612295a6f76ac609c355f04aefa90db09cf94ceeca682460be.jpg"
     },
     {
       "title": "Dragon Quest XI S: Echoes of an Elusive Age",
@@ -347,7 +366,8 @@
       "price": "$59.99",
       "notes": "Role-playing game with classic JRPG elements.",
       "era": "modern",
-      "slug": "dragon-quest-xi-s-echoes-of-an-elusive-age-switch"
+      "slug": "dragon-quest-xi-s-echoes-of-an-elusive-age-switch",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1295510/library_600x900.jpg"
     },
     {
       "title": "Hollow Knight",
@@ -355,7 +375,8 @@
       "price": "$14.99",
       "notes": "Action-adventure game in a vast interconnected world.",
       "era": "modern",
-      "slug": "hollow-knight-switch"
+      "slug": "hollow-knight-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/91540557d07599fd6b8d63e544320fc682e71ec8d30f2b7c3d13568af18323be.jpg"
     },
     {
       "title": "Diablo III: Eternal Collection",
@@ -363,7 +384,8 @@
       "price": "$59.99",
       "notes": "Action RPG with dungeon crawling elements.",
       "era": "modern",
-      "slug": "diablo-iii-eternal-collection-switch"
+      "slug": "diablo-iii-eternal-collection-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/bf924a38ce1da69413bdba496afad2ef562f73ea5273621c09cac878ab7ad0b5.jpg"
     },
     {
       "title": "The Legend of Zelda: Link's Awakening",
@@ -371,7 +393,8 @@
       "price": "$59.99",
       "notes": "Remake of the classic Zelda game.",
       "era": "modern",
-      "slug": "the-legend-of-zelda-link-s-awakening-switch"
+      "slug": "the-legend-of-zelda-link-s-awakening-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/b0b0b2d150830b70b5bb259cdabefe21d2009b55cbd58854cf6a897587249054.jpg"
     },
     {
       "title": "New Super Mario Bros. U Deluxe",
@@ -379,7 +402,8 @@
       "price": "$59.99",
       "notes": "Enhanced port of the Wii U game.",
       "era": "modern",
-      "slug": "new-super-mario-bros-u-deluxe-switch"
+      "slug": "new-super-mario-bros-u-deluxe-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/658a846bafd5446bbdfc163c46937152887c6c39eb5f1e6b2337ddec3352b524.jpg"
     },
     {
       "title": "Captain Toad: Treasure Tracker",
@@ -387,7 +411,8 @@
       "price": "$39.99",
       "notes": "Puzzle game with adventure elements.",
       "era": "modern",
-      "slug": "captain-toad-treasure-tracker-switch"
+      "slug": "captain-toad-treasure-tracker-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/63ca1c160b69fcf2b9dd8dd993bb6ef86218ff68f8afa5167b48d35d38c33478.jpg"
     },
     {
       "title": "Super Mario Party",
@@ -395,7 +420,8 @@
       "price": "$59.99",
       "notes": "Party game with various mini-games.",
       "era": "modern",
-      "slug": "super-mario-party-switch"
+      "slug": "super-mario-party-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/b200ef18f68bed4e23b7e384700862b23bcb943966e0a040d98174b3e24bb7bd.jpg"
     },
     {
       "title": "Mario + Rabbids Kingdom Battle",
@@ -403,7 +429,8 @@
       "price": "$59.99",
       "notes": "Crossover turn-based strategy game.",
       "era": "modern",
-      "slug": "mario-rabbids-kingdom-battle-switch"
+      "slug": "mario-rabbids-kingdom-battle-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/ce5d8550709808b004a99f4c6671e67ab4eec459d86985f8945c76107f2d7125.jpg"
     },
     {
       "title": "Kirby Star Allies",
@@ -411,7 +438,8 @@
       "price": "$59.99",
       "notes": "Platform game with cooperative multiplayer.",
       "era": "modern",
-      "slug": "kirby-star-allies-switch"
+      "slug": "kirby-star-allies-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/ff44624d05899c24ef7e74dba3e8a43118641ffaab9f379425037608d3fc8f34.jpg"
     },
     {
       "title": "The World Ends with You: Final Remix",
@@ -419,7 +447,8 @@
       "price": "$49.99",
       "notes": "Action RPG with a unique combat system.",
       "era": "modern",
-      "slug": "the-world-ends-with-you-final-remix-switch"
+      "slug": "the-world-ends-with-you-final-remix-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/d9c346d3bd01529967e9b8133218ea4c959793c6ab31f166d047061de0ca61cd.jpg"
     },
     {
       "title": "The Legend of Zelda: Twilight Princess HD",
@@ -435,7 +464,8 @@
       "price": "$49.99",
       "notes": "Role-playing game with Studio Ghibli's involvement.",
       "era": "modern",
-      "slug": "ni-no-kuni-wrath-of-the-white-witch-switch"
+      "slug": "ni-no-kuni-wrath-of-the-white-witch-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/78d73682833bab17b26827c7a4c38147a295dc3a178517c0b8a0fe277fe31122.jpg"
     },
     {
       "title": "Trials of Mana",
@@ -443,7 +473,8 @@
       "price": "$49.99",
       "notes": "Action RPG, remake of Seiken Densetsu 3.",
       "era": "modern",
-      "slug": "trials-of-mana-switch"
+      "slug": "trials-of-mana-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/2af56fc4b490b34f02f63eb94419c426489fd512dfb79c5bcf098d635aeac30f.jpg"
     },
     {
       "title": "Hyrule Warriors: Definitive Edition",
@@ -451,7 +482,8 @@
       "price": "$59.99",
       "notes": "Hack and slash game set in the Zelda universe.",
       "era": "modern",
-      "slug": "hyrule-warriors-definitive-edition-switch"
+      "slug": "hyrule-warriors-definitive-edition-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/8d75a710f3feacbaa1be6e277648b2cb04ec61edf6a9e4c67f4a1d1321c0b57a.jpg"
     },
     {
       "title": "Astral Chain",
@@ -459,7 +491,8 @@
       "price": "$59.99",
       "notes": "Action game with a dual-character system.",
       "era": "modern",
-      "slug": "astral-chain-switch"
+      "slug": "astral-chain-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/b5d62b0aa33e044693136763637b7c5eb94eb3c0541838e1eee5677dc28933a1.jpg"
     },
     {
       "title": "Tokyo Mirage Sessions FE Encore",
@@ -467,7 +500,8 @@
       "price": "$59.99",
       "notes": "Crossover RPG with Fire Emblem and Shin Megami Tensei.",
       "era": "modern",
-      "slug": "tokyo-mirage-sessions-fe-encore-switch"
+      "slug": "tokyo-mirage-sessions-fe-encore-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/4ff32efe9352f32ca82af02967216f75453871603e1ec63fa8d2ffd2b0b88438.jpg"
     },
     {
       "title": "Xenoblade Chronicles: Definitive Edition",
@@ -475,13 +509,15 @@
       "price": "$59.99",
       "notes": "Remastered version of the classic RPG.",
       "era": "modern",
-      "slug": "xenoblade-chronicles-definitive-edition-switch"
+      "slug": "xenoblade-chronicles-definitive-edition-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/3b9eb62296e2835cc177bb44c360edcc6eac5d70b6abd6eacf3bb7c7d6ddf9e5.jpg"
     },
     {
       "title": "The Witcher 3: Wild Hunt Complete Edition",
       "system": "Switch",
       "era": "modern",
-      "slug": "the-witcher-3-wild-hunt-complete-edition-switch"
+      "slug": "the-witcher-3-wild-hunt-complete-edition-switch",
+      "image": "https://img-eshop.cdn.nintendo.net/i/0d0944d9e424b58b833a7b986a538621a390ab0f56cac9295a46fca6c735bbe3.jpg"
     },
     {
       "title": "Battlefield 1",
@@ -489,7 +525,8 @@
       "price": "$19.99",
       "notes": "First-person shooter set in World War I.",
       "era": "modern",
-      "slug": "battlefield-1-xbox-one"
+      "slug": "battlefield-1-xbox-one",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1238840/library_600x900.jpg"
     },
     {
       "title": "Battlefield 4",
@@ -497,7 +534,8 @@
       "price": "$19.99",
       "notes": "First-person shooter set in modern-day.",
       "era": "modern",
-      "slug": "battlefield-4-xbox-one"
+      "slug": "battlefield-4-xbox-one",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1238860/library_600x900.jpg"
     },
     {
       "title": "Final Fantasy XV",
@@ -505,7 +543,8 @@
       "price": "$29.99",
       "notes": "Action role-playing game.",
       "era": "modern",
-      "slug": "final-fantasy-xv-xbox-one"
+      "slug": "final-fantasy-xv-xbox-one",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/637650/library_600x900.jpg"
     },
     {
       "title": "Resident Evil 7: Biohazard",
@@ -513,7 +552,8 @@
       "price": "$29.99",
       "notes": "Survival horror game.",
       "era": "modern",
-      "slug": "resident-evil-7-biohazard-xbox-one"
+      "slug": "resident-evil-7-biohazard-xbox-one",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/418370/library_600x900.jpg"
     },
     {
       "title": "Fallout 4",
@@ -521,7 +561,8 @@
       "price": "$19.99",
       "notes": "Open-world RPG.",
       "era": "modern",
-      "slug": "fallout-4-xbox-one"
+      "slug": "fallout-4-xbox-one",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/377160/library_600x900.jpg"
     },
     {
       "title": "Prey",
@@ -529,7 +570,8 @@
       "price": "$29.99",
       "notes": "First-person action-adventure game.",
       "era": "modern",
-      "slug": "prey-xbox-one"
+      "slug": "prey-xbox-one",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/480490/library_600x900.jpg"
     },
     {
       "title": "Mortal Kombat XL",
@@ -537,7 +579,8 @@
       "price": "$19.99",
       "notes": "Fighting game.",
       "era": "modern",
-      "slug": "mortal-kombat-xl-xbox-one"
+      "slug": "mortal-kombat-xl-xbox-one",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/307780/library_600x900.jpg"
     },
     {
       "title": "Injustice 2",
@@ -545,7 +588,8 @@
       "price": "$19.99",
       "notes": "Fighting game featuring DC Comics characters.",
       "era": "modern",
-      "slug": "injustice-2-xbox-one"
+      "slug": "injustice-2-xbox-one",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/627270/library_600x900.jpg"
     },
     {
       "title": "The Witcher 3: Wild Hunt",
@@ -553,7 +597,8 @@
       "price": "$39.99",
       "notes": "Open-world RPG.",
       "era": "modern",
-      "slug": "the-witcher-3-wild-hunt-xbox-one"
+      "slug": "the-witcher-3-wild-hunt-xbox-one",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/292030/library_600x900.jpg"
     },
     {
       "title": "Dishonored 2",
@@ -561,7 +606,8 @@
       "price": "$29.99",
       "notes": "Action-adventure game.",
       "era": "modern",
-      "slug": "dishonored-2-xbox-one"
+      "slug": "dishonored-2-xbox-one",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/403640/library_600x900.jpg"
     },
     {
       "title": "Assassin's Creed Origins",
@@ -569,7 +615,8 @@
       "price": "$29.99",
       "notes": "Action-adventure game set in Ancient Egypt.",
       "era": "modern",
-      "slug": "assassin-s-creed-origins-ps4"
+      "slug": "assassin-s-creed-origins-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/582160/library_600x900.jpg"
     },
     {
       "title": "Shadow of the Colossus",
@@ -585,7 +632,8 @@
       "price": "$39.99",
       "notes": "Action-adventure survival horror game.",
       "era": "modern",
-      "slug": "days-gone-ps4"
+      "slug": "days-gone-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1259420/library_600x900.jpg"
     },
     {
       "title": "Detroit: Become Human",
@@ -593,7 +641,8 @@
       "price": "$29.99",
       "notes": "Interactive drama and action-adventure game.",
       "era": "modern",
-      "slug": "detroit-become-human-ps4"
+      "slug": "detroit-become-human-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1222140/library_600x900.jpg"
     },
     {
       "title": "Uncharted 4: A Thief's End",
@@ -601,7 +650,8 @@
       "price": "$19.99",
       "notes": "Action-adventure game.",
       "era": "modern",
-      "slug": "uncharted-4-a-thief-s-end-ps4"
+      "slug": "uncharted-4-a-thief-s-end-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1659420/library_600x900.jpg"
     },
     {
       "title": "Final Fantasy XV",
@@ -609,7 +659,8 @@
       "price": "$29.99",
       "notes": "Action role-playing game.",
       "era": "modern",
-      "slug": "final-fantasy-xv-ps4"
+      "slug": "final-fantasy-xv-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/637650/library_600x900.jpg"
     },
     {
       "title": "Dragon Ball FighterZ",
@@ -617,7 +668,8 @@
       "price": "$29.99",
       "notes": "Fighting game.",
       "era": "modern",
-      "slug": "dragon-ball-fighterz-ps4"
+      "slug": "dragon-ball-fighterz-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/678950/library_600x900.jpg"
     },
     {
       "title": "Persona 5",
@@ -625,7 +677,8 @@
       "price": "$59.99",
       "notes": "Role-playing game.",
       "era": "modern",
-      "slug": "persona-5-ps4"
+      "slug": "persona-5-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1687950/library_600x900.jpg"
     },
     {
       "title": "Nioh",
@@ -633,7 +686,8 @@
       "price": "$19.99",
       "notes": "Action role-playing game.",
       "era": "modern",
-      "slug": "nioh-ps4"
+      "slug": "nioh-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/485510/library_600x900.jpg"
     },
     {
       "title": "Horizon Zero Dawn",
@@ -641,7 +695,8 @@
       "price": "$19.99",
       "notes": "Action role-playing game set in a post-apocalyptic world.",
       "era": "modern",
-      "slug": "horizon-zero-dawn-ps4"
+      "slug": "horizon-zero-dawn-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2561580/library_600x900.jpg"
     },
     {
       "title": "Bloodborne",
@@ -657,7 +712,8 @@
       "price": "$19.99",
       "notes": "Remastered version of the critically acclaimed game.",
       "era": "modern",
-      "slug": "the-last-of-us-remastered-ps4"
+      "slug": "the-last-of-us-remastered-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1888930/library_600x900.jpg"
     },
     {
       "title": "Dark Souls III",
@@ -665,7 +721,8 @@
       "price": "$19.99",
       "notes": "Action role-playing game.",
       "era": "modern",
-      "slug": "dark-souls-iii-ps4"
+      "slug": "dark-souls-iii-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/374320/library_600x900.jpg"
     },
     {
       "title": "NieR: Automata",
@@ -673,7 +730,8 @@
       "price": "$39.99",
       "notes": "Action RPG with a unique storytelling approach.",
       "era": "modern",
-      "slug": "nier-automata-ps4"
+      "slug": "nier-automata-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/524220/library_600x900.jpg"
     },
     {
       "title": "Resident Evil 2",
@@ -681,7 +739,8 @@
       "price": "$29.99",
       "notes": "Remake of the classic survival horror game.",
       "era": "modern",
-      "slug": "resident-evil-2-ps4"
+      "slug": "resident-evil-2-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/883710/library_600x900.jpg"
     },
     {
       "title": "The Last Guardian",
@@ -697,7 +756,8 @@
       "price": "$59.99",
       "notes": "Action role-playing game.",
       "era": "modern",
-      "slug": "tales-of-arise-ps4"
+      "slug": "tales-of-arise-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/740130/library_600x900.jpg"
     },
     {
       "title": "Red Dead Redemption 2",
@@ -705,7 +765,8 @@
       "price": "$59.99",
       "notes": "Open-world action-adventure game.",
       "era": "modern",
-      "slug": "red-dead-redemption-2-ps4"
+      "slug": "red-dead-redemption-2-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/library_600x900.jpg"
     },
     {
       "title": "The Last of Us Part II",
@@ -713,7 +774,8 @@
       "price": "$39.99",
       "notes": "Action-adventure game.",
       "era": "modern",
-      "slug": "the-last-of-us-part-ii-ps4"
+      "slug": "the-last-of-us-part-ii-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2531310/library_600x900.jpg"
     },
     {
       "title": "Hunt: Showdown",
@@ -721,7 +783,8 @@
       "price": "$39.99",
       "notes": "First-person shooter with PvP and PvE elements.",
       "era": "modern",
-      "slug": "hunt-showdown-ps4"
+      "slug": "hunt-showdown-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/594650/library_600x900.jpg"
     },
     {
       "title": "Devil May Cry 5",
@@ -729,7 +792,8 @@
       "price": "$29.99",
       "notes": "Action-adventure hack and slash game.",
       "era": "modern",
-      "slug": "devil-may-cry-5-ps4"
+      "slug": "devil-may-cry-5-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/601150/library_600x900.jpg"
     },
     {
       "title": "Concrete Genie",
@@ -745,7 +809,8 @@
       "price": "$59.99",
       "notes": "Platform game.",
       "era": "modern",
-      "slug": "crash-bandicoot-4-it-s-about-time-ps4"
+      "slug": "crash-bandicoot-4-it-s-about-time-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1378990/library_600x900.jpg"
     },
     {
       "title": "Spider-Man",
@@ -753,7 +818,8 @@
       "price": "$39.99",
       "notes": "Action-adventure game set in the Marvel Universe.",
       "era": "modern",
-      "slug": "spider-man-ps4"
+      "slug": "spider-man-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1817070/library_600x900.jpg"
     },
     {
       "title": "Ghost of Tsushima",
@@ -761,7 +827,8 @@
       "price": "$59.99",
       "notes": "Action-adventure game set in feudal Japan.",
       "era": "modern",
-      "slug": "ghost-of-tsushima-ps4"
+      "slug": "ghost-of-tsushima-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2215430/library_600x900.jpg"
     },
     {
       "title": "Kingdom Hearts III",
@@ -769,7 +836,8 @@
       "price": "$39.99",
       "notes": "Action RPG.",
       "era": "modern",
-      "slug": "kingdom-hearts-iii-ps4"
+      "slug": "kingdom-hearts-iii-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2552450/library_600x900.jpg"
     },
     {
       "title": "Final Fantasy VII Remake",
@@ -777,7 +845,8 @@
       "price": "$59.99",
       "notes": "Remake of the classic JRPG.",
       "era": "modern",
-      "slug": "final-fantasy-vii-remake-ps4"
+      "slug": "final-fantasy-vii-remake-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1462040/library_600x900.jpg"
     },
     {
       "title": "Sekiro: Shadows Die Twice",
@@ -785,7 +854,8 @@
       "price": "$59.99",
       "notes": "Action-adventure game with challenging combat.",
       "era": "modern",
-      "slug": "sekiro-shadows-die-twice-ps4"
+      "slug": "sekiro-shadows-die-twice-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/814380/library_600x900.jpg"
     },
     {
       "title": "Resident Evil Village",
@@ -793,7 +863,8 @@
       "price": "$59.99",
       "notes": "Survival horror game.",
       "era": "modern",
-      "slug": "resident-evil-village-ps4"
+      "slug": "resident-evil-village-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1196590/library_600x900.jpg"
     },
     {
       "title": "Uncharted: The Lost Legacy",
@@ -801,7 +872,8 @@
       "price": "$19.99",
       "notes": "Action-adventure game.",
       "era": "modern",
-      "slug": "uncharted-the-lost-legacy-ps4"
+      "slug": "uncharted-the-lost-legacy-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1659420/library_600x900.jpg"
     },
     {
       "title": "Yakuza 0",
@@ -809,7 +881,8 @@
       "price": "$19.99",
       "notes": "Action-adventure game set in the Japanese underworld.",
       "era": "modern",
-      "slug": "yakuza-0-ps4"
+      "slug": "yakuza-0-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/2988580/library_600x900.jpg"
     },
     {
       "title": "Metal Gear Solid V: The Phantom Pain",
@@ -817,7 +890,8 @@
       "price": "$29.99",
       "notes": "Action-adventure stealth game.",
       "era": "modern",
-      "slug": "metal-gear-solid-v-the-phantom-pain-ps4"
+      "slug": "metal-gear-solid-v-the-phantom-pain-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/287700/library_600x900.jpg"
     },
     {
       "title": "Nioh 2",
@@ -825,7 +899,8 @@
       "price": "$59.99",
       "notes": "Action role-playing game.",
       "era": "modern",
-      "slug": "nioh-2-ps4"
+      "slug": "nioh-2-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1325200/library_600x900.jpg"
     },
     {
       "title": "The Evil Within 2",
@@ -833,7 +908,8 @@
       "price": "$29.99",
       "notes": "Survival horror game.",
       "era": "modern",
-      "slug": "the-evil-within-2-ps4"
+      "slug": "the-evil-within-2-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/601430/library_600x900.jpg"
     },
     {
       "title": "Dark Souls Remastered",
@@ -841,7 +917,8 @@
       "price": "$39.99",
       "notes": "Remastered version of the classic action RPG.",
       "era": "modern",
-      "slug": "dark-souls-remastered-ps4"
+      "slug": "dark-souls-remastered-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/570940/library_600x900.jpg"
     },
     {
       "title": "Shadow of the Tomb Raider",
@@ -849,7 +926,8 @@
       "price": "$39.99",
       "notes": "Action-adventure game.",
       "era": "modern",
-      "slug": "shadow-of-the-tomb-raider-ps4"
+      "slug": "shadow-of-the-tomb-raider-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/750920/library_600x900.jpg"
     },
     {
       "title": "Final Fantasy X/X-2 HD Remaster",
@@ -857,7 +935,8 @@
       "price": "$39.99",
       "notes": "Remastered collection of the two classic RPGs.",
       "era": "modern",
-      "slug": "final-fantasy-x-x-2-hd-remaster-ps4"
+      "slug": "final-fantasy-x-x-2-hd-remaster-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/359870/library_600x900.jpg"
     },
     {
       "title": "Okami HD",
@@ -865,7 +944,8 @@
       "price": "$19.99",
       "notes": "Remastered version of the classic action-adventure game.",
       "era": "modern",
-      "slug": "okami-hd-ps4"
+      "slug": "okami-hd-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/587620/library_600x900.jpg"
     },
     {
       "title": "Darksiders III",
@@ -873,7 +953,8 @@
       "price": "$39.99",
       "notes": "Action-adventure hack and slash game.",
       "era": "modern",
-      "slug": "darksiders-iii-ps4"
+      "slug": "darksiders-iii-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/606280/library_600x900.jpg"
     },
     {
       "title": "Ni no Kuni II: Revenant Kingdom",
@@ -881,7 +962,8 @@
       "price": "$59.99",
       "notes": "Role-playing game.",
       "era": "modern",
-      "slug": "ni-no-kuni-ii-revenant-kingdom-ps4"
+      "slug": "ni-no-kuni-ii-revenant-kingdom-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/589360/library_600x900.jpg"
     },
     {
       "title": "The Dark Pictures Anthology: Man of Medan",
@@ -889,7 +971,8 @@
       "price": "$29.99",
       "notes": "Interactive drama and horror game.",
       "era": "modern",
-      "slug": "the-dark-pictures-anthology-man-of-medan-ps4"
+      "slug": "the-dark-pictures-anthology-man-of-medan-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/939850/library_600x900.jpg"
     },
     {
       "title": "The Dark Pictures Anthology: Little Hope",
@@ -897,7 +980,8 @@
       "price": "$29.99",
       "notes": "Interactive drama and horror game.",
       "era": "modern",
-      "slug": "the-dark-pictures-anthology-little-hope-ps4"
+      "slug": "the-dark-pictures-anthology-little-hope-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1194630/library_600x900.jpg"
     },
     {
       "title": "The Dark Pictures Anthology: House of Ashes",
@@ -905,7 +989,8 @@
       "price": "$29.99",
       "notes": "Interactive drama and horror game.",
       "era": "modern",
-      "slug": "the-dark-pictures-anthology-house-of-ashes-ps4"
+      "slug": "the-dark-pictures-anthology-house-of-ashes-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1281590/library_600x900.jpg"
     },
     {
       "title": "The Quarry",
@@ -913,7 +998,8 @@
       "price": "$59.99",
       "notes": "Interactive drama and horror game.",
       "era": "modern",
-      "slug": "the-quarry-ps4"
+      "slug": "the-quarry-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1577120/library_600x900.jpg"
     },
     {
       "title": "God of War",
@@ -921,7 +1007,8 @@
       "price": "$39.99",
       "notes": "Action-adventure game.",
       "era": "modern",
-      "slug": "god-of-war-ps4"
+      "slug": "god-of-war-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1593500/library_600x900.jpg"
     },
     {
       "title": "Yakuza 6: The Song of Life",
@@ -929,7 +1016,8 @@
       "price": "$39.99",
       "notes": "Action-adventure game.",
       "era": "modern",
-      "slug": "yakuza-6-the-song-of-life-ps4"
+      "slug": "yakuza-6-the-song-of-life-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1388590/library_600x900.jpg"
     },
     {
       "title": "Shadow of the Colossus",
