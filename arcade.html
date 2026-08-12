@@ -109,8 +109,21 @@
     .crt-speaker { width: 46px; height: 22px; margin-top: 2px; border-radius: 3px;
                    background: repeating-linear-gradient(90deg, #0c0c0c 0 2px, #2b2b2b 2px 4px); }
     .crt-led { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 9px var(--accent); }
+    /* Share button — same dial look as the channel knobs, accent glyph.
+       Kept off the .crt-ch class so the channel click-binder skips it. */
+    .crt-share {
+      width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 17px; line-height: 1;
+      color: var(--accent); background: radial-gradient(circle at 35% 28%, #3c3c3c, #131313);
+      border: 1px solid #000; box-shadow: 0 2px 5px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09);
+      transition: all .15s;
+    }
+    .crt-share:hover { color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09), 0 0 12px rgba(160,255,0,.4); }
+    .crt-share:active { transform: scale(.92); }
+    .crt-share.copied { color: #000; background: var(--accent); box-shadow: 0 0 14px rgba(160,255,0,.6); }
     .crt-caption { margin-top: 14px; font-size: 12px; color: #777; letter-spacing: .03em; }
     .crt-caption b { color: var(--accent); }
+    .crt-share-msg { margin-left: 8px; color: var(--accent); font-weight: 700; opacity: 0; transition: opacity .2s ease; }
+    .crt-share-msg.show { opacity: 1; }
 
     @media (max-width: 640px) {
       .crt-tv { flex-direction: column; }
@@ -609,7 +622,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
       <p class="cab-caption">Move the <b>joystick</b> (or &#9650;&#9660; / click), then hit the <b>red button</b> to play.</p>
 
-      <div class="crt-wrap">
+      <div class="crt-wrap" id="tv">
         <div class="crt-heading">On the Telly 📺</div>
         <div class="crt-tv">
           <div class="crt-screen" id="crt-screen">
@@ -627,12 +640,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               <button class="crt-ch" data-ch="2" aria-label="Channel 3 — Pixel Reel">3</button>
             </div>
             <div class="crt-knob knob-live" id="crt-knob-color" title="Colour — cycle the pixel-reel palette"></div>
-            <div class="crt-knob"></div>
+            <button class="crt-share" id="crt-share" type="button" aria-label="Share this channel" title="Share what's on">⤴</button>
             <div class="crt-speaker"></div>
             <div class="crt-led" title="power"></div>
           </div>
         </div>
-        <p class="crt-caption">Channel <b id="crt-num">1</b> — turn the dial to switch · <b>3</b> = pixel reel</p>
+        <p class="crt-caption">Channel <b id="crt-num">1</b> — turn the dial to switch · <b>3</b> = pixel reel<span class="crt-share-msg" id="crt-share-msg" role="status" aria-live="polite"></span></p>
         <!-- Self-hosted clip pixelated live on channel 3. Swap these sources for
              the real demo reel (drop an .mp4/.webm in /video) to show it in pixel art. -->
         <video id="crt-reel" muted loop playsinline preload="auto" crossorigin="anonymous">
@@ -1074,6 +1087,44 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Colour knob: jump to the pixel reel if needed, then cycle the palette.
       knob.addEventListener('click', function () {
         if (cur !== PIX) tune(PIX, true); else cyclePalette();
+      });
+
+      // ── Share the current channel ──
+      // YouTube channels share their video link; the pixel reel (no external
+      // URL) deep-links back to the telly. Uses the native share sheet where
+      // available (mobile), and falls back to copying the link on desktop.
+      var shareBtn = document.getElementById('crt-share');
+      var shareMsg = document.getElementById('crt-share-msg');
+      var msgTimer = 0;
+      function flashMsg(text) {
+        shareMsg.textContent = text; shareMsg.classList.add('show');
+        shareBtn.classList.add('copied');
+        clearTimeout(msgTimer);
+        msgTimer = setTimeout(function () {
+          shareMsg.classList.remove('show'); shareBtn.classList.remove('copied');
+        }, 1700);
+      }
+      function currentShare() {
+        if (cur === PIX) {
+          return { title: 'MIKIVISION — pixel reel',
+                   text: 'Check out the pixel-art reel on Miki’s arcade TV 📺',
+                   url: location.origin + location.pathname + '#tv' };
+        }
+        return { title: 'MIKIVISION — Channel ' + (cur + 1),
+                 text: 'Now playing on Miki’s arcade TV 📺',
+                 url: 'https://youtu.be/' + VIDS[cur] };
+      }
+      shareBtn.addEventListener('click', function () {
+        var s = currentShare();
+        if (navigator.share) {
+          navigator.share(s).catch(function () {});
+        } else if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(s.url)
+            .then(function () { flashMsg('Link copied!'); })
+            .catch(function () { window.prompt('Copy this link', s.url); });
+        } else {
+          window.prompt('Copy this link', s.url);
+        }
       });
 
       applyPalette();
