@@ -79,8 +79,8 @@
     @keyframes coverfade { from { opacity: 0; } to { opacity: 1; } }
     .rc-thumb.noimg { display: flex; align-items: center; justify-content: center; text-align: center; padding: 14px;
       background: linear-gradient(150deg, hsl(var(--h,90) 32% 22%), hsl(var(--h,90) 40% 10%)); }
-    .rc-plate { font-family: 'Press Start 2P', monospace; font-size: 13px; line-height: 1.5;
-      color: hsl(var(--h,90) 80% 78%); text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+    .rc-plate { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+    .pxc { width: 62%; max-width: 104px; height: auto; image-rendering: pixelated; filter: drop-shadow(0 2px 0 rgba(0,0,0,.35)); }
     .cond-flag { position: absolute; top: 9px; right: 9px; z-index: 2; font-size: 10px; font-weight: 800; letter-spacing: .04em;
       padding: 3px 8px; border-radius: 999px; }
     .cond-flag.cib { background: var(--accent); color: #0a0b08; }
@@ -146,6 +146,8 @@
     .lb-media img { max-width: 100%; max-height: 100%; object-fit: contain; background: #000; }
     .lb-media.noimg { width: 100%; background: linear-gradient(150deg, hsl(var(--h,90) 32% 22%), hsl(var(--h,90) 40% 10%)); }
     .lb-media.noimg .rc-plate { font-size: clamp(18px, 3vw, 34px); }
+    .lb-media .pxc { width: 46%; max-width: 220px; }
+    .lb-strip .mini-plate .pxc { width: 74%; }
     @keyframes lbpop { from { transform: scale(.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .lb-info h2 { font-size: clamp(20px, 3vw, 27px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.12; }
     .lb-info .d-sys { margin: 8px 0 16px; color: var(--accent); font-weight: 700; font-size: 14px; }
@@ -199,6 +201,44 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
     // Stable hue per system so each platform gets its own colour.
     function hue(s){ var h=0, str=String(s||''); for(var i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))%360; } return h; }
+
+    // ── Pixel-art console icons ───────────────────────────────────────────
+    // Each system gets a little pixel console/handheld silhouette (tinted to
+    // the system's hue) instead of a text label on the placeholder tiles.
+    function archOf(s){
+      s = String(s || '');
+      if (s === 'Game Boy') return 'handheld';
+      if (s === '3DS') return 'clamshell';
+      if (s === 'Switch') return 'switch';
+      if (s === 'GameCube') return 'cube';
+      if (s === 'PS1' || s === 'PS2' || s === 'PS4' || s === 'Xbox One') return 'disc';
+      if (s === 'NES' || s === 'SNES' || s === 'Genesis') return 'cart';
+      return 'pad';
+    }
+    function pxc(system){
+      var h = hue(system);
+      var M = 'hsl('+h+' 60% 70%)', D = 'hsl('+h+' 45% 30%)', S = 'hsl('+h+' 55% 12%)', M2 = 'hsl('+((h+40)%360)+' 60% 70%)';
+      function R(x,y,w,ht,c){ return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+ht+'" fill="'+c+'"/>'; }
+      var b = '';
+      switch (archOf(system)) {
+        case 'handheld':
+          b = R(6,2,12,20,M)+R(8,4,8,6,S)+R(10,15,1,4,D)+R(8,16,5,1,D)+R(14,16,2,2,D)+R(16,14,2,2,D); break;
+        case 'clamshell':
+          b = R(5,3,14,8,M)+R(7,4,10,6,S)+R(5,12,14,8,M)+R(7,13,8,5,S)+R(16,13,2,2,D); break;
+        case 'switch':
+          b = R(8,3,8,18,S)+R(4,3,4,18,M)+R(16,3,4,18,M2)+R(5,6,1,1,D)+R(5,8,1,1,D)+R(18,6,1,1,D)+R(18,8,1,1,D); break;
+        case 'cube':
+          b = R(6,6,12,13,M)+R(8,4,3,2,D)+R(9,9,7,7,S)+R(12,12,1,1,M); break;
+        case 'disc':
+          b = R(2,7,20,8,M)+R(4,10,12,1,S)+R(18,9,2,2,D)+R(3,15,18,1,D); break;
+        case 'cart':
+          b = R(2,6,20,8,M)+R(4,8,9,2,D)+R(15,8,5,1,S)+R(15,10,5,1,S)+R(18,12,2,1,D)+
+              R(7,16,10,5,M)+R(10,17,1,3,D)+R(9,18,3,1,D)+R(14,18,1,1,D)+R(16,19,1,1,D); break;
+        default: // generic gamepad
+          b = R(4,9,16,7,M)+R(7,10,1,3,D)+R(6,11,3,1,D)+R(15,11,1,1,D)+R(17,11,1,1,D)+R(4,16,3,2,D)+R(17,16,3,2,D);
+      }
+      return '<svg class="pxc" viewBox="0 0 24 24" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'+esc(system||'System')+'">'+b+'</svg>';
+    }
 
     var DATA = { items: [], note: '' };
     var byslug = {};
@@ -287,8 +327,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           : (it.condition ? '<span class="cond-flag loose">'+esc(it.condition)+'</span>' : '');
         var cov = cachedCover(it);
         var img = cov
-          ? '<div class="rc-thumb has-cover" style="--h:'+h+'" data-slug="'+esc(it.slug)+'"><img class="cover-img" src="'+esc(cov)+'" alt="'+esc(it.title)+'" loading="lazy" /><span class="rc-plate">'+esc(it.system||'?')+'</span>'+flag+'</div>'
-          : '<div class="rc-thumb noimg" style="--h:'+h+'" data-slug="'+esc(it.slug)+'"><span class="rc-plate">'+esc(it.system||'?')+'</span>'+flag+'</div>';
+          ? '<div class="rc-thumb has-cover" style="--h:'+h+'" data-slug="'+esc(it.slug)+'"><img class="cover-img" src="'+esc(cov)+'" alt="'+esc(it.title)+'" loading="lazy" /><span class="rc-plate">'+pxc(it.system)+'</span>'+flag+'</div>'
+          : '<div class="rc-thumb noimg" style="--h:'+h+'" data-slug="'+esc(it.slug)+'"><span class="rc-plate">'+pxc(it.system)+'</span>'+flag+'</div>';
         var sub = [it.system, it.year].filter(Boolean).map(esc).join(' · ');
         return '<a class="rc-card" href="?item='+encodeURIComponent(it.slug)+'" style="--h:'+h+'">'+
           img +
@@ -363,7 +403,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         var h = hue(it.system);
         var cov = cachedCover(it);
         var inner = cov ? '<img src="'+esc(cov)+'" alt="" loading="lazy" />'
-          : '<span class="mini-plate" style="--h:'+h+'">'+esc(it.system||'?')+'</span>';
+          : '<span class="mini-plate" style="--h:'+h+'">'+pxc(it.system)+'</span>';
         return '<button data-idx="'+idx+'" aria-label="'+esc(it.title)+'">'+inner+'</button>';
       }).join('');
       strip.querySelectorAll('button').forEach(function(b){
@@ -379,7 +419,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       media.className = 'lb-media' + (cov ? '' : ' noimg');
       media.style.setProperty('--h', h);
       media.innerHTML = cov ? '<img src="'+esc(cov)+'" alt="'+esc(it.title)+'" />'
-        : '<span class="rc-plate">'+esc(it.system||'?')+'</span>';
+        : '<span class="rc-plate">'+pxc(it.system)+'</span>';
       media.style.animation = 'none'; void media.offsetWidth; media.style.animation = '';
       if (!cov) {                      // try to upgrade the plate to real art
         var at = lbIndex;

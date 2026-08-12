@@ -2,7 +2,7 @@
   "note": "",
   "items": [
     {
-      "title": "SUPER MARIO BROS 3",
+      "title": "Super Mario Bros. 3",
       "system": "NES",
       "price": "$180",
       "location": "AT NLG",
@@ -10,7 +10,7 @@
       "slug": "super-mario-bros-3-nes"
     },
     {
-      "title": "SUPER MARIO LAND 1 and 2",
+      "title": "Super Mario Land 1 & 2",
       "system": "Game Boy",
       "price": "$120",
       "location": "AT NLG",
@@ -18,7 +18,7 @@
       "slug": "super-mario-land-1-and-2-game-boy"
     },
     {
-      "title": "home alonr",
+      "title": "Home Alone",
       "system": "Genesis",
       "price": "$40",
       "location": "HOME",
@@ -26,7 +26,7 @@
       "slug": "home-alonr-genesis"
     },
     {
-      "title": "caveman games",
+      "title": "Caveman Games",
       "system": "NES",
       "price": "$90",
       "location": "HOME",
@@ -34,7 +34,7 @@
       "slug": "caveman-games-nes"
     },
     {
-      "title": "Simpsons hit n run",
+      "title": "The Simpsons: Hit & Run",
       "system": "PS2",
       "price": "$79",
       "location": "HOME",
@@ -42,7 +42,7 @@
       "slug": "simpsons-hit-n-run-ps2"
     },
     {
-      "title": "paperboy",
+      "title": "Paperboy",
       "system": "Game Boy",
       "price": "$55",
       "location": "AT NLG",
@@ -50,7 +50,7 @@
       "slug": "paperboy-game-boy"
     },
     {
-      "title": "Lost Vikings",
+      "title": "The Lost Vikings",
       "system": "Genesis",
       "price": "$49",
       "location": "HOME",
@@ -58,7 +58,7 @@
       "slug": "lost-vikings-genesis"
     },
     {
-      "title": "Luigis mansion",
+      "title": "Luigi's Mansion",
       "system": "GameCube",
       "price": "$89.99",
       "location": "AT NLG",
@@ -105,14 +105,14 @@
       "slug": "t2-genesis"
     },
     {
-      "title": "Super mario worllkd",
+      "title": "Super Mario World",
       "system": "SNES",
       "location": "AT NLG",
       "era": "retro",
       "slug": "super-mario-worllkd-snes"
     },
     {
-      "title": "Back to the future",
+      "title": "Back to the Future",
       "system": "NES",
       "location": "AT NLG",
       "era": "retro",
@@ -133,21 +133,21 @@
       "slug": "tintin-3ds"
     },
     {
-      "title": "Dark Moon",
+      "title": "Luigi's Mansion: Dark Moon",
       "system": "3DS",
       "location": "AT NLG",
       "era": "retro",
       "slug": "dark-moon-3ds"
     },
     {
-      "title": "Hit n Run",
+      "title": "The Simpsons: Hit & Run",
       "system": "PS2",
       "location": "AT NLG",
       "era": "retro",
       "slug": "hit-n-run-ps2"
     },
     {
-      "title": "Duck Tales",
+      "title": "DuckTales",
       "system": "NES",
       "cib": false,
       "condition": "Loose (no box)",
