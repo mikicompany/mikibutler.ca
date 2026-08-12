@@ -1,0 +1,13 @@
+{
+  "note": "Placeholder items — swap these for your spreadsheet export. Each item: title, system, category, year, region, condition, cib (complete-in-box), qty, image (optional), notes.",
+  "items": [
+    { "slug": "smb3-nes", "title": "Super Mario Bros. 3", "system": "NES", "category": "Game", "year": 1990, "region": "NTSC", "condition": "Very Good", "cib": true, "qty": 1, "image": "", "notes": "Cart + box + manual. Box has light shelf wear." },
+    { "slug": "chrono-trigger-snes", "title": "Chrono Trigger", "system": "SNES", "category": "Game", "year": 1995, "region": "NTSC", "condition": "Mint", "cib": true, "qty": 1, "image": "", "notes": "Complete, near-mint. One of the crown jewels." },
+    { "slug": "sonic2-genesis", "title": "Sonic the Hedgehog 2", "system": "Genesis", "category": "Game", "year": 1992, "region": "NTSC", "condition": "Good", "cib": false, "qty": 2, "image": "", "notes": "Two loose carts, both tested working." },
+    { "slug": "zelda-oot-n64", "title": "The Legend of Zelda: Ocarina of Time", "system": "N64", "category": "Game", "year": 1998, "region": "NTSC", "condition": "Very Good", "cib": true, "qty": 1, "image": "", "notes": "Gold cart, boxed with manual." },
+    { "slug": "gameboy-dmg", "title": "Game Boy (DMG-01)", "system": "Game Boy", "category": "Console", "year": 1989, "region": "NTSC", "condition": "Good", "cib": false, "qty": 1, "image": "", "notes": "Original brick. Screen clean, one dead line." },
+    { "slug": "snes-console", "title": "Super Nintendo (SNS-001)", "system": "SNES", "category": "Console", "year": 1991, "region": "NTSC", "condition": "Very Good", "cib": false, "qty": 1, "image": "", "notes": "Not yellowed. Includes one OEM controller." },
+    { "slug": "ps1-scph1001", "title": "PlayStation (SCPH-1001)", "system": "PS1", "category": "Console", "year": 1995, "region": "NTSC", "condition": "Good", "cib": false, "qty": 1, "image": "", "notes": "Original fat model with RCA out." },
+    { "slug": "ff7-ps1", "title": "Final Fantasy VII", "system": "PS1", "category": "Game", "year": 1997, "region": "NTSC", "condition": "Very Good", "cib": true, "qty": 1, "image": "", "notes": "Black-label, 3 discs, all manuals present." }
+  ]
+}

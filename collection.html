@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-W7JWP3TR');</script>
+  <!-- End Google Tag Manager -->
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png" />
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+  <title>Retro Collection — Miki Butler</title>
+  <!-- Not launched: keep it out of search and off the nav for now. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Miki Butler's retro game & console collection." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Miki Butler" />
+  <meta property="og:title" content="Retro Collection — Miki Butler" />
+  <meta property="og:description" content="A cabinet of retro games, consoles and handhelds." />
+  <meta property="og:url" content="https://mikibutler.ca/collection.html" />
+  <meta property="og:image" content="https://mikibutler.ca/images/og-card.jpg" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    :root { --rc-max: 1040px; }
+    main { padding: 60px 28px 100px; }
+    .rc-wrap { max-width: var(--rc-max); margin: 0 auto; }
+
+    /* Header + stats */
+    .rc-head h1 { font-size: clamp(38px, 6vw, 60px); font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+    .rc-head h1 .dot { color: var(--accent); }
+    .rc-head p { margin-top: 14px; color: var(--text-muted); font-size: 16px; line-height: 1.6; max-width: 56ch; }
+    .rc-stats { display: flex; gap: 26px; flex-wrap: wrap; margin: 24px 0 4px; }
+    .rc-stat { display: flex; flex-direction: column; }
+    .rc-stat b { font-size: 26px; font-weight: 800; color: var(--accent); line-height: 1; font-family: 'Press Start 2P', monospace; }
+    .rc-stat span { font-size: 12px; color: var(--text-muted); letter-spacing: .04em; text-transform: uppercase; margin-top: 8px; }
+    .sketch-banner { margin: 22px 0 26px; font-size: 13px; color: #d9e6c2; background: rgba(160,255,0,.08);
+      border: 1px dashed rgba(160,255,0,.4); border-radius: 10px; padding: 10px 14px; }
+
+    /* Controls */
+    .rc-controls { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin: 8px 0 22px; }
+    .rc-search { flex: 1; min-width: 200px; font: inherit; font-size: 14px; color: #fff; background: #161616;
+      border: 1px solid #2e2e2e; border-radius: 10px; padding: 11px 14px; }
+    .rc-search::placeholder { color: #6f6f6f; }
+    .rc-search:focus { outline: none; border-color: var(--accent); }
+    .rc-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .rc-chip { font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; color: #cfcfcf;
+      background: var(--card-bg); border: 1px solid #2a2a2a; border-radius: 999px; padding: 7px 14px; transition: all .15s ease; }
+    .rc-chip:hover { border-color: var(--accent); color: #fff; }
+    .rc-chip.active { background: var(--accent); color: #0a0b08; border-color: var(--accent); }
+
+    /* Grid */
+    .rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px; }
+    .rc-card { display: flex; flex-direction: column; text-decoration: none; color: inherit; overflow: hidden;
+      background: var(--card-bg); border: 1px solid #262626; border-radius: 14px;
+      transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease; }
+    .rc-card:hover { border-color: var(--accent); transform: translateY(-3px);
+      box-shadow: 0 14px 32px rgba(0,0,0,.5), 0 0 0 1px var(--accent); }
+    .rc-thumb { position: relative; aspect-ratio: 1 / 1; overflow: hidden; }
+    .rc-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .rc-thumb.noimg { display: flex; align-items: center; justify-content: center; text-align: center; padding: 14px;
+      background: linear-gradient(150deg, hsl(var(--h,90) 32% 22%), hsl(var(--h,90) 40% 10%)); }
+    .rc-plate { font-family: 'Press Start 2P', monospace; font-size: 13px; line-height: 1.5;
+      color: hsl(var(--h,90) 80% 78%); text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+    .cond-flag { position: absolute; top: 9px; right: 9px; font-size: 10px; font-weight: 800; letter-spacing: .04em;
+      padding: 3px 8px; border-radius: 999px; }
+    .cond-flag.cib { background: var(--accent); color: #0a0b08; }
+    .cond-flag.loose { background: rgba(20,20,20,.8); color: #ddd; border: 1px solid rgba(255,255,255,.25); }
+    .rc-cbody { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 3px; }
+    .rc-sys { font-size: 11.5px; color: var(--accent); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .rc-sys .dot { width: 8px; height: 8px; border-radius: 50%; background: hsl(var(--h,90) 65% 55%); flex-shrink: 0; }
+    .rc-card h2 { font-size: 14.5px; font-weight: 700; line-height: 1.25; }
+    .rc-card:hover h2 { color: var(--accent); }
+    .rc-meta { font-size: 11.5px; color: var(--text-muted); }
+    .rc-empty { color: var(--text-muted); font-size: 15px; padding: 40px 0; }
+
+    /* Detail */
+    .rc-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;
+      color: var(--text-muted); text-decoration: none; margin-bottom: 24px; transition: color .15s ease; }
+    .rc-back:hover { color: var(--accent); }
+    .rc-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+    .rc-detail .media { aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden; }
+    .rc-detail .media img { width: 100%; height: 100%; object-fit: cover; }
+    .rc-detail .media.noimg { display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(150deg, hsl(var(--h,90) 32% 22%), hsl(var(--h,90) 40% 10%)); }
+    .rc-detail .media.noimg .rc-plate { font-size: 22px; }
+    .rc-detail h1 { font-size: clamp(24px, 4vw, 34px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+    .rc-detail .d-sys { margin: 8px 0 18px; font-size: 14px; color: var(--accent); font-weight: 700; }
+    .spec { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+    .spec th, .spec td { text-align: left; padding: 9px 0; border-bottom: 1px solid #242424; font-size: 14px; vertical-align: top; }
+    .spec th { color: var(--text-muted); font-weight: 600; width: 42%; }
+    .spec td { color: #e4e4e4; }
+    .rc-notes { font-size: 14.5px; line-height: 1.65; color: #c9c9c9; }
+
+    @media (max-width: 680px) { .rc-detail { grid-template-columns: 1fr; gap: 22px; } main { padding: 40px 18px 80px; } }
+  </style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W7JWP3TR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo" aria-label="Miki Butler home"><img src="images/logo512.jpg" alt="Miki Butler" /></a>
+    <nav id="sidebar-nav"></nav>
+    <div class="sidebar-socials" id="sidebar-socials"></div>
+    <p class="sidebar-copy">© All rights reserved<br>Miki Butler</p>
+  </aside>
+
+  <main>
+    <div class="rc-wrap" id="rc-wrap">
+      <div class="rc-head"><h1>Retro Collection<span class="dot">.</span></h1></div>
+    </div>
+  </main>
+
+  <script src="js/sidebar.js"></script>
+  <script src="js/fx.js" defer></script>
+  <script>
+    function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    // Stable hue per system so each platform gets its own colour.
+    function hue(s){ var h=0, str=String(s||''); for(var i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))%360; } return h; }
+
+    var DATA = { items: [], note: '' };
+    var byslug = {};
+    var state = { system: 'all', q: '' };
+    var wrap = document.getElementById('rc-wrap');
+
+    function thumb(it, big){
+      var h = hue(it.system);
+      if (it.image) return '<div class="media' + (big?'':'')+'"><img src="'+esc(it.image)+'" alt="'+esc(it.title)+'" loading="lazy" /></div>';
+      return '<div class="'+(big?'media noimg':'rc-thumb noimg')+'" style="--h:'+h+'"><span class="rc-plate">'+esc(it.system||'?')+'</span></div>';
+    }
+
+    function statNums(items){
+      var qty = items.reduce(function(a,it){ return a + (it.qty||1); }, 0);
+      var systems = new Set(items.map(function(it){ return it.system; }).filter(Boolean)).size;
+      var cib = items.filter(function(it){ return it.cib; }).reduce(function(a,it){ return a+(it.qty||1); }, 0);
+      return { qty: qty, systems: systems, cib: cib };
+    }
+
+    function renderList(){
+      var all = DATA.items;
+      var systems = ['all'].concat(Array.from(new Set(all.map(function(it){ return it.system; }).filter(Boolean))).sort());
+      var q = state.q.trim().toLowerCase();
+      var items = all.filter(function(it){
+        if (state.system !== 'all' && it.system !== state.system) return false;
+        if (!q) return true;
+        return (it.title+' '+it.system+' '+(it.category||'')+' '+(it.notes||'')).toLowerCase().indexOf(q) >= 0;
+      });
+      var s = statNums(all);
+      var chips = systems.map(function(sys){
+        var lbl = sys==='all' ? 'All' : sys;
+        return '<button class="rc-chip'+(sys===state.system?' active':'')+'" data-sys="'+esc(sys)+'">'+esc(lbl)+'</button>';
+      }).join('');
+      var cards = items.map(function(it){
+        var h = hue(it.system);
+        var flag = it.cib ? '<span class="cond-flag cib">CIB</span>' : '<span class="cond-flag loose">'+esc(it.condition||'Loose')+'</span>';
+        var img = it.image
+          ? '<div class="rc-thumb"><img src="'+esc(it.image)+'" alt="'+esc(it.title)+'" loading="lazy" />'+flag+'</div>'
+          : '<div class="rc-thumb noimg" style="--h:'+h+'"><span class="rc-plate">'+esc(it.system||'?')+'</span>'+flag+'</div>';
+        return '<a class="rc-card" href="?item='+encodeURIComponent(it.slug)+'" style="--h:'+h+'">'+
+          img +
+          '<div class="rc-cbody">'+
+            '<div class="rc-sys"><i class="dot"></i>'+esc(it.system||'')+(it.year?' · '+esc(it.year):'')+'</div>'+
+            '<h2>'+esc(it.title)+'</h2>'+
+            '<div class="rc-meta">'+[it.category, it.condition].filter(Boolean).map(esc).join(' · ')+(it.qty>1?' · ×'+it.qty:'')+'</div>'+
+          '</div>'+
+        '</a>';
+      }).join('');
+      wrap.innerHTML =
+        '<div class="rc-head">'+
+          '<h1>Retro Collection<span class="dot">.</span></h1>'+
+          '<p>Games, consoles and handhelds — the shelf, catalogued.</p>'+
+          '<div class="rc-stats">'+
+            '<div class="rc-stat"><b>'+s.qty+'</b><span>Items</span></div>'+
+            '<div class="rc-stat"><b>'+s.systems+'</b><span>Systems</span></div>'+
+            '<div class="rc-stat"><b>'+s.cib+'</b><span>Complete-in-box</span></div>'+
+          '</div>'+
+        '</div>'+
+        (DATA.note ? '<div class="sketch-banner">🚧 '+esc(DATA.note)+'</div>' : '')+
+        '<div class="rc-controls"><input class="rc-search" id="rc-search" type="search" placeholder="Search title, system, notes…" value="'+esc(state.q)+'" /></div>'+
+        '<div class="rc-chips">'+chips+'</div>'+
+        (cards ? '<div class="rc-grid">'+cards+'</div>' : '<div class="rc-empty">No items match.</div>');
+
+      wrap.querySelectorAll('.rc-chip').forEach(function(b){
+        b.addEventListener('click', function(){ state.system = b.dataset.sys; renderList(); });
+      });
+      var search = document.getElementById('rc-search');
+      search.addEventListener('input', function(){ state.q = search.value; renderList(); });
+      // keep focus + caret after re-render
+      if (state.q) { search.focus(); search.setSelectionRange(search.value.length, search.value.length); }
+      document.title = 'Retro Collection — Miki Butler';
+    }
+
+    function row(label, val){ return val || val===0 ? '<tr><th>'+esc(label)+'</th><td>'+esc(val)+'</td></tr>' : ''; }
+    function renderDetail(it){
+      var h = hue(it.system);
+      wrap.innerHTML =
+        '<a class="rc-back" href="collection.html">‹ Back to collection</a>'+
+        '<div class="rc-detail" style="--h:'+h+'">'+
+          thumb(it, true)+
+          '<div class="rc-info">'+
+            '<h1>'+esc(it.title)+'</h1>'+
+            '<div class="d-sys">'+esc(it.system||'')+(it.year?' · '+esc(it.year):'')+'</div>'+
+            '<table class="spec">'+
+              row('Category', it.category)+
+              row('Year', it.year)+
+              row('Region', it.region)+
+              row('Condition', it.condition)+
+              row('Complete in box', it.cib ? 'Yes' : 'No')+
+              row('Quantity', it.qty || 1)+
+            '</table>'+
+            (it.notes ? '<div class="rc-notes">'+esc(it.notes)+'</div>' : '')+
+          '</div>'+
+        '</div>';
+      document.title = it.title + ' — Retro Collection';
+      window.scrollTo(0,0);
+    }
+
+    fetch('collection.json?t=' + Date.now()).then(function(r){ return r.ok ? r.json() : DATA; }).then(function(d){
+      DATA = { items: d.items || [], note: d.note || '' };
+      DATA.items.forEach(function(it){ byslug[it.slug] = it; });
+      var slug = new URLSearchParams(location.search).get('item');
+      if (slug && byslug[slug]) renderDetail(byslug[slug]); else renderList();
+    }).catch(function(){
+      wrap.innerHTML = '<div class="rc-head"><h1>Retro Collection<span class="dot">.</span></h1></div>'+
+        '<div class="sketch-banner">Couldn’t load the collection right now.</div>';
+    });
+    window.addEventListener('popstate', function(){ location.reload(); });
+  </script>
+</body>
+</html>
