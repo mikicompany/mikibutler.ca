@@ -24,6 +24,22 @@
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
   <title>Arcade — Miki Butler</title>
   <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Miki Butler's arcade — browser games I've worked on, a Game Boy of Instagram reels and a pixel-art telly. Come play." />
+  <!-- Share preview: use the branded Miki Butler card (logo + name) so shared
+       arcade links show the logo, not a scraped game screenshot. -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Miki Butler" />
+  <meta property="og:title" content="Miki's Arcade 🕹️" />
+  <meta property="og:description" content="Browser games I've worked on, a Game Boy of reels and a pixel-art telly — come play." />
+  <meta property="og:url" content="https://mikibutler.ca/arcade.html" />
+  <meta property="og:image" content="https://mikibutler.ca/images/og-card.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Miki Butler — Senior Environment Artist, Vancouver" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Miki's Arcade 🕹️" />
+  <meta name="twitter:description" content="Browser games I've worked on, a Game Boy of reels and a pixel-art telly — come play." />
+  <meta name="twitter:image" content="https://mikibutler.ca/images/og-card.jpg" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -124,9 +140,10 @@
     .crt-caption b { color: var(--accent); }
     .crt-share-msg { margin-left: 8px; color: var(--accent); font-weight: 700; opacity: 0; transition: opacity .2s ease; }
     .crt-share-msg.show { opacity: 1; }
-    /* Page-level share button in the arcade header. */
+    /* Page-level share button, centered at the bottom of the arcade. */
+    .arcade-share-wrap { margin: 64px 0 8px; text-align: center; }
     .arcade-share {
-      margin-top: 16px; display: inline-flex; align-items: center; gap: 7px; font: inherit;
+      margin-top: 0; display: inline-flex; align-items: center; gap: 7px; font: inherit;
       font-size: 13px; font-weight: 700; letter-spacing: .03em; color: var(--accent);
       background: transparent; cursor: pointer; border: 1px solid rgba(160,255,0,.4);
       border-radius: 999px; padding: 9px 18px; transition: background .15s ease, box-shadow .15s ease, transform .15s ease;
@@ -591,7 +608,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="arcade-head">
         <h1>Arcade <span aria-hidden="true">🕹️</span></h1>
         <p>Browser games I've worked on — pick one and play. (Desktop recommended.)</p>
-        <button class="arcade-share" id="arcade-share" type="button">⤴ <span id="arcade-share-label">Share the arcade</span></button>
       </div>
       <div class="cab-wrap">
         <div class="cab">
@@ -968,6 +984,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div class="ig-grid" id="igGrid"><div class="tool-empty">Loading @mikicompany…</div></div>
         </div>
       </section>
+
+      <div class="arcade-share-wrap">
+        <button class="arcade-share" id="arcade-share" type="button">⤴ <span id="arcade-share-label">Share the arcade</span></button>
+      </div>
 
       <div class="arcade-tools">
         <a href="linkcheck.html">🔗 Link Health</a>
