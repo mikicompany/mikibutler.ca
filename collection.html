@@ -105,6 +105,16 @@
     .rc-chips.era .rc-chip.active { background: #1c2a08; color: var(--accent); border-color: var(--accent); }
     .rc-empty { color: var(--text-muted); font-size: 15px; padding: 40px 0; }
 
+    /* Share the collection — centered at the bottom. */
+    .rc-share-wrap { max-width: var(--rc-max); margin: 56px auto 0; text-align: center; }
+    .rc-share { display: inline-flex; align-items: center; gap: 7px; font: inherit; font-size: 13px; font-weight: 700;
+      letter-spacing: .03em; color: var(--accent); background: transparent; cursor: pointer;
+      border: 1px solid rgba(160,255,0,.4); border-radius: 999px; padding: 9px 18px;
+      transition: background .15s ease, box-shadow .15s ease, transform .15s ease; }
+    .rc-share:hover { background: rgba(160,255,0,.12); box-shadow: 0 0 16px rgba(160,255,0,.25); }
+    .rc-share:active { transform: translateY(1px); }
+    .rc-share.copied { background: var(--accent); color: #0a0b08; border-color: var(--accent); }
+
     /* Detail */
     .rc-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;
       color: var(--text-muted); text-decoration: none; margin-bottom: 24px; transition: color .15s ease; }
@@ -199,6 +209,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <main>
     <div class="rc-wrap" id="rc-wrap">
       <div class="rc-head"><h1>Retro Collection<span class="dot">.</span></h1></div>
+    </div>
+    <div class="rc-share-wrap">
+      <button class="rc-share" id="rc-share" type="button">⤴ <span id="rc-share-label">Share the collection</span></button>
     </div>
   </main>
 
@@ -516,6 +529,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         '<div class="sketch-banner">Couldn’t load the collection right now.</div>';
     });
     window.addEventListener('popstate', function(){ location.reload(); });
+
+    // Share the collection — native share sheet on mobile, copy on desktop.
+    (function(){
+      var btn = document.getElementById('rc-share');
+      if (!btn) return;
+      var label = document.getElementById('rc-share-label');
+      var url = location.origin + location.pathname;
+      var data = { title: 'Retro Collection — Miki Butler', text: 'My game & console collection 🎮', url: url };
+      var timer = 0;
+      btn.addEventListener('click', function(){
+        if (navigator.share) { navigator.share(data).catch(function(){}); return; }
+        var done = function(){
+          var prev = label.textContent; label.textContent = 'Link copied!'; btn.classList.add('copied');
+          clearTimeout(timer); timer = setTimeout(function(){ label.textContent = prev; btn.classList.remove('copied'); }, 1700);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done).catch(function(){ window.prompt('Copy this link', url); });
+        } else { window.prompt('Copy this link', url); }
+      });
+    })();
   </script>
 </body>
 </html>
