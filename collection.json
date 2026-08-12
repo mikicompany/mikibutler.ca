@@ -7,7 +7,8 @@
       "price": "$180",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "super-mario-bros-3-nes"
+      "slug": "super-mario-bros-3-nes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/Super%20Mario%20Bros.%203%20%28USA%29.png"
     },
     {
       "title": "Super Mario Land 1 & 2",
@@ -15,7 +16,8 @@
       "price": "$120",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "super-mario-land-1-and-2-game-boy"
+      "slug": "super-mario-land-1-and-2-game-boy",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy/master/Named_Boxarts/Super%20Mario%20Land%20%28World%29.png"
     },
     {
       "title": "Home Alone",
@@ -23,7 +25,8 @@
       "price": "$40",
       "location": "HOME",
       "era": "retro",
-      "slug": "home-alonr-genesis"
+      "slug": "home-alonr-genesis",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sega_-_Mega_Drive_-_Genesis/master/Named_Boxarts/Home%20Alone%20%28USA%2C%20Europe%29.png"
     },
     {
       "title": "Caveman Games",
@@ -31,7 +34,8 @@
       "price": "$90",
       "location": "HOME",
       "era": "retro",
-      "slug": "caveman-games-nes"
+      "slug": "caveman-games-nes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/Caveman%20Games%20%28USA%29.png"
     },
     {
       "title": "The Simpsons: Hit & Run",
@@ -47,7 +51,8 @@
       "price": "$55",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "paperboy-game-boy"
+      "slug": "paperboy-game-boy",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy/master/Named_Boxarts/Paperboy%20%28USA%2C%20Europe%29.png"
     },
     {
       "title": "The Lost Vikings",
@@ -55,7 +60,8 @@
       "price": "$49",
       "location": "HOME",
       "era": "retro",
-      "slug": "lost-vikings-genesis"
+      "slug": "lost-vikings-genesis",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sega_-_Mega_Drive_-_Genesis/master/Named_Boxarts/Lost%20Vikings%2C%20The%20%28USA%29.png"
     },
     {
       "title": "Luigi's Mansion",
@@ -63,7 +69,8 @@
       "price": "$89.99",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "luigis-mansion-gamecube"
+      "slug": "luigis-mansion-gamecube",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Luigi%27s%20Mansion%20%28USA%29.png"
     },
     {
       "title": "Mario Paint",
@@ -73,7 +80,8 @@
       "condition": "Loose (no box)",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "mario-paint-snes"
+      "slug": "mario-paint-snes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Super_Nintendo_Entertainment_System/master/Named_Boxarts/Mario%20Paint%20%28Europe%29.png"
     },
     {
       "title": "Chrono Trigger",
@@ -81,21 +89,24 @@
       "price": "$80",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "chrono-trigger-snes"
+      "slug": "chrono-trigger-snes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Super_Nintendo_Entertainment_System/master/Named_Boxarts/Chrono%20Trigger%20%28USA%29.png"
     },
     {
       "title": "Donkey Kong",
       "system": "NES",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "donkey-kong-nes"
+      "slug": "donkey-kong-nes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/Donkey%20Kong%20%28World%29%20%28Rev%201%29.png"
     },
     {
       "title": "Strider",
       "system": "NES",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "strider-nes"
+      "slug": "strider-nes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/Strider%20%28USA%29.png"
     },
     {
       "title": "T2",
@@ -109,14 +120,16 @@
       "system": "SNES",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "super-mario-worllkd-snes"
+      "slug": "super-mario-worllkd-snes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Super_Nintendo_Entertainment_System/master/Named_Boxarts/Super%20Mario%20World%20%28USA%29.png"
     },
     {
       "title": "Back to the Future",
       "system": "NES",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "back-to-the-future-nes"
+      "slug": "back-to-the-future-nes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/Back%20to%20the%20Future%20%28USA%29.png"
     },
     {
       "title": "Crazy Taxi",
@@ -153,7 +166,8 @@
       "condition": "Loose (no box)",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "duck-tales-nes"
+      "slug": "duck-tales-nes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/DuckTales%20%28USA%29.png"
     },
     {
       "title": "Bubble Bobble",
@@ -162,7 +176,8 @@
       "condition": "Loose (no box)",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "bubble-bobble-nes"
+      "slug": "bubble-bobble-nes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/Bubble%20Bobble%20%28USA%29.png"
     },
     {
       "title": "Doraemon",
@@ -919,7 +934,8 @@
       "price": "$39.99",
       "notes": "Classic action-adventure game.",
       "era": "modern",
-      "slug": "shadow-of-the-colossus-ps2"
+      "slug": "shadow-of-the-colossus-ps2",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Shadow%20of%20the%20Colossus%20%28USA%29.png"
     }
   ]
 }

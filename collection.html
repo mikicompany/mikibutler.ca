@@ -261,25 +261,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // nothing is found. An item can force a specific art with "image", or a
     // better search term with "search".
     var coverCache = {};
-    try { coverCache = JSON.parse(localStorage.getItem('mb-covers-v2') || '{}'); } catch (_) {}
-    function saveCovers(){ try { localStorage.setItem('mb-covers-v2', JSON.stringify(coverCache)); } catch (_) {} }
+    try { coverCache = JSON.parse(localStorage.getItem('mb-covers-v3') || '{}'); } catch (_) {}
+    function saveCovers(){ try { localStorage.setItem('mb-covers-v3', JSON.stringify(coverCache)); } catch (_) {} }
     function coverKey(it){ return (it.search || it.title) + '|' + (it.system || ''); }
     function cachedCover(it){ return it.image || coverCache[coverKey(it)] || ''; }
     function fetchCover(it, cb){
       if (it.image) { cb(it.image); return; }
       var key = coverKey(it);
       if (key in coverCache) { cb(coverCache[key]); return; }
-      // Wikipedia REST search returns the top page's thumbnail directly, with
-      // permissive CORS. Upscale the little thumb to ~400px via the URL.
-      var q = encodeURIComponent(it.search || it.title);
-      var url = 'https://en.wikipedia.org/w/rest.php/v1/search/page?q=' + q + '&limit=1';
+      // Action API with origin=* returns proper anonymous-CORS headers (the
+      // REST endpoint does not, which is why fetched covers weren't loading).
+      // generator=search finds the game's page; pageimages gives its box art.
+      var q = encodeURIComponent((it.search || it.title) + ' video game');
+      var url = 'https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages' +
+                '&piprop=thumbnail&pithumbsize=400&generator=search&gsrsearch=' + q +
+                '&gsrlimit=1&origin=*';
       fetch(url).then(function(r){ return r.json(); }).then(function(d){
-        var p = d && d.pages && d.pages[0];
-        var src = (p && p.thumbnail && p.thumbnail.url) ? p.thumbnail.url : '';
-        if (src) {
-          if (src.indexOf('//') === 0) src = 'https:' + src;
-          src = src.replace(/\/\d+px-/, '/400px-');
-        }
+        var src = '', pages = d && d.query && d.query.pages;
+        if (pages) { var k = Object.keys(pages)[0]; if (k && pages[k].thumbnail) src = pages[k].thumbnail.source; }
         coverCache[key] = src || ''; saveCovers(); cb(src || '');
       }).catch(function(){ cb(''); });
     }
