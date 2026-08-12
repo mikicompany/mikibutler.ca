@@ -538,18 +538,40 @@
     .dotbtn:hover { border-color: var(--accent); }
     .dotbtn.sel { border-color: var(--accent); box-shadow: 0 0 6px rgba(160,255,0,.5); }
     .dotbtn.sel::before { background: var(--accent); }
-    /* Long-press radial menu */
-    .draw-radial { position: fixed; inset: 0; z-index: 9999; display: none; }
-    .draw-radial.open { display: block; }
+    /* Long-press radial menu — springs open from the press point. */
+    .draw-radial { position: fixed; inset: 0; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity .18s ease; }
+    .draw-radial::before { content: ""; position: absolute; inset: 0;
+      background: radial-gradient(circle at var(--cx,50%) var(--cy,50%), rgba(6,7,5,.14), rgba(6,7,5,.46));
+      backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+    .draw-radial.open { opacity: 1; pointer-events: auto; }
     .draw-radial-ring { position: absolute; width: 0; height: 0; }
-    .draw-radial-btn { position: absolute; transform: translate(-50%,-50%) scale(0.4); opacity: 0;
-      width: 54px; height: 54px; border-radius: 50%; border: 1px solid #2a2f37; background: #12161c; color: #e8eaed;
-      font-size: 21px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 22px rgba(0,0,0,.55); transition: transform .16s ease, opacity .16s ease, border-color .12s ease; }
-    .draw-radial.open .draw-radial-btn { transform: translate(-50%,-50%) scale(1); opacity: 1; }
-    .draw-radial-btn:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 8px 22px rgba(0,0,0,.55); }
-    .draw-radial-hint { position: absolute; transform: translate(-50%,-50%); font-size: 9px; letter-spacing: .1em;
-      text-transform: uppercase; color: #8a9099; white-space: nowrap; }
+    /* center hub */
+    .draw-radial-ring::before { content: ""; position: absolute; left: 0; top: 0; width: 14px; height: 14px; margin: -7px 0 0 -7px;
+      border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px var(--accent);
+      transform: scale(0); transition: transform .34s cubic-bezier(.34,1.7,.5,1); }
+    .draw-radial.open .draw-radial-ring::before { transform: scale(1); }
+    /* expanding pulse ring on open */
+    .draw-radial-ring::after { content: ""; position: absolute; left: 0; top: 0; width: 22px; height: 22px; margin: -11px 0 0 -11px;
+      border-radius: 50%; border: 2px solid var(--accent); opacity: 0; }
+    .draw-radial.open .draw-radial-ring::after { animation: radial-pulse .55s ease-out; }
+    @keyframes radial-pulse { 0% { transform: scale(.3); opacity: .75; } 100% { transform: scale(6); opacity: 0; } }
+    .draw-radial-btn { position: absolute; left: 0; top: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%;
+      border: 1px solid #2a2f37; background: #12161c; color: #e8eaed; font-size: 22px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 22px rgba(0,0,0,.55);
+      transform: translate(0,0) scale(.2); opacity: 0;
+      transition: transform .38s cubic-bezier(.34,1.56,.64,1), opacity .16s ease, border-color .12s ease, box-shadow .12s ease; }
+    .draw-radial.open .draw-radial-btn { transform: translate(var(--x,0), var(--y,0)) scale(1); opacity: 1; }
+    .draw-radial.open .draw-radial-btn:hover { transform: translate(var(--x,0), var(--y,0)) scale(1.16); border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent), 0 10px 24px rgba(0,0,0,.6); }
+    .draw-radial.open .draw-radial-btn:active { transform: translate(var(--x,0), var(--y,0)) scale(.92); }
+    .draw-radial-hint { position: absolute; left: 0; top: 0; transform: translate(-50%, 0); font-size: 9px; letter-spacing: .1em;
+      text-transform: uppercase; color: #9aa1ab; white-space: nowrap; opacity: 0; transition: opacity .2s ease .14s; }
+    .draw-radial.open .draw-radial-hint { opacity: 1; }
+    @media (prefers-reduced-motion: reduce) {
+      .draw-radial, .draw-radial-btn, .draw-radial-ring::before { transition: opacity .12s ease; }
+      .draw-radial.open .draw-radial-btn { transform: translate(var(--x,0), var(--y,0)) scale(1); }
+      .draw-radial.open .draw-radial-ring::after { animation: none; }
+    }
 
     /* ── Tool tabs: one tool visible at a time ── */
     .tool-tabs { display: none; }
@@ -2283,26 +2305,45 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           { icon: '🪣', title: 'Fill', act: function () { setMode('fill'); } },
           { icon: '⚫', title: 'Dot', act: function () { setMode('dot'); } }
         ];
-        var R = 52;
+        var R = 60;
         items.forEach(function (it, i) {
           var ang = (-90 + i * (360 / items.length)) * Math.PI / 180;
           var b = document.createElement('button'); b.type = 'button'; b.className = 'draw-radial-btn';
           b.textContent = it.icon; b.title = it.title;
-          b.style.left = (Math.cos(ang) * R) + 'px'; b.style.top = (Math.sin(ang) * R) + 'px';
-          b.style.transitionDelay = (i * 0.03) + 's';
+          // buttons start stacked at the hub and spring out to (--x,--y)
+          b.style.setProperty('--x', (Math.cos(ang) * R).toFixed(1) + 'px');
+          b.style.setProperty('--y', (Math.sin(ang) * R).toFixed(1) + 'px');
+          b.style.transitionDelay = (i * 0.035) + 's';
           b.addEventListener('click', function (ev) { ev.stopPropagation(); it.act(); closeRadial(); });
           ring.appendChild(b);
         });
         var hint = document.createElement('div'); hint.className = 'draw-radial-hint'; hint.textContent = 'pick a tool';
-        hint.style.top = (R + 26) + 'px'; ring.appendChild(hint);
+        hint.style.top = (R + 30) + 'px'; ring.appendChild(hint);
         radial.addEventListener('pointerdown', function (ev) { if (ev.target === radial) closeRadial(); });
         document.body.appendChild(radial);
+      }
+      // A soft rising blip so the pop lands with a little audio cue.
+      var raCtx = null;
+      function radialBlip() {
+        try {
+          if (!raCtx) raCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (raCtx.state === 'suspended') raCtx.resume();
+          var t = raCtx.currentTime, o = raCtx.createOscillator(), g = raCtx.createGain();
+          o.type = 'sine'; o.frequency.setValueAtTime(440, t); o.frequency.exponentialRampToValueAtTime(760, t + 0.11);
+          g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.05, t + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+          o.connect(g); g.connect(raCtx.destination); o.start(t); o.stop(t + 0.22);
+        } catch (e) {}
       }
       function openRadial(cx, cy) {
         ensureRadial();
         var ring = radial.querySelector('.draw-radial-ring');
         ring.style.left = cx + 'px'; ring.style.top = cy + 'px';
-        radial.classList.add('open');
+        radial.style.setProperty('--cx', cx + 'px'); radial.style.setProperty('--cy', cy + 'px');
+        // toggle off→on with a reflow so the pulse-ring animation restarts each open
+        radial.classList.remove('open'); void radial.offsetWidth; radial.classList.add('open');
+        try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) {}
+        radialBlip();
       }
       function closeRadial() { if (radial) radial.classList.remove('open'); }
 
