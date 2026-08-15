@@ -529,6 +529,20 @@
     .draw-layer .lmeta { font-size: 10px; color: #8a9099; white-space: nowrap; }
     .draw-layer .ldel { border: 0; background: transparent; color: #8a9099; cursor: pointer; font-size: 13px; padding: 0 2px; }
     .draw-layer .ldel:hover { color: #e23b3b; }
+    /* Stamp library panel */
+    .draw-stamps { max-width: 560px; margin: 10px auto 0; background: #12161c; border: 1px solid #2a2f37; border-radius: 10px; padding: 10px 12px; }
+    .stamp-cats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 9px; }
+    .stamp-cat { font: inherit; font-size: 11px; font-weight: 600; color: #cfd4db; background: #1c2128; border: 1px solid #2a2f37;
+      border-radius: 999px; padding: 4px 11px; cursor: pointer; transition: all .12s ease; }
+    .stamp-cat:hover { border-color: var(--accent); color: #fff; }
+    .stamp-cat.sel { background: var(--accent); color: #0a0b08; border-color: var(--accent); }
+    .stamp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 6px; }
+    .stamp-btn { aspect-ratio: 1/1; background: #0e1116; border: 1px solid #2a2f37; border-radius: 8px; cursor: pointer;
+      padding: 6px; display: flex; align-items: center; justify-content: center; transition: border-color .12s ease, transform .12s ease; }
+    .stamp-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .stamp-btn.sel { border-color: var(--accent); box-shadow: 0 0 6px rgba(160,255,0,.5); }
+    .stamp-btn svg { width: 100%; height: 100%; display: block; }
+    .stamp-hint { font-size: 10.5px; color: #8a9099; margin: 9px 0 0; text-align: center; }
     /* Dot stamp tool — three preset sizes shown as filled circles. */
     .draw-dots { display: inline-flex; align-items: center; gap: 7px; padding: 0 4px; }
     .draw-dots.on { filter: drop-shadow(0 0 5px rgba(160,255,0,.6)); }
@@ -881,7 +895,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- Sketch Pad -->
         <div class="tool-block" data-tool="sketch">
           <div class="tool-title">Sketch Pad ✏️</div>
-          <p class="tool-desc">Doodle right here — layers, blend modes &amp; opacity, brush, pixel and dot tools. <b>Hold the canvas 2s</b> for a quick radial menu. Save a PNG, or export your process as a 🎬 10-second video.</p>
+          <p class="tool-desc">Doodle right here — layers, blend modes &amp; opacity, brush, pixel, dot and 🧩 <b>stamp</b> tools (ready-made eyes, noses, mouths, hats, glasses…). <b>Hold the canvas 2s</b> for a quick radial menu. Save a PNG, or export your process as a 🎬 10-second video.</p>
           <div class="tool-stage draw-stage" style="min-height:0">
             <canvas id="drawCanvas" width="840" height="520"></canvas>
           </div>
@@ -903,12 +917,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </span>
             <button type="button" id="drawErase">Eraser</button>
             <button type="button" id="drawFill">🪣 Fill</button>
+            <button type="button" id="drawStamps" title="Ready-made stamps — eyes, noses, mouths, hats, glasses…">🧩 Stamps</button>
             <button type="button" id="drawPick">💧 Pick</button>
             <button type="button" id="drawPixel">Pixel</button>
             <button type="button" id="drawUndo">↶ Undo</button>
             <button type="button" id="drawClear">Clear layer</button>
             <button type="button" id="drawSave">⬇ Save PNG</button>
             <button type="button" id="drawVideo" title="Export your drawing process as a 10-second video">🎬 Process (10s)</button>
+          </div>
+          <div class="draw-stamps" id="drawStampPanel" hidden>
+            <div class="stamp-cats" id="stampCats"></div>
+            <div class="stamp-grid" id="stampGrid"></div>
+            <p class="stamp-hint">Pick a stamp, then click the canvas to place it. It uses your current colour &amp; the Size slider.</p>
           </div>
           <div class="draw-layers-head">
             <span>Layers</span>
@@ -2121,9 +2141,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       // Long-press (hold still 2s) opens a radial quick-tool menu.
       var longTimer = null, preImg = null, downCX = 0, downCY = 0, moved = false;
+      var stampMode = false, currentStampId = null;
       cv.addEventListener('pointerdown', function (e) {
         var p = pos(e);
         if (picking) { pickColor(p.x, p.y); picking = false; pickBtn.classList.remove('on'); return; }
+        if (stampMode && currentStampId) { snapshot(); placeStamp(p.x, p.y); return; }
         if (dotMode) { snapshot(); stampDot(p.x, p.y); recordFrame(true); return; }
         if (filling) { snapshot(); floodFill(p.x, p.y); recordFrame(true); return; }
         try { preImg = actx().getImageData(0, 0, Wd, Hd); } catch (_) { preImg = null; }
@@ -2236,11 +2258,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var sz = document.getElementById('drawSize'), szv = document.getElementById('drawSizeVal');
       sz.addEventListener('input', function () { size = +sz.value; szv.textContent = size; });
       function clearDot() { dotMode = false; if (dotsWrap) { dotsWrap.classList.remove('on'); dotsWrap.querySelectorAll('.dotbtn').forEach(function (o) { o.classList.remove('sel'); }); } }
-      eraseBtn.addEventListener('click', function () { erasing = !erasing; this.classList.toggle('on', erasing); if (erasing) { filling = false; fillBtn.classList.remove('on'); clearDot(); } });
+      eraseBtn.addEventListener('click', function () { erasing = !erasing; this.classList.toggle('on', erasing); if (erasing) { filling = false; fillBtn.classList.remove('on'); clearDot(); clearStampSel(); } });
       var fillBtn = document.getElementById('drawFill');
       var pickBtn = document.getElementById('drawPick');
-      fillBtn.addEventListener('click', function () { filling = !filling; this.classList.toggle('on', filling); if (filling) { erasing = false; eraseBtn.classList.remove('on'); picking = false; pickBtn.classList.remove('on'); clearDot(); } });
-      pickBtn.addEventListener('click', function () { picking = !picking; this.classList.toggle('on', picking); if (picking) { erasing = false; eraseBtn.classList.remove('on'); filling = false; fillBtn.classList.remove('on'); clearDot(); } });
+      fillBtn.addEventListener('click', function () { filling = !filling; this.classList.toggle('on', filling); if (filling) { erasing = false; eraseBtn.classList.remove('on'); picking = false; pickBtn.classList.remove('on'); clearDot(); clearStampSel(); } });
+      pickBtn.addEventListener('click', function () { picking = !picking; this.classList.toggle('on', picking); if (picking) { erasing = false; eraseBtn.classList.remove('on'); filling = false; fillBtn.classList.remove('on'); clearDot(); clearStampSel(); } });
       document.getElementById('drawPixel').addEventListener('click', function () { pixel = !pixel; this.classList.toggle('on', pixel); });
 
       // ── Canvas size ──
@@ -2277,6 +2299,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         eraseBtn.classList.remove('on'); fillBtn.classList.remove('on'); pickBtn.classList.remove('on');
         document.getElementById('drawPixel').classList.remove('on');
         if (dotsWrap) dotsWrap.classList.remove('on');
+        clearStampSel();
         if (m === 'erase') { erasing = true; eraseBtn.classList.add('on'); }
         else if (m === 'fill') { filling = true; fillBtn.classList.add('on'); }
         else if (m === 'dot') { dotMode = true; if (dotsWrap) dotsWrap.classList.add('on'); }
@@ -2290,6 +2313,127 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             dotR = +b.dataset.r; setMode('dot');
             dotBtns.forEach(function (o) { o.classList.toggle('sel', o === b); });
           });
+        });
+      }
+
+      // ── Stamp library — ready-made face parts & accessories ──
+      // Each stamp is inline SVG (viewBox 0 0 100 100) using __C__ as its
+      // colour token. Selecting one enters stamp mode; a click drops it onto
+      // the active layer, centred, in the current colour and Size.
+      var STAMPS = {
+        'Eyes': [
+          ['eyes-dots', '<circle cx="34" cy="50" r="9" fill="__C__"/><circle cx="66" cy="50" r="9" fill="__C__"/>'],
+          ['eyes-open', '<g fill="none" stroke="__C__" stroke-width="6"><circle cx="34" cy="50" r="15"/><circle cx="66" cy="50" r="15"/></g><circle cx="34" cy="52" r="6" fill="__C__"/><circle cx="66" cy="52" r="6" fill="__C__"/>'],
+          ['eyes-happy', '<g fill="none" stroke="__C__" stroke-width="7" stroke-linecap="round"><path d="M20 56 Q34 40 48 56"/><path d="M52 56 Q66 40 80 56"/></g>'],
+          ['eyes-wink', '<circle cx="34" cy="50" r="14" fill="none" stroke="__C__" stroke-width="6"/><circle cx="34" cy="52" r="6" fill="__C__"/><path d="M52 52 Q66 62 80 52" fill="none" stroke="__C__" stroke-width="7" stroke-linecap="round"/>'],
+          ['eyes-angry', '<g fill="none" stroke="__C__" stroke-width="7" stroke-linecap="round"><path d="M18 40 L44 50"/><path d="M82 40 L56 50"/></g><circle cx="34" cy="58" r="7" fill="__C__"/><circle cx="66" cy="58" r="7" fill="__C__"/>'],
+          ['eyes-sleepy', '<g fill="none" stroke="__C__" stroke-width="7" stroke-linecap="round"><path d="M20 48 Q34 60 48 48"/><path d="M52 48 Q66 60 80 48"/></g>']
+        ],
+        'Noses': [
+          ['nose-button', '<ellipse cx="50" cy="55" rx="10" ry="12" fill="__C__"/>'],
+          ['nose-round', '<path d="M50 32 C40 52 40 66 50 66 C60 66 60 52 50 32 Z" fill="__C__"/>'],
+          ['nose-pointy', '<path d="M50 30 L50 60 Q42 66 48 70" fill="none" stroke="__C__" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>'],
+          ['nose-nostrils', '<g fill="none" stroke="__C__" stroke-width="7" stroke-linecap="round"><path d="M38 58 Q44 66 50 58"/><path d="M50 58 Q56 66 62 58"/></g>'],
+          ['nose-triangle', '<path d="M50 34 L63 62 L37 62 Z" fill="__C__"/>']
+        ],
+        'Mouths': [
+          ['mouth-smile', '<path d="M26 54 Q50 82 74 54" fill="none" stroke="__C__" stroke-width="8" stroke-linecap="round"/>'],
+          ['mouth-grin', '<path d="M28 52 Q50 86 72 52 Z" fill="__C__"/>'],
+          ['mouth-frown', '<path d="M26 72 Q50 46 74 72" fill="none" stroke="__C__" stroke-width="8" stroke-linecap="round"/>'],
+          ['mouth-oh', '<ellipse cx="50" cy="60" rx="12" ry="16" fill="__C__"/>'],
+          ['mouth-teeth', '<g fill="none" stroke="__C__" stroke-width="6" stroke-linejoin="round"><rect x="28" y="48" width="44" height="26" rx="10"/><path d="M28 60 H72"/><path d="M42 48 V60 M58 48 V60"/></g>'],
+          ['mustache', '<path d="M50 52 C42 42 26 42 22 56 C30 50 42 52 50 60 C58 52 70 50 78 56 C74 42 58 42 50 52 Z" fill="__C__"/>']
+        ],
+        'Hats': [
+          ['hat-top', '<g fill="__C__"><rect x="32" y="16" width="36" height="36" rx="2"/><rect x="18" y="50" width="64" height="9" rx="4"/></g>'],
+          ['hat-cap', '<g fill="__C__"><path d="M26 54 Q26 26 52 26 Q78 26 78 54 Z"/><rect x="52" y="50" width="34" height="8" rx="4"/></g>'],
+          ['hat-crown', '<path d="M24 62 L24 34 L40 50 L50 28 L60 50 L76 34 L76 62 Z" fill="__C__"/>'],
+          ['hat-party', '<path d="M50 16 L70 62 L30 62 Z" fill="__C__"/><circle cx="50" cy="14" r="6" fill="__C__"/>'],
+          ['hat-beanie', '<g fill="__C__"><path d="M26 54 Q26 24 50 24 Q74 24 74 54 Z"/><rect x="22" y="52" width="56" height="10" rx="5"/></g><circle cx="50" cy="20" r="6" fill="__C__"/>']
+        ],
+        'Glasses': [
+          ['sunglasses', '<g fill="__C__"><rect x="16" y="42" width="28" height="20" rx="9"/><rect x="56" y="42" width="28" height="20" rx="9"/><rect x="44" y="48" width="12" height="5"/></g><g fill="none" stroke="__C__" stroke-width="5" stroke-linecap="round"><path d="M16 46 L6 40"/><path d="M84 46 L94 40"/></g>'],
+          ['glasses-round', '<g fill="none" stroke="__C__" stroke-width="6"><circle cx="32" cy="52" r="16"/><circle cx="68" cy="52" r="16"/><path d="M48 52 H52"/><path d="M16 48 L6 44"/><path d="M84 48 L94 44"/></g>'],
+          ['shutter-shades', '<g fill="none" stroke="__C__" stroke-width="4"><rect x="16" y="42" width="28" height="18" rx="3"/><rect x="56" y="42" width="28" height="18" rx="3"/><path d="M16 48 H44 M16 54 H44 M56 48 H84 M56 54 H84 M44 50 H56"/></g>'],
+          ['monocle', '<g fill="none" stroke="__C__" stroke-width="6"><circle cx="60" cy="52" r="15"/><path d="M60 67 Q56 80 50 84"/></g>'],
+          ['heart-glasses', '<g fill="__C__"><path d="M32 42 C26 34 14 38 18 48 C21 55 32 62 32 62 C32 62 43 55 46 48 C50 38 38 34 32 42 Z"/><path d="M68 42 C62 34 50 38 54 48 C57 55 68 62 68 62 C68 62 79 55 82 48 C86 38 74 34 68 42 Z"/></g>']
+        ],
+        'Extras': [
+          ['eyebrows', '<g fill="none" stroke="__C__" stroke-width="8" stroke-linecap="round"><path d="M20 44 Q34 36 46 42"/><path d="M54 42 Q66 36 80 44"/></g>'],
+          ['star', '<path d="M50 16 L61 40 L88 42 L67 60 L74 86 L50 71 L26 86 L33 60 L12 42 L39 40 Z" fill="__C__"/>'],
+          ['blush', '<g fill="__C__" opacity="0.7"><ellipse cx="30" cy="55" rx="12" ry="8"/><ellipse cx="70" cy="55" rx="12" ry="8"/></g>'],
+          ['tear', '<path d="M50 30 C40 55 42 72 50 72 C58 72 60 55 50 30 Z" fill="__C__"/>'],
+          ['freckles', '<g fill="__C__"><circle cx="30" cy="50" r="3.4"/><circle cx="40" cy="58" r="3.4"/><circle cx="30" cy="62" r="3.4"/><circle cx="70" cy="50" r="3.4"/><circle cx="60" cy="58" r="3.4"/><circle cx="70" cy="62" r="3.4"/></g>'],
+          ['ears', '<g fill="none" stroke="__C__" stroke-width="8" stroke-linecap="round"><path d="M22 40 Q6 50 22 62"/><path d="M78 40 Q94 50 78 62"/></g>']
+        ]
+      };
+      var STAMP_BY_ID = {};
+      Object.keys(STAMPS).forEach(function (cat) { STAMPS[cat].forEach(function (s) { STAMP_BY_ID[s[0]] = s[1]; }); });
+      function svgWrap(inner, col) { return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' + inner.replace(/__C__/g, col) + '</svg>'; }
+
+      var stampPanel = document.getElementById('drawStampPanel');
+      var stampCatsEl = document.getElementById('stampCats');
+      var stampGridEl = document.getElementById('stampGrid');
+      var stampBtn = document.getElementById('drawStamps');
+      var stampCat = Object.keys(STAMPS)[0];
+      function buildStampCats() {
+        stampCatsEl.innerHTML = '';
+        Object.keys(STAMPS).forEach(function (cat) {
+          var b = document.createElement('button'); b.type = 'button';
+          b.className = 'stamp-cat' + (cat === stampCat ? ' sel' : ''); b.textContent = cat;
+          b.addEventListener('click', function () { stampCat = cat; buildStampCats(); buildStampGrid(); });
+          stampCatsEl.appendChild(b);
+        });
+      }
+      function buildStampGrid() {
+        stampGridEl.innerHTML = '';
+        STAMPS[stampCat].forEach(function (s) {
+          var b = document.createElement('button'); b.type = 'button';
+          b.className = 'stamp-btn' + (s[0] === currentStampId ? ' sel' : '');
+          b.title = s[0]; b.innerHTML = svgWrap(s[1], '#cfd4db');
+          b.addEventListener('click', function () { selectStamp(s[0]); });
+          stampGridEl.appendChild(b);
+        });
+      }
+      function selectStamp(id) {
+        erasing = false; filling = false; picking = false; dotMode = false;
+        eraseBtn.classList.remove('on'); fillBtn.classList.remove('on'); pickBtn.classList.remove('on');
+        if (dotsWrap) dotsWrap.classList.remove('on');
+        stampMode = true; currentStampId = id; if (stampBtn) stampBtn.classList.add('on');
+        stampGridEl.querySelectorAll('.stamp-btn').forEach(function (b) { b.classList.toggle('sel', b.title === id); });
+      }
+      function clearStampSel() {
+        stampMode = false; currentStampId = null;
+        if (stampBtn) stampBtn.classList.remove('on');
+        if (stampGridEl) stampGridEl.querySelectorAll('.stamp-btn').forEach(function (b) { b.classList.remove('sel'); });
+      }
+      stampBtn.addEventListener('click', function () {
+        if (stampPanel.hasAttribute('hidden')) {
+          stampPanel.removeAttribute('hidden'); buildStampCats(); buildStampGrid();
+        } else {
+          stampPanel.setAttribute('hidden', '');
+        }
+      });
+      // Render a stamp SVG to an <img> (cached per stamp+colour) and drop it on.
+      var stampImgCache = {};
+      function stampImage(id, col) {
+        var key = id + '|' + col;
+        if (stampImgCache[key]) return Promise.resolve(stampImgCache[key]);
+        var url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgWrap(STAMP_BY_ID[id], col));
+        return new Promise(function (res) {
+          var im = new Image();
+          im.onload = function () { stampImgCache[key] = im; res(im); };
+          im.onerror = function () { res(null); };
+          im.src = url;
+        });
+      }
+      function placeStamp(x, y) {
+        var sp = Math.max(48, size * 6), col = color, id = currentStampId;
+        stampImage(id, col).then(function (im) {
+          if (!im) return;
+          var g = actx(); g.globalCompositeOperation = 'source-over';
+          g.drawImage(im, x - sp / 2, y - sp / 2, sp, sp);
+          composite(); recordFrame(true);
         });
       }
 
