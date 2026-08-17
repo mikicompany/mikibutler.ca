@@ -79,3 +79,11 @@ function revealArcade() {
     }
   });
 })();
+
+// ── Site-wide game-controller support ──
+// Loads the gamepad navigation module on every page that has the sidebar.
+(function () {
+  var s = document.createElement('script');
+  s.src = 'js/gamepad.js'; s.defer = true;
+  document.head.appendChild(s);
+})();

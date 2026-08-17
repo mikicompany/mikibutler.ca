@@ -4,8 +4,14 @@ A running list of ideas and follow-ups for mikibutler.ca.
 
 ## Work page — juicier project browsing
 
-- [ ] **Controller / keyboard flow for Work sub-groups.** Make browsing the
-      portfolio feel like navigating a console UI.
+- [x] **Controller support (site-wide).** Gamepad navigation shipped in
+      `js/gamepad.js` (auto-loaded via `sidebar.js`): D-pad/stick moves a
+      focus ring across links/buttons/tiles, A selects, B backs out/closes,
+      Start shows a help card; inside image lightboxes it routes to
+      Arrow/Enter/Esc so existing nav drives them.
+- [ ] **Keyboard flow for Work sub-groups** (arrows within/between albums)
+      as a mouse-free complement — the controller covers it via focus nav,
+      but native album keyboard nav could still be nicer.
   - Arrow keys: **← / →** move between projects (albums), **↑ / ↓** move
     within the open project's pieces.
   - **Enter** dives into the focused project / opens the focused piece;
