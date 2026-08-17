@@ -36,6 +36,14 @@
   <label for="pw">Password</label>
   <input id="pw" type="text" autocomplete="off" spellcheck="false" />
 
+  <p>
+    <strong>Editing the existing gallery?</strong> Enter the password above and
+    click <em>Load &amp; decrypt current data</em> to pull the live items into
+    the box below. Reorder / add / remove as needed, then Encrypt. The password
+    stays in your browser — nothing is sent anywhere.
+  </p>
+  <button id="load" type="button">Load &amp; decrypt current data</button>
+
   <label for="items">Items (JSON array)</label>
   <textarea id="items" spellcheck="false">[
   { "img": "images/work/protected-01.jpg", "tag": "NDA", "title": "Unreleased Project" }
@@ -51,6 +59,37 @@
   <script>
     const ITERATIONS = 600000;
     const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+    const b64ToBytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+    // Load the live protected-data.json and decrypt it back into the editor,
+    // so existing items can be reordered / appended without losing anything.
+    document.getElementById('load').addEventListener('click', async () => {
+      const err = document.getElementById('err');
+      err.textContent = '';
+      const password = document.getElementById('pw').value;
+      if (!password) { err.textContent = 'Password required to decrypt.'; return; }
+      try {
+        const blob = await fetch('../protected-data.json').then(r => {
+          if (!r.ok) throw new Error('Could not fetch ../protected-data.json (run via python serve.py).');
+          return r.json();
+        });
+        const enc = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+        const key = await crypto.subtle.deriveKey(
+          { name: 'PBKDF2', hash: 'SHA-256', salt: b64ToBytes(blob.salt), iterations: blob.iterations },
+          keyMaterial,
+          { name: 'AES-GCM', length: 256 },
+          false,
+          ['decrypt']
+        );
+        const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64ToBytes(blob.iv) }, key, b64ToBytes(blob.data));
+        const payload = JSON.parse(new TextDecoder().decode(plain));
+        document.getElementById('items').value = JSON.stringify(payload.items || [], null, 2);
+      } catch (e) {
+        err.textContent = (e && e.message && e.message.indexOf('fetch') === -1 && e.message.indexOf('serve') !== -1)
+          ? e.message : 'Could not decrypt — wrong password or unreadable data.';
+      }
+    });
 
     document.getElementById('go').addEventListener('click', async () => {
       const err = document.getElementById('err');
