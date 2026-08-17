@@ -595,7 +595,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         'border-radius:12px;scroll-margin:100px;}';
       document.head.appendChild(st);
 
-      var raf = 0, prev = {}, probe = 0, cur = null;
+      var raf = 0, prev = {}, cur = null;
       var lastDir = '', repeatAt = 0, DZ = 0.5, FIRST = 320, REPEAT = 150;
 
       function isDown(gp, i) { return gp.buttons[i] && (gp.buttons[i].pressed || gp.buttons[i].value > 0.5); }
@@ -653,10 +653,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         cur.click();   // card → opens the in-page lightbox; chip → filters. Both stay on this page.
       }
 
+      var seenPad = false;
+      function toast() {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var t = document.createElement('div');
+        t.textContent = '🎮 Controller connected';
+        t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;' +
+          'background:#12160a;color:var(--accent,#a0ff00);border:1px solid var(--accent,#a0ff00);' +
+          'font:600 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;' +
+          'box-shadow:0 6px 20px rgba(0,0,0,.5);opacity:0;transition:opacity .3s ease;';
+        document.body.appendChild(t);
+        requestAnimationFrame(function () { t.style.opacity = '1'; });
+        setTimeout(function () { t.style.opacity = '0'; setTimeout(function () { t.remove(); }, 400); }, 2200);
+      }
+
       function loop() {
         var pads = navigator.getGamepads ? navigator.getGamepads() : [], gp = null;
         for (var i = 0; i < pads.length; i++) { if (pads[i] && pads[i].connected) { gp = pads[i]; break; } }
         if (gp) {
+          if (!seenPad) { seenPad = true; toast(); seed(); }   // first live frame: greet + place the ring
           var ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
           var lx = isDown(gp, 14) ? -1 : isDown(gp, 15) ? 1 : (Math.abs(ax) > DZ ? (ax < 0 ? -1 : 1) : 0);
           var ly = isDown(gp, 12) ? -1 : isDown(gp, 13) ? 1 : (Math.abs(ay) > DZ ? (ay < 0 ? -1 : 1) : 0);
@@ -679,17 +694,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             if (edge(gp, 0)) activate();                          // A opens the highlighted game / applies the chip
           }
           [2, 3, 4, 5, 6, 7, 8, 9, 10, 11].forEach(function (b) { prev[b] = isDown(gp, b); });
+        } else if (seenPad) {
+          // pad went away (unplugged / went to sleep) — reset so it re-greets on return
+          seenPad = false; lastDir = ''; if (cur) cur.classList.remove('cg-focus');
         }
         raf = requestAnimationFrame(loop);
       }
-      function start() { if (!raf) { seed(); loop(); } }
 
-      window.addEventListener('gamepadconnected', start);
-      probe = setInterval(function () {
-        var p = navigator.getGamepads && navigator.getGamepads();
-        if (p) for (var i = 0; i < p.length; i++) if (p[i] && p[i].connected) { start(); }
-      }, 1000);
-      setTimeout(function () { clearInterval(probe); }, 15000);
+      // Always-on poll: no reliance on the gamepadconnected event (which may not
+      // fire for a pad connected before load) and no probe cut-off. Chrome only
+      // exposes the pad after the first button press, and this catches it then.
+      window.addEventListener('gamepadconnected', function () { if (!raf) { raf = requestAnimationFrame(loop); } });
+      raf = requestAnimationFrame(loop);
     })();
   </script>
 </body>
