@@ -582,13 +582,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <script>
     // ── Controller support (this page only) ───────────────────────────────
-    // Deliberately minimal & safe: it NEVER navigates the browser back and
-    // never clicks anything but a game card. Browsing the grid, the stick /
-    // D-pad scrolls; with a game open, Left/Right flip games, B closes.
+    // A visible focus ring hops between the game cards & filter chips with the
+    // D-pad / stick; A opens (or filters); with a game open Left/Right flip
+    // games and B closes. SAFE BY DESIGN: it only ever clicks a card or chip
+    // on this page — no history.back, no redirects, no window.open.
     (function () {
       if (!('getGamepads' in navigator)) return;
-      var raf = 0, prev = {}, lastDir = '', repeatAt = 0, probe = 0;
-      var DZ = 0.5;
+
+      var st = document.createElement('style');
+      st.textContent = '.cg-focus{outline:3px solid var(--accent,#a0ff00)!important;outline-offset:3px;' +
+        'box-shadow:0 0 0 3px rgba(160,255,0,.30),0 0 16px rgba(160,255,0,.45)!important;' +
+        'border-radius:12px;scroll-margin:100px;}';
+      document.head.appendChild(st);
+
+      var raf = 0, prev = {}, probe = 0, cur = null;
+      var lastDir = '', repeatAt = 0, DZ = 0.5, FIRST = 320, REPEAT = 150;
 
       function isDown(gp, i) { return gp.buttons[i] && (gp.buttons[i].pressed || gp.buttons[i].value > 0.5); }
       function edge(gp, i) { var p = isDown(gp, i), w = prev[i]; prev[i] = p; return p && !w; }
@@ -598,16 +606,51 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         document.dispatchEvent(new KeyboardEvent('keydown', o));
         document.dispatchEvent(new KeyboardEvent('keyup', o));
       }
-      function openNearestCard() {
-        var cards = [].slice.call(document.querySelectorAll('.rc-card'));
+      function vis(el) {
+        var r = el.getBoundingClientRect();
+        if (r.width < 3 || r.height < 3) return false;
+        var s = getComputedStyle(el);
+        return s.visibility !== 'hidden' && s.display !== 'none';
+      }
+      function items() {
+        return [].slice.call(document.querySelectorAll('.rc-chip, .rc-card')).filter(vis);
+      }
+      function ctr(r) { return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
+      function ring(el) {
+        if (cur && cur !== el) cur.classList.remove('cg-focus');
+        cur = el || null;
+        if (cur) { cur.classList.add('cg-focus'); cur.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' }); }
+      }
+      function seed() {
+        var list = items(); if (!list.length) return;
         var cx = innerWidth / 2, cy = innerHeight / 2, best = null, bd = Infinity;
-        cards.forEach(function (c) {
-          var r = c.getBoundingClientRect();
-          if (r.bottom < 0 || r.top > innerHeight) return;      // only on-screen
-          var d = Math.abs(r.top + r.height / 2 - cy) + Math.abs(r.left + r.width / 2 - cx);
-          if (d < bd) { bd = d; best = c; }
+        list.forEach(function (el) {
+          var c = ctr(el.getBoundingClientRect());
+          var on = c.y > 0 && c.y < innerHeight;
+          var d = Math.hypot(c.x - cx, c.y - cy) + (on ? 0 : 1e5);
+          if (d < bd) { bd = d; best = el; }
         });
-        if (best) best.click();
+        ring(best);
+      }
+      function move(dir) {
+        var list = items(); if (!list.length) return;
+        if (!cur || !document.contains(cur) || !vis(cur)) { seed(); return; }
+        var c = ctr(cur.getBoundingClientRect()), best = null, bc = Infinity;
+        list.forEach(function (el) {
+          if (el === cur) return;
+          var e = ctr(el.getBoundingClientRect()), dx = e.x - c.x, dy = e.y - c.y, primary, perp;
+          if (dir === 'left') { if (dx > -6) return; primary = -dx; perp = Math.abs(dy); }
+          else if (dir === 'right') { if (dx < 6) return; primary = dx; perp = Math.abs(dy); }
+          else if (dir === 'up') { if (dy > -6) return; primary = -dy; perp = Math.abs(dx); }
+          else { if (dy < 6) return; primary = dy; perp = Math.abs(dx); }
+          var cost = primary + perp * 2;
+          if (cost < bc) { bc = cost; best = el; }
+        });
+        if (best) ring(best);
+      }
+      function activate() {
+        if (!cur || !document.contains(cur) || !vis(cur)) { seed(); return; }
+        cur.click();   // card → opens the in-page lightbox; chip → filters. Both stay on this page.
       }
 
       function loop() {
@@ -620,28 +663,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           var now = performance.now();
 
           if (lightbox()) {
-            // A game is open — flip between games with Left/Right (hold to repeat).
-            var dir = lx < 0 ? 'left' : lx > 0 ? 'right' : '';
-            if (dir) {
-              if (dir !== lastDir) { key(dir === 'left' ? 'ArrowLeft' : 'ArrowRight'); lastDir = dir; repeatAt = now + 380; }
-              else if (now >= repeatAt) { key(dir === 'left' ? 'ArrowLeft' : 'ArrowRight'); repeatAt = now + 220; }
+            if (cur) cur.classList.remove('cg-focus');           // hide ring while a game is open
+            var d = lx < 0 ? 'left' : lx > 0 ? 'right' : '';
+            if (d) {
+              if (d !== lastDir) { key(d === 'left' ? 'ArrowLeft' : 'ArrowRight'); lastDir = d; repeatAt = now + FIRST; }
+              else if (now >= repeatAt) { key(d === 'left' ? 'ArrowLeft' : 'ArrowRight'); repeatAt = now + REPEAT; }
             } else { lastDir = ''; }
-            if (edge(gp, 1)) key('Escape');        // B closes the game
+            if (edge(gp, 1)) key('Escape');                      // B closes the game
           } else {
-            // Browsing the grid — the stick / D-pad scrolls the collection.
-            if (ly !== 0) window.scrollBy(0, ly * 24);
-            if (edge(gp, 0)) openNearestCard();     // A opens the centred game
-            lastDir = '';
+            var dir = ly < 0 ? 'up' : ly > 0 ? 'down' : lx < 0 ? 'left' : lx > 0 ? 'right' : '';
+            if (dir) {
+              if (dir !== lastDir) { move(dir); lastDir = dir; repeatAt = now + FIRST; }
+              else if (now >= repeatAt) { move(dir); repeatAt = now + REPEAT; }
+            } else { lastDir = ''; }
+            if (edge(gp, 0)) activate();                          // A opens the highlighted game / applies the chip
           }
-          // keep other buttons' state fresh so they don't misfire
           [2, 3, 4, 5, 6, 7, 8, 9, 10, 11].forEach(function (b) { prev[b] = isDown(gp, b); });
         }
         raf = requestAnimationFrame(loop);
       }
-      function start() { if (!raf) loop(); }
+      function start() { if (!raf) { seed(); loop(); } }
 
       window.addEventListener('gamepadconnected', start);
-      // Some browsers only reveal an already-connected pad after first input.
       probe = setInterval(function () {
         var p = navigator.getGamepads && navigator.getGamepads();
         if (p) for (var i = 0; i < p.length; i++) if (p[i] && p[i].connected) { start(); }
