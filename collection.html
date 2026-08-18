@@ -97,10 +97,7 @@
     .rc-sys .dot { width: 8px; height: 8px; border-radius: 50%; background: hsl(var(--h,90) 65% 55%); flex-shrink: 0; }
     .rc-card h2 { font-size: 14.5px; font-weight: 700; line-height: 1.25; }
     .rc-card:hover h2 { color: var(--accent); }
-    .rc-meta { font-size: 11.5px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; margin-top: 2px; }
     .rc-price { font-weight: 800; color: #fff; font-size: 13px; }
-    .rc-loc { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: var(--accent);
-      border: 1px solid rgba(160,255,0,.3); border-radius: 999px; padding: 1px 7px; }
     .rc-chips.era { margin-bottom: 12px; }
     .rc-chips.era .rc-chip.active { background: #1c2a08; color: var(--accent); border-color: var(--accent); }
     .rc-empty { color: var(--text-muted); font-size: 15px; padding: 40px 0; }
@@ -352,7 +349,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var items = eraSet.filter(function(it){
         if (state.system !== 'all' && it.system !== state.system) return false;
         if (!q) return true;
-        return (it.title+' '+it.system+' '+(it.notes||'')+' '+(it.location||'')).toLowerCase().indexOf(q) >= 0;
+        return (it.title+' '+it.system+' '+(it.notes||'')).toLowerCase().indexOf(q) >= 0;
       });
       var s = statNums(all);
       var hasEras = all.some(function(it){ return it.era==='retro'; }) && all.some(function(it){ return it.era==='modern'; });
@@ -380,9 +377,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           '<div class="rc-cbody">'+
             '<div class="rc-sys"><i class="dot"></i>'+sub+'</div>'+
             '<h2>'+esc(it.title)+'</h2>'+
-            '<div class="rc-meta">'+
-              (it.location ? '<span class="rc-loc">'+esc(it.location)+'</span>' : '')+
-            '</div>'+
           '</div>'+
         '</a>';
       }).join('');
@@ -495,7 +489,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           row('System', it.system)+ row('Category', it.category)+
           row('Year', it.year)+ row('Region', it.region)+ row('Condition', it.condition)+
           (typeof it.cib === 'boolean' ? row('Complete in box', it.cib ? 'Yes' : 'No') : '')+
-          (it.qty>1 ? row('Quantity', it.qty) : '')+ row('Location', it.location)+
+          (it.qty>1 ? row('Quantity', it.qty) : '')+
         '</table>'+
         (it.notes ? '<div class="rc-notes">'+esc(it.notes)+'</div>' : '');
       var strip = lb.querySelector('#lb-strip');
