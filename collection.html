@@ -224,7 +224,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // the system's hue) instead of a text label on the placeholder tiles.
     function archOf(s){
       s = String(s || '');
-      if (s === 'Game Boy') return 'handheld';
+      if (s === 'Game Boy' || s === 'Handheld') return 'handheld';
       if (s === '3DS') return 'clamshell';
       if (s === 'Switch') return 'switch';
       if (s === 'GameCube') return 'cube';
@@ -335,15 +335,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     function statNums(items){
       var qty = items.reduce(function(a,it){ return a + (it.qty||1); }, 0);
-      var systems = new Set(items.map(function(it){ return it.system; }).filter(Boolean)).size;
+      var systems = new Set(items.filter(function(it){ return it.era!=='hardware'; }).map(function(it){ return it.system; }).filter(Boolean)).size;
       var retro = items.filter(function(it){ return it.era === 'retro'; }).length;
       return { qty: qty, systems: systems, retro: retro };
     }
 
     function renderList(){
       var all = DATA.items;
-      // Era facet first (All / Retro / Modern), then systems within that era.
-      var eraSet = all.filter(function(it){ return state.era==='all' ? true : it.era===state.era; });
+      // Era facet first (Everything / Retro / Modern / Hardware), then systems
+      // within it. "Everything" means all games — hardware lives in its own facet.
+      var eraSet = all.filter(function(it){
+        return state.era==='all' ? it.era!=='hardware' : it.era===state.era;
+      });
       var systems = ['all'].concat(Array.from(new Set(eraSet.map(function(it){ return it.system; }).filter(Boolean))).sort());
       if (systems.indexOf(state.system) < 0) state.system = 'all';   // reset if era hid it
       var q = state.q.trim().toLowerCase();
@@ -353,10 +356,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         return (it.title+' '+it.system+' '+(it.notes||'')).toLowerCase().indexOf(q) >= 0;
       });
       var s = statNums(all);
-      var hasEras = all.some(function(it){ return it.era==='retro'; }) && all.some(function(it){ return it.era==='modern'; });
-      var eraChips = hasEras ? '<div class="rc-chips era">' + ['all','retro','modern'].map(function(e){
-        var lbl = e==='all' ? 'Everything' : (e==='retro' ? 'Retro' : 'Modern');
-        return '<button class="rc-chip'+(e===state.era?' active':'')+'" data-era="'+e+'">'+lbl+'</button>';
+      var eraOpts = ['all'];
+      if (all.some(function(it){ return it.era==='retro'; })) eraOpts.push('retro');
+      if (all.some(function(it){ return it.era==='modern'; })) eraOpts.push('modern');
+      if (all.some(function(it){ return it.era==='hardware'; })) eraOpts.push('hardware');
+      var eraLabels = { all: 'Everything', retro: 'Retro', modern: 'Modern', hardware: 'Hardware & Gear' };
+      var eraChips = eraOpts.length > 1 ? '<div class="rc-chips era">' + eraOpts.map(function(e){
+        return '<button class="rc-chip'+(e===state.era?' active':'')+'" data-era="'+e+'">'+eraLabels[e]+'</button>';
       }).join('') + '</div>' : '';
       var chips = systems.map(function(sys){
         var lbl = sys==='all' ? 'All systems' : sys;
