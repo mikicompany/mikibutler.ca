@@ -228,8 +228,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if (s === '3DS') return 'clamshell';
       if (s === 'Switch') return 'switch';
       if (s === 'GameCube') return 'cube';
-      if (s === 'PS1' || s === 'PS2' || s === 'PS4' || s === 'Xbox One') return 'disc';
-      if (s === 'NES' || s === 'SNES' || s === 'Genesis') return 'cart';
+      if (s === 'PS1' || s === 'PS2' || s === 'PS3' || s === 'PS4' || s === 'Xbox One' ||
+          s === 'Dreamcast' || s === 'Wii') return 'disc';
+      if (s === 'NES' || s === 'SNES' || s === 'Genesis' || s === 'N64' || s === 'Atari 2600') return 'cart';
       return 'pad';
     }
     function pxc(system){

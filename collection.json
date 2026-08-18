@@ -1027,6 +1027,186 @@
       "era": "modern",
       "slug": "shadow-of-the-colossus-ps2",
       "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Shadow%20of%20the%20Colossus%20%28USA%29.png"
+    },
+    {
+      "title": "Yoshi's Cookie",
+      "system": "NES",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "yoshi-s-cookie-nes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/Yoshi%27s%20Cookie%20%28USA%29.png"
+    },
+    {
+      "title": "Donkey Kong Classics",
+      "system": "NES",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "donkey-kong-classics-nes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/Donkey%20Kong%20Classics%20%28USA%2C%20Europe%29.png"
+    },
+    {
+      "title": "Tetris",
+      "system": "NES",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "tetris-nes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/Tetris%20%28USA%29.png"
+    },
+    {
+      "title": "RoboCop",
+      "system": "NES",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "robocop-nes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/RoboCop%20%28USA%29.png"
+    },
+    {
+      "title": "Mario Party",
+      "system": "N64",
+      "price": "$20",
+      "location": "",
+      "era": "retro",
+      "slug": "mario-party-n64",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_64/master/Named_Boxarts/Mario%20Party%20%28USA%29.png"
+    },
+    {
+      "title": "Mario Party 2",
+      "system": "N64",
+      "price": "$20",
+      "location": "",
+      "era": "retro",
+      "slug": "mario-party-2-n64",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_64/master/Named_Boxarts/Mario%20Party%202%20%28USA%29.png"
+    },
+    {
+      "title": "64 de Hakken!! Tamagotchi: Minna de Tamagotchi World",
+      "system": "N64",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "64-de-hakken-tamagotchi-minna-de-tamagotchi-world-n64",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_64/master/Named_Boxarts/64%20de%20Hakken%21%21%20Tamagotchi%20-%20Minna%20de%20Tamagotchi%20World%20%28Japan%29.png"
+    },
+    {
+      "title": "Alex Kidd in the Enchanted Castle",
+      "system": "Genesis",
+      "price": "$25",
+      "location": "",
+      "era": "retro",
+      "slug": "alex-kidd-in-the-enchanted-castle-genesis",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sega_-_Mega_Drive_-_Genesis/master/Named_Boxarts/Alex%20Kidd%20in%20the%20Enchanted%20Castle%20%28Europe%29.png"
+    },
+    {
+      "title": "Disney's Aladdin",
+      "system": "SNES",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "disney-s-aladdin-snes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Super_Nintendo_Entertainment_System/master/Named_Boxarts/Aladdin%20%28USA%29.png"
+    },
+    {
+      "title": "Pitfall!",
+      "system": "Atari 2600",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "pitfall-atari-2600",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Atari_-_2600/master/Named_Boxarts/Pitfall%21%20-%20Pitfall%20Harry%27s%20Jungle%20Adventure%20%28USA%29.png"
+    },
+    {
+      "title": "Final Fantasy VIII",
+      "system": "PS1",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "final-fantasy-viii-ps1",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Final%20Fantasy%20VIII%20%28USA%29%20%28Disc%201%29.png"
+    },
+    {
+      "title": "Tobal No. 1",
+      "system": "PS1",
+      "price": "¥500",
+      "location": "",
+      "era": "retro",
+      "slug": "tobal-no-1-ps1",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Tobal%20No.%201%20%28USA%29.png"
+    },
+    {
+      "title": "Legacy of Kain: Soul Reaver",
+      "system": "PS1",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "legacy-of-kain-soul-reaver-ps1",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Legacy%20of%20Kain%20-%20Soul%20Reaver%20%28USA%29.png"
+    },
+    {
+      "title": "Terminator 3: Rise of the Machines",
+      "system": "PS2",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "terminator-3-rise-of-the-machines-ps2",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Terminator%203%20-%20Rise%20of%20the%20Machines%20%28USA%29.png"
+    },
+    {
+      "title": "Psychonauts",
+      "system": "PS2",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "psychonauts-ps2",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Psychonauts%20%28USA%29.png"
+    },
+    {
+      "title": "Phantasy Star Online",
+      "system": "Dreamcast",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "phantasy-star-online-dreamcast",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sega_-_Dreamcast/master/Named_Boxarts/Phantasy%20Star%20Online%20%28USA%29.png"
+    },
+    {
+      "title": "Mario Kart Wii",
+      "system": "Wii",
+      "price": "",
+      "location": "",
+      "era": "modern",
+      "slug": "mario-kart-wii-wii",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Wii/master/Named_Boxarts/Mario%20Kart%20Wii%20%28USA%29.png"
+    },
+    {
+      "title": "Watch Dogs",
+      "system": "PS4",
+      "price": "",
+      "location": "",
+      "era": "modern",
+      "slug": "watch-dogs-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/243470/library_600x900.jpg"
+    },
+    {
+      "title": "Dying Light 2 Stay Human",
+      "system": "PS4",
+      "price": "",
+      "location": "",
+      "era": "modern",
+      "slug": "dying-light-2-stay-human-ps4",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/534380/library_600x900.jpg"
+    },
+    {
+      "title": "BioShock Infinite",
+      "system": "PS3",
+      "price": "",
+      "location": "",
+      "era": "modern",
+      "slug": "bioshock-infinite-ps3",
+      "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/8870/library_600x900.jpg"
     }
   ]
 }
