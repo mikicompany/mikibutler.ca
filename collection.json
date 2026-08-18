@@ -1207,6 +1207,60 @@
       "era": "modern",
       "slug": "bioshock-infinite-ps3",
       "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/8870/library_600x900.jpg"
+    },
+    {
+      "title": "Marvel vs. Capcom: Clash of Super Heroes",
+      "system": "Dreamcast",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "marvel-vs-capcom-clash-of-super-heroes-dreamcast",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sega_-_Dreamcast/master/Named_Boxarts/Marvel%20vs.%20Capcom%20-%20Clash%20of%20Super%20Heroes%20%28USA%29.png"
+    },
+    {
+      "title": "Dead or Alive 2",
+      "system": "Dreamcast",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "dead-or-alive-2-dreamcast",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sega_-_Dreamcast/master/Named_Boxarts/Dead%20or%20Alive%202%20%28USA%29.png"
+    },
+    {
+      "title": "MDK",
+      "system": "PS1",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "mdk-ps1",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/MDK%20%28USA%29.png"
+    },
+    {
+      "title": "Commandos 2: Men of Courage",
+      "system": "PS2",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "commandos-2-men-of-courage-ps2",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Commandos%202%20-%20Men%20of%20Courage%20%28USA%29.png"
+    },
+    {
+      "title": "Adventure Island",
+      "system": "NES",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "adventure-island-nes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/Adventure%20Island%20%28USA%29.png"
+    },
+    {
+      "title": "NES Play Action Football",
+      "system": "NES",
+      "price": "",
+      "location": "",
+      "era": "retro",
+      "slug": "nes-play-action-football-nes",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/NES%20Play%20Action%20Football%20%28USA%29.png"
     }
   ]
 }
