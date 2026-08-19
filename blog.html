@@ -228,6 +228,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var wrap = document.getElementById('blog-wrap');
 
     // ── Views ──
+    // First Markdown image in a post body — used as the card thumbnail / share
+    // image when a post has no explicit `cover` set.
+    function firstImage(body) {
+      var m = /!\[[^\]]*\]\(([^)\s]+)/.exec(String(body || ''));
+      return m ? m[1] : '';
+    }
+    function coverOf(p) { return p.cover || firstImage(p.body); }
+
     function renderList(posts) {
       document.title = 'Blog — Miki Butler';
       if (!posts.length) {
@@ -236,9 +244,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         return;
       }
       var cards = posts.map(function (p) {
-        var cover = p.cover
-          ? '<img class="cover" src="' + esc(p.cover) + '" alt="" loading="lazy" />' : '';
-        return '<a class="post-card' + (p.cover ? ' has-cover' : '') + '" href="?post=' + encodeURIComponent(p.slug) + '">' +
+        var cov = coverOf(p);
+        var cover = cov
+          ? '<img class="cover" src="' + esc(cov) + '" alt="" loading="lazy" />' : '';
+        return '<a class="post-card' + (cov ? ' has-cover' : '') + '" href="?post=' + encodeURIComponent(p.slug) + '">' +
           cover +
           '<div>' +
             '<div class="post-meta">' + fmtDate(p.date) + ' · ' + readingTime(p.body) + '</div>' +
@@ -258,7 +267,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     function setMeta(post) {
       var url = location.origin + location.pathname + '?post=' + encodeURIComponent(post.slug);
-      var img = post.cover ? (location.origin + '/' + post.cover.replace(/^\//, '')) : 'https://mikibutler.ca/images/og-card.jpg';
+      var cov = coverOf(post);
+      var img = cov
+        ? (/^https?:\/\//.test(cov) ? cov : location.origin + '/' + cov.replace(/^\//, ''))
+        : 'https://mikibutler.ca/images/og-card.jpg';
       document.title = post.title + ' — Miki Butler';
       var set = function (id, val) { var el = document.getElementById(id); if (el) el.setAttribute('content', val); };
       set('og-type', 'article'); set('og-title', post.title); set('tw-title', post.title);
