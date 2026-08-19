@@ -234,7 +234,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var m = /!\[[^\]]*\]\(([^)\s]+)/.exec(String(body || ''));
       return m ? m[1] : '';
     }
-    function coverOf(p) { return p.cover || firstImage(p.body); }
+    // Card thumbnail / share image: explicit `thumb`, else `cover`, else the
+    // first image in the body. (The article hero still uses `cover` only.)
+    function coverOf(p) { return p.thumb || p.cover || firstImage(p.body); }
 
     function renderList(posts) {
       document.title = 'Blog — Miki Butler';
