@@ -1,20 +1,20 @@
 {
   "currency": "USD",
   "symbol": "$",
-  "note": "Live product wired to Gumroad. Title, price and image below are placeholders — update them to match the Gumroad listing.",
+  "note": "",
   "products": [
     {
-      "slug": "gumroad-ykcnz",
-      "title": "New Release",
+      "slug": "peruvian-timing",
+      "title": "Peruvian Timing",
       "type": "digital",
-      "price": 0,
-      "image": "images/gameography/starship-troopers.jpg",
+      "price": 25,
+      "image": "https://public-files.gumroad.com/gkmil6meara6aq2fd7lkjidjkywj",
       "tags": [
         "gumroad"
       ],
       "excerpt": "Available now on my Gumroad.",
       "gumroad": "YkCNz",
-      "body": "Available now on my **Gumroad**. Hit **Buy now** to grab it — checkout opens right here on the page, and the price and details are shown in the Gumroad window.\n\n_Update this description, title, price and image to match the listing._"
+      "body": "**Peruvian Timing** — available now on my Gumroad. Hit **Buy now** and checkout opens right here on the page.\n\n_(Add a proper description here whenever you like.)_"
     }
   ]
 }
