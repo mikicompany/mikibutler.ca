@@ -44,8 +44,32 @@ real product links are in place.
 - If `gumroad.js` is ever blocked, the Buy button falls back to opening the
   Gumroad product page in a new tab — it still works.
 
+## Physical products → Payhip
+
+Gumroad no longer sells physical goods, so **physical products use Payhip**
+instead (also an in-page overlay; it collects shipping). Each product picks its
+provider automatically from which field it has:
+
+- Digital → `"gumroad": "<permalink>"`
+- Physical → `"payhip": "<productKey>"`  (the bit after `payhip.com/b/`)
+
+Steps for a physical product:
+
+1. Create the product on **payhip.com**, set the price and shipping, publish.
+2. Copy its link `https://payhip.com/b/<key>` — the `<key>` is what you need.
+3. In `store.json`, set `"type": "physical"` and `"payhip": "<key>"`:
+
+   ```json
+   { "slug": "lookout-print", "title": "“Lookout” Print", "type": "physical",
+     "price": 35, "payhip": "AbCdE", "image": "..." }
+   ```
+
+Checkout behaves the same as Gumroad: **Buy now** / per-item **Buy** opens the
+Payhip overlay on the page; if `payhip.js` is blocked it falls back to the
+Payhip product page.
+
 ## Going live
 
 - The shop is currently **hidden** (reachable only from the arcade). When you're
   ready, ask to add **Shop** to the nav + sitemap.
-- Test with a real cheap product (or Gumroad's own preview) before announcing.
+- Test with a real cheap product (or the platform's preview) before announcing.

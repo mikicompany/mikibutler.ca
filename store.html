@@ -366,14 +366,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             '<div class="fulfil-note">'+fulfil+'</div>'+
             formats+ optRow + qtyRow +
             '<div class="buy-actions">'+
-              (CHECKOUT.provider==='gumroad' && gumUrl(p.slug) ? '<button class="btn-primary" id="buy-now" type="button">Buy now ▸</button>' : '')+
+              (hasBuy(p.slug) ? '<button class="btn-primary" id="buy-now" type="button">Buy now ▸</button>' : '')+
               '<button class="btn-secondary" id="add-btn" type="button">Add to cart</button>'+
             '</div>'+
           '</div>'+
           '<div class="prose">'+markdown(p.body||'')+'</div>'+
         '</div>';
       var buyNow = document.getElementById('buy-now');
-      if(buyNow) buyNow.addEventListener('click', function(){ openGumroad(gumUrl(p.slug)); });
+      if(buyNow) buyNow.addEventListener('click', function(){ openBuy(p.slug); });
       document.getElementById('add-btn').addEventListener('click', function(){
         var opt = document.getElementById('d-option');
         var qtySel = document.getElementById('d-qty');
@@ -417,7 +417,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             '<div class="ci-qty"><button data-k="'+esc(k)+'" data-d="-1">−</button><span>'+cart[k]+'</span><button data-k="'+esc(k)+'" data-d="1">+</button></div>'+
           '</div>'+
           '<div><div class="ci-price">'+money(p.price*cart[k])+'</div>'+
-            (CHECKOUT.provider==='gumroad' && gumUrl(slug) ? '<button class="ci-buy" data-buy="'+esc(slug)+'">Buy ▸</button>' : '')+
+            (hasBuy(slug) ? '<button class="ci-buy" data-buy="'+esc(slug)+'">Buy ▸</button>' : '')+
             '<button class="ci-remove" data-rm="'+esc(k)+'">remove</button></div>'+
         '</div>';
       }).join('');
@@ -428,7 +428,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         b.addEventListener('click', function(){ setQty(b.dataset.rm, 0); });
       });
       host.querySelectorAll('.ci-buy').forEach(function(b){
-        b.addEventListener('click', function(){ openGumroad(gumUrl(b.dataset.buy)); });
+        b.addEventListener('click', function(){ openBuy(b.dataset.buy); });
       });
     }
     function openCart(){ document.getElementById('cart-drawer').classList.add('open'); document.getElementById('cart-overlay').classList.add('open'); }
@@ -452,6 +452,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         base: 'https://mikib.gumroad.com/l/',   // your Gumroad store — bare permalinks resolve against this
         permalinks: {}             // fallback: { productSlug: 'permalink-or-full-url' }
       },
+      // Payhip handles PHYSICAL products (Gumroad dropped physical). Put the
+      // Payhip product key on a product in store.json as "payhip": "XXXXX"
+      // (the bit after payhip.com/b/), or a full https URL.
+      payhip:       { base: 'https://payhip.com/b/' },
       shopify:      { domain: '', storefrontToken: '', variants: {} },
       lemonsqueezy: { variants: {} }
     };
@@ -463,6 +467,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if(!g) return '';
       return /^https?:\/\//.test(g) ? g : (CHECKOUT.gumroad.base || '') + g;
     }
+    function payhipKey(slug){
+      var p = byslug[slug]; if(!p || !p.payhip) return '';
+      return String(p.payhip).replace(/^https?:\/\/payhip\.com\/b\//, '');
+    }
+    function payhipUrl(slug){ var k = payhipKey(slug); return k ? CHECKOUT.payhip.base + k : ''; }
+
+    // One place that answers "can this be bought?" and "buy it" — per product,
+    // so digital (Gumroad) and physical (Payhip) coexist in the same store.
+    function hasBuy(slug){ return !!(gumUrl(slug) || payhipUrl(slug)); }
+    function openBuy(slug){
+      if(gumUrl(slug))   return openGumroad(gumUrl(slug));
+      if(payhipUrl(slug)) return openPayhip(slug);
+    }
+
     // Open Gumroad's overlay checkout IN-PAGE (falls back to a normal tab if
     // gumroad.js hasn't loaded). One product per overlay — that's Gumroad's model.
     function openGumroad(url){
@@ -470,6 +488,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var a = document.createElement('a');
       a.className = 'gumroad-button';
       a.href = url + (url.indexOf('?') < 0 ? '?' : '&') + 'wanted=true';
+      a.rel = 'noopener';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function(){ a.remove(); }, 0);
+    }
+    // Open Payhip's overlay checkout IN-PAGE (falls back to the product page if
+    // payhip.js hasn't loaded). Physical products collect shipping in Payhip.
+    function openPayhip(slug){
+      var key = payhipKey(slug); if(!key) return;
+      var a = document.createElement('a');
+      a.className = 'payhip-buy-button';
+      a.setAttribute('data-theme', 'green');
+      a.setAttribute('data-product', key);
+      a.href = payhipUrl(slug);
       a.rel = 'noopener';
       a.style.display = 'none';
       document.body.appendChild(a);
@@ -511,51 +544,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var order = buildOrder();
       if(!order.items.length){ setResult('Your cart is empty.', true); return; }
 
-      switch(CHECKOUT.provider){
-        case 'stripe':
-          // TODO: POST `order` to CHECKOUT.stripe.checkoutEndpoint (a serverless
-          // function that creates a Stripe Checkout Session) and redirect to the
-          // returned session URL. Digital items fulfil via webhook; physical
-          // items collect a shipping address in the Session.
-          // fetch(endpoint,{method:'POST',body:JSON.stringify(order)})...
-          setResult('Stripe not configured yet.'); return;
-
-        case 'gumroad':
-          var missing = order.items.filter(function(it){ return !gumUrl(it.slug); });
-          if(missing.length){
-            setResult('These items still need a Gumroad product link:\n' +
-              missing.map(function(it){ return '• ' + it.title; }).join('\n') +
-              '\n\nAdd "gumroad" URLs in store.json to enable checkout.', true);
-            return;
-          }
-          openGumroad(gumUrl(order.items[0].slug));
-          setResult(order.items.length === 1
-            ? 'Opening secure Gumroad checkout…'
-            : 'Gumroad checks out one product at a time — opening “' + order.items[0].title +
-              '”. Use the Buy button on each cart item to grab the rest.');
-          return;
-
-        case 'shopify':
-          // TODO: build a Storefront API cart from CHECKOUT.shopify.variants and
-          // redirect to the returned checkoutUrl. Best when physical + shipping.
-          setResult('Shopify not configured yet.'); return;
-
-        case 'lemonsqueezy':
-          // TODO: open Lemon Squeezy checkout for the mapped variant(s).
-          setResult('Lemon Squeezy not configured yet.'); return;
-
-        default:
-          // Sketch mode: no provider. Show the order this WOULD place so the
-          // whole flow is verifiable end-to-end, minus the payment call.
-          console.log('[store] order payload →', order);
-          var lines = order.items.map(function(it){
-            return '• ' + it.qty + '× ' + it.title + (it.option ? ' (' + it.option + ')' : '') +
-                   ' — ' + money(it.lineTotal);
-          }).join('\n');
-          setResult('Sketch mode — no payment provider connected.\n\nThis order would be placed:\n' +
-                    lines + '\nSubtotal: ' + money(order.subtotal) +
-                    (order.hasPhysical ? '\n(+ shipping for physical items)' : ''));
+      // Per-product checkout: digital → Gumroad, physical → Payhip, both as an
+      // in-page overlay. One product per overlay, so multi-item carts use the
+      // per-item Buy buttons in the drawer.
+      var missing = order.items.filter(function(it){ return !hasBuy(it.slug); });
+      if(missing.length){
+        setResult('These items still need a store link (Gumroad or Payhip):\n' +
+          missing.map(function(it){ return '• ' + it.title; }).join('\n'), true);
+        return;
       }
+      openBuy(order.items[0].slug);
+      setResult(order.items.length === 1
+        ? 'Opening secure checkout…'
+        : 'Checkout is one product at a time — opening “' + order.items[0].title +
+          '”. Use the Buy button on each cart item to grab the rest.');
     }
     document.getElementById('checkout-btn').addEventListener('click', checkout);
 
@@ -575,7 +577,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
     window.addEventListener('popstate', function(){ location.reload(); });
   </script>
-  <!-- Gumroad overlay: lets checkout open on this page instead of redirecting. -->
+  <!-- Overlay checkouts (open on this page instead of redirecting):
+       Gumroad for digital products, Payhip for physical products. -->
   <script src="https://gumroad.com/js/gumroad.js" defer></script>
+  <script src="https://payhip.com/payhip.js" defer></script>
 </body>
 </html>
