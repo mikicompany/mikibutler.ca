@@ -30,9 +30,8 @@ real product links are in place.
    }
    ```
 
-   *(Shortcut: set `CHECKOUT.gumroad.base` in `store.html` to
-   `https://yourhandle.gumroad.com/l/` and then you can use bare permalinks like
-   `"gumroad": "rock-trims"`.)*
+   *(Your store base is already set to `https://mikib.gumroad.com/l/`, so you
+   can just use the bare permalink: `"gumroad": "rock-trims"`.)*
 
 ## How checkout behaves
 
