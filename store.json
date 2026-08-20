@@ -15,6 +15,20 @@
       "excerpt": "Available now on my Gumroad.",
       "gumroad": "YkCNz",
       "body": "**Peruvian Timing** — available now on my Gumroad. Hit **Buy now** and checkout opens right here on the page.\n\n_(Add a proper description here whenever you like.)_"
+    },
+    {
+      "slug": "east-van-bros",
+      "title": "East Van Bros",
+      "type": "physical",
+      "price": 0,
+      "image": "images/og-card.jpg",
+      "tags": [
+        "print",
+        "art print"
+      ],
+      "excerpt": "Giclée art print — printed & shipped worldwide by ArtStation.",
+      "buyUrl": "https://www.artstation.com/prints/art_poster/BdjyB/east-van-bros",
+      "body": "An **East Van** riff in my cartoon style. Museum-quality giclée art print — pick your size at checkout; printed and shipped worldwide by ArtStation Prints.\n\nHit **Buy now** to choose a size and order."
     }
   ]
 }

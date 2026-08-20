@@ -302,8 +302,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     function loadCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY)) || {}; } catch(_) { return {}; } }
     function saveCart(){ try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch(_){} }
     function money(n){ return STORE.symbol + Number(n).toLocaleString('en-US'); }
-    // When a product has no set price, show a Gumroad hint instead of "$0".
-    function priceStr(p){ return (p && p.price > 0) ? money(p.price) + '<span class="cur">' + STORE.currency + '</span>' : 'View on Gumroad'; }
+    // When a product has no set price, show a hint instead of "$0".
+    function priceStr(p){
+      if(p && p.price > 0) return money(p.price) + '<span class="cur">' + STORE.currency + '</span>';
+      if(p && p.buyUrl) return 'See sizes &amp; prices';
+      return 'View options';
+    }
     function typeBadge(t){ return '<span class="type-badge '+t+'">'+(t==='digital'?'⬇ Digital':'📦 Physical')+'</span>'; }
 
     // ── Views ──
@@ -472,13 +476,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       return String(p.payhip).replace(/^https?:\/\/payhip\.com\/b\//, '');
     }
     function payhipUrl(slug){ var k = payhipKey(slug); return k ? CHECKOUT.payhip.base + k : ''; }
+    // External storefront (e.g. an ArtStation print) — just a link out.
+    function extUrl(slug){ var p = byslug[slug]; return p && p.buyUrl ? p.buyUrl : ''; }
 
     // One place that answers "can this be bought?" and "buy it" — per product,
-    // so digital (Gumroad) and physical (Payhip) coexist in the same store.
-    function hasBuy(slug){ return !!(gumUrl(slug) || payhipUrl(slug)); }
+    // so digital (Gumroad), physical (Payhip) and print-on-demand links coexist.
+    function hasBuy(slug){ return !!(gumUrl(slug) || payhipUrl(slug) || extUrl(slug)); }
     function openBuy(slug){
-      if(gumUrl(slug))   return openGumroad(gumUrl(slug));
+      if(gumUrl(slug))    return openGumroad(gumUrl(slug));
       if(payhipUrl(slug)) return openPayhip(slug);
+      if(extUrl(slug))    { window.open(extUrl(slug), '_blank', 'noopener'); return; }
     }
 
     // Open Gumroad's overlay checkout IN-PAGE (falls back to a normal tab if
