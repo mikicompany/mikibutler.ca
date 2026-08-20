@@ -163,6 +163,11 @@
       border: 0; border-radius: 999px; padding: 13px 26px; transition: transform .15s ease, box-shadow .15s ease;
     }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(160,255,0,.35); }
+    .btn-secondary {
+      font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; color: #e6e6e6; background: transparent;
+      border: 1px solid #3a3f30; border-radius: 999px; padding: 12px 24px; transition: border-color .15s ease, color .15s ease;
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
     .detail .prose { grid-column: 1 / -1; max-width: 720px; margin-top: 8px; }
 
     /* Prose (reused from blog) */
@@ -297,6 +302,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     function loadCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY)) || {}; } catch(_) { return {}; } }
     function saveCart(){ try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch(_){} }
     function money(n){ return STORE.symbol + Number(n).toLocaleString('en-US'); }
+    // When a product has no set price, show a Gumroad hint instead of "$0".
+    function priceStr(p){ return (p && p.price > 0) ? money(p.price) + '<span class="cur">' + STORE.currency + '</span>' : 'View on Gumroad'; }
     function typeBadge(t){ return '<span class="type-badge '+t+'">'+(t==='digital'?'⬇ Digital':'📦 Physical')+'</span>'; }
 
     // ── Views ──
@@ -312,7 +319,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           '<div class="product-body">'+
             '<h2>'+esc(p.title)+'</h2>'+
             '<div class="excerpt">'+esc(p.excerpt||'')+'</div>'+
-            '<div class="price-row"><span class="price">'+money(p.price)+'<span class="cur">'+STORE.currency+'</span></span>'+
+            '<div class="price-row"><span class="price">'+priceStr(p)+'</span>'+
               '<span class="buy-hint">View →</span></div>'+
           '</div>'+
         '</a>';
@@ -355,13 +362,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           '<div class="info">'+
             typeBadge(p.type)+
             '<h1>'+esc(p.title)+'</h1>'+
-            '<div class="d-meta"><span class="price-lg">'+money(p.price)+'<span class="cur">'+STORE.currency+'</span></span></div>'+
+            '<div class="d-meta"><span class="price-lg">'+priceStr(p)+'</span></div>'+
             '<div class="fulfil-note">'+fulfil+'</div>'+
             formats+ optRow + qtyRow +
-            '<div class="buy-actions"><button class="btn-primary" id="add-btn" type="button">Add to cart</button></div>'+
+            '<div class="buy-actions">'+
+              (CHECKOUT.provider==='gumroad' && gumUrl(p.slug) ? '<button class="btn-primary" id="buy-now" type="button">Buy now ▸</button>' : '')+
+              '<button class="btn-secondary" id="add-btn" type="button">Add to cart</button>'+
+            '</div>'+
           '</div>'+
           '<div class="prose">'+markdown(p.body||'')+'</div>'+
         '</div>';
+      var buyNow = document.getElementById('buy-now');
+      if(buyNow) buyNow.addEventListener('click', function(){ openGumroad(gumUrl(p.slug)); });
       document.getElementById('add-btn').addEventListener('click', function(){
         var opt = document.getElementById('d-option');
         var qtySel = document.getElementById('d-qty');
