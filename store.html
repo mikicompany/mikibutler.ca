@@ -203,6 +203,8 @@
     .ci-qty button { width: 22px; height: 22px; border-radius: 6px; border: 1px solid #333; background: #1c1c1c; color: #fff; cursor: pointer; font-size: 13px; }
     .ci-price { font-weight: 700; font-size: 14px; }
     .ci-remove { display: block; margin-top: 6px; font-size: 11px; color: #d66; background: none; border: 0; cursor: pointer; text-align: right; width: 100%; }
+    .ci-buy { display: block; margin-top: 8px; font-size: 12px; font-weight: 800; color: #0a0b08; background: var(--accent, #a0ff00); border: 0; border-radius: 8px; padding: 5px 10px; cursor: pointer; width: 100%; }
+    .ci-buy:hover { filter: brightness(1.06); }
     .cart-foot { padding: 18px 20px 22px; border-top: 1px solid #262626; }
     .cart-total { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; font-weight: 800; font-size: 17px; }
     .cart-note { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
@@ -245,7 +247,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="cart-items" id="cart-items"></div>
     <div class="cart-foot">
       <div class="cart-total"><span>Subtotal</span><span id="cart-subtotal">$0</span></div>
-      <div class="cart-note" id="cart-note">Sketch mode — no provider connected, so nothing is charged.</div>
+      <div class="cart-note" id="cart-note">Secure checkout via Gumroad — the payment window opens right here on the page.</div>
       <button class="checkout-btn" id="checkout-btn" type="button">Checkout</button>
       <div class="checkout-result" id="checkout-result" role="status" aria-live="polite"></div>
     </div>
@@ -403,6 +405,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             '<div class="ci-qty"><button data-k="'+esc(k)+'" data-d="-1">−</button><span>'+cart[k]+'</span><button data-k="'+esc(k)+'" data-d="1">+</button></div>'+
           '</div>'+
           '<div><div class="ci-price">'+money(p.price*cart[k])+'</div>'+
+            (CHECKOUT.provider==='gumroad' && gumUrl(slug) ? '<button class="ci-buy" data-buy="'+esc(slug)+'">Buy ▸</button>' : '')+
             '<button class="ci-remove" data-rm="'+esc(k)+'">remove</button></div>'+
         '</div>';
       }).join('');
@@ -411,6 +414,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       });
       host.querySelectorAll('.ci-remove').forEach(function(b){
         b.addEventListener('click', function(){ setQty(b.dataset.rm, 0); });
+      });
+      host.querySelectorAll('.ci-buy').forEach(function(b){
+        b.addEventListener('click', function(){ openGumroad(gumUrl(b.dataset.buy)); });
       });
     }
     function openCart(){ document.getElementById('cart-drawer').classList.add('open'); document.getElementById('cart-overlay').classList.add('open'); }
@@ -424,13 +430,40 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // set CHECKOUT.provider and fill in that one branch below. Everything
     // upstream — cart, line items, digital/physical split, totals — is done.
     var CHECKOUT = {
-      provider: 'none',            // 'none' | 'stripe' | 'gumroad' | 'shopify' | 'lemonsqueezy'
-      // Where the provider bits go once you pick one:
+      provider: 'gumroad',         // 'none' | 'stripe' | 'gumroad' | 'shopify' | 'lemonsqueezy'
       stripe:       { publishableKey: '', checkoutEndpoint: '/api/create-checkout-session' },
-      gumroad:      { permalinks: {} },   // { productSlug: 'gumroadPermalink' }
-      shopify:      { domain: '', storefrontToken: '', variants: {} }, // { slug::option: 'variantId' }
-      lemonsqueezy: { variants: {} }      // { slug::option: 'variantId' }
+      gumroad: {
+        // Preferred: put the full Gumroad product URL on each product in
+        // store.json as "gumroad": "https://<you>.gumroad.com/l/<permalink>".
+        // Or set `base` to your Gumroad store URL and use bare permalinks in
+        // store.json / the map below (e.g. "gumroad": "rock-trims").
+        base: '',                  // e.g. 'https://mikicompany.gumroad.com/l/'
+        permalinks: {}             // fallback: { productSlug: 'permalink-or-full-url' }
+      },
+      shopify:      { domain: '', storefrontToken: '', variants: {} },
+      lemonsqueezy: { variants: {} }
     };
+
+    // Resolve a product's Gumroad URL (full URL wins; else base + permalink).
+    function gumUrl(slug){
+      var p = byslug[slug]; if(!p) return '';
+      var g = p.gumroad || CHECKOUT.gumroad.permalinks[slug] || '';
+      if(!g) return '';
+      return /^https?:\/\//.test(g) ? g : (CHECKOUT.gumroad.base || '') + g;
+    }
+    // Open Gumroad's overlay checkout IN-PAGE (falls back to a normal tab if
+    // gumroad.js hasn't loaded). One product per overlay — that's Gumroad's model.
+    function openGumroad(url){
+      if(!url) return;
+      var a = document.createElement('a');
+      a.className = 'gumroad-button';
+      a.href = url + (url.indexOf('?') < 0 ? '?' : '&') + 'wanted=true';
+      a.rel = 'noopener';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function(){ a.remove(); }, 0);
+    }
 
     // Turn the cart into clean, provider-agnostic line items.
     function buildLineItems(){
@@ -476,9 +509,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           setResult('Stripe not configured yet.'); return;
 
         case 'gumroad':
-          // TODO: map each item to a Gumroad permalink and open the overlay /
-          // hosted cart. Best for digital-only.
-          setResult('Gumroad not configured yet.'); return;
+          var missing = order.items.filter(function(it){ return !gumUrl(it.slug); });
+          if(missing.length){
+            setResult('These items still need a Gumroad product link:\n' +
+              missing.map(function(it){ return '• ' + it.title; }).join('\n') +
+              '\n\nAdd "gumroad" URLs in store.json to enable checkout.', true);
+            return;
+          }
+          openGumroad(gumUrl(order.items[0].slug));
+          setResult(order.items.length === 1
+            ? 'Opening secure Gumroad checkout…'
+            : 'Gumroad checks out one product at a time — opening “' + order.items[0].title +
+              '”. Use the Buy button on each cart item to grab the rest.');
+          return;
 
         case 'shopify':
           // TODO: build a Storefront API cart from CHECKOUT.shopify.variants and
@@ -520,5 +563,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
     window.addEventListener('popstate', function(){ location.reload(); });
   </script>
+  <!-- Gumroad overlay: lets checkout open on this page instead of redirecting. -->
+  <script src="https://gumroad.com/js/gumroad.js" defer></script>
 </body>
 </html>

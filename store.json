@@ -1,7 +1,7 @@
 {
   "currency": "USD",
   "symbol": "$",
-  "note": "This store is a sketch — products and prices are placeholders and checkout isn't wired up yet.",
+  "note": "Products and prices are placeholders. Checkout is wired to Gumroad — add each product's Gumroad URL (the \"gumroad\" field) to go live.",
   "products": [
     {
       "slug": "rock-cliff-trim-pack",
@@ -9,10 +9,17 @@
       "type": "digital",
       "price": 18,
       "image": "images/gameography/starship-troopers.jpg",
-      "tags": ["textures", "trim sheets"],
-      "formats": ["PNG (4K)", "Substance .sbsar"],
+      "tags": [
+        "textures",
+        "trim sheets"
+      ],
+      "formats": [
+        "PNG (4K)",
+        "Substance .sbsar"
+      ],
       "excerpt": "Twelve hand-authored rock & cliff trims — tileable, PBR, game-ready.",
-      "body": "A pack of **twelve** rock and cliff trim sheets pulled straight from production habits — the same setups I reach for when a canyon needs to read from 50 metres *and* hold up at hero distance.\n\n## What's inside\n\n- 12 trims at 4K, tileable on one axis\n- Full PBR set: albedo, normal, roughness, AO, height\n- A ready-to-drop `.sbsar` so you can retune wear and colour\n- A quick-start note on trim UVs\n\nInstant download after checkout. Yours to use in personal and commercial work."
+      "body": "A pack of **twelve** rock and cliff trim sheets pulled straight from production habits — the same setups I reach for when a canyon needs to read from 50 metres *and* hold up at hero distance.\n\n## What's inside\n\n- 12 trims at 4K, tileable on one axis\n- Full PBR set: albedo, normal, roughness, AO, height\n- A ready-to-drop `.sbsar` so you can retune wear and colour\n- A quick-start note on trim UVs\n\nInstant download after checkout. Yours to use in personal and commercial work.",
+      "gumroad": ""
     },
     {
       "slug": "blender-env-brushes",
@@ -20,10 +27,17 @@
       "type": "digital",
       "price": 12,
       "image": "images/gameography/skara.jpg",
-      "tags": ["brushes", "blender"],
-      "formats": [".blend", "Alpha PNGs"],
+      "tags": [
+        "brushes",
+        "blender"
+      ],
+      "formats": [
+        ".blend",
+        "Alpha PNGs"
+      ],
       "excerpt": "Sculpt & texture-paint brushes for fast rock, bark, soil and debris.",
-      "body": "The brush set I use to rough in natural surfaces fast: rock chips, bark, packed soil, gravel and scattered debris. Sculpt and texture-paint variants included.\n\nDrop the `.blend` in your startup file or append as needed. Alpha PNGs are included for other DCCs."
+      "body": "The brush set I use to rough in natural surfaces fast: rock chips, bark, packed soil, gravel and scattered debris. Sculpt and texture-paint variants included.\n\nDrop the `.blend` in your startup file or append as needed. Alpha PNGs are included for other DCCs.",
+      "gumroad": ""
     },
     {
       "slug": "scifi-modular-kit",
@@ -31,10 +45,17 @@
       "type": "digital",
       "price": 29,
       "image": "images/gameography/star-trek-legends.jpg",
-      "tags": ["kitbash", "unreal"],
-      "formats": ["Unreal 5 project", "FBX"],
+      "tags": [
+        "kitbash",
+        "unreal"
+      ],
+      "formats": [
+        "Unreal 5 project",
+        "FBX"
+      ],
       "excerpt": "A modular corridor & bay kit — snap-ready, Nanite-friendly, fully dressed.",
-      "body": "A modular sci-fi kit built to snap on a grid: corridors, junctions, doorways, a bay and a pile of greeble. Nanite-friendly, lightmapped fallbacks included.\n\nShips as an Unreal 5 project plus raw FBX if you want to bring it elsewhere."
+      "body": "A modular sci-fi kit built to snap on a grid: corridors, junctions, doorways, a bay and a pile of greeble. Nanite-friendly, lightmapped fallbacks included.\n\nShips as an Unreal 5 project plus raw FBX if you want to bring it elsewhere.",
+      "gumroad": ""
     },
     {
       "slug": "lighting-breakdowns-vol1",
@@ -42,10 +63,16 @@
       "type": "digital",
       "price": 9,
       "image": "images/gameography/squad.jpg",
-      "tags": ["pdf", "learning"],
-      "formats": ["PDF (58 pages)"],
+      "tags": [
+        "pdf",
+        "learning"
+      ],
+      "formats": [
+        "PDF (58 pages)"
+      ],
       "excerpt": "Five scenes, taken apart light by light — why each choice was made.",
-      "body": "A 58-page PDF that takes five finished scenes apart **one light at a time**, with the reasoning behind each call — where to fake it, where to pay for it, and how to move the eye without moving the geometry."
+      "body": "A 58-page PDF that takes five finished scenes apart **one light at a time**, with the reasoning behind each call — where to fake it, where to pay for it, and how to move the eye without moving the geometry.",
+      "gumroad": ""
     },
     {
       "slug": "lookout-print-a2",
@@ -53,10 +80,21 @@
       "type": "physical",
       "price": 35,
       "image": "images/gameography/starship-troopers.jpg",
-      "tags": ["print", "wall art"],
-      "options": { "label": "Size", "values": ["A3", "A2", "A1"] },
+      "tags": [
+        "print",
+        "wall art"
+      ],
+      "options": {
+        "label": "Size",
+        "values": [
+          "A3",
+          "A2",
+          "A1"
+        ]
+      },
       "excerpt": "Museum-grade giclée on archival matte stock. Ships worldwide.",
-      "body": "A giclée print of *Lookout*, on 240gsm archival matte with pigment inks that hold their colour for decades.\n\nPrinted to order and shipped flat in a rigid mailer. Choose your size at checkout."
+      "body": "A giclée print of *Lookout*, on 240gsm archival matte with pigment inks that hold their colour for decades.\n\nPrinted to order and shipped flat in a rigid mailer. Choose your size at checkout.",
+      "gumroad": ""
     },
     {
       "slug": "studio-sticker-pack",
@@ -64,9 +102,12 @@
       "type": "physical",
       "price": 6,
       "image": "images/arcade/spacefrogs.jpg",
-      "tags": ["stickers"],
+      "tags": [
+        "stickers"
+      ],
       "excerpt": "Eight die-cut vinyl stickers — weatherproof, laptop-ready.",
-      "body": "Eight die-cut vinyl stickers from the studio — weatherproof, dishwasher-brave, and sized for a laptop lid or a hard case. Ships in a flat mailer."
+      "body": "Eight die-cut vinyl stickers from the studio — weatherproof, dishwasher-brave, and sized for a laptop lid or a hard case. Ships in a flat mailer.",
+      "gumroad": ""
     },
     {
       "slug": "environments-artbook-v1",
@@ -74,10 +115,19 @@
       "type": "physical",
       "price": 45,
       "image": "images/gameography/dead-rising-4.jpg",
-      "tags": ["book"],
-      "options": { "label": "Cover", "values": ["Softcover", "Hardcover (+$15)"] },
+      "tags": [
+        "book"
+      ],
+      "options": {
+        "label": "Cover",
+        "values": [
+          "Softcover",
+          "Hardcover (+$15)"
+        ]
+      },
       "excerpt": "132 pages of environment work, process and breakdowns. Signed.",
-      "body": "A 132-page collection of environment work with process pages and breakdowns throughout — the finished shots *and* the scaffolding behind them.\n\nEvery copy is signed. Softcover and hardcover editions; ships worldwide."
+      "body": "A 132-page collection of environment work with process pages and breakdowns throughout — the finished shots *and* the scaffolding behind them.\n\nEvery copy is signed. Softcover and hardcover editions; ships worldwide.",
+      "gumroad": ""
     },
     {
       "slug": "miki-enamel-pin",
@@ -85,9 +135,12 @@
       "type": "physical",
       "price": 12,
       "image": "images/gameography/pvz-bfn.jpg",
-      "tags": ["pin"],
+      "tags": [
+        "pin"
+      ],
       "excerpt": "Hard-enamel “M” pin with a glow-green fill and rubber back.",
-      "body": "A hard-enamel “M” pin with the studio's glow-green fill and a black nickel finish. Rubber back, sized at 32mm. Ships in a small mailer."
+      "body": "A hard-enamel “M” pin with the studio's glow-green fill and a black nickel finish. Rubber back, sized at 32mm. Ships in a small mailer.",
+      "gumroad": ""
     }
   ]
 }
