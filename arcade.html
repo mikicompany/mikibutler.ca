@@ -581,6 +581,8 @@
       display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 22px rgba(0,0,0,.55);
       transform: translate(0,0) scale(.2); opacity: 0;
       transition: transform .38s cubic-bezier(.34,1.56,.64,1), opacity .16s ease, border-color .12s ease, box-shadow .12s ease; }
+    .draw-radial-btn.has-svg { background: radial-gradient(circle at 35% 28%, #33383f, #14181d); }
+    .draw-radial-btn svg { width: 62%; height: 62%; display: block; pointer-events: none; }
     .draw-radial.open .draw-radial-btn { transform: translate(var(--x,0), var(--y,0)) scale(1); opacity: 1; }
     .draw-radial.open .draw-radial-btn:hover { transform: translate(var(--x,0), var(--y,0)) scale(1.16); border-color: var(--accent);
       box-shadow: 0 0 0 2px var(--accent), 0 10px 24px rgba(0,0,0,.6); }
@@ -902,7 +904,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- Sketch Pad -->
         <div class="tool-block" data-tool="sketch">
           <div class="tool-title">Sketch Pad ✏️</div>
-          <p class="tool-desc">Doodle right here — layers, blend modes &amp; opacity, brush, pixel, dot and 🧩 <b>stamp</b> tools (ready-made eyes, noses, mouths, hats, glasses…). <b>Hold the canvas ~1s</b> (from any tool) for a quick radial menu, or go <b>⛶ Fullscreen</b>. Save a PNG, or export your process as a 🎬 10-second video.</p>
+          <p class="tool-desc">Doodle right here — layers, blend modes &amp; opacity, brush, pixel, dot and 🧩 <b>stamp</b> tools (ready-made eyes, noses, mouths, hats, glasses…). <b>Hold the canvas ~1s</b> (from any tool) for a quick radial menu — tools <i>and</i> stamps — or go <b>⛶ Fullscreen</b>. Save a PNG, or export your process as a 🎬 10-second video.</p>
           <div class="tool-stage draw-stage" style="min-height:0">
             <canvas id="drawCanvas" width="840" height="520"></canvas>
           </div>
@@ -2466,35 +2468,61 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         });
       }
 
-      // ── Long-press radial menu ──
-      var radial = null;
+      // ── Long-press radial menu (drills tools → stamp sets → stamps) ──
+      var radial = null, radialRing = null;
       function ensureRadial() {
         if (radial) return;
         radial = document.createElement('div'); radial.className = 'draw-radial';
-        var ring = document.createElement('div'); ring.className = 'draw-radial-ring'; radial.appendChild(ring);
-        var items = [
-          { icon: '✏️', title: 'Brush', act: function () { setMode('brush'); } },
-          { icon: '🧽', title: 'Eraser', act: function () { setMode('erase'); } },
-          { icon: '🪣', title: 'Fill', act: function () { setMode('fill'); } },
-          { icon: '⚫', title: 'Dot', act: function () { setMode('dot'); } },
-          { icon: '🧩', title: 'Stamps', act: function () { openStampPanel(); } }
-        ];
-        var R = 66;
-        items.forEach(function (it, i) {
-          var ang = (-90 + i * (360 / items.length)) * Math.PI / 180;
-          var b = document.createElement('button'); b.type = 'button'; b.className = 'draw-radial-btn';
-          b.textContent = it.icon; b.title = it.title;
-          // buttons start stacked at the hub and spring out to (--x,--y)
-          b.style.setProperty('--x', (Math.cos(ang) * R).toFixed(1) + 'px');
-          b.style.setProperty('--y', (Math.sin(ang) * R).toFixed(1) + 'px');
-          b.style.transitionDelay = (i * 0.035) + 's';
-          b.addEventListener('click', function (ev) { ev.stopPropagation(); it.act(); closeRadial(); });
-          ring.appendChild(b);
-        });
-        var hint = document.createElement('div'); hint.className = 'draw-radial-hint'; hint.textContent = 'pick a tool';
-        hint.style.top = (R + 30) + 'px'; ring.appendChild(hint);
+        radialRing = document.createElement('div'); radialRing.className = 'draw-radial-ring';
+        radial.appendChild(radialRing);
         radial.addEventListener('pointerdown', function (ev) { if (ev.target === radial) closeRadial(); });
         document.body.appendChild(radial);
+      }
+      // Items for a page: 'tools' | 'cats' | 'stamps' (+ category name).
+      function radialItems(page, cat) {
+        if (page === 'cats') {
+          var a = Object.keys(STAMPS).map(function (c) {
+            return { html: svgWrap(STAMPS[c][0][1], '#cfd4db'), title: c, stamp: true, act: function () { renderRadialPage('stamps', c); } };
+          });
+          a.push({ html: '↩', title: 'Back', act: function () { renderRadialPage('tools'); } });
+          return a;
+        }
+        if (page === 'stamps') {
+          var s = STAMPS[cat].map(function (st) {
+            return { html: svgWrap(st[1], '#cfd4db'), title: st[0], stamp: true, act: function () { selectStamp(st[0]); closeRadial(); } };
+          });
+          s.push({ html: '↩', title: 'Back', act: function () { renderRadialPage('cats'); } });
+          return s;
+        }
+        return [
+          { html: '✏️', title: 'Brush',  act: function () { setMode('brush'); closeRadial(); } },
+          { html: '🧽', title: 'Eraser', act: function () { setMode('erase'); closeRadial(); } },
+          { html: '🪣', title: 'Fill',   act: function () { setMode('fill');  closeRadial(); } },
+          { html: '⚫', title: 'Dot',    act: function () { setMode('dot');   closeRadial(); } },
+          { html: '🧩', title: 'Stamps', act: function () { renderRadialPage('cats'); } }
+        ];
+      }
+      function renderRadialPage(page, cat) {
+        ensureRadial();
+        radialRing.innerHTML = '';
+        var items = radialItems(page, cat), n = items.length;
+        var R = n > 7 ? 98 : n > 6 ? 90 : n > 5 ? 80 : n > 4 ? 70 : 60;
+        items.forEach(function (it, i) {
+          var ang = (-90 + i * (360 / n)) * Math.PI / 180;
+          var b = document.createElement('button'); b.type = 'button';
+          b.className = 'draw-radial-btn' + (it.stamp ? ' has-svg' : '');
+          b.innerHTML = it.html; b.title = it.title;
+          b.style.setProperty('--x', (Math.cos(ang) * R).toFixed(1) + 'px');
+          b.style.setProperty('--y', (Math.sin(ang) * R).toFixed(1) + 'px');
+          b.style.transitionDelay = (i * 0.03) + 's';
+          b.addEventListener('click', function (ev) { ev.stopPropagation(); it.act(); });
+          radialRing.appendChild(b);
+        });
+        var hint = document.createElement('div'); hint.className = 'draw-radial-hint';
+        hint.textContent = page === 'cats' ? 'pick a set' : page === 'stamps' ? cat : 'pick a tool';
+        hint.style.top = (R + 30) + 'px'; radialRing.appendChild(hint);
+        radial.classList.remove('open'); void radial.offsetWidth; radial.classList.add('open');  // re-pop each page
+        radialBlip();
       }
       // A soft rising blip so the pop lands with a little audio cue.
       var raCtx = null;
@@ -2515,13 +2543,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         // the radial there; otherwise on <body>.
         var host = document.fullscreenElement || document.webkitFullscreenElement || document.body;
         if (radial.parentNode !== host) host.appendChild(radial);
-        var ring = radial.querySelector('.draw-radial-ring');
-        ring.style.left = cx + 'px'; ring.style.top = cy + 'px';
+        radialRing.style.left = cx + 'px'; radialRing.style.top = cy + 'px';
         radial.style.setProperty('--cx', cx + 'px'); radial.style.setProperty('--cy', cy + 'px');
-        // toggle off→on with a reflow so the pulse-ring animation restarts each open
-        radial.classList.remove('open'); void radial.offsetWidth; radial.classList.add('open');
+        renderRadialPage('tools');   // renders + pops + blips
         try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) {}
-        radialBlip();
       }
       function closeRadial() { if (radial) radial.classList.remove('open'); }
 
