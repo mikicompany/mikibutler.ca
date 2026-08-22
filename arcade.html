@@ -1082,7 +1082,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- Fingerprint Monster — a unique creature seeded by your press -->
         <div class="tool-block" data-tool="monster">
           <div class="tool-title">Fingerprint Monster 👹</div>
-          <p class="tool-desc">Press &amp; hold the pad to scan — you get <b>your</b> monster: unique to this device and the same every time (that's your browser's "fingerprint" — web pages can't read a real one). Everyone else's comes out different. Save it, share it, or 🎲 roll through others.</p>
+          <p class="tool-desc">Press &amp; hold the pad to scan — every press hatches a brand-new monster from how you pressed (pressure &amp; fingertip size feed in on a touchscreen), so pass the phone around and no two people get the same one. Save it, share it, or 🎲 roll another.</p>
           <div class="fm-wrap">
             <div class="fm-stage">
               <div class="fm-art" id="fmArt"></div>
@@ -3555,34 +3555,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
       function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
-      // A stable per-device "fingerprint" so YOUR monster is the same every time
-      // (different device = different monster). A browser can't read a real
-      // fingerprint, so this is the closest honest equivalent.
-      var DEVICE = null;
-      function deviceSeed() {
-        if (DEVICE != null) return DEVICE;
-        var b = [];
-        try {
-          b.push(navigator.userAgent || '', navigator.language || '', (navigator.languages || []).join(','),
-                 navigator.platform || '', navigator.hardwareConcurrency || '', navigator.deviceMemory || '',
-                 navigator.maxTouchPoints || '', screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
-                 screen.availWidth + 'x' + screen.availHeight, new Date().getTimezoneOffset());
-          try { b.push(Intl.DateTimeFormat().resolvedOptions().timeZone || ''); } catch (_) {}
-          try {
-            var c = document.createElement('canvas'); c.width = 200; c.height = 50; var g = c.getContext('2d');
-            g.textBaseline = 'top'; g.font = '16px Arial'; g.fillStyle = '#f60'; g.fillRect(10, 1, 60, 20);
-            g.fillStyle = '#069'; g.fillText('Miki👹Monster', 12, 15);
-            g.fillStyle = 'rgba(102,204,0,.7)'; g.fillText('Miki👹Monster', 14, 17);
-            b.push(c.toDataURL());
-          } catch (_) {}
-          try {
-            var gl = document.createElement('canvas').getContext('webgl');
-            if (gl) { var d = gl.getExtension('WEBGL_debug_renderer_info'); if (d) b.push(gl.getParameter(d.UNMASKED_RENDERER_WEBGL)); b.push(gl.getParameter(gl.VERSION)); }
-          } catch (_) {}
-        } catch (_) {}
-        DEVICE = b.join('|') || ('fallback|' + (navigator.userAgent || 'x'));
-        return DEVICE;
-      }
 
       function monsterName(rng) {
         function pk(arr) { return arr[Math.floor(rng() * arr.length)]; }
@@ -3667,23 +3639,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       function reveal(seedStr) { var m = buildMonster(seedStr); art.innerHTML = m.svg; nameEl.textContent = m.name; }
       function setProgress(f) { ring.setAttribute('stroke-dashoffset', (CIRC * (1 - f)).toFixed(1)); }
       function addSample(e) { samples.push([(e.clientX || 0) | 0, (e.clientY || 0) | 0, +(e.pressure || 0).toFixed(3), (e.width || 0), (e.height || 0), Math.round(performance.now() - startT)]); }
-      function loop() { if (!capturing) return; var f = Math.min(1, (performance.now() - startT) / HOLD); setProgress(f); if (f >= 1) { finish(); return; } raf = requestAnimationFrame(loop); }
-      function finish() {
-        capturing = false; pad.classList.remove('scanning'); label.textContent = 'Press & hold'; setProgress(0); cancelAnimationFrame(raf);
-        reveal(deviceSeed());   // your device's stable monster — same every time
-      }
-      function cancel(msg) { capturing = false; pad.classList.remove('scanning'); setProgress(0); cancelAnimationFrame(raf); if (msg) { label.textContent = msg; setTimeout(function () { label.textContent = 'Press & hold'; }, 1100); } else label.textContent = 'Press & hold'; }
+      // Full reset so a press can never leave the scanner stuck.
+      function resetScan() { capturing = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } pad.classList.remove('scanning'); setProgress(0); }
+      function releaseCap(e) { try { if (e && pad.hasPointerCapture && pad.hasPointerCapture(e.pointerId)) pad.releasePointerCapture(e.pointerId); } catch (_) {} }
+      // Seed from THIS press — so every person / every press gets a different
+      // monster (pressure & contact size feed in on touch); the timestamp keeps
+      // two presses from ever colliding.
+      function pressSeed() { return samples.map(function (a) { return a.join(','); }).join(';') + '#' + samples.length + '#' + Math.round(startT); }
+      function loop() { if (!capturing) return; var f = Math.min(1, (performance.now() - startT) / HOLD); setProgress(f); if (f >= 1) { var seed = pressSeed(); resetScan(); label.textContent = 'Your monster ✦'; reveal(seed); setTimeout(function () { label.textContent = 'Press & hold'; }, 1400); return; } raf = requestAnimationFrame(loop); }
 
       pad.addEventListener('pointerdown', function (e) {
-        e.preventDefault(); capturing = true; samples = []; startT = performance.now();
+        e.preventDefault();
+        resetScan();                       // clear any prior state first
+        capturing = true; samples = []; startT = performance.now();
         pad.classList.add('scanning'); label.textContent = 'Scanning…'; addSample(e);
         try { pad.setPointerCapture(e.pointerId); } catch (_) {}
-        loop();
+        raf = requestAnimationFrame(loop);
       });
       pad.addEventListener('pointermove', function (e) { if (capturing) addSample(e); });
-      function up() { if (capturing && (performance.now() - startT) < HOLD) cancel('Hold longer!'); }
-      pad.addEventListener('pointerup', up);
-      pad.addEventListener('pointercancel', function () { if (capturing) cancel(); });
+      pad.addEventListener('pointerup', function (e) {
+        releaseCap(e);
+        if (capturing) { var early = (performance.now() - startT) < HOLD; resetScan(); if (early) { label.textContent = 'Hold longer!'; setTimeout(function () { label.textContent = 'Press & hold'; }, 1100); } }
+      });
+      pad.addEventListener('pointercancel', function (e) { releaseCap(e); if (capturing) { resetScan(); label.textContent = 'Press & hold'; } });
 
       document.getElementById('fmRandom').addEventListener('click', function () { reveal('rnd-' + Date.now() + '-' + Math.random()); });
       document.getElementById('fmSave').addEventListener('click', function () {
@@ -3705,7 +3683,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (window.arcadeShare) window.arcadeShare({ title: 'My Fingerprint Monster', text: nm + ' — a monster made from my fingerprint at mikibutler.ca', url: 'https://mikibutler.ca/arcade.html' });
       });
 
-      reveal(deviceSeed());   // show THIS device's monster on load; the press re-scans it
+      reveal('welcome-' + Date.now());   // a demo monster on load; each press makes a new one
     })();
   </script>
 </body>
