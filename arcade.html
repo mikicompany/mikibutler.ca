@@ -521,6 +521,22 @@
     .tool-block:-webkit-full-screen .draw-stage { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
     .tool-block:fullscreen .draw-stage canvas { width: auto; max-width: 100%; max-height: 100%; }
     .tool-block:-webkit-full-screen .draw-stage canvas { width: auto; max-width: 100%; max-height: 100%; }
+    /* Fingerprint Monster */
+    .fm-wrap { display: flex; gap: 26px; flex-wrap: wrap; align-items: center; justify-content: center; padding: 8px 0 6px; }
+    .fm-stage { flex: 1 1 300px; min-width: 260px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .fm-art { width: 100%; max-width: 340px; aspect-ratio: 200 / 210; background: radial-gradient(ellipse at 50% 38%, #1a1f27, #0c0e12); border: 1px solid #23272e; border-radius: 18px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .fm-art svg { width: 94%; height: 94%; display: block; }
+    .fm-name { font-family: 'Press Start 2P', monospace; font-size: 12px; line-height: 1.5; color: var(--accent); text-align: center; min-height: 18px; }
+    .fm-pad { position: relative; width: 158px; height: 158px; flex: 0 0 auto; border: 0; border-radius: 50%; cursor: pointer; touch-action: none;
+      background: repeating-radial-gradient(circle at 50% 50%, #2b3038 0 3px, #1a1e25 3px 6px); box-shadow: inset 0 0 0 2px #0b0d11, 0 8px 24px rgba(0,0,0,.5); }
+    .fm-pad-core { position: absolute; inset: 26px; border-radius: 50%; background: radial-gradient(circle at 42% 34%, #3b414b, #14171d); box-shadow: inset 0 2px 9px rgba(0,0,0,.6); transition: box-shadow .2s ease; }
+    .fm-pad.scanning .fm-pad-core { box-shadow: inset 0 2px 9px rgba(0,0,0,.6), 0 0 0 4px rgba(160,255,0,.22); }
+    .fm-pad-ring { position: absolute; inset: 0; pointer-events: none; }
+    .fm-pad-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .fm-ring-bg { fill: none; stroke: rgba(255,255,255,.06); stroke-width: 5; }
+    .fm-ring-fg { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 276.5; stroke-dashoffset: 276.5; }
+    .fm-pad-label { position: absolute; left: 0; right: 0; bottom: -22px; text-align: center; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); }
+    @media (max-width: 560px) { .fm-wrap { flex-direction: column-reverse; } }
     .draw-pal { display: inline-flex; gap: 6px; }
     .draw-sw { width: 22px; height: 22px; border-radius: 5px; cursor: pointer; border: 2px solid #2a2f37; box-sizing: border-box; padding: 0; }
     .draw-sw.sel { border-color: var(--accent); box-shadow: 0 0 6px rgba(160,255,0,.5); }
@@ -1061,6 +1077,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
           <div class="ig-signature" id="igSignature"></div>
           <div class="ig-grid" id="igGrid"><div class="tool-empty">Loading @mikicompany…</div></div>
+        </div>
+
+        <!-- Fingerprint Monster — a unique creature seeded by your press -->
+        <div class="tool-block" data-tool="monster">
+          <div class="tool-title">Fingerprint Monster 👹</div>
+          <p class="tool-desc">Press &amp; hold the pad — the pressure, size and wobble of your finger seed a one-of-a-kind monster. Everyone's is different (a browser can't read a real fingerprint, so this reads your <i>press</i> instead). Save yours, share it, or 🎲 breed a random one.</p>
+          <div class="fm-wrap">
+            <div class="fm-stage">
+              <div class="fm-art" id="fmArt"></div>
+              <div class="fm-name" id="fmName">Meet a monster — press to make yours</div>
+            </div>
+            <button type="button" class="fm-pad" id="fmPad" aria-label="Press and hold to scan your fingerprint">
+              <span class="fm-pad-core"></span>
+              <span class="fm-pad-ring"><svg viewBox="0 0 100 100"><circle class="fm-ring-bg" cx="50" cy="50" r="44"/><circle class="fm-ring-fg" id="fmRingFg" cx="50" cy="50" r="44"/></svg></span>
+              <span class="fm-pad-label" id="fmPadLabel">Press &amp; hold</span>
+            </button>
+          </div>
+          <div class="tool-controls">
+            <button type="button" id="fmSave">⬇ Save PNG</button>
+            <button type="button" id="fmShare">↗ Share</button>
+            <button type="button" id="fmRandom">🎲 Random</button>
+          </div>
         </div>
       </section>
 
@@ -3344,7 +3382,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         banner: 'Build a LinkedIn banner',
         glitch: 'RGB glitch + video export',
         resume: 'Interactive résumé + PDF',
-        igstudy: 'Colour DNA of @mikicompany'
+        igstudy: 'Colour DNA of @mikicompany',
+        monster: 'A monster from your fingerprint'
       };
       var acc = document.createElement('div');
       acc.className = 'tool-acc';
@@ -3492,6 +3531,154 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         host.innerHTML = h;
         host.querySelectorAll('.rz-job.exp').forEach(function (j) { j.addEventListener('click', function () { j.classList.toggle('open'); }); });
       }
+    })();
+  </script>
+
+  <script>
+    // ── Fingerprint Monster: press-&-hold seed → deterministic procedural creature ──
+    (function () {
+      var art = document.getElementById('fmArt'); if (!art) return;
+      var pad = document.getElementById('fmPad'),
+          ring = document.getElementById('fmRingFg'),
+          nameEl = document.getElementById('fmName'),
+          label = document.getElementById('fmPadLabel');
+      var CIRC = 276.5, HOLD = 1400;
+      var samples = [], startT = 0, raf = 0, capturing = false;
+
+      // Deterministic hashing + PRNG so the same press always makes the same monster.
+      function cyrb53(str, seed) {
+        seed = seed >>> 0; var h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+        for (var i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+        h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+        h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+        return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+      }
+      function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+      function monsterName(rng) {
+        function pk(arr) { return arr[Math.floor(rng() * arr.length)]; }
+        var a = ['Gr', 'Bl', 'Zor', 'Mur', 'Kra', 'Wob', 'Sn', 'Vex', 'Glo', 'Thra', 'Bun', 'Fizz', 'Mo', 'Squ', 'Drin', 'Yol', 'Pib', 'Nix', 'Gru', 'Ork', 'Wug', 'Plor'];
+        var b = ['ok', 'ib', 'ax', 'un', 'ork', 'eep', 'oz', 'umble', 'ish', 'og', 'ux', 'een', 'arp', 'iggle', 'ort', 'up', 'az', 'omp', 'ick'];
+        var suf = pk(['', '', '', ' the Small', ' the Vast', ' Jr.', '-3000', ' Prime', 'oid']);
+        var nm = pk(a) + pk(b);
+        return nm.charAt(0).toUpperCase() + nm.slice(1) + suf;
+      }
+
+      // The generator — every choice pulled from the seeded rng, so it's unique but reproducible.
+      function buildMonster(seedStr) {
+        var rng = mulberry32(cyrb53(seedStr) >>> 0);
+        function r(a, b) { return a + (b - a) * rng(); }
+        function ri(a, b) { return Math.floor(r(a, b + 1)); }
+        function pick(a) { return a[Math.floor(rng() * a.length)]; }
+        var hue = ri(0, 359), sat = ri(58, 88);
+        function L(l) { return 'hsl(' + hue + ' ' + sat + '% ' + l + '%)'; }
+        var body = L(ri(46, 60)), bodyD = L(ri(20, 30)), belly = L(ri(74, 87));
+        var accHue = (hue + pick([150, 180, 200, 320, 40, 60])) % 360;
+        var acc = 'hsl(' + accHue + ' ' + ri(62, 88) + '% ' + ri(48, 62) + '%)';
+        var eyeWhite = pick(['#ffffff', '#f7f7ef', '#eafff0']);
+        var pupil = pick(['#111111', '#0a0a0a', '#221133']);
+        var iris = 'hsl(' + ((hue + ri(90, 270)) % 360) + ' ' + ri(65, 90) + '% ' + ri(42, 58) + '%)';
+
+        var cx = 100, cy = 116, rad = ri(54, 70), irr = r(0.18, 0.42), n = ri(8, 12);
+        var pts = [];
+        for (var i = 0; i < n; i++) { var a = i / n * Math.PI * 2, rr2 = rad * (1 - irr / 2 + rng() * irr); pts.push([cx + Math.cos(a) * rr2, cy + Math.sin(a) * rr2 * r(1.02, 1.24)]); }
+        function smooth(P) {
+          var m = P.length, d = 'M' + ((P[0][0] + P[m - 1][0]) / 2).toFixed(1) + ' ' + ((P[0][1] + P[m - 1][1]) / 2).toFixed(1);
+          for (var i = 0; i < m; i++) { var p = P[i], np = P[(i + 1) % m]; d += ' Q' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ' ' + ((p[0] + np[0]) / 2).toFixed(1) + ' ' + ((p[1] + np[1]) / 2).toFixed(1); }
+          return d + 'Z';
+        }
+        var bodyPath = smooth(pts), topY = cy - rad * 1.06, s = [], uid = 'fm' + Math.floor(rng() * 1e6);
+
+        s.push('<ellipse cx="100" cy="' + (cy + rad * 0.98).toFixed(1) + '" rx="' + (rad * 0.8).toFixed(1) + '" ry="10" fill="rgba(0,0,0,.26)"/>');
+        // legs
+        var legN = ri(2, 4), legW = r(11, 16), legY = cy + rad * 0.72;
+        for (i = 0; i < legN; i++) { var lx = cx - (legN - 1) * 15 / 2 + i * 15; s.push('<rect x="' + (lx - legW / 2).toFixed(1) + '" y="' + legY.toFixed(1) + '" width="' + legW.toFixed(1) + '" height="' + r(14, 26).toFixed(1) + '" rx="' + (legW / 2).toFixed(1) + '" fill="' + bodyD + '"/>'); }
+        // arms
+        var armN = ri(0, 3);
+        for (i = 0; i < armN; i++) { var side = i % 2 ? 1 : -1, ay = cy + r(-8, 18), ax = cx + side * rad * 0.82; s.push('<path d="M' + ax.toFixed(1) + ' ' + ay.toFixed(1) + ' q' + (side * 22) + ' ' + r(-4, 10).toFixed(1) + ' ' + (side * 9) + ' ' + r(20, 34).toFixed(1) + '" fill="none" stroke="' + body + '" stroke-width="' + r(9, 14).toFixed(1) + '" stroke-linecap="round"/>'); }
+        // horns / antennae / spikes
+        var horn = pick(['none', 'horns', 'antennae', 'spikes', 'horns']);
+        if (horn === 'horns') { for (side = -1; side <= 1; side += 2) { var hx = cx + side * rad * 0.4; s.push('<path d="M' + hx.toFixed(1) + ' ' + (topY + 20).toFixed(1) + ' q' + (side * -6) + ' -22 ' + (side * 4) + ' -30" fill="none" stroke="' + acc + '" stroke-width="9" stroke-linecap="round"/>'); } }
+        else if (horn === 'antennae') { for (side = -1; side <= 1; side += 2) { hx = cx + side * rad * 0.3; s.push('<path d="M' + hx.toFixed(1) + ' ' + (topY + 18).toFixed(1) + ' q' + (side * 8) + ' -20 ' + (side * 2) + ' -26" fill="none" stroke="' + bodyD + '" stroke-width="4"/><circle cx="' + (hx + side * 2).toFixed(1) + '" cy="' + (topY - 10).toFixed(1) + '" r="6" fill="' + acc + '"/>'); } }
+        else if (horn === 'spikes') { var sp = ri(3, 6); for (i = 0; i < sp; i++) { var t = sp === 1 ? 0.5 : i / (sp - 1), sx = cx + (t - 0.5) * rad * 1.1; s.push('<path d="M' + (sx - 7).toFixed(1) + ' ' + (topY + 26).toFixed(1) + ' L' + sx.toFixed(1) + ' ' + (topY + 4).toFixed(1) + ' L' + (sx + 7).toFixed(1) + ' ' + (topY + 26).toFixed(1) + ' Z" fill="' + acc + '"/>'); } }
+        // body + belly + pattern
+        s.push('<clipPath id="' + uid + '"><path d="' + bodyPath + '"/></clipPath>');
+        s.push('<path d="' + bodyPath + '" fill="' + body + '" stroke="' + bodyD + '" stroke-width="5"/>');
+        s.push('<g clip-path="url(#' + uid + ')">');
+        s.push('<ellipse cx="100" cy="' + (cy + rad * 0.34).toFixed(1) + '" rx="' + (rad * 0.6).toFixed(1) + '" ry="' + (rad * 0.58).toFixed(1) + '" fill="' + belly + '" opacity="0.9"/>');
+        var pat = pick(['spots', 'stripes', 'scales', 'none', 'none']);
+        if (pat === 'spots') { var c = ri(5, 12); for (i = 0; i < c; i++) s.push('<circle cx="' + ri(cx - rad, cx + rad) + '" cy="' + ri(cy - rad, cy + rad) + '" r="' + r(4, 10).toFixed(1) + '" fill="' + bodyD + '" opacity="0.33"/>'); }
+        else if (pat === 'stripes') { for (i = -3; i <= 3; i++) s.push('<rect x="' + (cx - rad).toFixed(1) + '" y="' + (cy + i * 14).toFixed(1) + '" width="' + (rad * 2).toFixed(1) + '" height="6" fill="' + bodyD + '" opacity="0.24"/>'); }
+        else if (pat === 'scales') { for (var yy = cy - rad; yy < cy + rad; yy += 14) for (var xx = cx - rad; xx < cx + rad; xx += 16) s.push('<path d="M' + xx.toFixed(1) + ' ' + yy.toFixed(1) + ' q8 10 16 0" fill="none" stroke="' + bodyD + '" stroke-width="2" opacity="0.3"/>'); }
+        s.push('</g>');
+        // eyes
+        var eyeN = ri(1, 5), er = r(9, 16), ey = cy - rad * 0.34, spread = Math.min(rad * 0.78, eyeN * er * 1.05);
+        for (i = 0; i < eyeN; i++) {
+          var ex = eyeN === 1 ? cx : cx - spread + i * (spread * 2 / (eyeN - 1)), eyy = ey + r(-5, 5);
+          var pr = er * r(0.36, 0.55), pd = er * 0.3, pa = rng() * Math.PI * 2, ox = Math.cos(pa) * pd, oy = Math.sin(pa) * pd;
+          s.push('<circle cx="' + ex.toFixed(1) + '" cy="' + eyy.toFixed(1) + '" r="' + er.toFixed(1) + '" fill="' + eyeWhite + '" stroke="' + bodyD + '" stroke-width="2.5"/>');
+          s.push('<circle cx="' + (ex + ox).toFixed(1) + '" cy="' + (eyy + oy).toFixed(1) + '" r="' + pr.toFixed(1) + '" fill="' + iris + '"/>');
+          s.push('<circle cx="' + (ex + ox).toFixed(1) + '" cy="' + (eyy + oy).toFixed(1) + '" r="' + (pr * 0.5).toFixed(1) + '" fill="' + pupil + '"/>');
+          s.push('<circle cx="' + (ex + ox - pr * 0.3).toFixed(1) + '" cy="' + (eyy + oy - pr * 0.3).toFixed(1) + '" r="' + (pr * 0.22).toFixed(1) + '" fill="#fff"/>');
+        }
+        if (rng() < 0.4 && eyeN <= 3) for (i = 0; i < eyeN; i++) { ex = eyeN === 1 ? cx : cx - spread + i * (spread * 2 / (eyeN - 1)); s.push('<path d="M' + (ex - er).toFixed(1) + ' ' + (ey - er - 2).toFixed(1) + ' q' + er.toFixed(1) + ' ' + r(-6, -1).toFixed(1) + ' ' + (er * 2).toFixed(1) + ' 0" fill="none" stroke="' + bodyD + '" stroke-width="3.5" stroke-linecap="round"/>'); }
+        // mouth
+        var my = cy + rad * 0.42, mw = r(20, 44), mouth = pick(['smile', 'fangs', 'grin', 'oh', 'wavy', 'tiny']);
+        if (mouth === 'smile') s.push('<path d="M' + (cx - mw / 2).toFixed(1) + ' ' + my.toFixed(1) + ' q' + (mw / 2).toFixed(1) + ' ' + r(14, 26).toFixed(1) + ' ' + mw.toFixed(1) + ' 0" fill="none" stroke="' + bodyD + '" stroke-width="4" stroke-linecap="round"/>');
+        else if (mouth === 'grin') { s.push('<path d="M' + (cx - mw / 2).toFixed(1) + ' ' + my.toFixed(1) + ' q' + (mw / 2).toFixed(1) + ' ' + r(16, 28).toFixed(1) + ' ' + mw.toFixed(1) + ' 0 Z" fill="' + pick(['#7a1f2b', '#3a1020']) + '" stroke="' + bodyD + '" stroke-width="3"/>'); s.push('<path d="M' + (cx - mw / 2).toFixed(1) + ' ' + my.toFixed(1) + ' H' + (cx + mw / 2).toFixed(1) + '" stroke="#fff" stroke-width="4"/>'); }
+        else if (mouth === 'fangs') { s.push('<path d="M' + (cx - mw / 2).toFixed(1) + ' ' + my.toFixed(1) + ' q' + (mw / 2).toFixed(1) + ' 20 ' + mw.toFixed(1) + ' 0" fill="#2a0d16" stroke="' + bodyD + '" stroke-width="3"/>'); s.push('<path d="M' + (cx - mw / 2 + 4).toFixed(1) + ' ' + my.toFixed(1) + ' l4 9 l4 -9 Z" fill="#fff"/><path d="M' + (cx + mw / 2 - 12).toFixed(1) + ' ' + my.toFixed(1) + ' l4 9 l4 -9 Z" fill="#fff"/>'); }
+        else if (mouth === 'oh') s.push('<ellipse cx="' + cx + '" cy="' + (my + 6).toFixed(1) + '" rx="' + (mw * 0.28).toFixed(1) + '" ry="' + (mw * 0.34).toFixed(1) + '" fill="#2a0d16" stroke="' + bodyD + '" stroke-width="3"/>');
+        else if (mouth === 'wavy') s.push('<path d="M' + (cx - mw / 2).toFixed(1) + ' ' + my.toFixed(1) + ' q' + (mw * 0.16).toFixed(1) + ' 8 ' + (mw * 0.33).toFixed(1) + ' 0 t' + (mw * 0.33).toFixed(1) + ' 0 t' + (mw * 0.33).toFixed(1) + ' 0" fill="none" stroke="' + bodyD + '" stroke-width="4" stroke-linecap="round"/>');
+        else s.push('<path d="M' + (cx - 8) + ' ' + my.toFixed(1) + ' h16" stroke="' + bodyD + '" stroke-width="4" stroke-linecap="round"/>');
+        if (rng() < 0.4) for (side = -1; side <= 1; side += 2) s.push('<ellipse cx="' + (cx + side * rad * 0.54).toFixed(1) + '" cy="' + (my - 4).toFixed(1) + '" rx="9" ry="6" fill="' + acc + '" opacity="0.45"/>');
+
+        return { svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 210">' + s.join('') + '</svg>', name: monsterName(rng) };
+      }
+
+      function reveal(seedStr) { var m = buildMonster(seedStr); art.innerHTML = m.svg; nameEl.textContent = m.name; }
+      function setProgress(f) { ring.setAttribute('stroke-dashoffset', (CIRC * (1 - f)).toFixed(1)); }
+      function addSample(e) { samples.push([(e.clientX || 0) | 0, (e.clientY || 0) | 0, +(e.pressure || 0).toFixed(3), (e.width || 0), (e.height || 0), Math.round(performance.now() - startT)]); }
+      function loop() { if (!capturing) return; var f = Math.min(1, (performance.now() - startT) / HOLD); setProgress(f); if (f >= 1) { finish(); return; } raf = requestAnimationFrame(loop); }
+      function finish() {
+        capturing = false; pad.classList.remove('scanning'); label.textContent = 'Press & hold'; setProgress(0); cancelAnimationFrame(raf);
+        var seedStr = samples.map(function (s) { return s.join(','); }).join(';');
+        if (seedStr.length < 8) seedStr += '|' + navigator.userAgent + screen.width + 'x' + screen.height;
+        reveal(seedStr);
+      }
+      function cancel(msg) { capturing = false; pad.classList.remove('scanning'); setProgress(0); cancelAnimationFrame(raf); if (msg) { label.textContent = msg; setTimeout(function () { label.textContent = 'Press & hold'; }, 1100); } else label.textContent = 'Press & hold'; }
+
+      pad.addEventListener('pointerdown', function (e) {
+        e.preventDefault(); capturing = true; samples = []; startT = performance.now();
+        pad.classList.add('scanning'); label.textContent = 'Scanning…'; addSample(e);
+        try { pad.setPointerCapture(e.pointerId); } catch (_) {}
+        loop();
+      });
+      pad.addEventListener('pointermove', function (e) { if (capturing) addSample(e); });
+      function up() { if (capturing && (performance.now() - startT) < HOLD) cancel('Hold longer!'); }
+      pad.addEventListener('pointerup', up);
+      pad.addEventListener('pointercancel', function () { if (capturing) cancel(); });
+
+      document.getElementById('fmRandom').addEventListener('click', function () { reveal('rnd-' + Date.now() + '-' + Math.random()); });
+      document.getElementById('fmSave').addEventListener('click', function () {
+        var svg = art.querySelector('svg'); if (!svg) return;
+        var xml = new XMLSerializer().serializeToString(svg);
+        var im = new Image();
+        im.onload = function () {
+          var c = document.createElement('canvas'); c.width = 800; c.height = 880; var g = c.getContext('2d');
+          g.fillStyle = '#0c0e12'; g.fillRect(0, 0, 800, 880);
+          g.drawImage(im, 40, 24, 720, 756);
+          g.fillStyle = '#a0ff00'; g.font = 'bold 32px monospace'; g.textAlign = 'center';
+          g.fillText(nameEl.textContent || '', 400, 840);
+          c.toBlob(function (b) { if (!b) return; var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'fingerprint-monster.png'; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000); });
+        };
+        im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+      });
+      document.getElementById('fmShare').addEventListener('click', function () {
+        var nm = nameEl.textContent || 'My monster';
+        if (window.arcadeShare) window.arcadeShare({ title: 'My Fingerprint Monster', text: nm + ' — a monster made from my fingerprint at mikibutler.ca', url: 'https://mikibutler.ca/arcade.html' });
+      });
+
+      reveal('demo-mikibutler');   // a friendly example on load
     })();
   </script>
 </body>
