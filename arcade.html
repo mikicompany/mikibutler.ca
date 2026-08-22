@@ -904,7 +904,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- Sketch Pad -->
         <div class="tool-block" data-tool="sketch">
           <div class="tool-title">Sketch Pad ✏️</div>
-          <p class="tool-desc">Doodle right here — layers, blend modes &amp; opacity, brush, pixel, dot and 🧩 <b>stamp</b> tools (ready-made eyes, noses, mouths, hats, glasses…). <b>Hold the canvas ~1s</b> (from any tool) for a quick radial menu — tools <i>and</i> stamps — or go <b>⛶ Fullscreen</b>. Save a PNG, or export your process as a 🎬 10-second video.</p>
+          <p class="tool-desc">Doodle right here — layers, blend modes &amp; opacity, brush, pixel, dot and 🧩 <b>stamp</b> tools (ready-made eyes, noses, mouths, hats, glasses…). <b>Hold the canvas ~1s</b> (from any tool) for a quick radial menu — tools <i>and</i> stamps — <b>pinch</b> to set the size, or go <b>⛶ Fullscreen</b>. Save a PNG, or export your process as a 🎬 10-second video.</p>
           <div class="tool-stage draw-stage" style="min-height:0">
             <canvas id="drawCanvas" width="840" height="520"></canvas>
           </div>
@@ -2154,11 +2154,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var longTimer = null, preImg = null, downCX = 0, downCY = 0, moved = false, holdFired = false;
       var pendingTap = null;                 // instant tools (stamp/dot/fill/pick) act on release, so a hold can open the radial instead
       var stampMode = false, currentStampId = null;
+      // Two-finger pinch on the canvas sets the brush/stamp Size.
+      var activePointers = {}, pinch = null;
+      function pinchDist() {
+        var ids = Object.keys(activePointers); if (ids.length < 2) return 0;
+        var a = activePointers[ids[0]], b = activePointers[ids[1]];
+        return Math.hypot(a.x - b.x, a.y - b.y);
+      }
       function armHold(e) {
         clearTimeout(longTimer); holdFired = false;
         longTimer = setTimeout(function () { holdFired = true; triggerRadial(e.clientX, e.clientY); }, HOLD_MS);
       }
       cv.addEventListener('pointerdown', function (e) {
+        activePointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+        if (Object.keys(activePointers).length >= 2) {   // second finger → pinch, not draw
+          clearTimeout(longTimer); pendingTap = null;
+          if (drawing && preImg) { try { actx().putImageData(preImg, 0, 0); composite(); } catch (_) {} } // undo the initial dab
+          drawing = false; preImg = null;
+          pinch = { startDist: pinchDist(), startSize: size };
+          return;
+        }
         var p = pos(e);
         moved = false; downCX = e.clientX; downCY = e.clientY;
         armHold(e);                          // every tool can summon the radial by holding
@@ -2172,6 +2187,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         try { cv.setPointerCapture(e.pointerId); } catch (_) {}
       });
       cv.addEventListener('pointermove', function (e) {
+        if (e.pointerId in activePointers) activePointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+        if (pinch) {                                     // scale Size by the pinch ratio
+          var d = pinchDist();
+          if (pinch.startDist > 0 && d > 0) setSize(pinch.startSize * (d / pinch.startDist));
+          return;
+        }
         if (!moved && Math.hypot(e.clientX - downCX, e.clientY - downCY) > 8) {
           moved = true; clearTimeout(longTimer);        // moving cancels the hold, for any tool
           pendingTap = null;                            // a drag is not a tap
@@ -2183,6 +2204,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (moved) recordFrame(false);
       });
       function end(e) {
+        delete activePointers[e.pointerId];
+        if (pinch) {                                     // pinch in progress — don't draw/finalize
+          if (Object.keys(activePointers).length < 2) pinch = null;
+          clearTimeout(longTimer);
+          try { cv.releasePointerCapture(e.pointerId); } catch (_) {}
+          return;
+        }
         clearTimeout(longTimer);
         if (pendingTap && !holdFired && !moved) {        // a genuine tap on an instant tool → do it now
           var t = pendingTap;
@@ -2282,7 +2310,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       document.getElementById('drawPalDay').textContent = '· today';
       colorEl.addEventListener('input', function () { color = this.value; erasing = false; eraseBtn.classList.remove('on'); selectSwatch(null); });
       var sz = document.getElementById('drawSize'), szv = document.getElementById('drawSizeVal');
-      sz.addEventListener('input', function () { size = +sz.value; szv.textContent = size; });
+      function setSize(v) {
+        v = Math.max(+sz.min || 1, Math.min(+sz.max || 48, Math.round(v)));
+        size = v; sz.value = v; szv.textContent = v;
+      }
+      sz.addEventListener('input', function () { setSize(+sz.value); });
       function clearDot() { dotMode = false; if (dotsWrap) { dotsWrap.classList.remove('on'); dotsWrap.querySelectorAll('.dotbtn').forEach(function (o) { o.classList.remove('sel'); }); } }
       eraseBtn.addEventListener('click', function () { erasing = !erasing; this.classList.toggle('on', erasing); if (erasing) { filling = false; fillBtn.classList.remove('on'); clearDot(); clearStampSel(); } });
       var fillBtn = document.getElementById('drawFill');
