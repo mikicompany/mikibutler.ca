@@ -1082,7 +1082,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- Fingerprint Monster — a unique creature seeded by your press -->
         <div class="tool-block" data-tool="monster">
           <div class="tool-title">Fingerprint Monster 👹</div>
-          <p class="tool-desc">Press &amp; hold the pad to scan — every press hatches a brand-new monster from how you pressed (pressure &amp; fingertip size feed in on a touchscreen), so pass the phone around and no two people get the same one. Save it, share it, or 🎲 roll another.</p>
+          <p class="tool-desc"><b>On a touchscreen:</b> press &amp; hold to scan your fingertip — its size &amp; pressure are read, so the <i>same finger always summons the same monster</i> and every person's is different (pass the phone around!). On a plain mouse there's no fingerprint to read, so it just 🎲 rolls a random one. Save it or share it.</p>
           <div class="fm-wrap">
             <div class="fm-stage">
               <div class="fm-art" id="fmArt"></div>
@@ -3642,11 +3642,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Full reset so a press can never leave the scanner stuck.
       function resetScan() { capturing = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } pad.classList.remove('scanning'); setProgress(0); }
       function releaseCap(e) { try { if (e && pad.hasPointerCapture && pad.hasPointerCapture(e.pointerId)) pad.releasePointerCapture(e.pointerId); } catch (_) {} }
-      // Seed from THIS press — so every person / every press gets a different
-      // monster (pressure & contact size feed in on touch); the timestamp keeps
-      // two presses from ever colliding.
-      function pressSeed() { return samples.map(function (a) { return a.join(','); }).join(';') + '#' + samples.length + '#' + Math.round(startT); }
-      function loop() { if (!capturing) return; var f = Math.min(1, (performance.now() - startT) / HOLD); setProgress(f); if (f >= 1) { var seed = pressSeed(); resetScan(); label.textContent = 'Your monster ✦'; reveal(seed); setTimeout(function () { label.textContent = 'Press & hold'; }, 1400); return; } raf = requestAnimationFrame(loop); }
+      // Read the fingertip itself — contact size + pressure — which is a property
+      // of the FINGER, not of when/where you tap. So the same finger always maps
+      // to the same monster, and a different person (different fingertip) gets a
+      // different one. Coarse buckets keep it stable across presses. A plain mouse
+      // has no such signal, so there we just roll a fresh random one.
+      function pressAnalyze() {
+        var n = samples.length; if (!n) return { seed: 'x' + Math.random(), bio: false };
+        var spr = 0, sw = 0, sh = 0, prMax = 0, wMax = 0, hMax = 0, bio = false;
+        var minx = 1e9, maxx = -1e9, miny = 1e9, maxy = -1e9;
+        for (var i = 0; i < n; i++) {
+          var s = samples[i]; spr += s[2]; sw += s[3]; sh += s[4];
+          if (s[2] > prMax) prMax = s[2]; if (s[3] > wMax) wMax = s[3]; if (s[4] > hMax) hMax = s[4];
+          if (s[2] > 0.06 || s[3] > 2 || s[4] > 2) bio = true;
+          if (s[0] < minx) minx = s[0]; if (s[0] > maxx) maxx = s[0]; if (s[1] < miny) miny = s[1]; if (s[1] > maxy) maxy = s[1];
+        }
+        if (bio) return { seed: 'bio:' + [Math.round(spr / n * 8), Math.round(prMax * 8), Math.round(sw / n / 5), Math.round(wMax / 5), Math.round(sh / n / 5), Math.round(hMax / 5)].join(','), bio: true };
+        return { seed: 'roll:' + Math.round(Math.hypot(maxx - minx, maxy - miny)) + ':' + Date.now() + ':' + Math.random(), bio: false };
+      }
+      function loop() {
+        if (!capturing) return;
+        var f = Math.min(1, (performance.now() - startT) / HOLD);
+        setProgress(f);
+        if (f >= 1) { var a = pressAnalyze(); resetScan(); label.textContent = a.bio ? 'Fingerprint locked ✦' : 'Rolled a random one'; reveal(a.seed); setTimeout(function () { label.textContent = 'Press & hold'; }, 1500); return; }
+        raf = requestAnimationFrame(loop);
+      }
 
       pad.addEventListener('pointerdown', function (e) {
         e.preventDefault();
