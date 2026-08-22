@@ -514,6 +514,13 @@
     /* ── Sketch Pad ── */
     .draw-stage { padding: 12px; }
     .draw-stage canvas { width: 100%; max-width: 560px; background: #fff; border-radius: 10px; cursor: crosshair; touch-action: none; display: block; }
+    /* Fullscreen Sketch Pad — fill the screen and scale the canvas up (tools stay handy) */
+    .tool-block:fullscreen { background: #0b0d10; padding: 12px 16px; overflow: auto; display: flex; flex-direction: column; }
+    .tool-block:-webkit-full-screen { background: #0b0d10; padding: 12px 16px; overflow: auto; display: flex; flex-direction: column; }
+    .tool-block:fullscreen .draw-stage { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+    .tool-block:-webkit-full-screen .draw-stage { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+    .tool-block:fullscreen .draw-stage canvas { width: auto; max-width: 100%; max-height: 100%; }
+    .tool-block:-webkit-full-screen .draw-stage canvas { width: auto; max-width: 100%; max-height: 100%; }
     .draw-pal { display: inline-flex; gap: 6px; }
     .draw-sw { width: 22px; height: 22px; border-radius: 5px; cursor: pointer; border: 2px solid #2a2f37; box-sizing: border-box; padding: 0; }
     .draw-sw.sel { border-color: var(--accent); box-shadow: 0 0 6px rgba(160,255,0,.5); }
@@ -895,7 +902,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- Sketch Pad -->
         <div class="tool-block" data-tool="sketch">
           <div class="tool-title">Sketch Pad ✏️</div>
-          <p class="tool-desc">Doodle right here — layers, blend modes &amp; opacity, brush, pixel, dot and 🧩 <b>stamp</b> tools (ready-made eyes, noses, mouths, hats, glasses…). <b>Hold the canvas 2s</b> for a quick radial menu. Save a PNG, or export your process as a 🎬 10-second video.</p>
+          <p class="tool-desc">Doodle right here — layers, blend modes &amp; opacity, brush, pixel, dot and 🧩 <b>stamp</b> tools (ready-made eyes, noses, mouths, hats, glasses…). <b>Hold the canvas ~1s</b> (from any tool) for a quick radial menu, or go <b>⛶ Fullscreen</b>. Save a PNG, or export your process as a 🎬 10-second video.</p>
           <div class="tool-stage draw-stage" style="min-height:0">
             <canvas id="drawCanvas" width="840" height="520"></canvas>
           </div>
@@ -920,6 +927,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <button type="button" id="drawStamps" title="Ready-made stamps — eyes, noses, mouths, hats, glasses…">🧩 Stamps</button>
             <button type="button" id="drawPick">💧 Pick</button>
             <button type="button" id="drawPixel">Pixel</button>
+            <button type="button" id="drawFull" title="Fill the screen with the canvas">⛶ Fullscreen</button>
             <button type="button" id="drawUndo">↶ Undo</button>
             <button type="button" id="drawClear">Clear layer</button>
             <button type="button" id="drawSave">⬇ Save PNG</button>
@@ -2139,35 +2147,51 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
       function pushUndoData(img) { try { undo.push({ layer: active, data: img }); if (undo.length > 24) undo.shift(); } catch (e) {} }
 
-      // Long-press (hold still 2s) opens a radial quick-tool menu.
-      var longTimer = null, preImg = null, downCX = 0, downCY = 0, moved = false;
+      // Hold the canvas still (~1.2s) to open a radial quick-tool menu — from ANY tool.
+      var HOLD_MS = 1200;
+      var longTimer = null, preImg = null, downCX = 0, downCY = 0, moved = false, holdFired = false;
+      var pendingTap = null;                 // instant tools (stamp/dot/fill/pick) act on release, so a hold can open the radial instead
       var stampMode = false, currentStampId = null;
+      function armHold(e) {
+        clearTimeout(longTimer); holdFired = false;
+        longTimer = setTimeout(function () { holdFired = true; triggerRadial(e.clientX, e.clientY); }, HOLD_MS);
+      }
       cv.addEventListener('pointerdown', function (e) {
         var p = pos(e);
-        if (picking) { pickColor(p.x, p.y); picking = false; pickBtn.classList.remove('on'); return; }
-        if (stampMode && currentStampId) { snapshot(); placeStamp(p.x, p.y); return; }
-        if (dotMode) { snapshot(); stampDot(p.x, p.y); recordFrame(true); return; }
-        if (filling) { snapshot(); floodFill(p.x, p.y); recordFrame(true); return; }
+        moved = false; downCX = e.clientX; downCY = e.clientY;
+        armHold(e);                          // every tool can summon the radial by holding
+        if (picking || (stampMode && currentStampId) || dotMode || filling) {
+          pendingTap = { x: p.x, y: p.y };   // fire on release if it stays a tap (not a hold or drag)
+          return;
+        }
         try { preImg = actx().getImageData(0, 0, Wd, Hd); } catch (_) { preImg = null; }
-        drawing = true; moved = false; lastX = p.x; lastY = p.y; downCX = e.clientX; downCY = e.clientY;
+        drawing = true; lastX = p.x; lastY = p.y;
         paint(p.x, p.y, p.x, p.y);
         try { cv.setPointerCapture(e.pointerId); } catch (_) {}
-        clearTimeout(longTimer);
-        longTimer = setTimeout(function () { triggerRadial(e.clientX, e.clientY); }, 2000);
       });
       cv.addEventListener('pointermove', function (e) {
+        if (!moved && Math.hypot(e.clientX - downCX, e.clientY - downCY) > 8) {
+          moved = true; clearTimeout(longTimer);        // moving cancels the hold, for any tool
+          pendingTap = null;                            // a drag is not a tap
+          if (drawing && preImg) pushUndoData(preImg);  // it's a real stroke
+        }
         if (!drawing) return;
         var p = pos(e);
-        if (!moved && Math.hypot(e.clientX - downCX, e.clientY - downCY) > 8) {
-          moved = true; clearTimeout(longTimer); if (preImg) pushUndoData(preImg); // it's a real stroke
-        }
         paint(lastX, lastY, p.x, p.y); lastX = p.x; lastY = p.y;
         if (moved) recordFrame(false);
       });
       function end(e) {
         clearTimeout(longTimer);
+        if (pendingTap && !holdFired && !moved) {        // a genuine tap on an instant tool → do it now
+          var t = pendingTap;
+          if (picking) { pickColor(t.x, t.y); picking = false; pickBtn.classList.remove('on'); }
+          else if (stampMode && currentStampId) { snapshot(); placeStamp(t.x, t.y); }
+          else if (dotMode) { snapshot(); stampDot(t.x, t.y); recordFrame(true); }
+          else if (filling) { snapshot(); floodFill(t.x, t.y); recordFrame(true); }
+        }
+        pendingTap = null;
         if (drawing) {
-          if (!moved && preImg) pushUndoData(preImg);   // a tap/dot — keep it undoable
+          if (!moved && preImg) pushUndoData(preImg);    // a brush tap — keep it undoable
           recordFrame(true);
         }
         drawing = false; preImg = null;
@@ -2175,7 +2199,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
       cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
       function triggerRadial(cx, cy) {
-        drawing = false;
+        drawing = false; pendingTap = null;
         if (preImg) { try { actx().putImageData(preImg, 0, 0); composite(); } catch (_) {} } // undo the initial dab
         preImg = null;
         openRadial(cx, cy);
@@ -2407,6 +2431,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (stampBtn) stampBtn.classList.remove('on');
         if (stampGridEl) stampGridEl.querySelectorAll('.stamp-btn').forEach(function (b) { b.classList.remove('sel'); });
       }
+      // Open (never toggle-closed) the stamp panel — used by the radial menu.
+      function openStampPanel() {
+        if (stampPanel.hasAttribute('hidden')) { stampPanel.removeAttribute('hidden'); buildStampCats(); buildStampGrid(); }
+        try { stampPanel.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (_) {}
+      }
       stampBtn.addEventListener('click', function () {
         if (stampPanel.hasAttribute('hidden')) {
           stampPanel.removeAttribute('hidden'); buildStampCats(); buildStampGrid();
@@ -2447,9 +2476,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           { icon: '✏️', title: 'Brush', act: function () { setMode('brush'); } },
           { icon: '🧽', title: 'Eraser', act: function () { setMode('erase'); } },
           { icon: '🪣', title: 'Fill', act: function () { setMode('fill'); } },
-          { icon: '⚫', title: 'Dot', act: function () { setMode('dot'); } }
+          { icon: '⚫', title: 'Dot', act: function () { setMode('dot'); } },
+          { icon: '🧩', title: 'Stamps', act: function () { openStampPanel(); } }
         ];
-        var R = 60;
+        var R = 66;
         items.forEach(function (it, i) {
           var ang = (-90 + i * (360 / items.length)) * Math.PI / 180;
           var b = document.createElement('button'); b.type = 'button'; b.className = 'draw-radial-btn';
@@ -2481,6 +2511,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
       function openRadial(cx, cy) {
         ensureRadial();
+        // In fullscreen only the fullscreen element's descendants paint, so host
+        // the radial there; otherwise on <body>.
+        var host = document.fullscreenElement || document.webkitFullscreenElement || document.body;
+        if (radial.parentNode !== host) host.appendChild(radial);
         var ring = radial.querySelector('.draw-radial-ring');
         ring.style.left = cx + 'px'; ring.style.top = cy + 'px';
         radial.style.setProperty('--cx', cx + 'px'); radial.style.setProperty('--cy', cy + 'px');
@@ -2490,6 +2524,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         radialBlip();
       }
       function closeRadial() { if (radial) radial.classList.remove('open'); }
+
+      // ── Fullscreen the canvas (the whole Sketch Pad block, so tools stay handy) ──
+      (function () {
+        var fsBtn = document.getElementById('drawFull');
+        var block = cv.closest ? cv.closest('.tool-block') : null;
+        if (!fsBtn || !block) return;
+        function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+        fsBtn.addEventListener('click', function () {
+          if (fsEl()) {
+            (document.exitFullscreen || document.webkitExitFullscreen || function () {}).call(document);
+          } else {
+            var req = block.requestFullscreen || block.webkitRequestFullscreen;
+            if (req) try { req.call(block); } catch (_) {}
+          }
+        });
+        function sync() { fsBtn.textContent = (fsEl() === block) ? '⛶ Exit' : '⛶ Fullscreen'; }
+        document.addEventListener('fullscreenchange', sync);
+        document.addEventListener('webkitfullscreenchange', sync);
+      })();
 
       // ── Process recording → 10-second video ──
       // Frames are captured as light JPEG blobs (downscaled) as you draw, then
