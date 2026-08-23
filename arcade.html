@@ -1082,7 +1082,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- Fingerprint Monster — a unique creature seeded by your press -->
         <div class="tool-block" data-tool="monster">
           <div class="tool-title">Fingerprint Monster 👹</div>
-          <p class="tool-desc"><b>On a touchscreen:</b> press &amp; hold to scan your fingertip — its size &amp; pressure are read, so the <i>same finger always summons the same monster</i> and every person's is different (pass the phone around!). On a plain mouse there's no fingerprint to read, so it just 🎲 rolls a random one. Save it or share it.</p>
+          <p class="tool-desc"><b>Trace your mark:</b> hold the pad and swirl your finger to draw a little squiggle — your unique mark becomes your monster, so everyone who draws gets a different one. <i>(Web pages can't read your phone's real fingerprint sensor — nothing outside the OS can — so this reads the mark you draw instead.)</i> Save it, share it, or 🎲 roll a random one.</p>
           <div class="fm-wrap">
             <div class="fm-stage">
               <div class="fm-art" id="fmArt"></div>
@@ -1091,7 +1091,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <button type="button" class="fm-pad" id="fmPad" aria-label="Press and hold to scan your fingerprint">
               <span class="fm-pad-core"></span>
               <span class="fm-pad-ring"><svg viewBox="0 0 100 100"><circle class="fm-ring-bg" cx="50" cy="50" r="44"/><circle class="fm-ring-fg" id="fmRingFg" cx="50" cy="50" r="44"/></svg></span>
-              <span class="fm-pad-label" id="fmPadLabel">Press &amp; hold</span>
+              <span class="fm-pad-label" id="fmPadLabel">Trace your mark</span>
             </button>
           </div>
           <div class="tool-controls">
@@ -3642,29 +3642,34 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Full reset so a press can never leave the scanner stuck.
       function resetScan() { capturing = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } pad.classList.remove('scanning'); setProgress(0); }
       function releaseCap(e) { try { if (e && pad.hasPointerCapture && pad.hasPointerCapture(e.pointerId)) pad.releasePointerCapture(e.pointerId); } catch (_) {} }
-      // Read the fingertip itself — contact size + pressure — which is a property
-      // of the FINGER, not of when/where you tap. So the same finger always maps
-      // to the same monster, and a different person (different fingertip) gets a
-      // different one. Coarse buckets keep it stable across presses. A plain mouse
-      // has no such signal, so there we just roll a fresh random one.
+      // Seed from the SHAPE of the mark you trace — normalised to its own bounding
+      // box and quantised, so it's the drawn pattern that matters, not where on the
+      // pad you draw it. Everybody swirls differently, so everybody's monster is
+      // different; the same squiggle re-drawn lands on the same-ish monster.
       function pressAnalyze() {
-        var n = samples.length; if (!n) return { seed: 'x' + Math.random(), bio: false };
-        var spr = 0, sw = 0, sh = 0, prMax = 0, wMax = 0, hMax = 0, bio = false;
+        var n = samples.length; if (n < 2) return { seed: '', moved: false };
         var minx = 1e9, maxx = -1e9, miny = 1e9, maxy = -1e9;
-        for (var i = 0; i < n; i++) {
-          var s = samples[i]; spr += s[2]; sw += s[3]; sh += s[4];
-          if (s[2] > prMax) prMax = s[2]; if (s[3] > wMax) wMax = s[3]; if (s[4] > hMax) hMax = s[4];
-          if (s[2] > 0.06 || s[3] > 2 || s[4] > 2) bio = true;
-          if (s[0] < minx) minx = s[0]; if (s[0] > maxx) maxx = s[0]; if (s[1] < miny) miny = s[1]; if (s[1] > maxy) maxy = s[1];
+        for (var i = 0; i < n; i++) { var s = samples[i]; if (s[0] < minx) minx = s[0]; if (s[0] > maxx) maxx = s[0]; if (s[1] < miny) miny = s[1]; if (s[1] > maxy) maxy = s[1]; }
+        var span = Math.max(maxx - minx, maxy - miny);
+        if (span < 12) return { seed: '', moved: false };   // barely moved — needs a mark
+        var steps = 28, key = [];
+        for (var k = 0; k < steps; k++) {
+          var idx = Math.floor(k * (n - 1) / (steps - 1)), s2 = samples[idx];
+          key.push(Math.round((s2[0] - minx) / span * 15), Math.round((s2[1] - miny) / span * 15));
         }
-        if (bio) return { seed: 'bio:' + [Math.round(spr / n * 8), Math.round(prMax * 8), Math.round(sw / n / 5), Math.round(wMax / 5), Math.round(sh / n / 5), Math.round(hMax / 5)].join(','), bio: true };
-        return { seed: 'roll:' + Math.round(Math.hypot(maxx - minx, maxy - miny)) + ':' + Date.now() + ':' + Math.random(), bio: false };
+        return { seed: 'mark:' + key.join(','), moved: true };
       }
       function loop() {
         if (!capturing) return;
         var f = Math.min(1, (performance.now() - startT) / HOLD);
         setProgress(f);
-        if (f >= 1) { var a = pressAnalyze(); resetScan(); label.textContent = a.bio ? 'Fingerprint locked ✦' : 'Rolled a random one'; reveal(a.seed); setTimeout(function () { label.textContent = 'Press & hold'; }, 1500); return; }
+        if (f >= 1) {
+          var a = pressAnalyze(); resetScan();
+          if (a.moved) { label.textContent = 'Your mark ✦'; reveal(a.seed); }
+          else { label.textContent = 'Swirl your finger!'; }
+          setTimeout(function () { label.textContent = 'Trace your mark'; }, 1600);
+          return;
+        }
         raf = requestAnimationFrame(loop);
       }
 
@@ -3672,16 +3677,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         e.preventDefault();
         resetScan();                       // clear any prior state first
         capturing = true; samples = []; startT = performance.now();
-        pad.classList.add('scanning'); label.textContent = 'Scanning…'; addSample(e);
+        pad.classList.add('scanning'); label.textContent = 'Reading your mark…'; addSample(e);
         try { pad.setPointerCapture(e.pointerId); } catch (_) {}
         raf = requestAnimationFrame(loop);
       });
       pad.addEventListener('pointermove', function (e) { if (capturing) addSample(e); });
       pad.addEventListener('pointerup', function (e) {
         releaseCap(e);
-        if (capturing) { var early = (performance.now() - startT) < HOLD; resetScan(); if (early) { label.textContent = 'Hold longer!'; setTimeout(function () { label.textContent = 'Press & hold'; }, 1100); } }
+        if (capturing) { var early = (performance.now() - startT) < HOLD; resetScan(); if (early) { label.textContent = 'Hold longer!'; setTimeout(function () { label.textContent = 'Trace your mark'; }, 1100); } }
       });
-      pad.addEventListener('pointercancel', function (e) { releaseCap(e); if (capturing) { resetScan(); label.textContent = 'Press & hold'; } });
+      pad.addEventListener('pointercancel', function (e) { releaseCap(e); if (capturing) { resetScan(); label.textContent = 'Trace your mark'; } });
 
       document.getElementById('fmRandom').addEventListener('click', function () { reveal('rnd-' + Date.now() + '-' + Math.random()); });
       document.getElementById('fmSave').addEventListener('click', function () {
