@@ -1139,6 +1139,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <button type="button" id="h3Undo">↶ Undo</button>
             <button type="button" id="h3Clear">Clear all</button>
             <button type="button" id="h3Save">⬇ Save PNG</button>
+            <button type="button" id="h3Glb" title="Export a .glb you can open in Blender">🧊 Export .glb</button>
             <span class="h3-hint">Drag = orbit · scroll / pinch = zoom · click a part to select</span>
           </div>
         </div>
@@ -3755,8 +3756,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     })();
   </script>
 
-  <!-- 3D Sticker Head engine (self-hosted Three.js) -->
+  <!-- 3D Sticker Head engine (self-hosted Three.js + GLTF exporter) -->
   <script src="js/lib/three.min.js"></script>
+  <script src="js/lib/GLTFExporter.js"></script>
   <script>
     (function () {
       var stage = document.getElementById('h3Stage'); if (!stage || !window.THREE) return;
@@ -3817,7 +3819,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         scene.add(new T.AmbientLight(0x404050, 0.6));
         headGroup = new T.Group(); scene.add(headGroup);
         headMesh = new T.Mesh(new T.SphereGeometry(1, 56, 56), M(0xe7b98f, { roughness: 0.85 }));
-        headMesh.scale.set(1, 1.12, 0.96); headGroup.add(headMesh);
+        headMesh.name = 'Head'; headMesh.scale.set(1, 1.12, 0.96); headGroup.add(headMesh);
         ray = new T.Raycaster(); ndc = new T.Vector2();
         renderLoop();
       }
@@ -3863,6 +3865,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       function addStamp(hit) {
         var def = LIB.filter(function (l) { return l.k === currentStamp; })[0]; if (!def) return;
         var g = def.f(currentColor); g.userData.scale = 1; g.userData.spin = 0;
+        g.name = def.t + ' ' + (stamps.length + 1);
         headGroup.add(g); placeAt(g, hit); stamps.push(g); select(g);
       }
 
@@ -3907,6 +3910,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       document.getElementById('h3Save').addEventListener('click', function () {
         if (!inited) return; renderer.render(scene, camera);
         try { var a = document.createElement('a'); a.href = renderer.domElement.toDataURL('image/png'); a.download = 'sticker-head.png'; a.click(); } catch (_) {}
+      });
+      // Export the head + all placed parts as a .glb — opens straight in Blender
+      // (File ▸ Import ▸ glTF 2.0), each part its own named object with its colour.
+      document.getElementById('h3Glb').addEventListener('click', function () {
+        if (!inited || !T.GLTFExporter) return;
+        var rx = headGroup.rotation.x, ry = headGroup.rotation.y, rz = headGroup.rotation.z;
+        headGroup.rotation.set(0, 0, 0); headGroup.updateMatrixWorld(true);   // export upright, not tilted by the view
+        new T.GLTFExporter().parse(headGroup, function (glb) {
+          headGroup.rotation.set(rx, ry, rz);
+          var blob = new Blob([glb], { type: 'model/gltf-binary' });
+          var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'sticker-head.glb'; a.click();
+          setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+        }, { binary: true });
       });
 
       buildPalette();
