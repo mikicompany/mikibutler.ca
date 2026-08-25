@@ -47,6 +47,16 @@
     }
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://mikibutler.ca/" },
+      { "@type": "ListItem", "position": 2, "name": "Work", "item": "https://mikibutler.ca/work.html" }
+    ]
+  }
+  </script>
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Work — Game Environment Art by Miki Butler" />
   <meta property="og:description" content="Portfolio of environment &amp; prop art — Starship Troopers: Extermination, Dead Rising 4, Plants vs Zombies, Squad and more." />
@@ -132,9 +142,41 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const grid = document.getElementById('work-grid');
     const workHeader = document.querySelector('.work-header');
 
+    // Emit an ItemList of VisualArtwork so Google understands these are artworks
+    // by Miki Butler (feeds image + artist signals). Injected once, from the data.
+    let artworkLDDone = false;
+    function injectArtworkLD(data) {
+      if (artworkLDDone) return;
+      const abs = u => /^https?:\/\//.test(u) ? u : ('https://mikibutler.ca/' + String(u || '').replace(/^\//, ''));
+      const seen = {}, el = [];
+      (data.work || []).forEach(i => {
+        if (!i.img || i.video) return;                 // real artwork images only
+        const t = i.title || i.group; if (!t || seen[t]) return; seen[t] = 1;
+        if (el.length >= 60) return;
+        el.push({
+          "@type": "ListItem", "position": el.length + 1,
+          "item": {
+            "@type": "VisualArtwork",
+            "name": t + " — environment art by Miki Butler",
+            "image": abs(thumb(i.img)),
+            "creator": { "@id": "https://mikibutler.ca/#miki" },
+            "artform": "Digital environment art",
+            "url": "https://mikibutler.ca/work.html" + (i.group ? "?group=" + encodeURIComponent(i.group) : "")
+          }
+        });
+      });
+      if (!el.length) return;
+      const s = document.createElement('script');
+      s.type = 'application/ld+json';
+      s.textContent = JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", "name": "Portfolio — Miki Butler", "itemListElement": el });
+      document.head.appendChild(s);
+      artworkLDDone = true;
+    }
+
     function boot(data) {
       allItems = data.work || [];
       allItems.forEach(i => { if (!i.group) i.group = i.title.split(' — ')[0]; });
+      try { injectArtworkLD(data); } catch (_) {}
       rebuildFilters();
       // Deep-link: work.html?group=NAME opens that album; &item=TITLE opens
       // that exact piece in the lightbox (used by the homepage slides).
