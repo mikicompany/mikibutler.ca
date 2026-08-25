@@ -375,7 +375,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const div = document.createElement('div');
       div.className = `masonry-item size-${sizeOf(cover)}`;
       div.innerHTML = `
-        <img src="${thumb(cover.img)}" alt="${g.name}" loading="lazy"${tileStyle(cover)} />
+        <img src="${thumb(cover.img)}" alt="${g.name} — environment art by Miki Butler" loading="lazy"${tileStyle(cover)} />
         ${is3D(cover) ? modelTag() : ''}
         ${multi ? `<span class="item-count">${g.items.length}</span>` : mediaBadge(cover)}
         <div class="item-overlay">
@@ -450,7 +450,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const div = document.createElement('div');
         div.className = `masonry-item size-${subSizeOf(item)}`;
         div.innerHTML = `
-          <img src="${thumb(item.img)}" alt="${item.title}" loading="lazy"${tileStyle(item)} />
+          <img src="${thumb(item.img)}" alt="${item.title} — environment art by Miki Butler" loading="lazy"${tileStyle(item)} />
           ${is3D(item) ? modelTag() : ''}
           ${mediaBadge(item)}
           <div class="item-overlay">
@@ -522,7 +522,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         lbVid.play();
       } else {
         lbImg.src = item.img;
-        lbImg.alt = item.title;
+        lbImg.alt = item.title + ' — environment art by Miki Butler';
         lbImg.style.display = '';
       }
       lightbox.classList.add('open');
