@@ -537,6 +537,23 @@
     .fm-ring-fg { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 276.5; stroke-dashoffset: 276.5; }
     .fm-pad-label { position: absolute; left: 0; right: 0; bottom: -22px; text-align: center; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); }
     @media (max-width: 560px) { .fm-wrap { flex-direction: column-reverse; } }
+    /* 3D Sticker Head */
+    .h3-wrap { display: flex; gap: 16px; flex-wrap: wrap; align-items: stretch; }
+    .h3-stage { flex: 1 1 340px; min-width: 260px; aspect-ratio: 4 / 3; position: relative; overflow: hidden;
+      background: radial-gradient(ellipse at 50% 34%, #1b2028, #0c0e12); border: 1px solid #23272e; border-radius: 14px; touch-action: none; cursor: grab; }
+    .h3-stage:active { cursor: grabbing; }
+    .h3-stage canvas { display: block; width: 100%; height: 100%; }
+    .h3-load { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 13px; }
+    .h3-side { flex: 0 0 194px; display: flex; flex-direction: column; gap: 10px; }
+    .h3-palette { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .h3-stamp { aspect-ratio: 1; border: 1px solid #2a2f37; background: #12161c; border-radius: 9px; color: #cfd4db;
+      font-size: 10.5px; line-height: 1.15; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 2px; }
+    .h3-stamp b { font-size: 17px; font-weight: 400; }
+    .h3-stamp.sel { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+    .h3-sel { border-top: 1px solid #23272e; padding-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+    .h3-sel-h { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: .08em; }
+    .h3-hint { font-size: 11px; color: var(--text-muted); margin-left: auto; align-self: center; }
+    @media (max-width: 620px) { .h3-side { flex-basis: 100%; } .h3-palette { grid-template-columns: repeat(6, 1fr); } }
     .draw-pal { display: inline-flex; gap: 6px; }
     .draw-sw { width: 22px; height: 22px; border-radius: 5px; cursor: pointer; border: 2px solid #2a2f37; box-sizing: border-box; padding: 0; }
     .draw-sw.sel { border-color: var(--accent); box-shadow: 0 0 6px rgba(160,255,0,.5); }
@@ -1098,6 +1115,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <button type="button" id="fmSave">⬇ Save PNG</button>
             <button type="button" id="fmShare">↗ Share</button>
             <button type="button" id="fmRandom">🎲 Random</button>
+          </div>
+        </div>
+
+        <!-- 3D Sticker Head — a WebGL viewport with stampable 3D face parts -->
+        <div class="tool-block" data-tool="head3d">
+          <div class="tool-title">3D Sticker Head 🗿</div>
+          <p class="tool-desc">A little 3D viewport (WebGL — Blender-in-the-browser vibes): <b>orbit</b> the head, pick a part and <b>click to stick it on</b>. Select a placed part to <b>move, scale, spin or delete</b> it. Save a snapshot when it's just right.</p>
+          <div class="h3-wrap">
+            <div class="h3-stage" id="h3Stage"><div class="h3-load" id="h3Load">Loading 3D…</div></div>
+            <div class="h3-side">
+              <div class="h3-palette" id="h3Palette"></div>
+              <label class="tool-slider">Colour <input type="color" id="h3Color" value="#39424e" /></label>
+              <div class="h3-sel" id="h3Sel" hidden>
+                <div class="h3-sel-h">Selected part</div>
+                <label class="tool-slider">Size <input type="range" id="h3Scale" min="0.4" max="2.4" step="0.05" value="1" /></label>
+                <label class="tool-slider">Spin <input type="range" id="h3Rot" min="0" max="360" step="1" value="0" /></label>
+                <button type="button" id="h3Del">🗑 Delete part</button>
+              </div>
+            </div>
+          </div>
+          <div class="tool-controls">
+            <button type="button" id="h3Undo">↶ Undo</button>
+            <button type="button" id="h3Clear">Clear all</button>
+            <button type="button" id="h3Save">⬇ Save PNG</button>
+            <span class="h3-hint">Drag = orbit · scroll / pinch = zoom · click a part to select</span>
           </div>
         </div>
       </section>
@@ -3383,7 +3425,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         glitch: 'RGB glitch + video export',
         resume: 'Interactive résumé + PDF',
         igstudy: 'Colour DNA of @mikicompany',
-        monster: 'A monster from your fingerprint'
+        monster: 'A monster from your fingerprint',
+        head3d: 'Stick 3D parts on a head'
       };
       var acc = document.createElement('div');
       acc.className = 'tool-acc';
@@ -3709,6 +3752,167 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       });
 
       reveal('welcome-' + Date.now());   // a demo monster on load; each press makes a new one
+    })();
+  </script>
+
+  <!-- 3D Sticker Head engine (self-hosted Three.js) -->
+  <script src="js/lib/three.min.js"></script>
+  <script>
+    (function () {
+      var stage = document.getElementById('h3Stage'); if (!stage || !window.THREE) return;
+      var T = THREE, ACCENT = 0xa0ff00;
+      var scene, camera, renderer, headGroup, headMesh, ray, ndc, inited = false, rafId = 0;
+      var stamps = [], selected = null, currentColor = 0x39424e, currentStamp = null;
+      var mode = null, lastX = 0, lastY = 0, pointers = {}, pinchStart = 0, camStartZ = 0;
+
+      function M(color, extra) { var o = { color: color, roughness: 0.55, metalness: 0.05 }; if (extra) for (var k in extra) o[k] = extra[k]; return new T.MeshStandardMaterial(o); }
+      function mesh(geo, m) { var x = new T.Mesh(geo, m); x.userData.base = m.color.getHex(); return x; }
+
+      // ── 3D stamp builders — each returns a group facing +Z (outward from surface) ──
+      function sEyes(c) { var g = new T.Group(), i; for (i = -1; i <= 1; i += 2) {
+        var w = mesh(new T.SphereGeometry(0.1, 20, 20), M(0xffffff, { roughness: 0.25 })); w.position.set(i * 0.15, 0, 0.02); w.scale.z = 0.7; g.add(w);
+        var p = mesh(new T.SphereGeometry(0.05, 16, 16), M(c)); p.position.set(i * 0.15, 0, 0.1); g.add(p);
+      } return g; }
+      function sNose(c) { var g = new T.Group(), n = mesh(new T.SphereGeometry(0.09, 20, 20), M(c)); n.position.set(0, 0, 0.09); n.scale.set(1, 1.2, 1.1); g.add(n); return g; }
+      function sMouth(c) { var g = new T.Group(), t = mesh(new T.TorusGeometry(0.16, 0.03, 10, 24, Math.PI), M(c)); t.rotation.z = Math.PI; t.position.set(0, 0.02, 0.04); g.add(t); return g; }
+      function sGlasses(c) { var g = new T.Group(), i; for (i = -1; i <= 1; i += 2) { var r = mesh(new T.TorusGeometry(0.1, 0.018, 10, 24), M(c)); r.position.set(i * 0.15, 0, 0.06); g.add(r); } var b = mesh(new T.BoxGeometry(0.12, 0.02, 0.02), M(c)); b.position.set(0, 0, 0.06); g.add(b); return g; }
+      function sHat(c) { var g = new T.Group(), cone = mesh(new T.ConeGeometry(0.16, 0.36, 22), M(c)); cone.rotation.x = -Math.PI / 2; cone.position.set(0, 0, 0.2); g.add(cone); var ball = mesh(new T.SphereGeometry(0.035, 12, 12), M(0xffffff)); ball.position.set(0, 0, 0.38); g.add(ball); return g; }
+      function sEars(c) { var g = new T.Group(), i; for (i = -1; i <= 1; i += 2) { var e = mesh(new T.SphereGeometry(0.1, 18, 18), M(c)); e.position.set(i * 0.24, 0, 0); e.scale.set(0.7, 1, 0.5); g.add(e); } return g; }
+      function sHorns(c) { var g = new T.Group(), i; for (i = -1; i <= 1; i += 2) { var h = mesh(new T.ConeGeometry(0.05, 0.24, 14), M(c)); h.position.set(i * 0.13, 0.13, 0.04); h.rotation.z = i * -0.35; g.add(h); } return g; }
+      function sStache(c) { var g = new T.Group(), i; for (i = -1; i <= 1; i += 2) { var m = mesh(new T.TorusGeometry(0.08, 0.022, 8, 18, Math.PI), M(c)); m.position.set(i * 0.07, 0, 0.05); m.rotation.z = i > 0 ? -0.4 : Math.PI + 0.4; g.add(m); } return g; }
+      function sBrows(c) { var g = new T.Group(), i; for (i = -1; i <= 1; i += 2) { var b = mesh(new T.BoxGeometry(0.15, 0.03, 0.03), M(c)); b.position.set(i * 0.16, 0.14, 0.05); b.rotation.z = i * -0.18; g.add(b); } return g; }
+      var LIB = [
+        { k: 'eyes', e: '👀', t: 'Eyes', f: sEyes }, { k: 'nose', e: '👃', t: 'Nose', f: sNose },
+        { k: 'mouth', e: '👄', t: 'Mouth', f: sMouth }, { k: 'glasses', e: '🕶', t: 'Glasses', f: sGlasses },
+        { k: 'hat', e: '🎩', t: 'Hat', f: sHat }, { k: 'ears', e: '👂', t: 'Ears', f: sEars },
+        { k: 'horns', e: '😈', t: 'Horns', f: sHorns }, { k: 'stache', e: '🥸', t: "'Stache", f: sStache },
+        { k: 'brows', e: '🤨', t: 'Brows', f: sBrows }
+      ];
+
+      function buildPalette() {
+        var host = document.getElementById('h3Palette'); host.innerHTML = '';
+        LIB.forEach(function (s) {
+          var b = document.createElement('button'); b.type = 'button'; b.className = 'h3-stamp'; b.dataset.k = s.k;
+          b.innerHTML = '<b>' + s.e + '</b><span>' + s.t + '</span>';
+          b.addEventListener('click', function () {
+            currentStamp = (currentStamp === s.k) ? null : s.k;
+            host.querySelectorAll('.h3-stamp').forEach(function (x) { x.classList.toggle('sel', x.dataset.k === currentStamp); });
+          });
+          host.appendChild(b);
+        });
+      }
+
+      function init() {
+        if (inited) return; inited = true;
+        var w = stage.clientWidth || 400, h = stage.clientHeight || 300;
+        scene = new T.Scene();
+        camera = new T.PerspectiveCamera(45, w / h, 0.1, 100); camera.position.set(0, 0, 4.2);
+        renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setSize(w, h);
+        var ld = document.getElementById('h3Load'); if (ld) ld.remove();
+        stage.appendChild(renderer.domElement);
+        scene.add(new T.HemisphereLight(0xffffff, 0x202634, 0.9));
+        var dir = new T.DirectionalLight(0xffffff, 0.85); dir.position.set(3, 4, 5); scene.add(dir);
+        scene.add(new T.AmbientLight(0x404050, 0.6));
+        headGroup = new T.Group(); scene.add(headGroup);
+        headMesh = new T.Mesh(new T.SphereGeometry(1, 56, 56), M(0xe7b98f, { roughness: 0.85 }));
+        headMesh.scale.set(1, 1.12, 0.96); headGroup.add(headMesh);
+        ray = new T.Raycaster(); ndc = new T.Vector2();
+        renderLoop();
+      }
+      function resize() {
+        if (!inited) return; var w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return;
+        camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h);
+      }
+      function renderLoop() { rafId = requestAnimationFrame(renderLoop); if (stage.offsetParent === null) return; renderer.render(scene, camera); }
+
+      function setNDC(e) { var r = stage.getBoundingClientRect(); ndc.x = ((e.clientX - r.left) / r.width) * 2 - 1; ndc.y = -((e.clientY - r.top) / r.height) * 2 + 1; }
+      function hitHead() { ray.setFromCamera(ndc, camera); var h = ray.intersectObject(headMesh, false); return h.length ? h[0] : null; }
+      function hitStamp() { ray.setFromCamera(ndc, camera); var h = ray.intersectObjects(stamps, true); if (!h.length) return null; var o = h[0].object; while (o && stamps.indexOf(o) < 0) o = o.parent; return o || null; }
+
+      // orient + position a stamp group onto the surface at a head hit
+      function placeAt(grp, hit) {
+        var lp = headGroup.worldToLocal(hit.point.clone());
+        var nMat = new T.Matrix3().getNormalMatrix(headMesh.matrixWorld);
+        var wn = hit.face.normal.clone().applyMatrix3(nMat).normalize();
+        var ln = wn.clone().transformDirection(new T.Matrix4().copy(headGroup.matrixWorld).invert()).normalize();
+        var q = new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 0, 1), ln);
+        grp.userData.placeQuat = q.clone();
+        grp.position.copy(lp).addScaledVector(ln, 0.01);
+        applyQuat(grp);
+      }
+      function applyQuat(grp) {
+        var spin = grp.userData.spin || 0;
+        var qz = new T.Quaternion().setFromAxisAngle(new T.Vector3(0, 0, 1), spin);
+        grp.quaternion.copy(grp.userData.placeQuat).multiply(qz);
+      }
+      function tint(grp, hex, intensity) { grp.traverse(function (o) { if (o.material && o.material.emissive) { o.material.emissive.setHex(hex); o.material.emissiveIntensity = intensity; } }); }
+      function select(grp) {
+        if (selected === grp) return;
+        if (selected) tint(selected, 0x000000, 0);
+        selected = grp || null;
+        var panel = document.getElementById('h3Sel');
+        if (selected) {
+          tint(selected, 0x2c3a00, 0.9);
+          panel.hidden = false;
+          document.getElementById('h3Scale').value = selected.userData.scale || 1;
+          document.getElementById('h3Rot').value = Math.round((selected.userData.spin || 0) * 180 / Math.PI);
+        } else panel.hidden = true;
+      }
+      function addStamp(hit) {
+        var def = LIB.filter(function (l) { return l.k === currentStamp; })[0]; if (!def) return;
+        var g = def.f(currentColor); g.userData.scale = 1; g.userData.spin = 0;
+        headGroup.add(g); placeAt(g, hit); stamps.push(g); select(g);
+      }
+
+      // ── Pointer interaction: orbit / place / move / select ──
+      stage.addEventListener('pointerdown', function (e) {
+        if (!inited) return; e.preventDefault(); stage.setPointerCapture(e.pointerId);
+        pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+        if (Object.keys(pointers).length >= 2) { mode = 'pinch'; pinchStart = pinchDist(); camStartZ = camera.position.z; return; }
+        lastX = e.clientX; lastY = e.clientY; setNDC(e);
+        var s = hitStamp();
+        if (s) { select(s); mode = 'move'; return; }
+        if (currentStamp) { var hh = hitHead(); if (hh) { addStamp(hh); mode = 'move'; return; } }
+        select(null); mode = 'orbit';
+      });
+      stage.addEventListener('pointermove', function (e) {
+        if (!inited || !mode) return;
+        if (e.pointerId in pointers) pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+        if (mode === 'pinch') { var d = pinchDist(); if (pinchStart > 0 && d > 0) camera.position.z = clampZ(camStartZ * (pinchStart / d)); return; }
+        if (mode === 'orbit') {
+          headGroup.rotation.y += (e.clientX - lastX) * 0.01;
+          headGroup.rotation.x = Math.max(-1.2, Math.min(1.2, headGroup.rotation.x + (e.clientY - lastY) * 0.01));
+          lastX = e.clientX; lastY = e.clientY; return;
+        }
+        if (mode === 'move' && selected) { setNDC(e); var hh = hitHead(); if (hh) placeAt(selected, hh); }
+      });
+      function endPtr(e) { delete pointers[e.pointerId]; if (Object.keys(pointers).length < 2 && mode === 'pinch') mode = null; else if (Object.keys(pointers).length === 0) mode = null; try { stage.releasePointerCapture(e.pointerId); } catch (_) {} }
+      stage.addEventListener('pointerup', endPtr); stage.addEventListener('pointercancel', endPtr);
+      function pinchDist() { var k = Object.keys(pointers); if (k.length < 2) return 0; var a = pointers[k[0]], b = pointers[k[1]]; return Math.hypot(a.x - b.x, a.y - b.y); }
+      function clampZ(z) { return Math.max(2.6, Math.min(8, z)); }
+      stage.addEventListener('wheel', function (e) { if (!inited) return; e.preventDefault(); camera.position.z = clampZ(camera.position.z + (e.deltaY > 0 ? 0.4 : -0.4)); }, { passive: false });
+
+      // ── Controls ──
+      document.getElementById('h3Color').addEventListener('input', function (e) {
+        currentColor = parseInt(e.target.value.slice(1), 16);
+        if (selected) selected.traverse(function (o) { if (o.material && o.userData.base !== undefined && o.userData.base !== 0xffffff) o.material.color.setHex(currentColor); });
+      });
+      document.getElementById('h3Scale').addEventListener('input', function (e) { if (!selected) return; selected.userData.scale = +e.target.value; selected.scale.setScalar(+e.target.value); });
+      document.getElementById('h3Rot').addEventListener('input', function (e) { if (!selected) return; selected.userData.spin = (+e.target.value) * Math.PI / 180; applyQuat(selected); });
+      document.getElementById('h3Del').addEventListener('click', function () { if (!selected) return; var i = stamps.indexOf(selected); if (i >= 0) stamps.splice(i, 1); headGroup.remove(selected); select(null); });
+      document.getElementById('h3Undo').addEventListener('click', function () { var g = stamps.pop(); if (!g) return; if (selected === g) select(null); headGroup.remove(g); });
+      document.getElementById('h3Clear').addEventListener('click', function () { stamps.forEach(function (g) { headGroup.remove(g); }); stamps = []; select(null); });
+      document.getElementById('h3Save').addEventListener('click', function () {
+        if (!inited) return; renderer.render(scene, camera);
+        try { var a = document.createElement('a'); a.href = renderer.domElement.toDataURL('image/png'); a.download = 'sticker-head.png'; a.click(); } catch (_) {}
+      });
+
+      buildPalette();
+      // Init once the panel actually has a size (accordion opens it).
+      if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (stage.clientWidth > 0) { init(); resize(); } }); ro.observe(stage); }
+      window.addEventListener('resize', resize);
     })();
   </script>
 </body>
