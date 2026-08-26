@@ -569,6 +569,13 @@
     .d3d-actions { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
     .d3d-actions .btn-accentish { background: var(--accent); color: #0a0b08; border: 0; border-radius: 10px; font-weight: 800; padding: 10px 18px; cursor: pointer; font-size: 14px; }
     .d3d-note { font-size: 11.5px; color: var(--text-muted); }
+    /* Value & Busyness readout */
+    .vs-busy-out { margin-top: 10px; font-size: 13px; line-height: 1.6; color: #cdd3da; }
+    .vs-busy-out .vs-score { font-size: 24px; font-weight: 800; color: var(--accent); vertical-align: -2px; }
+    .vs-busy-out .vs-bar { height: 8px; border-radius: 5px; margin: 8px 0 6px; background: linear-gradient(90deg, #2b7, #cc4, #e63); position: relative; }
+    .vs-busy-out .vs-bar i { position: absolute; top: -3px; width: 3px; height: 14px; background: #fff; border-radius: 2px; box-shadow: 0 0 4px rgba(0,0,0,.6); }
+    .vs-busy-out .vs-verdict { color: #fff; font-weight: 600; }
+    .vs-busy-out .vs-regions { color: var(--text-muted); font-size: 12px; }
     .draw-pal { display: inline-flex; gap: 6px; }
     .draw-sw { width: 22px; height: 22px; border-radius: 5px; cursor: pointer; border: 2px solid #2a2f37; box-sizing: border-box; padding: 0; }
     .draw-sw.sel { border-color: var(--accent); box-shadow: 0 0 6px rgba(160,255,0,.5); }
@@ -915,21 +922,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <!-- Value Study / Notan -->
         <div class="tool-block" data-tool="value">
-          <div class="tool-title">Value Study 🎨</div>
-          <p class="tool-desc">Strip an image to its values — grayscale, or posterized into a few bands to check your value composition.</p>
+          <div class="tool-title">Value &amp; Busyness 🎨</div>
+          <p class="tool-desc">Strip an image to its <b>values</b> — grayscale or posterized bands — or flip to <b>Busyness</b> to see where detail clusters and how busy the composition reads.</p>
           <div class="tool-in">
             <input type="url" id="vsUrl" placeholder="Paste image link…" autocomplete="off" spellcheck="false" />
             <label>⬆ Upload<input type="file" accept="image/*" id="vsFile" hidden /></label>
           </div>
           <div class="tool-stage">
             <canvas id="vsCanvas" width="1" height="1" style="display:none"></canvas>
-            <div class="tool-empty" id="vsEmpty">Load an image to break it into values</div>
+            <div class="tool-empty" id="vsEmpty">Load an image to break it into values — or measure how busy it is</div>
           </div>
           <div class="tool-controls">
-            <button type="button" id="vsPoster" class="on">Posterize</button>
-            <label class="tool-slider">Bands <input type="range" id="vsN" min="2" max="6" step="1" value="3" /> <b id="vsNval">3</b></label>
+            <button type="button" id="vsBusy" title="Analyze how busy / detailed the image is">🔥 Busyness</button>
+            <span id="vsValueCtrls" style="display:contents">
+              <button type="button" id="vsPoster" class="on">Posterize</button>
+              <label class="tool-slider">Bands <input type="range" id="vsN" min="2" max="6" step="1" value="3" /> <b id="vsNval">3</b></label>
+            </span>
             <button type="button" id="vsSave">⬇ Save PNG</button>
           </div>
+          <div class="vs-busy-out" id="vsBusyOut" hidden></div>
           <p class="cmp-err" id="vsErr"></p>
         </div>
 
@@ -1919,28 +1930,78 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var canvas = document.getElementById('vsCanvas'); if (!canvas) return;
       var ctx = canvas.getContext('2d', { willReadFrequently: true });
       var empty = document.getElementById('vsEmpty'), err = document.getElementById('vsErr');
-      var poster = true, bands = 3, cur = null;
-      function render() {
-        if (!cur) return;
+      var poster = true, bands = 3, cur = null, mode = 'value';
+      var busyOut = document.getElementById('vsBusyOut'), valueCtrls = document.getElementById('vsValueCtrls');
+      var REGION = ['top-left', 'top-centre', 'top-right', 'left', 'centre', 'right', 'bottom-left', 'bottom-centre', 'bottom-right'];
+
+      function frame() {
         var W = Math.min(560, cur.naturalWidth), H = Math.round(cur.naturalHeight * W / cur.naturalWidth);
-        canvas.width = W; canvas.height = H;
-        ctx.drawImage(cur, 0, 0, W, H);
-        var img;
-        try { img = ctx.getImageData(0, 0, W, H); }
-        catch (e) { err.textContent = 'Can’t read a hotlinked image (CORS) — upload the file instead.'; return; }
-        var d = img.data;
+        canvas.width = W; canvas.height = H; ctx.drawImage(cur, 0, 0, W, H);
+        try { return { W: W, H: H, img: ctx.getImageData(0, 0, W, H) }; }
+        catch (e) { err.textContent = 'Can’t read a hotlinked image (CORS) — upload the file instead.'; return null; }
+      }
+      function renderValue() {
+        var f = frame(); if (!f) return; var d = f.img.data;
         for (var i = 0; i < d.length; i += 4) {
           var l = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2], v;
           if (poster) { var band = Math.min(bands - 1, Math.floor(l / 256 * bands)); v = Math.round(band / (bands - 1) * 255); }
           else v = l;
           d[i] = d[i + 1] = d[i + 2] = v;
         }
-        ctx.putImageData(img, 0, 0);
-        canvas.style.display = 'block'; empty.style.display = 'none';
+        ctx.putImageData(f.img, 0, 0);
       }
+      // O(n) separable box blur (for the high-pass below).
+      function vsBlur(a, w, h, r, passes) {
+        if (r < 1) return a; var tmp = new Float32Array(a.length), span = r * 2 + 1, x, y, sum, add, sub;
+        function cl(v, mn, mx) { return v < mn ? mn : v > mx ? mx : v; }
+        for (var pz = 0; pz < passes; pz++) {
+          for (y = 0; y < h; y++) { var row = y * w; sum = 0; for (x = -r; x <= r; x++) sum += a[row + cl(x, 0, w - 1)]; for (x = 0; x < w; x++) { tmp[row + x] = sum / span; add = cl(x + r + 1, 0, w - 1); sub = cl(x - r, 0, w - 1); sum += a[row + add] - a[row + sub]; } }
+          for (x = 0; x < w; x++) { sum = 0; for (y = -r; y <= r; y++) sum += tmp[cl(y, 0, h - 1) * w + x]; for (y = 0; y < h; y++) { a[y * w + x] = sum / span; add = cl(y + r + 1, 0, h - 1); sub = cl(y - r, 0, h - 1); sum += tmp[add * w + x] - tmp[sub * w + x]; } }
+        }
+        return a;
+      }
+      // Busyness = high-frequency detail (image minus its blur). This ignores
+      // smooth gradients (a sky isn't "busy") and catches texture/edges/clutter.
+      function renderBusy() {
+        var f = frame(); if (!f) return; var W = f.W, H = f.H, d = f.img.data, N = W * H, gray = new Float32Array(N), i, p;
+        for (i = 0, p = 0; p < N; i += 4, p++) gray[p] = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+        var blur = vsBlur(gray.slice(0), W, H, 3, 2);
+        var out = ctx.createImageData(W, H), od = out.data;
+        var T = 10, edge = 0, cs = [0, 0, 0, 0, 0, 0, 0, 0, 0], cn = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
+          var idx = y * W + x, hp = Math.abs(gray[idx] - blur[idx]);
+          if (hp > T) edge++;
+          var c = (Math.floor(y * 3 / H)) * 3 + Math.floor(x * 3 / W); cs[c] += hp; cn[c]++;
+          var m = hp / 45; if (m > 1) m = 1; var base = gray[idx] * 0.32, r, g, b;
+          if (m < 0.5) { var t = m / 0.5; r = base + t * (210 - base); g = base + t * (90 - base); b = base * (1 - t); }
+          else { var t2 = (m - 0.5) / 0.5; r = 210 + t2 * 45; g = 90 + t2 * 160; b = t2 * 80; }
+          var oo = idx * 4; od[oo] = r; od[oo + 1] = g; od[oo + 2] = b; od[oo + 3] = 255;
+        }
+        ctx.putImageData(out, 0, 0);
+        var cov = N ? edge / N * 100 : 0;
+        var verdict = cov < 7 ? 'Very calm — lots of breathing room'
+          : cov < 16 ? 'Balanced — clear focal areas with room to rest'
+          : cov < 30 ? 'Busy — plenty going on'
+          : 'Very busy — watch for clutter and competing detail';
+        var bi = 0, ci = 0, bv = -1, cvv = 1e9;
+        for (var k = 0; k < 9; k++) { var avg = cn[k] ? cs[k] / cn[k] : 0; if (avg > bv) { bv = avg; bi = k; } if (avg < cvv) { cvv = avg; ci = k; } }
+        busyOut.innerHTML = '<span class="vs-score">' + cov.toFixed(0) + '%</span> of the image is fine detail. ' +
+          '<span class="vs-verdict">' + verdict + '.</span>' +
+          '<div class="vs-bar"><i style="left:' + Math.min(99, cov * 2.2).toFixed(0) + '%"></i></div>' +
+          '<div class="vs-regions">Busiest area: <b>' + REGION[bi] + '</b> · calmest: <b>' + REGION[ci] + '</b> — where the eye lands vs. where it can rest.</div>';
+      }
+      function render() { if (!cur) return; if (mode === 'busy') renderBusy(); else renderValue(); canvas.style.display = 'block'; empty.style.display = 'none'; }
+
       function load(url) { err.textContent = ''; toolLoadImage(url, function (im) { cur = im; render(); },
         function () { err.textContent = 'Couldn’t load that image — try uploading the file.'; }); }
       toolBind('vsUrl', 'vsFile', load);
+      document.getElementById('vsBusy').addEventListener('click', function () {
+        mode = mode === 'busy' ? 'value' : 'busy';
+        this.classList.toggle('on', mode === 'busy');
+        valueCtrls.style.display = mode === 'busy' ? 'none' : 'contents';
+        busyOut.hidden = mode !== 'busy';
+        render();
+      });
       document.getElementById('vsPoster').addEventListener('click', function () {
         poster = !poster; this.classList.toggle('on', poster); this.textContent = poster ? 'Posterize' : 'Grayscale'; render();
       });
@@ -1948,7 +2009,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       nEl.addEventListener('input', function () { bands = +nEl.value; nVal.textContent = bands; render(); });
       document.getElementById('vsSave').addEventListener('click', function () {
         if (!cur) return;
-        var a = document.createElement('a'); a.download = 'value-study.png'; a.href = canvas.toDataURL('image/png');
+        var a = document.createElement('a'); a.download = (mode === 'busy' ? 'busyness.png' : 'value-study.png'); a.href = canvas.toDataURL('image/png');
         document.body.appendChild(a); a.click(); a.remove();
       });
     })();
@@ -3435,7 +3496,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if (!panes.length) return;
       var DESC = {
         compare: 'Slide between two images',
-        value: 'Check your values in grayscale',
+        value: 'Values in grayscale + how busy it is',
         palette: 'Pull colors from any image',
         sketch: 'Draw with layers & palettes',
         banner: 'Build a LinkedIn banner',
