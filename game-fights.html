@@ -142,6 +142,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <button type="button" class="gf-fight" id="gfGo">🥊 Fight!</button>
           <button type="button" id="gfRandom">🎲 Random</button>
           <button type="button" id="gfReset">Reset</button>
+          <button type="button" id="gfMute" title="Toggle sound" aria-label="Toggle sound">🔊</button>
         </div>
         <p class="gf-msg" id="gfMsg"></p>
         <div class="gf-arena" id="gfArena" hidden>
@@ -163,6 +164,56 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // Game Fights — two games clash; the higher Metacritic+Steam "Power" survives.
     (function () {
       var arena = document.getElementById('gfArena'); if (!arena) return;
+
+      // Retro SFX, synthesized live with the Web Audio API — no audio files needed.
+      var Sfx = (function () {
+        var ctx = null, master = null, muted = false;
+        try { muted = localStorage.getItem('gfMute') === '1'; } catch (e) {}
+        function ensure() {
+          if (ctx) return ctx;
+          try {
+            var AC = window.AudioContext || window.webkitAudioContext; ctx = new AC();
+            master = ctx.createGain(); master.gain.value = 0.45; master.connect(ctx.destination);
+          } catch (e) { ctx = null; }
+          return ctx;
+        }
+        function T() { return ctx ? ctx.currentTime : 0; }
+        function tone(f, t0, dur, type, g, slideTo) {
+          var o = ctx.createOscillator(), ga = ctx.createGain();
+          o.type = type || 'square'; o.frequency.setValueAtTime(f, t0);
+          if (slideTo) o.frequency.exponentialRampToValueAtTime(Math.max(1, slideTo), t0 + dur);
+          ga.gain.setValueAtTime(0.0001, t0);
+          ga.gain.exponentialRampToValueAtTime(g || 0.3, t0 + 0.012);
+          ga.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+          o.connect(ga); ga.connect(master); o.start(t0); o.stop(t0 + dur + 0.03);
+        }
+        function noise(t0, dur, g, lp) {
+          var n = Math.floor(ctx.sampleRate * dur), buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
+          for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+          var src = ctx.createBufferSource(); src.buffer = buf;
+          var flt = ctx.createBiquadFilter(); flt.type = 'lowpass'; flt.frequency.value = lp || 1400;
+          var ga = ctx.createGain(); ga.gain.value = g || 0.4;
+          src.connect(flt); flt.connect(ga); ga.connect(master); src.start(t0);
+        }
+        var ok = function () { return ctx && !muted; };
+        return {
+          resume: function () { var c = ensure(); if (c && c.state === 'suspended') c.resume(); },
+          isMuted: function () { return muted; },
+          toggle: function () { muted = !muted; try { localStorage.setItem('gfMute', muted ? '1' : '0'); } catch (e) {} return muted; },
+          start: function () { this.resume(); if (!ok()) return; var t = T(); tone(880, t, 0.09, 'square', 0.3); tone(1320, t + 0.13, 0.16, 'square', 0.3); },
+          tick: function (i) { if (!ok()) return; tone(320 + (i || 0) * 45, T(), 0.03, 'square', 0.11); },
+          clash: function () { if (!ok()) return; var t = T(); noise(t, 0.26, 0.55, 1800); tone(150, t, 0.3, 'sawtooth', 0.42, 55); tone(90, t, 0.34, 'sine', 0.35, 40); },
+          win: function () { if (!ok()) return; var t = T(); [523, 659, 784, 1046].forEach(function (f, k) { tone(f, t + k * 0.12, 0.18, 'square', 0.32); }); tone(1568, t + 0.5, 0.3, 'square', 0.26); },
+          lose: function () { if (!ok()) return; var t = T(); tone(300, t, 0.45, 'sawtooth', 0.3, 80); },
+          draw: function () { if (!ok()) return; var t = T(); tone(440, t, 0.2, 'square', 0.25); tone(392, t + 0.22, 0.26, 'square', 0.25); }
+        };
+      })();
+      var muteBtn = document.getElementById('gfMute');
+      if (muteBtn) {
+        muteBtn.textContent = Sfx.isMuted() ? '🔇' : '🔊';
+        muteBtn.addEventListener('click', function () { var m = Sfx.toggle(); muteBtn.textContent = m ? '🔇' : '🔊'; if (!m) Sfx.resume(); });
+      }
+
       // { n: name, id: steam appid (cover art), mc: Metacritic, st: Steam % positive, a: aliases }
       var ROSTER = [
         { n: 'Elden Ring', id: 1245620, mc: 96, st: 92 },
@@ -303,9 +354,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         var fa = buildFighter(ga), fb = buildFighter(gb);
         sideA.appendChild(fa); sideB.appendChild(fb);
 
+        Sfx.start();
+        var ti = 0, tk = setInterval(function () { Sfx.tick(ti++); if (ti > 11) clearInterval(tk); }, 70);
         countUp(fa, 850); countUp(fb, 850);
         setTimeout(function () {
-          arena.classList.add('clash');
+          arena.classList.add('clash'); Sfx.clash();
           setTimeout(function () {
             var pa = power(ga), pb = power(gb), draw = false, win, lose;
             if (pa === pb) {
@@ -314,12 +367,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               else draw = true;
             } else { win = pa > pb ? fa : fb; }
             if (draw) {
-              clash.className = 'gf-clash trophy draw'; clash.textContent = '🤝';
+              clash.className = 'gf-clash trophy draw'; clash.textContent = '🤝'; Sfx.draw();
               verdict.innerHTML = 'It’s a <b>dead heat</b> — both at Power ' + pa + '.';
             } else {
               lose = win === fa ? fb : fa;
               win.classList.add('win'); lose.classList.add('lose');
               clash.className = 'gf-clash trophy'; clash.textContent = '🏆';
+              Sfx.lose(); Sfx.win();
               verdict.innerHTML = '<b>' + win._g.n + '</b> takes the cup! ' +
                 '<span class="gf-sub">Power ' + power(win._g) + ' (Meta ' + win._g.mc + ' · Steam ' + (win._g.st || '—') + '%) beats ' +
                 power(lose._g) + ' — ' + lose._g.n + '</span>';
