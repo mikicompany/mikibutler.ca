@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-W7JWP3TR');</script>
+  <!-- End Google Tag Manager -->
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png" />
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+  <title>Game Fights — Miki Butler</title>
+  <meta name="description" content="Pit two games against each other — their Metacritic and Steam scores combine into a Power rating, the covers clash, and only the champion is left standing." />
+  <link rel="canonical" href="https://mikibutler.ca/game-fights.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Game Fights — Miki Butler" />
+  <meta property="og:description" content="Two games enter, one cover leaves. Metacritic + Steam scores decide the champion." />
+  <meta property="og:url" content="https://mikibutler.ca/game-fights.html" />
+  <meta property="og:image" content="https://mikibutler.ca/images/og-card.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Game Fights — Miki Butler" />
+  <meta name="twitter:description" content="Two games enter, one cover leaves. Metacritic + Steam scores decide the champion." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    .gf-main { max-width: 900px; margin: 0 auto; padding: clamp(30px, 6vw, 70px) clamp(18px, 5vw, 40px) 90px; }
+    .gf-eyebrow { font-family: 'Press Start 2P', monospace; font-size: 11px; letter-spacing: .1em; color: var(--accent);
+      text-transform: uppercase; }
+    .gf-h1 { font-size: clamp(34px, 7vw, 60px); font-weight: 800; letter-spacing: -.02em; margin: 14px 0 0; line-height: 1.02; color: #f4f6f8; }
+    .gf-lede { color: var(--text-muted); font-size: clamp(15px, 2.2vw, 18px); max-width: 62ch; margin: 14px 0 0; line-height: 1.6; }
+    .gf-lede b { color: #cfd4da; font-weight: 700; }
+    .gf-back { display: inline-block; margin: 26px 0 0; color: var(--text-muted); font-size: 13px; text-decoration: none; }
+    .gf-back:hover { color: var(--accent); }
+
+    .gf-card { margin: 26px 0 0; background: #14171d; border: 1px solid #23272e; border-radius: 18px; padding: clamp(18px, 4vw, 30px); }
+    .gf-pick { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .gf-input { flex: 1 1 240px; min-width: 0; background: #0f1216; border: 1px solid #2a2f37; color: #e8eaed;
+      border-radius: 11px; padding: 13px 15px; font-size: 15px; font-family: inherit; }
+    .gf-input:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(160,255,0,.15); }
+    .gf-vs { font-family: 'Press Start 2P', monospace; font-size: 15px; color: var(--accent); flex: 0 0 auto; }
+    .gf-actions { display: flex; gap: 11px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+    .gf-actions button { background: #12161c; border: 1px solid #2a2f37; color: #dfe4ea; border-radius: 10px;
+      padding: 11px 18px; font-size: 14px; font-family: inherit; cursor: pointer; }
+    .gf-actions button:hover { border-color: #3a4150; }
+    .gf-fight { background: var(--accent) !important; color: #0a0b08 !important; border-color: var(--accent) !important;
+      font-weight: 800 !important; letter-spacing: .02em; }
+    .gf-fight:hover { filter: brightness(1.08); }
+    .gf-msg { text-align: center; font-size: 14px; color: #ffb2a8; min-height: 18px; margin: 12px 0 0; }
+
+    .gf-arena { margin: 26px 0 0; display: grid; grid-template-columns: 1fr auto 1fr; gap: clamp(8px, 3vw, 26px); align-items: center; }
+    .gf-clash { font-family: 'Press Start 2P', monospace; font-size: clamp(16px, 3vw, 22px); color: var(--accent); text-align: center;
+      text-shadow: 0 0 14px rgba(160,255,0,.5); transition: font-size .3s ease; }
+    .gf-clash.trophy { font-size: clamp(52px, 12vw, 96px); text-shadow: 0 6px 20px rgba(0,0,0,.6); animation: gfPop .5s cubic-bezier(.2,1.5,.5,1); }
+    .gf-clash.draw { color: #ffd36b; }
+    @keyframes gfPop { 0% { transform: scale(.2); opacity: 0; } 60% { transform: scale(1.25); } 100% { transform: scale(1); opacity: 1; } }
+    .gf-fighter { display: flex; flex-direction: column; align-items: center; gap: 12px;
+      transition: transform .45s cubic-bezier(.2,1.3,.5,1), opacity .45s ease, filter .45s ease; }
+    .gf-cover { position: relative; width: 100%; max-width: 300px; aspect-ratio: 2 / 3; border-radius: 16px; overflow: hidden;
+      background: linear-gradient(160deg, #232a33, #12151b); border: 1px solid #2a2f37; box-shadow: 0 16px 40px rgba(0,0,0,.55); }
+    .gf-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .gf-fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center;
+      padding: 16px; font-family: 'Press Start 2P', monospace; font-size: 13px; line-height: 1.7; color: #e8eaed;
+      background: radial-gradient(120% 120% at 30% 20%, #2b333d, #12151b); }
+    .gf-ko, .gf-crown { position: absolute; opacity: 0; transition: opacity .3s ease, transform .3s ease; }
+    .gf-ko { inset: 0; display: flex; align-items: center; justify-content: center; transform: rotate(-14deg) scale(1.4);
+      font-family: 'Press Start 2P', monospace; font-size: clamp(28px, 6vw, 44px); color: #ff5648;
+      text-shadow: 0 3px 0 #7a1109, 0 0 22px rgba(255,80,60,.6); background: rgba(8,6,6,.45); }
+    .gf-crown { top: -22px; left: 50%; transform: translateX(-50%) translateY(8px) scale(.6); font-size: clamp(34px, 7vw, 52px);
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,.55)); }
+    .gf-nm { font-size: clamp(15px, 2.4vw, 19px); font-weight: 700; color: #eef2f6; text-align: center; line-height: 1.25; }
+    .gf-scores { display: flex; gap: 8px; }
+    .gf-sc { display: flex; flex-direction: column; align-items: center; min-width: 62px; padding: 8px 10px;
+      background: #12161c; border: 1px solid #23272e; border-radius: 11px; }
+    .gf-sc b { font-size: clamp(20px, 4vw, 24px); color: #eef2f6; font-variant-numeric: tabular-nums; line-height: 1; }
+    .gf-sc span { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: var(--text-muted); margin-top: 5px; }
+    .gf-sc.gf-total { background: rgba(160,255,0,.09); border-color: rgba(160,255,0,.35); }
+    .gf-sc.gf-total b { color: var(--accent); }
+
+    .gf-arena.clash .gf-side-a .gf-fighter { animation: gfLungeR .32s ease; }
+    .gf-arena.clash .gf-side-b .gf-fighter { animation: gfLungeL .32s ease; }
+    @keyframes gfLungeR { 50% { transform: translateX(26px) rotate(3deg); } }
+    @keyframes gfLungeL { 50% { transform: translateX(-26px) rotate(-3deg); } }
+    .gf-fighter.win { transform: scale(1.07); }
+    .gf-fighter.win .gf-cover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 0 20px 50px rgba(160,255,0,.28); }
+    .gf-fighter.win .gf-crown { opacity: 1; transform: translateX(-50%) translateY(-4px) scale(1); }
+    .gf-fighter.lose { transform: translateY(30px) rotate(-6deg) scale(.88); opacity: .45; filter: grayscale(.9) brightness(.65); }
+    .gf-fighter.lose .gf-ko { opacity: 1; transform: rotate(-14deg) scale(1); }
+    .gf-verdict { margin: 22px 0 0; text-align: center; font-size: clamp(16px, 2.4vw, 20px); color: #eef2f6; }
+    .gf-verdict b { color: var(--accent); }
+    .gf-verdict .gf-sub { display: block; font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+    .gf-note { margin: 26px 0 0; font-size: 12px; color: var(--text-muted); text-align: center; line-height: 1.6; }
+
+    @media (max-width: 560px) { .gf-arena { gap: 6px; } .gf-sc { min-width: 48px; padding: 6px 6px; } }
+    @media (prefers-reduced-motion: reduce) {
+      .gf-fighter, .gf-arena.clash .gf-side-a .gf-fighter, .gf-arena.clash .gf-side-b .gf-fighter, .gf-clash.trophy { animation: none !important; transition: none; }
+    }
+  </style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W7JWP3TR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo" aria-label="Miki Butler home"><img src="images/logo512.jpg" alt="Miki Butler" /></a>
+    <nav id="sidebar-nav"></nav>
+    <div class="sidebar-socials" id="sidebar-socials"></div>
+    <p class="sidebar-copy">© All rights reserved<br>Miki Butler</p>
+  </aside>
+
+  <main>
+    <div class="gf-main">
+      <p class="gf-eyebrow">▶ Game Fights</p>
+      <h1 class="gf-h1">Two games enter. One cover leaves. 🥊</h1>
+      <p class="gf-lede">Type two games and send them into the ring. Their <b>Metacritic</b> and <b>Steam</b> scores combine into a <b>Power</b> rating — the covers clash, the loser hits the mat, and the champion takes the cup. Backed by a built‑in roster of ~50 classics (start typing for suggestions).</p>
+
+      <div class="gf-card">
+        <div class="gf-pick">
+          <input class="gf-input" id="gfA" list="gfList" placeholder="Fighter 1 — e.g. Elden Ring" autocomplete="off" spellcheck="false" />
+          <span class="gf-vs">VS</span>
+          <input class="gf-input" id="gfB" list="gfList" placeholder="Fighter 2 — e.g. Hollow Knight" autocomplete="off" spellcheck="false" />
+          <datalist id="gfList"></datalist>
+        </div>
+        <div class="gf-actions">
+          <button type="button" class="gf-fight" id="gfGo">🥊 Fight!</button>
+          <button type="button" id="gfRandom">🎲 Random</button>
+          <button type="button" id="gfReset">Reset</button>
+        </div>
+        <p class="gf-msg" id="gfMsg"></p>
+        <div class="gf-arena" id="gfArena" hidden>
+          <div class="gf-side gf-side-a" id="gfSideA"></div>
+          <div class="gf-clash" id="gfClash">VS</div>
+          <div class="gf-side gf-side-b" id="gfSideB"></div>
+        </div>
+        <div class="gf-verdict" id="gfVerdict" hidden></div>
+      </div>
+
+      <p class="gf-note">Scores are an approximate built‑in snapshot (browsers can’t query Metacritic or Steam live). Cover art is served from Steam’s CDN.</p>
+      <a class="gf-back" href="arcade.html">← Back to the arcade</a>
+    </div>
+  </main>
+
+  <script src="js/sidebar.js"></script>
+  <script src="js/fx.js" defer></script>
+  <script>
+    // Game Fights — two games clash; the higher Metacritic+Steam "Power" survives.
+    (function () {
+      var arena = document.getElementById('gfArena'); if (!arena) return;
+      // { n: name, id: steam appid (cover art), mc: Metacritic, st: Steam % positive, a: aliases }
+      var ROSTER = [
+        { n: 'Elden Ring', id: 1245620, mc: 96, st: 92 },
+        { n: 'The Witcher 3: Wild Hunt', id: 292030, mc: 93, st: 97, a: ['witcher 3', 'witcher'] },
+        { n: 'Baldur’s Gate 3', id: 1086940, mc: 96, st: 96, a: ['bg3', 'baldurs gate 3'] },
+        { n: 'Portal 2', id: 620, mc: 95, st: 98 },
+        { n: 'Half-Life 2', id: 220, mc: 96, st: 97, a: ['hl2'] },
+        { n: 'Half-Life: Alyx', id: 546560, mc: 93, st: 98, a: ['alyx'] },
+        { n: 'Hades', id: 1145360, mc: 93, st: 98 },
+        { n: 'Red Dead Redemption 2', id: 1174180, mc: 93, st: 92, a: ['rdr2'] },
+        { n: 'Grand Theft Auto V', id: 271590, mc: 96, st: 86, a: ['gta v', 'gta 5', 'gtav'] },
+        { n: 'Cyberpunk 2077', id: 1091500, mc: 86, st: 82, a: ['cyberpunk'] },
+        { n: 'DOOM Eternal', id: 782330, mc: 88, st: 92 },
+        { n: 'DOOM (2016)', id: 379720, mc: 85, st: 95, a: ['doom'] },
+        { n: 'Sekiro: Shadows Die Twice', id: 814380, mc: 90, st: 96, a: ['sekiro'] },
+        { n: 'Dark Souls III', id: 374320, mc: 89, st: 93, a: ['dark souls 3', 'ds3'] },
+        { n: 'Stardew Valley', id: 413150, mc: 89, st: 98 },
+        { n: 'Hollow Knight', id: 367520, mc: 90, st: 97 },
+        { n: 'Celeste', id: 504230, mc: 92, st: 97 },
+        { n: 'Disco Elysium', id: 632470, mc: 91, st: 96 },
+        { n: 'Terraria', id: 105600, mc: 83, st: 98 },
+        { n: 'Counter-Strike 2', id: 730, mc: 83, st: 88, a: ['cs2', 'csgo', 'counter strike'] },
+        { n: 'Dota 2', id: 570, mc: 90, st: 82 },
+        { n: 'Team Fortress 2', id: 440, mc: 92, st: 92, a: ['tf2'] },
+        { n: 'Left 4 Dead 2', id: 550, mc: 89, st: 97, a: ['l4d2'] },
+        { n: 'Cuphead', id: 268910, mc: 88, st: 96 },
+        { n: 'Resident Evil 4 (2023)', id: 2050650, mc: 93, st: 96, a: ['re4', 'resident evil 4'] },
+        { n: 'Resident Evil 2 (2019)', id: 883710, mc: 91, st: 96, a: ['re2'] },
+        { n: 'Monster Hunter: World', id: 582010, mc: 90, st: 91, a: ['mhw', 'monster hunter world'] },
+        { n: 'The Elder Scrolls V: Skyrim', id: 489830, mc: 94, st: 95, a: ['skyrim'] },
+        { n: 'Fallout 4', id: 377160, mc: 84, st: 79 },
+        { n: 'Fallout: New Vegas', id: 22380, mc: 84, st: 96, a: ['new vegas', 'fnv'] },
+        { n: 'Portal', id: 400, mc: 90, st: 98 },
+        { n: 'God of War', id: 1593500, mc: 93, st: 95, a: ['gow'] },
+        { n: 'Marvel’s Spider-Man Remastered', id: 1817070, mc: 87, st: 93, a: ['spider-man', 'spiderman'] },
+        { n: 'Horizon Zero Dawn', id: 1151640, mc: 89, st: 89, a: ['horizon'] },
+        { n: 'Death Stranding', id: 1190460, mc: 82, st: 90 },
+        { n: 'NieR: Automata', id: 524220, mc: 88, st: 92, a: ['nier automata', 'nier'] },
+        { n: 'Vampire Survivors', id: 1794680, mc: 87, st: 97 },
+        { n: 'Deep Rock Galactic', id: 548430, mc: 85, st: 97, a: ['drg'] },
+        { n: 'RimWorld', id: 294100, mc: 87, st: 98 },
+        { n: 'Factorio', id: 427520, mc: 90, st: 98 },
+        { n: 'Slay the Spire', id: 646570, mc: 89, st: 97 },
+        { n: 'Undertale', id: 391540, mc: 92, st: 97 },
+        { n: 'BioShock Infinite', id: 8870, mc: 94, st: 94, a: ['bioshock infinite'] },
+        { n: 'Mass Effect Legendary Edition', id: 1328670, mc: 90, st: 92, a: ['mass effect'] },
+        { n: 'Persona 5 Royal', id: 1687950, mc: 94, st: 96, a: ['persona 5', 'p5r'] },
+        { n: 'Final Fantasy VII Remake', id: 1462040, mc: 88, st: 88, a: ['ff7 remake', 'ffvii remake'] },
+        { n: 'It Takes Two', id: 1426210, mc: 89, st: 96 },
+        { n: 'Ori and the Will of the Wisps', id: 1057090, mc: 90, st: 96, a: ['ori'] },
+        { n: 'Sid Meier’s Civilization VI', id: 289070, mc: 88, st: 84, a: ['civ 6', 'civilization 6', 'civ vi'] },
+        { n: 'The Last of Us Part I', id: 1888930, mc: 88, st: 61, a: ['last of us', 'tlou'] }
+      ];
+      function norm(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ''); }
+      var INDEX = {};
+      ROSTER.forEach(function (g) {
+        INDEX[norm(g.n)] = g;
+        (g.a || []).forEach(function (al) { INDEX[norm(al)] = g; });
+      });
+      function lookup(raw) {
+        var k = norm(raw); if (!k) return null;
+        if (INDEX[k]) return INDEX[k];
+        var hit = null;
+        ROSTER.forEach(function (g) { if (!hit && norm(g.n).indexOf(k) > -1) hit = g; });
+        return hit;
+      }
+      function power(g) { return Math.round(g.mc * 0.6 + g.st * 0.4); }
+
+      var list = document.getElementById('gfList');
+      ROSTER.map(function (g) { return g.n; }).sort().forEach(function (nm) {
+        var o = document.createElement('option'); o.value = nm; list.appendChild(o);
+      });
+
+      var inA = document.getElementById('gfA'), inB = document.getElementById('gfB');
+      var sideA = document.getElementById('gfSideA'), sideB = document.getElementById('gfSideB');
+      var clash = document.getElementById('gfClash'), msg = document.getElementById('gfMsg');
+      var verdict = document.getElementById('gfVerdict');
+      var busy = false;
+
+      function coverCandidates(g) {
+        if (!g.id) return [];
+        var base = 'https://cdn.cloudflare.steamstatic.com/steam/apps/' + g.id + '/';
+        return [base + 'library_600x900.jpg', base + 'header.jpg'];
+      }
+      function buildFighter(g) {
+        var f = document.createElement('div'); f.className = 'gf-fighter';
+        var cov = document.createElement('div'); cov.className = 'gf-cover';
+        var cands = coverCandidates(g), ci = 0;
+        var fb = document.createElement('div'); fb.className = 'gf-fallback'; fb.textContent = g.n; fb.style.display = 'none';
+        if (cands.length) {
+          var img = document.createElement('img'); img.alt = g.n + ' cover'; img.decoding = 'async';
+          img.onerror = function () { ci++; if (ci < cands.length) { img.src = cands[ci]; } else { img.style.display = 'none'; fb.style.display = 'flex'; } };
+          img.src = cands[0]; cov.appendChild(img);
+        } else { fb.style.display = 'flex'; }
+        cov.appendChild(fb);
+        var ko = document.createElement('span'); ko.className = 'gf-ko'; ko.textContent = 'K.O.'; cov.appendChild(ko);
+        var crown = document.createElement('span'); crown.className = 'gf-crown'; crown.textContent = '👑'; cov.appendChild(crown);
+        f.appendChild(cov);
+        var nm = document.createElement('div'); nm.className = 'gf-nm'; nm.textContent = g.n; f.appendChild(nm);
+        var sc = document.createElement('div'); sc.className = 'gf-scores';
+        sc.innerHTML =
+          '<span class="gf-sc"><b data-k="mc">0</b><span>Meta</span></span>' +
+          '<span class="gf-sc"><b data-k="st">0</b><span>Steam</span></span>' +
+          '<span class="gf-sc gf-total"><b data-k="pw">0</b><span>Power</span></span>';
+        f.appendChild(sc);
+        f._g = g;
+        return f;
+      }
+      function countUp(f, ms) {
+        var g = f._g, targets = { mc: g.mc, st: (g.st || 0), pw: power(g) };
+        var t0 = performance.now();
+        (function step(now) {
+          var p = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - p, 3);
+          ['mc', 'st', 'pw'].forEach(function (k) {
+            var el = f.querySelector('[data-k="' + k + '"]');
+            el.textContent = Math.round(targets[k] * e) + (k === 'st' ? '%' : '');
+          });
+          if (p < 1) requestAnimationFrame(step);
+        })(performance.now());
+      }
+
+      function fight() {
+        if (busy) return;
+        var ga = lookup(inA.value), gb = lookup(inB.value);
+        if (!ga || !gb) {
+          var miss = [];
+          if (!ga) miss.push('“' + (inA.value.trim() || 'Fighter 1') + '”');
+          if (!gb) miss.push('“' + (inB.value.trim() || 'Fighter 2') + '”');
+          msg.textContent = 'Not in the roster yet: ' + miss.join(' & ') + '. Try the suggestions as you type.';
+          return;
+        }
+        if (ga === gb) { msg.textContent = 'Pick two different games!'; return; }
+        msg.textContent = ''; busy = true;
+        verdict.hidden = true; verdict.innerHTML = '';
+        arena.classList.remove('clash'); arena.hidden = false;
+        clash.className = 'gf-clash'; clash.textContent = 'VS';
+        sideA.innerHTML = ''; sideB.innerHTML = '';
+        var fa = buildFighter(ga), fb = buildFighter(gb);
+        sideA.appendChild(fa); sideB.appendChild(fb);
+
+        countUp(fa, 850); countUp(fb, 850);
+        setTimeout(function () {
+          arena.classList.add('clash');
+          setTimeout(function () {
+            var pa = power(ga), pb = power(gb), draw = false, win, lose;
+            if (pa === pb) {
+              if (ga.mc !== gb.mc) win = ga.mc > gb.mc ? fa : fb;
+              else if ((ga.st || 0) !== (gb.st || 0)) win = (ga.st || 0) > (gb.st || 0) ? fa : fb;
+              else draw = true;
+            } else { win = pa > pb ? fa : fb; }
+            if (draw) {
+              clash.className = 'gf-clash trophy draw'; clash.textContent = '🤝';
+              verdict.innerHTML = 'It’s a <b>dead heat</b> — both at Power ' + pa + '.';
+            } else {
+              lose = win === fa ? fb : fa;
+              win.classList.add('win'); lose.classList.add('lose');
+              clash.className = 'gf-clash trophy'; clash.textContent = '🏆';
+              verdict.innerHTML = '<b>' + win._g.n + '</b> takes the cup! ' +
+                '<span class="gf-sub">Power ' + power(win._g) + ' (Meta ' + win._g.mc + ' · Steam ' + (win._g.st || '—') + '%) beats ' +
+                power(lose._g) + ' — ' + lose._g.n + '</span>';
+            }
+            verdict.hidden = false;
+            busy = false;
+          }, 340);
+        }, 950);
+      }
+      function reset() {
+        arena.hidden = true; arena.classList.remove('clash');
+        clash.className = 'gf-clash'; clash.textContent = 'VS';
+        sideA.innerHTML = ''; sideB.innerHTML = ''; verdict.hidden = true; verdict.innerHTML = '';
+        msg.textContent = ''; busy = false;
+      }
+      document.getElementById('gfGo').addEventListener('click', fight);
+      document.getElementById('gfReset').addEventListener('click', function () { reset(); inA.value = ''; inB.value = ''; inA.focus(); });
+      document.getElementById('gfRandom').addEventListener('click', function () {
+        if (busy) return;
+        var i = Math.floor(Math.random() * ROSTER.length), j = i;
+        while (j === i) j = Math.floor(Math.random() * ROSTER.length);
+        inA.value = ROSTER[i].n; inB.value = ROSTER[j].n; fight();
+      });
+      [inA, inB].forEach(function (el) {
+        el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); fight(); } });
+      });
+    })();
+  </script>
+</body>
+</html>
