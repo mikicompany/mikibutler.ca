@@ -48,7 +48,8 @@
     .gf-back { display: inline-block; margin: 26px 0 0; color: var(--text-muted); font-size: 13px; text-decoration: none; }
     .gf-back:hover { color: var(--accent); }
 
-    .gf-card { margin: 26px 0 0; background: #14171d; border: 1px solid #23272e; border-radius: 18px; padding: clamp(18px, 4vw, 30px); }
+    .gf-card { position: relative; margin: 26px 0 0; background: #14171d; border: 1px solid #23272e; border-radius: 18px; padding: clamp(18px, 4vw, 30px); }
+    .gf-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 6; }
     .gf-pick { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; }
     .gf-input { flex: 1 1 240px; min-width: 0; background: #0f1216; border: 1px solid #2a2f37; color: #e8eaed;
       border-radius: 11px; padding: 13px 15px; font-size: 15px; font-family: inherit; }
@@ -151,6 +152,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div class="gf-side gf-side-b" id="gfSideB"></div>
         </div>
         <div class="gf-verdict" id="gfVerdict" hidden></div>
+        <canvas class="gf-fx" id="gfFx" aria-hidden="true"></canvas>
       </div>
 
       <p class="gf-note">Scores are an approximate built‑in snapshot (browsers can’t query Metacritic or Steam live). Cover art is served from Steam’s CDN.</p>
@@ -335,6 +337,45 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         })(performance.now());
       }
 
+      // Confetti — a canvas overlay that bursts from the champion's cover.
+      var fxCanvas = document.getElementById('gfFx');
+      var fxCtx = fxCanvas ? fxCanvas.getContext('2d') : null;
+      var parts = [], fxRaf = 0, DPR = Math.min(2, window.devicePixelRatio || 1);
+      var reduce = false;
+      try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+      var FXC = ['#a0ff00', '#ffd36b', '#ffffff', '#ff7a3d', '#61e0ff'];
+      function fxSize() { if (!fxCanvas) return; var r = fxCanvas.getBoundingClientRect(); fxCanvas.width = Math.max(1, r.width * DPR); fxCanvas.height = Math.max(1, r.height * DPR); }
+      window.addEventListener('resize', function () { if (parts.length) fxSize(); });
+      function burst(cx, cy, n) {
+        for (var i = 0; i < n; i++) {
+          var a = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.15, sp = (3 + Math.random() * 7);
+          parts.push({ x: cx * DPR, y: cy * DPR, vx: Math.cos(a) * sp * DPR, vy: Math.sin(a) * sp * DPR - (2 + Math.random() * 3) * DPR,
+            g: 0.22 * DPR, w: (5 + Math.random() * 6) * DPR, h: (7 + Math.random() * 9) * DPR,
+            rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.4, life: 0, max: 60 + Math.random() * 45,
+            col: FXC[(Math.random() * FXC.length) | 0] });
+        }
+        if (!fxRaf) fxRaf = requestAnimationFrame(fxLoop);
+      }
+      function fxLoop() {
+        fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+        for (var i = parts.length - 1; i >= 0; i--) {
+          var p = parts[i]; p.life++; p.vy += p.g; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+          var t = p.life / p.max; if (t >= 1) { parts.splice(i, 1); continue; }
+          fxCtx.save(); fxCtx.globalAlpha = 1 - t * t; fxCtx.translate(p.x, p.y); fxCtx.rotate(p.rot);
+          fxCtx.fillStyle = p.col; fxCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); fxCtx.restore();
+        }
+        if (parts.length) fxRaf = requestAnimationFrame(fxLoop); else { fxRaf = 0; fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height); }
+      }
+      function celebrate(fighter) {
+        if (!fxCtx || reduce) return;
+        fxSize();
+        var cr = fxCanvas.getBoundingClientRect(), cov = fighter.querySelector('.gf-cover'), r = cov.getBoundingClientRect();
+        var cx = r.left - cr.left + r.width / 2, cy = r.top - cr.top + r.height * 0.4;
+        burst(cx, cy, 90);
+        setTimeout(function () { burst(cx, cy, 55); }, 260);
+      }
+      function fxClear() { parts.length = 0; if (fxRaf) { cancelAnimationFrame(fxRaf); fxRaf = 0; } if (fxCtx) fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height); }
+
       function fight() {
         if (busy) return;
         var ga = lookup(inA.value), gb = lookup(inB.value);
@@ -346,7 +387,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           return;
         }
         if (ga === gb) { msg.textContent = 'Pick two different games!'; return; }
-        msg.textContent = ''; busy = true;
+        msg.textContent = ''; busy = true; fxClear();
         verdict.hidden = true; verdict.innerHTML = '';
         arena.classList.remove('clash'); arena.hidden = false;
         clash.className = 'gf-clash'; clash.textContent = 'VS';
@@ -373,7 +414,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               lose = win === fa ? fb : fa;
               win.classList.add('win'); lose.classList.add('lose');
               clash.className = 'gf-clash trophy'; clash.textContent = '🏆';
-              Sfx.lose(); Sfx.win();
+              Sfx.lose(); Sfx.win(); celebrate(win);
               verdict.innerHTML = '<b>' + win._g.n + '</b> takes the cup! ' +
                 '<span class="gf-sub">Power ' + power(win._g) + ' (Meta ' + win._g.mc + ' · Steam ' + (win._g.st || '—') + '%) beats ' +
                 power(lose._g) + ' — ' + lose._g.n + '</span>';
@@ -387,7 +428,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         arena.hidden = true; arena.classList.remove('clash');
         clash.className = 'gf-clash'; clash.textContent = 'VS';
         sideA.innerHTML = ''; sideB.innerHTML = ''; verdict.hidden = true; verdict.innerHTML = '';
-        msg.textContent = ''; busy = false;
+        msg.textContent = ''; busy = false; fxClear();
       }
       document.getElementById('gfGo').addEventListener('click', fight);
       document.getElementById('gfReset').addEventListener('click', function () { reset(); inA.value = ''; inB.value = ''; inA.focus(); });
