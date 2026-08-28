@@ -62,6 +62,7 @@
     .gf-fight { background: var(--accent) !important; color: #0a0b08 !important; border-color: var(--accent) !important;
       font-weight: 800 !important; letter-spacing: .02em; }
     .gf-fight:hover { filter: brightness(1.08); }
+    .gf-actions button.on { background: var(--accent); color: #0a0b08; border-color: var(--accent); font-weight: 800; }
     .gf-msg { text-align: center; font-size: 14px; color: #ffb2a8; min-height: 18px; margin: 12px 0 0; }
 
     .gf-arena { margin: 26px 0 0; display: grid; grid-template-columns: 1fr auto 1fr; gap: clamp(8px, 3vw, 26px); align-items: center; }
@@ -142,6 +143,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="gf-actions">
           <button type="button" class="gf-fight" id="gfGo">🥊 Fight!</button>
           <button type="button" id="gfRandom">🎲 Random</button>
+          <button type="button" id="gfAuto" title="Auto slideshow — a random fight every 30 seconds">📽️ Auto</button>
           <button type="button" id="gfReset">Reset</button>
           <button type="button" id="gfMute" title="Toggle sound" aria-label="Toggle sound">🔊</button>
         </div>
@@ -565,14 +567,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         sideA.innerHTML = ''; sideB.innerHTML = ''; verdict.hidden = true; verdict.innerHTML = '';
         msg.textContent = ''; busy = false; fxClear();
       }
-      document.getElementById('gfGo').addEventListener('click', fight);
-      document.getElementById('gfReset').addEventListener('click', function () { reset(); inA.value = ''; inB.value = ''; inA.focus(); });
-      document.getElementById('gfRandom').addEventListener('click', function () {
+      function randomFight() {
         if (busy) return;
         var i = Math.floor(Math.random() * ROSTER.length), j = i;
         while (j === i) j = Math.floor(Math.random() * ROSTER.length);
         inA.value = ROSTER[i].n; inB.value = ROSTER[j].n; fight();
-      });
+      }
+
+      // Auto slideshow — a fresh random fight every 30 seconds until switched off.
+      var autoTimer = 0, autoOn = false, autoBtn = document.getElementById('gfAuto');
+      function setAuto(v) {
+        autoOn = v;
+        if (autoBtn) { autoBtn.classList.toggle('on', autoOn); autoBtn.textContent = autoOn ? '⏸️ Stop' : '📽️ Auto'; }
+        if (autoTimer) { clearInterval(autoTimer); autoTimer = 0; }
+        if (autoOn) { Sfx.resume(); randomFight(); autoTimer = setInterval(randomFight, 30000); }
+      }
+      if (autoBtn) autoBtn.addEventListener('click', function () { setAuto(!autoOn); });
+
+      document.getElementById('gfGo').addEventListener('click', fight);
+      document.getElementById('gfReset').addEventListener('click', function () { setAuto(false); reset(); inA.value = ''; inB.value = ''; inA.focus(); });
+      document.getElementById('gfRandom').addEventListener('click', randomFight);
       [inA, inB].forEach(function (el) {
         el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); fight(); } });
       });
