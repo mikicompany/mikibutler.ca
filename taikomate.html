@@ -39,7 +39,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
     .tm-main { max-width: 760px; margin: 0 auto; padding: clamp(34px, 7vw, 84px) clamp(18px, 5vw, 40px) 96px; text-align: center; }
-    .tm-mascot { width: min(300px, 72vw); height: auto; margin: 0 auto; display: block; filter: drop-shadow(0 16px 28px rgba(0,0,0,.45)); }
+    .tm-mascot-wrap { position: relative; display: inline-block; margin: 0 auto; line-height: 0; }
+    .tm-mascot { width: min(300px, 72vw); height: auto; display: block; filter: drop-shadow(0 16px 28px rgba(0,0,0,.45)); }
+    /* Red eye-flash overlaid on the mascot's eyes — screen-blends so the black pupils glow red. */
+    .tm-eye { position: absolute; width: 9%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,45,28,.98) 0%, rgba(255,22,10,.6) 45%, rgba(255,0,0,0) 72%);
+      opacity: 0; pointer-events: none; mix-blend-mode: screen; will-change: opacity; animation: tmEyes 3.6s infinite; }
+    .tm-eye.e1 { left: 40.5%; top: 53%; }
+    .tm-eye.e2 { left: 53%; top: 47%; }
+    @keyframes tmEyes { 0%, 88%, 100% { opacity: 0; } 89% { opacity: 1; } 90.5% { opacity: 0; } 92% { opacity: 1; } 95% { opacity: 1; } 96.5% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .tm-eye { animation: none; } }
     .tm-eyebrow { margin: 22px 0 0; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
     .tm-h1 { font-size: clamp(40px, 9vw, 68px); font-weight: 800; letter-spacing: -.02em; margin: 8px 0 0; color: #f4f6f8; line-height: 1; }
     .tm-tag { color: var(--text-muted); font-size: clamp(15px, 2.4vw, 19px); max-width: 52ch; margin: 16px auto 0; line-height: 1.6; }
@@ -78,7 +87,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <main>
     <div class="tm-main">
-      <img class="tm-mascot" src="https://lh3.googleusercontent.com/d/1o7E7StSreKgoXZGPLIYm1gDLkPcwdeq2=w900" alt="TaikoMate — an angry tomato mascot" width="300" height="300" />
+      <span class="tm-mascot-wrap">
+        <img class="tm-mascot" src="https://lh3.googleusercontent.com/d/1o7E7StSreKgoXZGPLIYm1gDLkPcwdeq2=w900" alt="TaikoMate — an angry tomato mascot" width="300" height="300" />
+        <span class="tm-eye e1" aria-hidden="true"></span>
+        <span class="tm-eye e2" aria-hidden="true"></span>
+      </span>
       <p class="tm-eyebrow">Free · Windows · Pomodoro</p>
       <h1 class="tm-h1">TaikoMate</h1>
       <p class="tm-tag">Your feisty little Pomodoro companion for planning time and tasks. Work in focused sprints, line up what’s next, and actually finish your day.</p>
