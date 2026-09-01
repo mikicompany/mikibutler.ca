@@ -707,10 +707,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         return [].slice.call(document.querySelectorAll('.masonry-item, .filter-btn, .back-btn, .group-nav-btn')).filter(vis);
       }
       function ctr(r) { return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
-      function ring(el) {
+      function ring(el, noScroll) {
         if (cur && cur !== el) cur.classList.remove('cg-focus');
         cur = el || null;
-        if (cur) { cur.classList.add('cg-focus'); cur.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' }); }
+        if (cur) { cur.classList.add('cg-focus'); if (!noScroll) cur.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' }); }
       }
       function seed() {
         var list = items(); if (!list.length) return;
@@ -750,7 +750,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         var idx = -1;
         for (var i = 0; i < btns.length; i++) if (btns[i].classList.contains('active')) { idx = i; break; }
         var next = idx < 0 ? (delta > 0 ? 0 : btns.length - 1) : (idx + delta + btns.length) % btns.length;
-        btns[next].click();   // fires the same jumpToCategory the number keys use
+        var btn = btns[next];
+        btn.click();   // fires the same jumpToCategory the number keys use
+        var cat = btn.dataset.filter;
+        requestAnimationFrame(function () { ringSection(cat); });   // move the ring into the new section
+      }
+      // Drop the ring on the first tile of a category's section (after a chip jump).
+      function ringSection(cat) {
+        var header = document.getElementById('cat-' + cat);
+        var sec = header && header.nextElementSibling;
+        var first = sec && sec.querySelector ? sec.querySelector('.masonry-item') : null;
+        if (first && vis(first)) ring(first, true); else seed();
       }
 
       var seenPad = false;
@@ -813,15 +823,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         raf = requestAnimationFrame(loop);
       }
 
-      // Keyboard Left/Right cycle categories too — the arrows act like the number
-      // keypad / bumpers on the main grid (the lightbox & albums keep their own arrows).
+      // Keyboard arrows drive the ring exactly like the controller D-pad: the first
+      // arrow makes the green ring appear, then arrows move it and Enter selects.
+      // Capture phase + stopImmediatePropagation so we take over from the page's own
+      // arrow handling on the grid. The lightbox keeps its own arrows (browse pieces).
       document.addEventListener('keydown', function (e) {
-        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-        if (lb() || document.querySelector('.back-btn')) return;   // not while a piece/album is open
+        if (lb()) return;
         var t = e.target; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
-        e.preventDefault();
-        cycleCat(e.key === 'ArrowLeft' ? -1 : 1);
-      });
+        var dir = e.key === 'ArrowLeft' ? 'left' : e.key === 'ArrowRight' ? 'right'
+                : e.key === 'ArrowUp' ? 'up' : e.key === 'ArrowDown' ? 'down' : '';
+        if (dir) {
+          e.preventDefault(); e.stopImmediatePropagation();
+          if (!cur || !document.contains(cur) || !vis(cur)) seed();   // first press → show it
+          else move(dir);                                             // then move like the D-pad
+          return;
+        }
+        if (e.key === 'Enter' && cur && document.contains(cur) && vis(cur)) {
+          e.preventDefault(); e.stopImmediatePropagation();
+          activate();
+        }
+      }, true);
 
       window.addEventListener('gamepadconnected', function () { if (!raf) { raf = requestAnimationFrame(loop); } });
       raf = requestAnimationFrame(loop);
