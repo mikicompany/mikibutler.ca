@@ -713,7 +713,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (cur) { cur.classList.add('cg-focus'); if (!noScroll) cur.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' }); }
       }
       function seed() {
-        var list = items(); if (!list.length) return;
+        // prefer artwork tiles over the filter chips when first placing the ring
+        var tiles = [].slice.call(document.querySelectorAll('.masonry-item')).filter(vis);
+        var list = tiles.length ? tiles : items(); if (!list.length) return;
         var cx = innerWidth / 2, cy = innerHeight / 2, best = null, bd = Infinity;
         list.forEach(function (el) {
           var c = ctr(el.getBoundingClientRect());
@@ -727,8 +729,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         var list = items(); if (!list.length) return;
         if (!cur || !document.contains(cur) || !vis(cur)) { seed(); return; }
         var c = ctr(cur.getBoundingClientRect()), best = null, bc = Infinity;
+        var horiz = dir === 'left' || dir === 'right', curChip = cur.classList.contains('filter-btn');
         list.forEach(function (el) {
           if (el === cur) return;
+          // left/right stays within the same row-type (tiles↔tiles, chips↔chips);
+          // up/down is what crosses between the filter bar and the artwork grid
+          if (horiz && el.classList.contains('filter-btn') !== curChip) return;
           var e = ctr(el.getBoundingClientRect()), dx = e.x - c.x, dy = e.y - c.y, primary, perp;
           if (dir === 'left') { if (dx > -6) return; primary = -dx; perp = Math.abs(dy); }
           else if (dir === 'right') { if (dx < 6) return; primary = dx; perp = Math.abs(dy); }
