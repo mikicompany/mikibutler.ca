@@ -771,10 +771,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         var pads = navigator.getGamepads ? navigator.getGamepads() : [], gp = null;
         for (var i = 0; i < pads.length; i++) { if (pads[i] && pads[i].connected) { gp = pads[i]; break; } }
         if (gp) {
-          if (!seenPad) { seenPad = true; toast(); seed(); }
           var ax = gp.axes[0] || 0, ay = gp.axes[1] || 0, dp = dpad(gp);
           var lx = dp.x !== 0 ? dp.x : (Math.abs(ax) > DZ ? (ax < 0 ? -1 : 1) : 0);
           var ly = dp.y !== 0 ? dp.y : (Math.abs(ay) > DZ ? (ay < 0 ? -1 : 1) : 0);
+          var anyBtn = false; for (var bi = 0; bi < gp.buttons.length; bi++) { if (isDown(gp, bi)) { anyBtn = true; break; } }
+          if (!seenPad) {
+            // Wait for the first real input before showing the ring — so a refresh
+            // with a pad already connected doesn't pop the highlight on its own.
+            if (lx || ly || anyBtn) { seenPad = true; toast(); seed(); }
+            for (var pb = 0; pb <= 15; pb++) prev[pb] = isDown(gp, pb);   // swallow the engaging press
+            raf = requestAnimationFrame(loop); return;
+          }
           var now = performance.now();
 
           if (lb()) {
@@ -805,6 +812,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
         raf = requestAnimationFrame(loop);
       }
+
+      // Keyboard Left/Right cycle categories too — the arrows act like the number
+      // keypad / bumpers on the main grid (the lightbox & albums keep their own arrows).
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        if (lb() || document.querySelector('.back-btn')) return;   // not while a piece/album is open
+        var t = e.target; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+        e.preventDefault();
+        cycleCat(e.key === 'ArrowLeft' ? -1 : 1);
+      });
 
       window.addEventListener('gamepadconnected', function () { if (!raf) { raf = requestAnimationFrame(loop); } });
       raf = requestAnimationFrame(loop);
