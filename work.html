@@ -743,6 +743,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (!cur || !document.contains(cur) || !vis(cur)) { seed(); return; }
         cur.click();   // tile → enters album or opens the lightbox; chip → filters; arrow → prev/next
       }
+      // Bumpers cycle the category chips — the controller alternative to the 1–5 keys.
+      function cycleCat(delta) {
+        var btns = [].slice.call(document.querySelectorAll('.filter-btn')).filter(vis);
+        if (!btns.length) return;
+        var idx = -1;
+        for (var i = 0; i < btns.length; i++) if (btns[i].classList.contains('active')) { idx = i; break; }
+        var next = idx < 0 ? (delta > 0 ? 0 : btns.length - 1) : (idx + delta + btns.length) % btns.length;
+        btns[next].click();   // fires the same jumpToCategory the number keys use
+      }
 
       var seenPad = false;
       function toast() {
@@ -787,6 +796,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             } else { lastDir = ''; }
             if (edge(gp, 0)) activate();                          // A enters album / opens piece / applies chip
             if (edge(gp, 1)) key('Escape');                      // B backs out of an album
+            if (edge(gp, 4)) cycleCat(-1);                       // LB → previous category
+            if (edge(gp, 5)) cycleCat(1);                        // RB → next category
           }
           [2, 3, 4, 5, 6, 7, 8, 9, 10, 11].forEach(function (b) { prev[b] = isDown(gp, b); });
         } else if (seenPad) {
