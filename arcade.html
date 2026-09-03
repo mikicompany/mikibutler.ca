@@ -4304,6 +4304,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       });
       sendBtn.addEventListener('click', function () {
         if (!model) return;
+        // stop the turntable so the captured frame is a clean still, not mid-spin
+        if (controls && controls.autoRotate) { controls.autoRotate = false; controls.update(); var sb = document.getElementById('ldSpin'); if (sb) sb.textContent = '▶ Spin'; }
         launchRocket();
         var thumb = ''; try { renderer.render(scene, camera); thumb = renderer.domElement.toDataURL('image/png'); } catch (e) {}
         var title = (titleIn.value || 'Untitled piece').trim();
