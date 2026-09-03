@@ -554,6 +554,30 @@
     .h3-sel-h { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: .08em; }
     .h3-hint { font-size: 11px; color: var(--text-muted); margin-left: auto; align-self: center; }
     @media (max-width: 620px) { .h3-side { flex-basis: 100%; } .h3-palette { grid-template-columns: repeat(6, 1fr); } }
+    /* Blender → Portfolio loader */
+    .ld-stage { position: relative; aspect-ratio: 16 / 10; border: 1px solid #23272e; border-radius: 14px; overflow: hidden;
+      background: radial-gradient(ellipse at 50% 30%, #1b2028, #0c0e12); touch-action: none; }
+    .ld-stage canvas { display: block; width: 100%; height: 100%; }
+    .ld-drop { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center;
+      cursor: pointer; color: var(--text-muted); font-size: 14px; line-height: 1.6;
+      border: 2px dashed #2f3742; border-radius: 14px; margin: 10px; background: rgba(10,12,16,.35); transition: border-color .15s, color .15s, background .15s; }
+    .ld-drop span { font-size: 12px; color: #6b7280; }
+    .ld-drop b { color: var(--accent); }
+    .ld-drop.hot { border-color: var(--accent); color: var(--accent); background: rgba(160,255,0,.06); }
+    .ld-drop.hidden { display: none; }
+    .ld-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; }
+    .ld-controls .tool-slider input[type=text] { background: #111418; border: 1px solid #2a2f37; color: #e8eaed; border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; }
+    .ld-controls button { background: #12161c; border: 1px solid #2a2f37; color: #dfe4ea; border-radius: 9px; padding: 10px 16px; font-size: 13px; font-family: inherit; cursor: pointer; }
+    .ld-controls button:hover { border-color: #3a4150; }
+    .ld-send { background: var(--accent) !important; color: #0a0b08 !important; border-color: var(--accent) !important; font-weight: 800 !important; }
+    .ld-send:hover { filter: brightness(1.08); }
+    .ld-send:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+    .ld-note { margin: 10px 0 0; font-size: 12.5px; color: var(--text-muted); min-height: 16px; }
+    .ld-note b { color: var(--accent); }
+    /* Rocket flourish (send / share) */
+    .rk { position: fixed; z-index: 10050; font-size: 40px; pointer-events: none; will-change: transform, opacity;
+      filter: drop-shadow(0 0 10px rgba(255,180,80,.5)); }
+    .rk-spark { position: fixed; z-index: 10049; width: 7px; height: 7px; border-radius: 50%; pointer-events: none; will-change: transform, opacity; }
     /* Sketch 3D Render overlay */
     .d3d-overlay { position: fixed; inset: 0; z-index: 10000; background: rgba(6,7,5,.9); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 20px; }
     .d3d-overlay[hidden] { display: none; }
@@ -878,6 +902,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <button type="button" class="tool-tab" data-go="banner">🖼️ Banner</button>
           <button type="button" class="tool-tab" data-go="glitch">📺 Glitch</button>
           <button type="button" class="tool-tab" data-go="resume">📄 Résumé</button>
+        </div>
+
+        <div class="tool-block" data-tool="loader">
+          <div class="tool-title">Blender → Portfolio 🧊🚀</div>
+          <p class="tool-desc">Export from Blender (<b>File → Export → glTF 2.0 · .glb</b>), drop it below to spin it in 3D, then hit the green button. <i>Prototype:</i> a browser can't read Blender live, so this loads your exported <b>.glb</b>; <b>Send to Portfolio</b> grabs a thumbnail + a ready‑made data snippet and launches the rocket. 🚀</p>
+          <div class="ld-stage" id="ldStage">
+            <canvas id="ldCanvas"></canvas>
+            <div class="ld-drop" id="ldDrop"><div>⬇ Drop a <b>.glb</b> here<br><span>or click to choose a file</span></div></div>
+            <input type="file" id="ldFile" accept=".glb,.gltf,model/gltf-binary,model/gltf+json" hidden />
+          </div>
+          <div class="ld-controls">
+            <label class="tool-slider">Title <input type="text" id="ldTitle" placeholder="Piece name" autocomplete="off" /></label>
+            <button type="button" id="ldReset">Reset</button>
+            <button type="button" id="ldShare">⤴ Share</button>
+            <button type="button" id="ldSend" class="ld-send" disabled>🚀 Send to Portfolio</button>
+          </div>
+          <p class="ld-note" id="ldNote">Drop a <b>.glb</b> to begin.</p>
         </div>
 
         <div class="tool-block" data-tool="compare">
@@ -3499,6 +3540,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var panes = Array.prototype.slice.call(wrap.querySelectorAll('.tool-block[data-tool]'));
       if (!panes.length) return;
       var DESC = {
+        loader: 'Preview a Blender .glb → send it up 🚀',
         compare: 'Slide between two images',
         value: 'Values in grayscale + how busy it is',
         palette: 'Pull colors from any image',
@@ -3947,6 +3989,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- 3D Sticker Head engine (self-hosted Three.js + GLTF exporter) -->
   <script src="js/lib/three.min.js"></script>
   <script src="js/lib/GLTFExporter.js"></script>
+  <script src="js/lib/GLTFLoader.js"></script>
+  <script src="js/lib/OrbitControls.js"></script>
   <script>
     (function () {
       var stage = document.getElementById('h3Stage'); if (!stage || !window.THREE) return;
@@ -4117,6 +4161,141 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // Init once the panel actually has a size (accordion opens it).
       if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (stage.clientWidth > 0) { init(); resize(); } }); ro.observe(stage); }
       window.addEventListener('resize', resize);
+    })();
+  </script>
+
+  <!-- Blender → Portfolio loader + rocket flourish -->
+  <script>
+    (function () {
+      var stage = document.getElementById('ldStage'); if (!stage) return;
+      var canvas = document.getElementById('ldCanvas');
+      var drop = document.getElementById('ldDrop');
+      var fileIn = document.getElementById('ldFile');
+      var sendBtn = document.getElementById('ldSend');
+      var shareBtn = document.getElementById('ldShare');
+      var resetBtn = document.getElementById('ldReset');
+      var titleIn = document.getElementById('ldTitle');
+      var note = document.getElementById('ldNote');
+      var reduce = false; try { reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+      // ── Rocket flourish (reusable: send + share) ──
+      function spark(x, y) {
+        var s = document.createElement('div'); s.className = 'rk-spark';
+        s.style.background = ['#ffd36b', '#ff7a3d', '#a0ff00', '#ffffff'][(Math.random() * 4) | 0];
+        s.style.left = x + 'px'; s.style.top = y + 'px';
+        document.body.appendChild(s);
+        var vx = (Math.random() * 2 - 1) * 0.06, vy = 0.05 + Math.random() * 0.12, t0 = performance.now(), life = 450 + Math.random() * 300;
+        (function st(now) { var d = now - t0, p = d / life; if (p >= 1) { s.remove(); return; }
+          s.style.transform = 'translate(' + (vx * d) + 'px,' + (vy * d) + 'px)'; s.style.opacity = String(1 - p);
+          requestAnimationFrame(st); })(t0);
+      }
+      function launchRocket() {
+        if (reduce) return;
+        var sx = innerWidth / 2, sy = innerHeight - 70, drift = (Math.random() * 140 - 70);
+        var rk = document.createElement('div'); rk.className = 'rk'; rk.textContent = '🚀';
+        document.body.appendChild(rk);
+        var t0 = performance.now(), dur = 1250;
+        (function step(now) {
+          var p = Math.min(1, (now - t0) / dur), e = p * p;
+          var x = sx + drift * p, y = sy - (sy + 140) * e;
+          rk.style.left = x + 'px'; rk.style.top = y + 'px';
+          rk.style.transform = 'translate(-50%,-50%) rotate(' + (-18 + drift * 0.12) + 'deg) scale(' + (1 + 0.35 * p) + ')';
+          rk.style.opacity = p > 0.85 ? String(1 - (p - 0.85) / 0.15) : '1';
+          if (p < 0.92 && Math.random() < 0.85) spark(x, y + 16);
+          if (p < 1) requestAnimationFrame(step); else rk.remove();
+        })(t0);
+      }
+      window.arcadeRocket = launchRocket;
+
+      // ── Three.js viewer ──
+      if (!window.THREE || !THREE.GLTFLoader) { if (note) note.textContent = '3D libraries did not load.'; wireShare(); return; }
+      var T = THREE, renderer, scene, camera, controls, model = null, inited = false;
+
+      function init() {
+        if (inited) return; inited = true;
+        renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+        renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+        scene = new T.Scene();
+        camera = new T.PerspectiveCamera(45, 16 / 10, 0.01, 2000);
+        camera.position.set(2, 1.5, 3);
+        if (T.OrbitControls) { controls = new T.OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.dampingFactor = 0.08; }
+        scene.add(new T.HemisphereLight(0xffffff, 0x2a2f38, 0.95));
+        var key = new T.DirectionalLight(0xffffff, 1.1); key.position.set(4, 6, 3); scene.add(key);
+        var fill = new T.DirectionalLight(0xbcd3ff, 0.5); fill.position.set(-4, 2, -2); scene.add(fill);
+        resize();
+        (function loop() { requestAnimationFrame(loop); if (controls) controls.update(); renderer.render(scene, camera); })();
+      }
+      function resize() {
+        if (!renderer) return;
+        var w = stage.clientWidth || 640, h = stage.clientHeight || 400; if (!w || !h) return;
+        renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+      }
+      window.addEventListener('resize', resize);
+
+      function frameModel(obj) {
+        var box = new T.Box3().setFromObject(obj), size = box.getSize(new T.Vector3()), ctr = box.getCenter(new T.Vector3());
+        var maxd = Math.max(size.x, size.y, size.z) || 1;
+        obj.position.sub(ctr);
+        var dist = maxd * 2.2;
+        camera.position.set(dist * 0.7, dist * 0.45, dist);
+        camera.near = maxd / 100; camera.far = maxd * 100; camera.updateProjectionMatrix();
+        if (controls) { controls.target.set(0, 0, 0); controls.update(); }
+      }
+      function loadArrayBuffer(buf, name) {
+        init();
+        try {
+          new T.GLTFLoader().parse(buf, '', function (gltf) {
+            if (model) scene.remove(model);
+            model = gltf.scene || (gltf.scenes && gltf.scenes[0]);
+            scene.add(model); frameModel(model);
+            drop.classList.add('hidden'); sendBtn.disabled = false;
+            if (!titleIn.value) titleIn.value = (name || '').replace(/\.(glb|gltf)$/i, '').replace(/[-_]+/g, ' ');
+            var tris = 0; model.traverse(function (o) { if (o.isMesh && o.geometry) { var g = o.geometry; tris += (g.index ? g.index.count : (g.attributes.position ? g.attributes.position.count : 0)) / 3; } });
+            note.innerHTML = 'Loaded <b>' + (name || 'model') + '</b> — ~' + Math.round(tris).toLocaleString() + ' tris. Drag to orbit · scroll to zoom.';
+          }, function () { note.textContent = 'Could not parse that — export a self‑contained .glb from Blender.'; });
+        } catch (e) { note.textContent = 'Could not read that file.'; }
+      }
+      function handleFile(f) {
+        if (!f) return;
+        if (!/\.(glb|gltf)$/i.test(f.name)) { note.textContent = 'Please choose a .glb (or .gltf) from Blender.'; return; }
+        note.textContent = 'Reading ' + f.name + '…';
+        var r = new FileReader();
+        r.onload = function () { loadArrayBuffer(r.result, f.name); };
+        r.onerror = function () { note.textContent = 'Failed to read the file.'; };
+        r.readAsArrayBuffer(f);
+      }
+      drop.addEventListener('click', function () { fileIn.click(); });
+      fileIn.addEventListener('change', function () { handleFile(fileIn.files[0]); });
+      ['dragenter', 'dragover'].forEach(function (ev) { stage.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('hidden'); drop.classList.add('hot'); }); });
+      ['dragleave', 'drop'].forEach(function (ev) { stage.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('hot'); }); });
+      stage.addEventListener('drop', function (e) { var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) handleFile(f); });
+      resetBtn.addEventListener('click', function () {
+        if (model && scene) { scene.remove(model); model = null; }
+        sendBtn.disabled = true; drop.classList.remove('hidden'); fileIn.value = ''; titleIn.value = '';
+        note.innerHTML = 'Drop a <b>.glb</b> to begin.';
+      });
+      sendBtn.addEventListener('click', function () {
+        if (!model) return;
+        launchRocket();
+        var thumb = ''; try { renderer.render(scene, camera); thumb = renderer.domElement.toDataURL('image/png'); } catch (e) {}
+        var title = (titleIn.value || 'Untitled piece').trim();
+        var slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'piece';
+        var snippet = JSON.stringify({ title: title, category: 'personal', model: 'models/' + slug + '.glb', img: 'images/work/' + slug + '.png', is3d: true }, null, 2);
+        if (thumb) { var a = document.createElement('a'); a.href = thumb; a.download = slug + '.png'; a.click(); }
+        try { if (navigator.clipboard) navigator.clipboard.writeText(snippet); } catch (e) {}
+        note.innerHTML = '🚀 <b>Sent!</b> <span style="color:var(--text-muted)">(prototype)</span> Thumbnail downloaded, snippet copied. In a real pipeline this commits the .glb + thumb to the repo:<br><code style="display:block;white-space:pre;overflow:auto;background:#0f1216;border:1px solid #23272e;border-radius:8px;padding:8px;margin-top:6px;font-size:11px;color:#cdd3da">' + snippet.replace(/</g, '&lt;') + '</code>';
+      });
+      function wireShare() {
+        if (!shareBtn) return;
+        shareBtn.addEventListener('click', function () {
+          launchRocket();
+          var url = 'https://mikibutler.ca/arcade.html';
+          if (window.arcadeShare) window.arcadeShare({ title: 'Blender → Portfolio', text: 'Sending 3D straight to the portfolio 🚀', url: url });
+          else if (navigator.share) navigator.share({ title: 'mikibutler.ca', url: url }).catch(function () {});
+          else { try { navigator.clipboard.writeText(url); if (note) note.textContent = 'Link copied 🚀'; } catch (e) {} }
+        });
+      }
+      wireShare();
     })();
   </script>
 </body>
