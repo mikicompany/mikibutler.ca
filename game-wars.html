@@ -588,7 +588,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       document.getElementById('gfRandom').addEventListener('click', randomFight);
       var shareBtn = document.getElementById('gfShare');
       if (shareBtn) shareBtn.addEventListener('click', function () {
-        if (window.arcadeRocket) window.arcadeRocket();   // branded launch 🚀
+        if (window.arcadeRocket) window.arcadeRocket(shareBtn);   // branded pop from the button 🚀
         var url = location.origin + location.pathname, data = { title: 'Game Wars — Miki Butler', text: 'Which game wins? Two covers enter, one leaves 🥊', url: url };
         if (navigator.share) { navigator.share(data).catch(function () {}); return; }
         var prev = shareBtn.textContent;
