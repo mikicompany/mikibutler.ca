@@ -1260,6 +1260,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var label = document.getElementById('arcade-share-label');
       var timer = 0;
       btn.addEventListener('click', function () {
+        if (window.arcadeRocket) window.arcadeRocket();   // satisfying send-off 🚀
         arcadeShare({
           title: 'Miki’s Arcade 🕹️',
           text: 'Browser games, a Game Boy of reels and a pixel-art telly — come play.',
