@@ -914,6 +914,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
           <div class="ld-controls">
             <label class="tool-slider">Title <input type="text" id="ldTitle" placeholder="Piece name" autocomplete="off" /></label>
+            <button type="button" id="ldSpin">⏸ Spin</button>
             <button type="button" id="ldReset">Reset</button>
             <button type="button" id="ldShare">⤴ Share</button>
             <button type="button" id="ldSend" class="ld-send" disabled>🚀 Send to Portfolio</button>
@@ -4209,19 +4210,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       // ── Three.js viewer ──
       if (!window.THREE || !THREE.GLTFLoader) { if (note) note.textContent = '3D libraries did not load.'; wireShare(); return; }
-      var T = THREE, renderer, scene, camera, controls, model = null, inited = false;
+      var T = THREE, renderer, scene, camera, controls, model = null, inited = false, keyLight, ground;
 
       function init() {
         if (inited) return; inited = true;
         renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
         renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+        renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
         scene = new T.Scene();
         camera = new T.PerspectiveCamera(45, 16 / 10, 0.01, 2000);
         camera.position.set(2, 1.5, 3);
-        if (T.OrbitControls) { controls = new T.OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.dampingFactor = 0.08; }
+        if (T.OrbitControls) {
+          controls = new T.OrbitControls(camera, renderer.domElement);
+          controls.enableDamping = true; controls.dampingFactor = 0.08;
+          controls.autoRotate = true; controls.autoRotateSpeed = 1.8;   // turntable
+        }
         scene.add(new T.HemisphereLight(0xffffff, 0x2a2f38, 0.95));
-        var key = new T.DirectionalLight(0xffffff, 1.1); key.position.set(4, 6, 3); scene.add(key);
+        keyLight = new T.DirectionalLight(0xffffff, 1.15); keyLight.position.set(4, 6, 3);
+        keyLight.castShadow = true; keyLight.shadow.mapSize.set(2048, 2048); keyLight.shadow.bias = -0.0006;
+        scene.add(keyLight);
         var fill = new T.DirectionalLight(0xbcd3ff, 0.5); fill.position.set(-4, 2, -2); scene.add(fill);
+        // ground plane that only shows the shadow (transparent otherwise)
+        ground = new T.Mesh(new T.PlaneGeometry(1, 1), new T.ShadowMaterial({ opacity: 0.32 }));
+        ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; ground.visible = false;
+        scene.add(ground);
         resize();
         (function loop() { requestAnimationFrame(loop); if (controls) controls.update(); renderer.render(scene, camera); })();
       }
@@ -4235,11 +4247,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       function frameModel(obj) {
         var box = new T.Box3().setFromObject(obj), size = box.getSize(new T.Vector3()), ctr = box.getCenter(new T.Vector3());
         var maxd = Math.max(size.x, size.y, size.z) || 1;
-        obj.position.sub(ctr);
+        obj.position.sub(ctr);                                   // center at origin
         var dist = maxd * 2.2;
         camera.position.set(dist * 0.7, dist * 0.45, dist);
         camera.near = maxd / 100; camera.far = maxd * 100; camera.updateProjectionMatrix();
         if (controls) { controls.target.set(0, 0, 0); controls.update(); }
+        // sit the shadow-catcher just under the model's feet, sized to it
+        var floorY = -size.y / 2 - maxd * 0.002;
+        ground.position.set(0, floorY, 0); ground.scale.set(maxd * 6, maxd * 6, 1); ground.visible = true;
+        // aim the shadow camera to cover the model
+        keyLight.position.set(maxd * 4, maxd * 6, maxd * 3);
+        keyLight.target.position.set(0, 0, 0); scene.add(keyLight.target);
+        var sc = keyLight.shadow.camera, r = maxd * 1.6;
+        sc.left = -r; sc.right = r; sc.top = r; sc.bottom = -r; sc.near = maxd * 0.5; sc.far = maxd * 30; sc.updateProjectionMatrix();
       }
       function loadArrayBuffer(buf, name) {
         init();
@@ -4247,6 +4267,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           new T.GLTFLoader().parse(buf, '', function (gltf) {
             if (model) scene.remove(model);
             model = gltf.scene || (gltf.scenes && gltf.scenes[0]);
+            model.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
             scene.add(model); frameModel(model);
             drop.classList.add('hidden'); sendBtn.disabled = false;
             if (!titleIn.value) titleIn.value = (name || '').replace(/\.(glb|gltf)$/i, '').replace(/[-_]+/g, ' ');
@@ -4271,8 +4292,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       stage.addEventListener('drop', function (e) { var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) handleFile(f); });
       resetBtn.addEventListener('click', function () {
         if (model && scene) { scene.remove(model); model = null; }
+        if (ground) ground.visible = false;
         sendBtn.disabled = true; drop.classList.remove('hidden'); fileIn.value = ''; titleIn.value = '';
         note.innerHTML = 'Drop a <b>.glb</b> to begin.';
+      });
+      var spinBtn = document.getElementById('ldSpin');
+      if (spinBtn) spinBtn.addEventListener('click', function () {
+        if (!controls) return;
+        controls.autoRotate = !controls.autoRotate;
+        spinBtn.textContent = controls.autoRotate ? '⏸ Spin' : '▶ Spin';
       });
       sendBtn.addEventListener('click', function () {
         if (!model) return;
