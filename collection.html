@@ -221,6 +221,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <script src="js/sidebar.js"></script>
   <script src="js/fx.js" defer></script>
+  <script src="js/rocket.js"></script>
   <script>
     function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
     // Stable hue per system so each platform gets its own colour.
@@ -552,6 +553,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var data = { title: 'Retro Collection — Miki Butler', text: 'My game & console collection 🎮', url: url };
       var timer = 0;
       btn.addEventListener('click', function(){
+        if (window.arcadeRocket) window.arcadeRocket();   // branded launch 🚀
         if (navigator.share) { navigator.share(data).catch(function(){}); return; }
         var done = function(){
           var prev = label.textContent; label.textContent = 'Link copied!'; btn.classList.add('copied');

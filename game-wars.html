@@ -143,6 +143,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <button type="button" id="gfRandom">🎲 Random</button>
           <button type="button" id="gfAuto" title="Auto slideshow — a random fight every 30 seconds">📽️ Auto</button>
           <button type="button" id="gfReset">Reset</button>
+          <button type="button" id="gfShare">⤴ Share</button>
           <button type="button" id="gfMute" title="Toggle sound" aria-label="Toggle sound">🔊</button>
         </div>
         <p class="gf-msg" id="gfMsg"></p>
@@ -161,6 +162,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <script src="js/sidebar.js"></script>
   <script src="js/fx.js" defer></script>
+  <script src="js/rocket.js"></script>
   <script>
     // Game Wars — two games clash; the higher Metacritic+Steam "Power" survives.
     (function () {
@@ -584,6 +586,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       document.getElementById('gfGo').addEventListener('click', fight);
       document.getElementById('gfReset').addEventListener('click', function () { setAuto(false); reset(); inA.value = ''; inB.value = ''; inA.focus(); });
       document.getElementById('gfRandom').addEventListener('click', randomFight);
+      var shareBtn = document.getElementById('gfShare');
+      if (shareBtn) shareBtn.addEventListener('click', function () {
+        if (window.arcadeRocket) window.arcadeRocket();   // branded launch 🚀
+        var url = location.origin + location.pathname, data = { title: 'Game Wars — Miki Butler', text: 'Which game wins? Two covers enter, one leaves 🥊', url: url };
+        if (navigator.share) { navigator.share(data).catch(function () {}); return; }
+        var prev = shareBtn.textContent;
+        var done = function () { shareBtn.textContent = '✓ Copied!'; setTimeout(function () { shareBtn.textContent = prev; }, 1600); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done).catch(function () { window.prompt('Copy this link', url); });
+        else window.prompt('Copy this link', url);
+      });
       [inA, inB].forEach(function (el) {
         el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); fight(); } });
       });
