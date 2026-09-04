@@ -8,7 +8,7 @@
 
   var css =
     '.rk-ring{position:fixed;z-index:10048;border:3px solid rgba(160,255,0,.7);border-radius:50%;pointer-events:none;will-change:transform,opacity;}' +
-    '.rk-logo{position:fixed;z-index:10050;width:64px;height:64px;border-radius:50%;object-fit:cover;pointer-events:none;will-change:transform,opacity;}';
+    '.rk-logo{position:fixed;z-index:10050;width:32px;height:32px;border-radius:50%;object-fit:cover;pointer-events:none;will-change:transform,opacity;}';
   var st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
 
   // Resolve an origin (an element, a {x,y}/event, or nothing) to a screen point.
@@ -27,12 +27,12 @@
     var p = pt(origin);
     // expanding green ring pulse
     var ring = document.createElement('div'); ring.className = 'rk-ring';
-    ring.style.left = p.x + 'px'; ring.style.top = p.y + 'px'; ring.style.width = ring.style.height = '24px';
+    ring.style.left = p.x + 'px'; ring.style.top = p.y + 'px'; ring.style.width = ring.style.height = '12px';
     document.body.appendChild(ring);
     (function () {
       var t0 = performance.now(), life = 650;
       (function st(now) { var q = (now - t0) / life; if (q >= 1) { ring.remove(); return; }
-        var s = 24 + q * 170; ring.style.width = ring.style.height = s + 'px';
+        var s = 12 + q * 85; ring.style.width = ring.style.height = s + 'px';
         ring.style.transform = 'translate(-50%,-50%)'; ring.style.opacity = String((1 - q) * 0.65);
         requestAnimationFrame(st); })(t0);
     })();
