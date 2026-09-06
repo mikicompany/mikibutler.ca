@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-W7JWP3TR');</script>
+  <!-- End Google Tag Manager -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png" />
+  <title>Submit! — the Perforce game</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Submit! — a browser game about the daily pain of Perforce. Submit your changelists, dodge exclusive locks, and keep the build green." />
+  <meta property="og:title" content="Submit! — the Perforce game" />
+  <meta property="og:description" content="Submit your changelists, dodge exclusive locks, keep the build green. A love-letter to version-control pain." />
+  <meta property="og:url" content="https://mikibutler.ca/perforce.html" />
+  <meta property="og:image" content="https://mikibutler.ca/images/og-card.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    .pf-main { max-width: 780px; margin: 0 auto; padding: clamp(24px,5vw,56px) clamp(16px,4vw,32px) 80px; }
+    .pf-eyebrow { font-family:'Press Start 2P',monospace; font-size:11px; letter-spacing:.08em; color:var(--accent); text-transform:uppercase; }
+    .pf-h1 { font-size: clamp(34px,8vw,58px); font-weight:800; letter-spacing:-.02em; margin:12px 0 0; color:#eef2f6; line-height:1; }
+    .pf-tag { color:var(--text-muted); font-size:15px; margin:8px 0 0; }
+
+    .pf-hud { display:flex; flex-wrap:wrap; gap:10px; margin:22px 0 0; align-items:stretch; }
+    .pf-stat { background:#12161d; border:1px solid #23303a; border-radius:12px; padding:9px 14px; min-width:78px; }
+    .pf-stat .l { font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#6b7a86; }
+    .pf-stat .v { font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600; color:#eef2f6; font-variant-numeric:tabular-nums; }
+    .pf-stat.combo .v { color:var(--accent); }
+    .pf-build { flex:1 1 200px; background:#12161d; border:1px solid #23303a; border-radius:12px; padding:9px 14px; display:flex; flex-direction:column; justify-content:center; }
+    .pf-build .l { font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#6b7a86; display:flex; justify-content:space-between; }
+    .pf-build .l b { color:#9fe870; font-weight:600; }
+    .pf-bar { height:9px; border-radius:6px; background:#0b0e12; border:1px solid #23303a; margin-top:6px; overflow:hidden; }
+    .pf-bar i { display:block; height:100%; width:100%; background:linear-gradient(90deg,#e35b5b,#f0c14b 45%,#7bd85a); transition:width .2s ease; }
+
+    .pf-arena { position:relative; margin:16px 0 0; background:#0c1116; border:1px solid #23303a; border-radius:16px; padding:12px; }
+    .pf-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+    @media (max-width:560px){ .pf-grid { grid-template-columns:repeat(2,1fr); } }
+    .cell { position:relative; aspect-ratio:5/3; border-radius:11px; border:1px solid #23303a; background:#12161d; overflow:hidden;
+      display:flex; flex-direction:column; justify-content:center; align-items:center; gap:4px; cursor:pointer; user-select:none;
+      transition:transform .06s ease, border-color .15s ease, background .15s ease; text-align:center; padding:6px; }
+    .cell:active { transform:scale(.97); }
+    .cell .fn { font-family:'IBM Plex Mono',monospace; font-size:11px; color:#8593a0; line-height:1.25; word-break:break-all; }
+    .cell .st { font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.06em; text-transform:uppercase; }
+    .cell .tbar { position:absolute; left:0; bottom:0; height:4px; width:100%; background:transparent; }
+    .cell .tbar i { display:block; height:100%; width:100%; }
+    .cell.idle .st { color:#4a5a66; }
+    .cell.modified { border-color:#f0c14b; background:#1c1a10; }
+    .cell.modified .fn { color:#f7e6b0; }
+    .cell.modified .st { color:#f0c14b; }
+    .cell.modified .tbar i { background:#f0c14b; }
+    .cell.locked { border-color:#e35b5b; background:#1e1112; cursor:not-allowed; }
+    .cell.locked .fn { color:#f0b3b3; }
+    .cell.locked .st { color:#e35b5b; }
+    .cell.submitted { animation:pfPop .4s ease; border-color:var(--accent); background:#101c10; }
+    .cell.err { animation:pfShake .3s ease; }
+    @keyframes pfPop { 0%{transform:scale(1)} 40%{transform:scale(1.06); box-shadow:0 0 0 2px var(--accent)} 100%{transform:scale(1)} }
+    @keyframes pfShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+    .pf-sync { position:absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; gap:12px;
+      background:rgba(8,11,15,.82); border-radius:16px; z-index:4; }
+    .pf-sync.on { display:flex; }
+    .pf-sync .msg { font-family:'Press Start 2P',monospace; font-size:14px; color:#f0c14b; text-align:center; text-shadow:0 0 12px rgba(240,193,75,.5); }
+    .pf-sync .sub { font-family:'IBM Plex Mono',monospace; font-size:12px; color:#9aa6b0; }
+    .pf-getlatest { font:inherit; font-weight:800; font-size:15px; cursor:pointer; border:0; border-radius:10px; padding:12px 22px;
+      background:var(--accent); color:#08120a; box-shadow:0 0 24px rgba(160,255,0,.35); }
+
+    .pf-controls { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 0; align-items:center; }
+    .pf-controls button { font:inherit; font-weight:600; font-size:14px; cursor:pointer; border-radius:10px; padding:11px 18px; border:1px solid #2a3742; background:#12161d; color:#dfe6ec; }
+    .pf-controls button:hover { border-color:#3a4a56; }
+    .pf-start { background:var(--accent) !important; color:#08120a !important; border-color:var(--accent) !important; font-weight:800 !important; }
+    .pf-msg { margin:12px 0 0; font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-muted); min-height:18px; }
+    .pf-msg b { color:var(--accent); }
+
+    .pf-over { position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+      background:rgba(8,11,15,.92); border-radius:16px; z-index:6; text-align:center; padding:20px; }
+    .pf-over.on { display:flex; }
+    .pf-over h2 { font-family:'Press Start 2P',monospace; font-size:20px; color:#e35b5b; margin:0; text-shadow:0 3px 0 #5a1414; }
+    .pf-over p { font-family:'IBM Plex Mono',monospace; color:#cdd6de; margin:4px 0 0; }
+    .pf-over .big { font-size:30px; color:var(--accent); font-weight:600; }
+    .pf-over .row { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
+
+    .pf-how { margin:26px 0 0; font-size:13px; color:var(--text-muted); line-height:1.7; }
+    .pf-how b { color:#cdd6de; }
+    .pf-how code { background:#12161d; border:1px solid #23303a; border-radius:5px; padding:1px 6px; font-family:'IBM Plex Mono',monospace; color:#9fe870; }
+    .pf-back { display:inline-block; margin:22px 0 0; color:var(--text-muted); font-size:13px; text-decoration:none; }
+    .pf-back:hover { color:var(--accent); }
+  </style>
+</head>
+<body>
+<!-- GTM (noscript) --><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W7JWP3TR" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo" aria-label="Miki Butler home"><img src="images/logo512.jpg" alt="Miki Butler" /></a>
+    <nav id="sidebar-nav"></nav>
+    <div class="sidebar-socials" id="sidebar-socials"></div>
+    <p class="sidebar-copy">© All rights reserved<br>Miki Butler</p>
+  </aside>
+
+  <main>
+    <div class="pf-main">
+      <p class="pf-eyebrow">▶ P4 · Depot</p>
+      <h1 class="pf-h1">Submit! 🗂️</h1>
+      <p class="pf-tag">The Perforce game. Submit your changelists before they conflict, dodge your teammates' exclusive locks, and keep the build green.</p>
+
+      <div class="pf-hud">
+        <div class="pf-stat"><div class="l">Submits</div><div class="v" id="pfScore">0</div></div>
+        <div class="pf-stat combo"><div class="l">Combo</div><div class="v" id="pfCombo">×1</div></div>
+        <div class="pf-stat"><div class="l">Best</div><div class="v" id="pfBest">0</div></div>
+        <div class="pf-build"><div class="l"><span>Build status</span><b id="pfBuildTxt">GREEN</b></div><div class="pf-bar"><i id="pfBuildBar"></i></div></div>
+      </div>
+
+      <div class="pf-arena">
+        <div class="pf-grid" id="pfGrid"></div>
+        <div class="pf-sync" id="pfSync">
+          <div class="msg">⟳ SYNC REQUIRED</div>
+          <div class="sub">You're behind. Get latest before the build breaks.</div>
+          <button class="pf-getlatest" id="pfGetLatest">⟳ Get Latest</button>
+        </div>
+        <div class="pf-over" id="pfOver">
+          <h2 id="pfOverTitle">BUILD BROKEN</h2>
+          <p>You submitted</p>
+          <p class="big"><span id="pfFinal">0</span> changelists</p>
+          <p id="pfOverSub" style="color:#8a96a0"></p>
+          <div class="row">
+            <button class="pf-start" id="pfAgain">↻ Revert &amp; retry</button>
+            <button id="pfShare2">⤴ Share</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pf-controls">
+        <button class="pf-start" id="pfStart">▶ Start shift</button>
+        <button id="pfMute" title="Sound">🔊</button>
+        <button id="pfShare">⤴ Share</button>
+      </div>
+      <p class="pf-msg" id="pfMsg">Click <b>Start shift</b>. Submit the <span style="color:#f0c14b">amber</span> files — don't touch the <span style="color:#e35b5b">red</span> locked ones.</p>
+
+      <p class="pf-how">
+        <b>How to play</b> — Files get <b style="color:#f0c14b">modified</b> (amber): click to <code>p4 submit</code> for a point. Chain fast submits for a <b>combo multiplier</b>.
+        A teammate may take an <b style="color:#e35b5b">exclusive lock</b> (red) — click it and you get <i>"checked out by another user!"</i> and the build takes a hit.
+        Let an amber file's timer run out and it <b>conflicts</b>. When <b>⟳ SYNC REQUIRED</b> flashes, hit <b>Get Latest</b> fast. Build hits zero → you're the one who broke it.
+      </p>
+
+      <a class="pf-back" href="arcade.html">← Back to the arcade</a>
+    </div>
+  </main>
+
+  <script src="js/sidebar.js"></script>
+  <script src="js/fx.js" defer></script>
+  <script src="js/rocket.js"></script>
+  <script>
+    (function () {
+      var grid = document.getElementById('pfGrid'); if (!grid) return;
+      var FILES = ['Env_Rock_04.uasset','MasterMaterial.uasset','Cave_Level.umap','char_rig.ma','Foliage_Fern.fbx',
+        'Trim_Sheet_01.png','Beacon_Prop.uasset','Skybox_Dusk.hdr','Nanite_Mesh.uasset','Decal_Grime.png',
+        'Lightmap_Bake.exr','Queen_Throne.uasset','Rubble_Set.fbx','Water_Shader.usf','Landscape_01.umap','UCF_Statue.uasset'];
+      var MATES = ['Dave','Priya','Sam','Jordan','Lena','the intern','Alex','Mika'];
+      var N = 12, cells = [], gameOn = false, score = 0, best = 0, combo = 1, comboUntil = 0, build = 100;
+      var lastTime = 0, elapsed = 0, nextSpawn = 0, nextSync = 0, syncOn = false, syncDeadline = 0, raf = 0;
+
+      try { best = parseInt(localStorage.getItem('pfBest') || '0', 10) || 0; } catch (e) {}
+      document.getElementById('pfBest').textContent = best;
+
+      // ── sound ──
+      var Sfx = (function () {
+        var ctx = null, muted = false; try { muted = localStorage.getItem('pfMute') === '1'; } catch (e) {}
+        function ac(){ if(ctx) return ctx; try{ ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ctx=null;} return ctx; }
+        function beep(f,d,type,g,slide){ if(muted||!ac())return; var t=ctx.currentTime,o=ctx.createOscillator(),ga=ctx.createGain();
+          o.type=type||'square'; o.frequency.setValueAtTime(f,t); if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(1,slide),t+d);
+          ga.gain.setValueAtTime(.0001,t); ga.gain.exponentialRampToValueAtTime(g||.2,t+.01); ga.gain.exponentialRampToValueAtTime(.0001,t+d);
+          o.connect(ga); ga.connect(ctx.destination); o.start(t); o.stop(t+d+.02); }
+        return { resume:function(){ var c=ac(); if(c&&c.state==='suspended')c.resume(); },
+          muted:function(){return muted;}, toggle:function(){ muted=!muted; try{localStorage.setItem('pfMute',muted?'1':'0');}catch(e){} return muted; },
+          submit:function(){ beep(660,.06,'square',.2); beep(990,.08,'square',.18); },
+          err:function(){ beep(180,.22,'sawtooth',.28,80); },
+          conflict:function(){ beep(150,.18,'sawtooth',.22,90); },
+          sync:function(){ beep(880,.12,'triangle',.2); beep(660,.14,'triangle',.2); },
+          over:function(){ [440,330,247,165].forEach(function(f,i){ setTimeout(function(){beep(f,.18,'square',.22);}, i*130); }); } };
+      })();
+      var muteBtn = document.getElementById('pfMute'); muteBtn.textContent = Sfx.muted() ? '🔇' : '🔊';
+      muteBtn.addEventListener('click', function(){ muteBtn.textContent = Sfx.toggle() ? '🔇' : '🔊'; if(!Sfx.muted())Sfx.resume(); });
+
+      // build grid
+      for (var i=0;i<N;i++){
+        var c = document.createElement('div'); c.className='cell idle'; c.dataset.i=i;
+        c.innerHTML = '<span class="fn"></span><span class="st"></span><span class="tbar"><i></i></span>';
+        grid.appendChild(c);
+        cells.push({ el:c, state:'idle', name:'', total:0, deadline:0, lockUntil:0, fn:c.querySelector('.fn'), stt:c.querySelector('.st'), bar:c.querySelector('.tbar i') });
+      }
+      function rnd(a){ return a[(Math.random()*a.length)|0]; }
+      function setIdle(cl){ cl.state='idle'; cl.el.className='cell idle'; cl.fn.textContent=''; cl.stt.textContent='//depot'; cl.bar.style.width='0%'; }
+      cells.forEach(setIdle);
+
+      var msg = document.getElementById('pfMsg');
+      function hud(){
+        document.getElementById('pfScore').textContent = score;
+        document.getElementById('pfCombo').textContent = '×'+combo;
+        var b = Math.max(0,build);
+        document.getElementById('pfBuildBar').style.width = b+'%';
+        var t = document.getElementById('pfBuildTxt');
+        t.textContent = b>66?'GREEN':b>33?'FLAKY':'FAILING';
+        t.style.color = b>66?'#9fe870':b>33?'#f0c14b':'#e35b5b';
+      }
+      function damage(n, why){ build -= n; if (why) flash(why); if (build<=0){ build=0; hud(); gameOver(); return; } hud(); }
+      function flash(text){ msg.innerHTML = text; }
+
+      function spawn(){
+        var idle = cells.filter(function(c){ return c.state==='idle'; }); if(!idle.length) return;
+        var cl = rnd(idle);
+        if (Math.random() < lockChance()){
+          cl.state='locked'; cl.el.className='cell locked'; cl.name=rnd(FILES);
+          cl.fn.textContent=cl.name; cl.stt.textContent='🔒 '+rnd(MATES);
+          cl.lockUntil = performance.now() + (1800 + Math.random()*1600); cl.bar.style.width='0%';
+        } else {
+          cl.state='modified'; cl.el.className='cell modified'; cl.name=rnd(FILES);
+          cl.fn.textContent=cl.name; cl.stt.textContent='edit · needs submit';
+          cl.total = expiry(); cl.deadline = performance.now() + cl.total;
+        }
+      }
+      // difficulty scales with elapsed seconds
+      function spawnInterval(){ return Math.max(360, 1000 - elapsed*22); }
+      function expiry(){ return Math.max(1500, 3600 - elapsed*55); }
+      function lockChance(){ return Math.min(.32, .12 + elapsed*.004); }
+      function syncInterval(){ return Math.max(7000, 14000 - elapsed*120); }
+
+      function click(cl){
+        if (!gameOn) return;
+        if (cl.state==='modified'){
+          var now=performance.now();
+          if (now < comboUntil) combo = Math.min(9, combo+1); else combo = 1;
+          comboUntil = now + 1300;
+          score += combo;
+          cl.el.className='cell submitted'; cl.stt.textContent='submitted ✓';
+          Sfx.submit();
+          cl.state='idle-cool';
+          (function(c){ setTimeout(function(){ if(c.state==='idle-cool') setIdle(c); }, 260); })(cl);
+          flash('<b>p4 submit</b> — '+cl.name+(combo>1?'  <span style="color:var(--accent)">combo ×'+combo+'!</span>':''));
+          hud();
+        } else if (cl.state==='locked'){
+          combo=1; cl.el.classList.remove('err'); void cl.el.offsetWidth; cl.el.classList.add('err');
+          Sfx.err(); damage(12, '<span style="color:#e35b5b">“'+cl.name+' — checked out by another user!”</span> (build −12)');
+        }
+      }
+      grid.addEventListener('click', function(e){ var el=e.target.closest('.cell'); if(!el)return; click(cells[+el.dataset.i]); });
+
+      var syncEl=document.getElementById('pfSync');
+      function startSync(){ syncOn=true; syncEl.classList.add('on'); syncDeadline=performance.now()+3200; Sfx.sync(); flash('<span style="color:#f0c14b">⟳ SYNC REQUIRED — Get Latest!</span>'); }
+      function endSync(ok){ syncOn=false; syncEl.classList.remove('on'); nextSync=performance.now()+syncInterval(); if(ok){ flash('<b>Synced.</b> Back to work.'); } }
+      document.getElementById('pfGetLatest').addEventListener('click', function(){ if(syncOn){ Sfx.submit(); endSync(true); } });
+
+      function loop(t){
+        if(!gameOn) return;
+        if(!lastTime) lastTime=t; var dt=t-lastTime; lastTime=t; elapsed += dt/1000;
+        if(!syncOn){
+          if(t>=nextSpawn){ spawn(); nextSpawn = t + spawnInterval(); }
+          if(t>=nextSync){ startSync(); }
+        } else if(t>=syncDeadline){ endSync(false); damage(14, '<span style="color:#e35b5b">You worked out of sync — merge hell. (build −14)</span>'); if(!gameOn) return; }
+        var now=t;
+        for(var k=0;k<cells.length;k++){ var c=cells[k];
+          if(c.state==='modified'){ var rem=c.deadline-now; c.bar.style.width=Math.max(0,rem/c.total*100)+'%';
+            if(rem<=0){ setIdle(c); combo=1; Sfx.conflict(); damage(9,'<span style="color:#e35b5b">'+c.name+' conflicted — someone else submitted first. (build −9)</span>'); if(!gameOn) return; }
+          } else if(c.state==='locked'){ if(now>=c.lockUntil) setIdle(c); }
+        }
+        if(performance.now()>comboUntil && combo!==1){ combo=1; hud(); }
+        raf=requestAnimationFrame(loop);
+      }
+
+      function reset(){ cells.forEach(setIdle); score=0; combo=1; build=100; elapsed=0; lastTime=0; comboUntil=0; syncOn=false; syncEl.classList.remove('on'); hud(); }
+      function start(){
+        document.getElementById('pfOver').classList.remove('on');
+        reset(); gameOn=true; Sfx.resume();
+        nextSpawn=performance.now()+400; nextSync=performance.now()+syncInterval();
+        document.getElementById('pfStart').textContent='▶ Shift in progress';
+        flash('Shift started. <b>Submit those files!</b>');
+        raf=requestAnimationFrame(loop);
+      }
+      function gameOver(){
+        gameOn=false; cancelAnimationFrame(raf); syncEl.classList.remove('on');
+        if(score>best){ best=score; try{localStorage.setItem('pfBest',String(best));}catch(e){} document.getElementById('pfBest').textContent=best; }
+        Sfx.over();
+        document.getElementById('pfFinal').textContent=score;
+        document.getElementById('pfOverSub').textContent = score>=best&&score>0 ? '🏆 New best! Nobody blame you… yet.' : 'Best: '+best+' — revert and try again.';
+        document.getElementById('pfStart').textContent='▶ Start shift';
+        document.getElementById('pfOver').classList.add('on');
+      }
+      document.getElementById('pfStart').addEventListener('click', start);
+      document.getElementById('pfAgain').addEventListener('click', start);
+
+      function share(btn){
+        if (window.arcadeRocket) window.arcadeRocket(btn);
+        var url='https://mikibutler.ca/perforce.html', txt='I submitted '+score+' changelists in Submit!, the Perforce game 🗂️';
+        var data={ title:'Submit! — the Perforce game', text:txt, url:url };
+        if (navigator.share){ navigator.share(data).catch(function(){}); return; }
+        try{ navigator.clipboard.writeText(url); btn.textContent='✓ Copied'; setTimeout(function(){ btn.textContent='⤴ Share'; },1500);}catch(e){}
+      }
+      document.getElementById('pfShare').addEventListener('click', function(){ share(this); });
+      document.getElementById('pfShare2').addEventListener('click', function(){ share(this); });
+
+      hud();
+    })();
+  </script>
+</body>
+</html>
