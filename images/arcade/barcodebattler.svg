@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" width="200" height="300" role="img" aria-label="Pantry Raid cover art">
+  <rect width="200" height="300" fill="#0b0b0b"/>
+  <g fill="#ffffff">
+    <rect x="18" y="40" width="4" height="90"/><rect x="26" y="40" width="2" height="90"/>
+    <rect x="32" y="40" width="6" height="90"/><rect x="42" y="40" width="2" height="90"/>
+    <rect x="48" y="40" width="3" height="90"/><rect x="56" y="40" width="7" height="90"/>
+    <rect x="68" y="40" width="2" height="90"/><rect x="74" y="40" width="5" height="90"/>
+    <rect x="84" y="40" width="3" height="90"/><rect x="92" y="40" width="6" height="90"/>
+    <rect x="103" y="40" width="2" height="90"/><rect x="109" y="40" width="4" height="90"/>
+    <rect x="118" y="40" width="7" height="90"/><rect x="130" y="40" width="2" height="90"/>
+    <rect x="136" y="40" width="5" height="90"/><rect x="146" y="40" width="3" height="90"/>
+    <rect x="154" y="40" width="6" height="90"/><rect x="165" y="40" width="2" height="90"/>
+    <rect x="171" y="40" width="4" height="90"/><rect x="179" y="40" width="3" height="90"/>
+  </g>
+  <!-- the creature the barcode became -->
+  <g fill="#a0ff00">
+    <rect x="76" y="150" width="12" height="12"/><rect x="112" y="150" width="12" height="12"/>
+    <rect x="64" y="162" width="72" height="12"/>
+    <rect x="52" y="174" width="96" height="12"/>
+    <rect x="52" y="186" width="96" height="12"/>
+    <rect x="64" y="198" width="72" height="12"/>
+    <rect x="64" y="210" width="24" height="12"/><rect x="112" y="210" width="24" height="12"/>
+  </g>
+  <g fill="#0b0b0b">
+    <rect x="76" y="174" width="12" height="12"/><rect x="112" y="174" width="12" height="12"/>
+  </g>
+  <text x="100" y="252" fill="#ffffff" font-family="Courier New,monospace" font-size="21" font-weight="bold" letter-spacing="1.5" text-anchor="middle">PANTRY RAID</text>
+  <text x="100" y="270" fill="#8b8b8b" font-family="Courier New,monospace" font-size="9" letter-spacing="2.6" text-anchor="middle">SCAN &#183; SUMMON &#183; BATTLE</text>
+</svg>

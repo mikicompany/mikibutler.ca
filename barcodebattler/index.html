@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Pantry Raid — Barcode Battler</title>
+<meta name="robots" content="noindex, nofollow" />
+<style>
+  :root{
+    --bg:#0b0b0b; --panel:#151515; --line:#2a2a2a;
+    --text:#ffffff; --muted:#8b8b8b; --accent:#a0ff00;
+    --font:"Courier New",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--text);font-family:var(--font);
+    display:flex;flex-direction:column;overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit;cursor:pointer}
+
+  /* ---- chrome ---- */
+  header{
+    flex:0 0 auto;display:flex;align-items:center;gap:10px;
+    padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel);
+  }
+  .brand{font-weight:700;letter-spacing:.12em;font-size:13px;color:var(--accent)}
+  /* The arcade cabinet floats its own MENU / FULL buttons over the top-left
+     of the frame, so keep the title clear of them when we're embedded. */
+  body.framed header{padding-left:130px}
+  body.framed .brand,body.framed .brand small{white-space:nowrap}
+  body.framed .brand{font-size:12px}
+  .brand small{display:block;color:var(--muted);letter-spacing:.18em;font-size:9px;font-weight:400}
+  nav{margin-left:auto;display:flex;gap:4px}
+  nav button{
+    background:transparent;border:1px solid var(--line);color:var(--muted);
+    padding:6px 10px;font-size:11px;letter-spacing:.1em;border-radius:2px;
+  }
+  nav button[aria-current="true"]{border-color:var(--accent);color:var(--accent)}
+
+  main{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;padding:14px;-webkit-overflow-scrolling:touch}
+  .view{display:none;max-width:760px;margin:0 auto}
+  .view.on{display:block}
+  h2{font-size:12px;letter-spacing:.2em;color:var(--muted);font-weight:400;margin:0 0 10px}
+  p.note{color:var(--muted);font-size:11px;line-height:1.6;margin:8px 0}
+
+  /* ---- scan ---- */
+  .scanbox{border:1px solid var(--line);background:var(--panel);border-radius:3px;overflow:hidden}
+  #cam{width:100%;display:none;background:#000;aspect-ratio:4/3;object-fit:cover}
+  #cam.on{display:block}
+  .reticle{position:relative}
+  .reticle::after{
+    content:"";position:absolute;inset:18% 8%;pointer-events:none;
+    border:1px solid var(--accent);opacity:.5;display:none;
+  }
+  .reticle.on::after{display:block}
+  .scanpad{padding:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  input[type=text]{
+    flex:1 1 190px;min-width:0;background:#000;border:1px solid var(--line);color:var(--accent);
+    font-family:inherit;font-size:16px;letter-spacing:.16em;padding:10px;border-radius:2px;
+  }
+  input[type=text]:focus{outline:none;border-color:var(--accent)}
+  .btn{
+    background:var(--accent);border:1px solid var(--accent);color:#000;font-weight:700;
+    padding:10px 14px;font-size:12px;letter-spacing:.1em;border-radius:2px;
+  }
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .btn.sm{padding:7px 10px;font-size:11px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .msg{font-size:11px;color:var(--muted);min-height:1.4em;padding:0 12px 12px;line-height:1.5}
+  .msg.bad{color:#ff5a5a}
+  .msg.good{color:var(--accent)}
+  .samples{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .samples button{
+    background:transparent;border:1px dashed var(--line);color:var(--muted);
+    font-size:10px;padding:5px 8px;border-radius:2px;letter-spacing:.06em;
+  }
+  .samples button:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* ---- creature card ---- */
+  .card{
+    border:1px solid var(--line);background:var(--panel);border-radius:3px;
+    padding:14px;margin-top:14px;display:flex;gap:14px;align-items:flex-start;
+  }
+  .card canvas{
+    width:112px;height:112px;flex:0 0 auto;image-rendering:pixelated;
+    background:#000;border:1px solid var(--line);border-radius:2px;
+  }
+  .cbody{flex:1 1 auto;min-width:0}
+  .cname{font-size:17px;font-weight:700;letter-spacing:.05em;margin:0 0 2px;word-break:break-word}
+  .ctag{font-size:10px;letter-spacing:.14em;color:var(--muted);margin:0 0 10px}
+  .rar{padding:1px 6px;border:1px solid currentColor;border-radius:2px;font-size:9px}
+  .stats{display:grid;grid-template-columns:36px 1fr 30px;gap:4px 8px;align-items:center;font-size:10px}
+  .bar{height:7px;background:#000;border:1px solid var(--line);border-radius:1px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--accent)}
+  .code{font-size:10px;color:var(--muted);letter-spacing:.14em;margin-top:10px;word-break:break-all}
+
+  /* ---- roster ---- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .tile{
+    border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:10px;
+    text-align:center;cursor:pointer;transition:border-color .12s;
+  }
+  .tile:hover,.tile[aria-selected="true"]{border-color:var(--accent)}
+  .tile canvas{width:72px;height:72px;image-rendering:pixelated;background:#000;border-radius:2px}
+  .tile .n{font-size:11px;font-weight:700;margin-top:6px;word-break:break-word}
+  .tile .f{font-size:9px;color:var(--muted);letter-spacing:.1em;margin-top:2px}
+  .empty{color:var(--muted);font-size:12px;text-align:center;padding:40px 10px;line-height:1.8}
+
+  /* ---- battle ---- */
+  .arena{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:12px}
+  .fighter{border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:10px;text-align:center}
+  .fighter canvas{width:80px;height:80px;image-rendering:pixelated;background:#000;border-radius:2px}
+  .fighter .n{font-size:11px;font-weight:700;margin-top:6px;word-break:break-word}
+  .hpbar{height:6px;background:#000;border:1px solid var(--line);margin-top:8px;border-radius:1px;overflow:hidden}
+  .hpbar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+  .vs{color:var(--muted);font-size:11px;letter-spacing:.14em}
+  .log{
+    border:1px solid var(--line);background:#000;border-radius:3px;padding:10px;
+    font-size:11px;line-height:1.75;height:150px;overflow-y:auto;color:var(--muted);
+  }
+  .log b{color:var(--accent);font-weight:400}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  @media(max-width:520px){
+    .card{flex-direction:column;align-items:center;text-align:center}
+    .stats{width:100%}
+    .arena{grid-template-columns:1fr;gap:6px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">PANTRY RAID<small>BARCODE BATTLER PROTOTYPE</small></div>
+  <nav>
+    <button data-go="scan" aria-current="true">SCAN</button>
+    <button data-go="roster">ROSTER</button>
+    <button data-go="battle">BATTLE</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ================= SCAN ================= -->
+  <section class="view on" id="v-scan">
+    <h2>SCAN A BARCODE</h2>
+    <div class="scanbox">
+      <div class="reticle" id="reticle"><video id="cam" playsinline muted></video></div>
+      <div class="scanpad">
+        <button class="btn ghost sm" id="camBtn">USE CAMERA</button>
+        <input type="text" id="manual" inputmode="numeric" autocomplete="off"
+               placeholder="OR TYPE DIGITS" maxlength="14" />
+        <button class="btn sm" id="goBtn">SUMMON</button>
+      </div>
+      <div class="msg" id="msg">Any real product barcode works. The same code always makes the same creature.</div>
+    </div>
+    <div class="samples" id="samples"></div>
+    <div id="result"></div>
+  </section>
+
+  <!-- ================= ROSTER ================= -->
+  <section class="view" id="v-roster">
+    <h2>ROSTER — <span id="rcount">0</span> FOUND</h2>
+    <div class="grid" id="rgrid"></div>
+    <div class="empty" id="rempty">Nothing found yet.<br>Go scan something in your kitchen.</div>
+    <div class="row" id="rrow" hidden><button class="btn ghost sm" id="wipe">CLEAR ROSTER</button></div>
+    <div id="rdetail"></div>
+  </section>
+
+  <!-- ================= BATTLE ================= -->
+  <section class="view" id="v-battle">
+    <h2>BATTLE</h2>
+    <div class="arena">
+      <div class="fighter" id="fA"></div>
+      <div class="vs">VS</div>
+      <div class="fighter" id="fB"></div>
+    </div>
+    <div class="log" id="log"></div>
+    <div class="row">
+      <button class="btn" id="fight">FIGHT</button>
+      <button class="btn ghost sm" id="newfoe">NEW OPPONENT</button>
+    </div>
+    <p class="note">Your champion is whichever creature you tap in the Roster. Opponents are drawn from
+      barcodes you haven't met yet.</p>
+  </section>
+</main>
+
+<script>
+/* =====================================================================
+   PANTRY RAID — barcode-battler prototype
+   Everything is deterministic from the barcode digits: the same GTIN
+   always yields the same creature, anywhere, for anyone.
+
+   PROTOTYPE NOTE: generation runs entirely client-side, so the mapping
+   is computable by anyone who reads this file. That is fine for a toy.
+   A real build moves hash() behind a server with a secret pepper, so
+   nobody can farm optimal barcodes offline. See TODO at the bottom.
+   ===================================================================== */
+
+/* ---------- hashing / rng ---------------------------------------- */
+const SALT = "pantry-raid-v1";           // becomes a server-side pepper later
+
+function hash32(str){                     // FNV-1a
+  let h = 0x811c9dc5;
+  for (let i=0;i<str.length;i++){
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h >>> 0;
+}
+function rngFrom(seed){                   // mulberry32
+  let a = seed >>> 0;
+  return function(){
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---------- GTIN validation --------------------------------------- */
+// Real GS1 mod-10 check digit. Rejects typos and made-up numbers, which
+// keeps the codex honest without any network call.
+function validGtin(d){
+  if (!/^\d+$/.test(d)) return false;
+  if (![8,12,13,14].includes(d.length)) return false;
+  const digits = d.split("").map(Number);
+  const check = digits.pop();
+  let sum = 0, w = 3;
+  for (let i = digits.length - 1; i >= 0; i--){ sum += digits[i]*w; w = w===3?1:3; }
+  return ((10 - (sum % 10)) % 10) === check;
+}
+function normalize(d){                    // pad to 13 so EAN/UPC of the
+  d = d.replace(/\D/g,"");                // same product agree
+  if (d.length === 12) d = "0" + d;
+  if (d.length === 14) d = d.slice(1);
+  return d;
+}
+
+/* ---------- factions ----------------------------------------------
+   Derived from the real GS1 prefix block, so a product's country of
+   registration decides its faction. Free worldbuilding from real data. */
+const FACTIONS = {
+  FROST  :{name:"FROST",   from:"North America", pal:["#7ec8ff","#2b6fb0","#eaf6ff"], el:"ice"},
+  VERDANT:{name:"VERDANT", from:"Europe",        pal:["#9ade6a","#2f7a34","#f0ffe6"], el:"leaf"},
+  SOLAR  :{name:"SOLAR",   from:"East Asia",     pal:["#ff8a4c","#c0342b","#fff0d9"], el:"flame"},
+  TERRA  :{name:"TERRA",   from:"elsewhere",     pal:["#d2a679","#7a5230","#f5e7d5"], el:"stone"},
+  VOID   :{name:"VOID",    from:"an in-store code", pal:["#c07dff","#5a2b8f","#f3e6ff"], el:"static"},
+  TOME   :{name:"TOME",    from:"a book or magazine", pal:["#ffd76a","#8a6a1f","#fff8e0"], el:"ink"},
+  SPECTRE:{name:"SPECTRE", from:"a coupon",      pal:["#8fe6d8","#2a6b62","#e8fffb"], el:"echo"},
+};
+function factionFor(p){                   // p = first 3 digits as a number
+  if (p>=978 && p<=979) return "TOME";
+  if (p===977)          return "TOME";
+  if (p>=980)           return "SPECTRE";
+  if ((p>=20&&p<=29)||(p>=40&&p<=49)||(p>=200&&p<=299)) return "VOID";
+  if (p<=139 || (p>=754&&p<=755)) return "FROST";
+  if ((p>=300&&p<=379)||(p>=400&&p<=440)||(p>=500&&p<=509)||
+      (p>=760&&p<=769)||(p>=800&&p<=849)) return "VERDANT";
+  if ((p>=450&&p<=459)||(p>=490&&p<=499)||(p>=690&&p<=699)||p===880) return "SOLAR";
+  return "TERRA";
+}
+
+/* ---------- naming -------------------------------------------------
+   The root comes from the manufacturer block alone, so everything made
+   by one company is visibly kin. Players notice this on their own, and
+   that moment of noticing is the whole point. */
+const ROOTS = ["kor","vex","mal","tun","bris","gan","zol","hep","dra","fim","nok","ryl",
+               "sab","tho","urn","wex","yar","zeb","cal","dov","esk","fen","gul","hix"];
+const TAILS = ["ith","ax","or","une","ek","is","ur","ada","om","el","ynx","arr",
+               "ox","essa","ux","ian","ok","eth","ara","ime"];
+const TITLES= ["the Sealed","of the Aisle","the Expired","Shelfborn","the Bulk",
+               "of Cold Storage","the Discontinued","the Restocked","Clearance-Marked",
+               "of the Back Room"];
+
+function nameFor(company, item, rarityIdx){
+  const r1 = rngFrom(hash32(SALT+"|fam|"+company));
+  const r2 = rngFrom(hash32(SALT+"|ind|"+company+item));
+  let n = ROOTS[Math.floor(r1()*ROOTS.length)] + TAILS[Math.floor(r2()*TAILS.length)];
+  n = n[0].toUpperCase() + n.slice(1);
+  if (rarityIdx >= 3) n += " " + TITLES[Math.floor(r2()*TITLES.length)];
+  return n;
+}
+
+/* ---------- rarity -------------------------------------------------
+   Tuned so a notable creature is roughly 1 in 300 scans. Generous
+   enough to keep scanning, rare enough that a find is a find. */
+const RARITY = [
+  {n:"COMMON",   c:"#8b8b8b", w:0.720, mult:1.00},
+  {n:"UNCOMMON", c:"#9ade6a", w:0.200, mult:1.10},
+  {n:"RARE",     c:"#7ec8ff", w:0.065, mult:1.24},
+  {n:"EPIC",     c:"#c07dff", w:0.012, mult:1.42},
+  {n:"MYTHIC",   c:"#ffd76a", w:0.003, mult:1.70},
+];
+
+/* ---------- the generator ------------------------------------------ */
+function generate(rawCode){
+  const code    = normalize(rawCode);
+  const prefix  = parseInt(code.slice(0,3),10);
+  const company = code.slice(3,7);
+  const item    = code.slice(7,12);
+
+  const seed = hash32(SALT + "|" + code);
+  const rnd  = rngFrom(seed);
+
+  // rarity roll
+  let roll = rnd(), acc = 0, rIdx = 0;
+  for (let i=0;i<RARITY.length;i++){ acc += RARITY[i].w; if (roll < acc){ rIdx = i; break; } }
+  const rar = RARITY[rIdx];
+
+  const fkey = factionFor(prefix);
+  const fac  = FACTIONS[fkey];
+
+  // Stats: a shared budget split unevenly, so every creature is spiky
+  // in its own way rather than uniformly good or uniformly useless.
+  const budget = 200 * rar.mult;
+  const w = [rnd()+0.35, rnd()+0.35, rnd()+0.35, rnd()+0.35];
+  const tot = w.reduce((a,b)=>a+b,0);
+  const hp  = Math.round(budget*(w[0]/tot)*3.6) + 60;
+  const atk = Math.round(budget*(w[1]/tot))     + 8;
+  const def = Math.round(budget*(w[2]/tot))     + 8;
+  const spd = Math.round(budget*(w[3]/tot))     + 8;
+
+  return {
+    code, prefix, company, item, seed,
+    name: nameFor(company, item, rIdx),
+    faction: fkey, factionName: fac.name, origin: fac.from, element: fac.el,
+    rarity: rar.n, rarityColor: rar.c, rarityIdx: rIdx,
+    hp, maxhp: hp, atk, def, spd,
+  };
+}
+
+/* ---------- sprite --------------------------------------------------
+   16x16, left half generated then mirrored — symmetry reads as
+   "creature" to the eye at almost no cost. */
+function drawCreature(cv, c){
+  const S = 16, px = 8;
+  cv.width = S*px; cv.height = S*px;
+  const g = cv.getContext("2d");
+  const rnd = rngFrom(c.seed ^ 0x5bf03635);
+  const pal = FACTIONS[c.faction].pal;
+
+  g.fillStyle = "#000"; g.fillRect(0,0,cv.width,cv.height);
+
+  const grid = Array.from({length:S},()=>new Array(S).fill(0));
+  const density = 0.42 + (c.rarityIdx*0.04);
+  for (let y=2;y<S-2;y++){
+    for (let x=0;x<S/2;x++){
+      // taper toward the edges so the body reads as a mass, not noise
+      const edge = (x < 2 ? 0.25 : 1) * (y < 4 || y > S-5 ? 0.5 : 1);
+      const on = rnd() < density*edge;
+      if (on){
+        const v = rnd() < 0.30 ? 2 : 1;      // 2 = shadow tone
+        grid[y][x] = v; grid[y][S-1-x] = v;
+      }
+    }
+  }
+  // eyes, always — this is what turns a blob into a face
+  const ey = 5 + Math.floor(rnd()*3);
+  const ex = 3 + Math.floor(rnd()*2);
+  grid[ey][ex] = 3; grid[ey][S-1-ex] = 3;
+
+  const colors = {1:pal[0], 2:pal[1], 3:pal[2]};
+  for (let y=0;y<S;y++) for (let x=0;x<S;x++){
+    if (!grid[y][x]) continue;
+    g.fillStyle = colors[grid[y][x]];
+    g.fillRect(x*px, y*px, px, px);
+  }
+}
+
+/* ---------- storage -------------------------------------------------- */
+const KEY = "pantryraid.roster.v1";
+function loadRoster(){
+  try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+  catch { return []; }   // private mode / blocked storage: play unsaved
+}
+function saveRoster(r){
+  try { localStorage.setItem(KEY, JSON.stringify(r)); } catch {}
+}
+let roster = loadRoster();
+let champion = roster[0] ? roster[0].code : null;
+
+/* ---------- rendering helpers ---------------------------------------- */
+function statRows(c){
+  const mx = {hp:520, atk:130, def:130, spd:130};
+  return ["hp","atk","def","spd"].map(k=>{
+    const pct = Math.min(100, (c[k]/mx[k])*100);
+    return `<span>${k.toUpperCase()}</span>
+            <span class="bar"><i style="width:${pct}%"></i></span>
+            <span>${c[k]}</span>`;
+  }).join("");
+}
+function cardHtml(c){
+  return `<div class="card">
+    <canvas data-sprite="${c.code}"></canvas>
+    <div class="cbody">
+      <p class="cname">${c.name}</p>
+      <p class="ctag">
+        <span class="rar" style="color:${c.rarityColor}">${c.rarity}</span>
+        &nbsp;${c.factionName} &middot; ${c.element}
+      </p>
+      <div class="stats">${statRows(c)}</div>
+      <p class="code">${c.code} &mdash; registered in ${c.origin}</p>
+    </div>
+  </div>`;
+}
+// Canvases can't be filled from an HTML string, so paint them after insert.
+function paintSprites(scope){
+  scope.querySelectorAll("canvas[data-sprite]").forEach(cv=>{
+    drawCreature(cv, generate(cv.dataset.sprite));
+  });
+}
+
+/* ---------- views ------------------------------------------------------ */
+const views = {scan:"v-scan", roster:"v-roster", battle:"v-battle"};
+function go(name){
+  Object.entries(views).forEach(([k,id])=>
+    document.getElementById(id).classList.toggle("on", k===name));
+  document.querySelectorAll("nav button").forEach(b=>
+    b.setAttribute("aria-current", String(b.dataset.go===name)));
+  if (name==="roster") renderRoster();
+  if (name==="battle") setupBattle();
+}
+document.querySelectorAll("nav button").forEach(b=>
+  b.addEventListener("click", ()=>go(b.dataset.go)));
+
+/* ---------- scanning ---------------------------------------------------- */
+const msg    = document.getElementById("msg");
+const result = document.getElementById("result");
+
+function say(text, cls){ msg.textContent = text; msg.className = "msg" + (cls?" "+cls:""); }
+
+function summon(raw){
+  const code = normalize(raw);
+  if (!validGtin(code)){
+    say("That isn't a valid barcode — the check digit doesn't add up. Try another.","bad");
+    return;
+  }
+  const c = generate(code);
+  const known = roster.find(r=>r.code===code);
+  if (!known){
+    roster.push({code, name:c.name, found:Date.now()});
+    saveRoster(roster);
+    say(`FIRST FIND — ${c.name} joins your roster.`,"good");
+  } else {
+    say(`Already in your roster. Repeat scans don't pay.`,"");
+  }
+  result.innerHTML = cardHtml(c);
+  paintSprites(result);
+}
+
+document.getElementById("goBtn").addEventListener("click", ()=>{
+  const v = document.getElementById("manual").value.trim();
+  if (v) summon(v);
+});
+document.getElementById("manual").addEventListener("keydown", e=>{
+  if (e.key === "Enter") document.getElementById("goBtn").click();
+});
+
+// A few real, valid GTINs so the thing is playable on a desktop with no
+// camera — which is how most people will meet it in the arcade cabinet.
+const SAMPLES = [
+  ["Cola can",     "5449000000996"],
+  ["Instant ramen","4902105003107"],
+  ["A paperback",  "9780140449136"],
+  ["Store-baked",  "0208471003203"],
+];
+const samples = document.getElementById("samples");
+SAMPLES.forEach(([label,code])=>{
+  const b = document.createElement("button");
+  b.textContent = label;
+  b.addEventListener("click", ()=>{
+    document.getElementById("manual").value = code;
+    summon(code);
+  });
+  samples.appendChild(b);
+});
+
+/* ---------- camera ------------------------------------------------------ */
+// BarcodeDetector is Chrome/Android-only today; everywhere else falls back
+// to typing the digits, which is why the manual field is not a debug tool.
+const camBtn  = document.getElementById("camBtn");
+const cam     = document.getElementById("cam");
+const reticle = document.getElementById("reticle");
+let stream = null, scanning = false;
+
+camBtn.addEventListener("click", async ()=>{
+  if (scanning){ stopCam(); return; }
+  if (!("BarcodeDetector" in window)){
+    say("This browser can't read barcodes yet (Chrome on Android can). Type the digits instead.","bad");
+    return;
+  }
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:"environment" }, audio:false
+    });
+  }catch(e){
+    say("No camera access — type the digits instead.","bad");
+    return;
+  }
+  cam.srcObject = stream; await cam.play();
+  cam.classList.add("on"); reticle.classList.add("on");
+  camBtn.textContent = "STOP CAMERA";
+  scanning = true;
+  say("Point at a barcode…","");
+
+  const det = new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e"]});
+  (async function loop(){
+    while (scanning){
+      try{
+        const found = await det.detect(cam);
+        if (found.length){
+          const code = found[0].rawValue;
+          stopCam();
+          summon(code);
+          return;
+        }
+      }catch{ /* frame not ready; keep going */ }
+      await new Promise(r=>setTimeout(r,180));
+    }
+  })();
+});
+function stopCam(){
+  scanning = false;
+  if (stream) stream.getTracks().forEach(t=>t.stop());
+  stream = null;
+  cam.classList.remove("on"); reticle.classList.remove("on");
+  camBtn.textContent = "USE CAMERA";
+}
+
+/* ---------- roster view -------------------------------------------------- */
+function renderRoster(){
+  const grid = document.getElementById("rgrid");
+  const empty= document.getElementById("rempty");
+  const row  = document.getElementById("rrow");
+  document.getElementById("rcount").textContent = roster.length;
+  empty.hidden = roster.length > 0;
+  row.hidden   = roster.length === 0;
+  grid.innerHTML = roster.map(r=>{
+    const c = generate(r.code);
+    return `<div class="tile" data-code="${c.code}" aria-selected="${c.code===champion}">
+      <canvas data-sprite="${c.code}"></canvas>
+      <div class="n">${c.name}</div>
+      <div class="f" style="color:${c.rarityColor}">${c.rarity}</div>
+      <div class="f">${c.factionName}</div>
+    </div>`;
+  }).join("");
+  paintSprites(grid);
+  grid.querySelectorAll(".tile").forEach(t=>{
+    t.addEventListener("click", ()=>{
+      champion = t.dataset.code;
+      renderRoster();
+      const d = document.getElementById("rdetail");
+      d.innerHTML = cardHtml(generate(champion));
+      paintSprites(d);
+    });
+  });
+}
+document.getElementById("wipe").addEventListener("click", ()=>{
+  if (!confirm("Clear your whole roster? This can't be undone.")) return;
+  roster = []; champion = null; saveRoster(roster);
+  document.getElementById("rdetail").innerHTML = "";
+  renderRoster();
+});
+
+/* ---------- battle -------------------------------------------------------- */
+// Deliberately simple: three stats and some luck, same as the 1991 toy.
+// Depth can come later; the scanning is the game right now.
+let foe = null;
+function randomCode(){
+  // Build a synthetic but check-digit-valid GTIN so opponents obey the
+  // same rules your own finds do.
+  let body = "";
+  for (let i=0;i<12;i++) body += Math.floor(Math.random()*10);
+  const d = body.split("").map(Number);
+  let sum = 0, w = 3;
+  for (let i=d.length-1;i>=0;i--){ sum += d[i]*w; w = w===3?1:3; }
+  return body + ((10-(sum%10))%10);
+}
+function fighterHtml(c, hpNow){
+  const pct = Math.max(0,(hpNow/c.maxhp)*100);
+  return `<canvas data-sprite="${c.code}"></canvas>
+    <div class="n">${c.name}</div>
+    <div class="f" style="font-size:9px;color:${c.rarityColor}">${c.rarity}</div>
+    <div class="hpbar"><i style="width:${pct}%"></i></div>`;
+}
+function setupBattle(){
+  const a = document.getElementById("fA"), b = document.getElementById("fB");
+  if (!champion){
+    a.innerHTML = `<div class="f" style="color:var(--muted);font-size:11px">
+      Pick a champion in the Roster first.</div>`;
+    b.innerHTML = ""; return;
+  }
+  if (!foe) foe = generate(randomCode());
+  const me = generate(champion);
+  a.innerHTML = fighterHtml(me, me.maxhp); paintSprites(a);
+  b.innerHTML = fighterHtml(foe, foe.maxhp); paintSprites(b);
+  document.getElementById("log").innerHTML =
+    `<div>${me.name} faces <b>${foe.name}</b> of the ${foe.factionName}.</div>`;
+}
+document.getElementById("newfoe").addEventListener("click", ()=>{
+  foe = generate(randomCode()); setupBattle();
+});
+document.getElementById("fight").addEventListener("click", ()=>{
+  if (!champion) return;
+  const me = generate(champion), them = generate(foe.code);
+  let hpA = me.maxhp, hpB = them.maxhp;
+  const log = document.getElementById("log");
+  const lines = [];
+  const hit = (att, dfn) => {
+    const swing = 0.75 + Math.random()*0.5;
+    return Math.max(3, Math.round((att.atk*swing) - dfn.def*0.4));
+  };
+  // Faster fighter opens; ties go to the higher rarity.
+  let meFirst = me.spd !== them.spd ? me.spd > them.spd : me.rarityIdx >= them.rarityIdx;
+  for (let turn=1; turn<=20 && hpA>0 && hpB>0; turn++){
+    const order = meFirst ? [[me,them],[them,me]] : [[them,me],[me,them]];
+    for (const [att,dfn] of order){
+      if (hpA<=0 || hpB<=0) break;
+      const dmg = hit(att,dfn);
+      if (att===me){ hpB -= dmg; } else { hpA -= dmg; }
+      lines.push(`${att===me?"<b>"+att.name+"</b>":att.name} hits for ${dmg}.`);
+    }
+  }
+  const won = hpA > 0 && hpA >= hpB;
+  lines.push(won ? `<b>${me.name} wins.</b>` : `${them.name} wins. Go find something stronger.`);
+  log.innerHTML = lines.map(l=>`<div>${l}</div>`).join("");
+  log.scrollTop = log.scrollHeight;
+  const a = document.getElementById("fA"), b = document.getElementById("fB");
+  a.innerHTML = fighterHtml(me, Math.max(0,hpA));   paintSprites(a);
+  b.innerHTML = fighterHtml(them, Math.max(0,hpB)); paintSprites(b);
+});
+
+/* ---------- boot ------------------------------------------------------------ */
+try { if (window.self !== window.top) document.body.classList.add("framed"); } catch { }
+say(msg.textContent, "");
+
+/* =============================================================================
+   TODO before this is a real game
+   -----------------------------------------------------------------------------
+   1. Move generate() server-side behind a secret pepper. Right now anyone can
+      read this file and compute a perfect barcode. This is THE structural fix
+      and it gets painful to retrofit once people have rosters.
+   2. Global first-finder ledger — the discovery layer is the actual product,
+      and it needs a backend to be global rather than per-browser.
+   3. Novelty gating with real teeth (repeat scans currently just say "no").
+   4. Print/screen detection on the camera path, to catch scans of a printed
+      sheet of optimal codes.
+   ========================================================================== */
+</script>
+</body>
+</html>
