@@ -2,6 +2,19 @@
   "note": "",
   "items": [
     {
+      "title": "Nintendo Entertainment System (NES)",
+      "system": "NES",
+      "price": "",
+      "location": "",
+      "era": "hardware",
+      "slug": "nintendo-entertainment-system-nes-console",
+      "image": "",
+      "search": "Nintendo Entertainment System console",
+      "condition": "Front-loader",
+      "notes": "The front-loading 8-bit console (NES-001) that started it all — runs the NES cart library on the shelf.",
+      "qty": 1
+    },
+    {
       "title": "Super Mario Bros. 3",
       "system": "NES",
       "price": "$180",
