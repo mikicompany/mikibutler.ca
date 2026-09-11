@@ -68,6 +68,15 @@
   .btn.ghost{background:transparent;color:var(--accent)}
   .btn.sm{padding:7px 10px;font-size:11px}
   .btn:disabled{opacity:.35;cursor:not-allowed}
+  /* FIGHT is the primary action — make it unmistakable */
+  #fight{flex:1 1 100%;font-size:16px;padding:16px 22px;letter-spacing:.16em;
+    box-shadow:0 0 0 1px var(--accent),0 0 18px rgba(160,255,0,.35);animation:fightpulse 1.9s ease-in-out infinite}
+  #fight:hover{filter:brightness(1.08)}
+  #fight:active{transform:translateY(1px)}
+  #fight:disabled{animation:none;box-shadow:none}
+  @keyframes fightpulse{0%,100%{box-shadow:0 0 0 1px var(--accent),0 0 12px rgba(160,255,0,.28)}
+    50%{box-shadow:0 0 0 1px var(--accent),0 0 26px rgba(160,255,0,.6)}}
+  @media(prefers-reduced-motion:reduce){#fight{animation:none}}
   .msg{font-size:11px;color:var(--muted);min-height:1.4em;padding:0 12px 12px;line-height:1.5}
   .msg.bad{color:#ff5a5a}
   .msg.good{color:var(--accent)}
@@ -221,7 +230,7 @@
     <div class="log" id="log"></div>
     <p class="skiphint" id="skiphint"></p>
     <div class="row">
-      <button class="btn" id="fight">FIGHT</button>
+      <button class="btn" id="fight">⚔ FIGHT</button>
       <button class="btn ghost sm" id="newfoe">RANDOM OPPONENT</button>
       <button class="btn ghost sm" id="bmute" title="Sound">🔊</button>
     </div>
@@ -998,7 +1007,7 @@ async function playFight(){
 
   logLine(won ? `<b>${me.name} wins.</b>` : `<b>${them.name}</b> wins. Go find something stronger.`);
   arena.removeEventListener("click", onSkip); logEl().removeEventListener("click", onSkip);
-  fightBtn.disabled = false; nf.disabled = false; fightBtn.textContent = "FIGHT";
+  fightBtn.disabled = false; nf.disabled = false; fightBtn.textContent = "⚔ FIGHT";
   if (hint) hint.textContent = "";
   playing = false;
 }
