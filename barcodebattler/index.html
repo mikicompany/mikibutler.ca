@@ -147,6 +147,17 @@
   @keyframes pr-sig{0%{opacity:0;transform:translateY(-50%) scale(.6)}25%{opacity:1;transform:translateY(-50%) scale(1.08)}70%{opacity:1;transform:translateY(-50%) scale(1)}100%{opacity:0;transform:translateY(-50%) scale(1.03)}}
   .btn[disabled]{opacity:.5;cursor:default}
   .skiphint{text-align:center;color:var(--muted);font-size:9px;letter-spacing:.14em;margin-top:4px;min-height:11px}
+  /* ---- duel a friend ---- */
+  .duel{margin-top:14px;border:1px solid var(--line);border-radius:3px;padding:12px;background:var(--panel)}
+  .duel h3{font-size:10px;letter-spacing:.18em;color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  .duel .drow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .duel input{flex:1 1 160px;min-width:120px}
+  .duelnote{font-size:10px;line-height:1.7;letter-spacing:.04em;color:var(--muted);margin:10px 0 0;word-break:break-word}
+  .duelnote b{color:var(--accent);font-weight:400}
+  .vs-badge{font-size:9px;letter-spacing:.14em;color:var(--accent);border:1px solid var(--accent);border-radius:2px;padding:2px 6px}
+  .challenge-banner{border:1px solid var(--accent);background:rgba(160,255,0,.08);border-radius:3px;
+    padding:11px 13px;margin-bottom:12px;font-size:11px;line-height:1.6;letter-spacing:.03em;color:var(--text)}
+  .challenge-banner b{color:var(--accent)}
   .log{
     border:1px solid var(--line);background:#000;border-radius:3px;padding:10px;
     font-size:11px;line-height:1.75;height:150px;overflow-y:auto;color:var(--muted);
@@ -201,6 +212,7 @@
   <!-- ================= BATTLE ================= -->
   <section class="view" id="v-battle">
     <h2>BATTLE</h2>
+    <div class="challenge-banner" id="challengeBanner" hidden></div>
     <div class="arena">
       <div class="fighter" id="fA"></div>
       <div class="vs">VS</div>
@@ -210,11 +222,23 @@
     <p class="skiphint" id="skiphint"></p>
     <div class="row">
       <button class="btn" id="fight">FIGHT</button>
-      <button class="btn ghost sm" id="newfoe">NEW OPPONENT</button>
+      <button class="btn ghost sm" id="newfoe">RANDOM OPPONENT</button>
       <button class="btn ghost sm" id="bmute" title="Sound">🔊</button>
     </div>
-    <p class="note">Your champion is whichever creature you tap in the Roster. Opponents are drawn from
-      barcodes you haven't met yet.</p>
+    <div class="duel">
+      <h3>⚔ DUEL A FRIEND <span id="duelState" class="vs-badge" hidden>DUEL ON</span></h3>
+      <div class="drow">
+        <input type="text" id="foecode" inputmode="numeric" autocomplete="off"
+               placeholder="friend's barcode / champion code" />
+        <button class="btn sm" id="foefight">SET RIVAL</button>
+      </div>
+      <div class="drow" style="margin-top:8px">
+        <button class="btn ghost sm" id="challenge">🔗 SEND MY CHALLENGE LINK</button>
+      </div>
+      <p class="duelnote" id="duelnote">Your champion is whichever creature you tap in the Roster.
+        Enter a friend's barcode to face <b>their</b> creature — or send them your link.
+        The same two codes always play out the <b>exact same duel</b>, so you both see who really won.</p>
+    </div>
   </section>
 </main>
 
@@ -764,13 +788,60 @@ function setupBattle(){
   a.innerHTML = fighterHtml(me, me.maxhp); paintSprites(a);
   b.innerHTML = fighterHtml(foe, foe.maxhp); paintSprites(b);
   document.getElementById("log").innerHTML =
-    `<div>${me.name} faces <b>${foe.name}</b> of the ${foe.factionName}.</div>
-     <div style="color:var(--muted)">Signatures ready: <b>${me.move.name}</b> vs <b>${foe.move.name}</b>.</div>`;
+    `<div>${me.name} faces <b>${foe.name}</b> of the ${foe.factionName}.</div>` +
+    (duelMode
+      ? `<div style="color:var(--accent)">⚔ DUEL — same result for both players. <b>${me.move.name}</b> vs <b>${foe.move.name}</b>.</div>`
+      : `<div style="color:var(--muted)">Signatures ready: <b>${me.move.name}</b> vs <b>${foe.move.name}</b>.</div>`);
 }
-let playing = false;   // true while a fight is animating
+let playing = false;      // true while a fight is animating
+let duelMode = false;     // true when the opponent is a friend's code (deterministic)
 document.getElementById("newfoe").addEventListener("click", ()=>{
   if (playing) return;
+  duelMode = false;
+  document.getElementById("duelState").hidden = true;
+  document.getElementById("challengeBanner").hidden = true;
   foe = generate(randomCode()); setupBattle();
+});
+// Lock a friend's creature in as the rival (deterministic duel).
+function setRival(raw){
+  if (playing) return false;
+  const note = document.getElementById("duelnote");
+  const parsed = parseCode(raw || "");
+  if (parsed.err){ note.innerHTML = '<span style="color:#ff5a5a">'+parsed.err+'</span>'; return false; }
+  foe = generate(parsed.code);
+  duelMode = true;
+  document.getElementById("duelState").hidden = false;
+  document.getElementById("challengeBanner").hidden = true;
+  setupBattle();
+  note.innerHTML = 'Rival locked: <b>'+foe.name+'</b> of the '+foe.factionName+
+    '. This duel is deterministic — hit <b>FIGHT</b>. (Your friend running the same two codes sees the same result.)';
+  return true;
+}
+document.getElementById("foefight").addEventListener("click", ()=>{
+  setRival(document.getElementById("foecode").value.trim());
+});
+document.getElementById("foecode").addEventListener("keydown", e=>{
+  if (e.key === "Enter") setRival(e.target.value.trim());
+});
+// Build a link that loads YOUR champion as the opponent for whoever opens it.
+document.getElementById("challenge").addEventListener("click", ()=>{
+  const note = document.getElementById("duelnote");
+  if (!champion){
+    note.innerHTML = '<span style="color:#ff5a5a">Pick a champion in the Roster first — that\'s the creature your friend will fight.</span>';
+    return;
+  }
+  const link = location.origin + location.pathname + "?vs=" + encodeURIComponent(champion);
+  const me = generate(champion);
+  const share = { title:"Pantry Raid duel", text: me.name+" challenges you in Pantry Raid — open to fight it:", url: link };
+  if (navigator.share){
+    note.innerHTML = 'Challenge sent — your friend will face <b>'+me.name+'</b>.';
+    navigator.share(share).catch(()=>{});
+    return;
+  }
+  const done = ()=>{ note.innerHTML = 'Link copied — send it to a friend. They\'ll face <b>'+me.name+'</b>.'; };
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(link).then(done).catch(()=>{ prompt("Copy your challenge link", link); });
+  } else { prompt("Copy your challenge link", link); }
 });
 const bmute = document.getElementById("bmute");
 if (bmute){
@@ -780,11 +851,12 @@ if (bmute){
 // ── Resolve the whole fight up front into a list of swing "events", then
 //    play them back one at a time with animation. Keeping the maths and the
 //    animation separate means a KO can never desync from the health bars.
-function buildFight(me, them){
+function buildFight(me, them, rng){
+  rng = rng || Math.random;   // duels pass a seeded rng so both players agree
   let hpA = me.maxhp, hpB = them.maxhp;
   const events = [], usedSig = { me:false, them:false };
   const fmt = (s,d)=>s.replace(/{D}/g,d);
-  const swing = ()=>0.75 + Math.random()*0.5;
+  const swing = ()=>0.75 + rng()*0.5;
   function resolve(att, dfn, kind){
     if (kind==="heavy")  return { dmg: Math.max(6, Math.round(att.atk*swing()*1.7 - dfn.def*0.4)), heal:0, note:"" };
     if (kind==="pierce") return { dmg: Math.max(5, Math.round(att.atk*swing())),                   heal:0, note:" — guard pierced" };
@@ -792,14 +864,18 @@ function buildFight(me, them){
     if (kind==="drain"){ const d = Math.max(5, Math.round(att.atk*swing() - dfn.def*0.4)); const h = Math.round(d*0.4); return { dmg:d, heal:h, note:` (+${h} back)` }; }
     return { dmg: Math.max(3, Math.round(att.atk*swing() - dfn.def*0.4)), heal:0, note:"" };
   }
-  const meFirst = me.spd !== them.spd ? me.spd > them.spd : me.rarityIdx >= them.rarityIdx;
+  // Faster fighter opens; ties break on rarity, then on the code itself — a
+  // symmetric rule so both players in a duel compute the same opener.
+  const meFirst = me.spd !== them.spd ? me.spd > them.spd
+                : me.rarityIdx !== them.rarityIdx ? me.rarityIdx > them.rarityIdx
+                : me.code < them.code;
   let ko = false;
   for (let turn=1; turn<=20 && !ko; turn++){
     const order = meFirst ? [[me,them],[them,me]] : [[them,me],[me,them]];
     for (const [att,dfn] of order){
       if (hpA<=0 || hpB<=0){ ko=true; break; }
       const atkIsMe = att===me, side = atkIsMe ? "me" : "them";
-      const useSig = !usedSig[side] || Math.random() < 0.32;   // first swing is always the signature
+      const useSig = !usedSig[side] || rng() < 0.32;   // first swing is always the signature
       usedSig[side] = true;
       const { dmg, heal, note } = resolve(att, dfn, useSig ? att.move.kind : "normal");
       if (atkIsMe){ hpB -= dmg; hpA = Math.min(me.maxhp,   hpA + heal); }
@@ -808,7 +884,7 @@ function buildFight(me, them){
       events.push({
         atkIsMe, atkName: att.name, useSig, kind: att.move.kind, moveName: att.move.name,
         bark: fmt(att.move.bark, dfn.name),
-        generic: useSig ? null : fmt(GENERIC_BARKS[Math.floor(Math.random()*GENERIC_BARKS.length)], dfn.name),
+        generic: useSig ? null : fmt(GENERIC_BARKS[Math.floor(rng()*GENERIC_BARKS.length)], dfn.name),
         dmg, heal, note, pal: FACTIONS[att.faction].pal,
         hpA: Math.max(0,hpA), hpB: Math.max(0,hpB),
         ko: defDown, koIsMe: defDown && !atkIsMe,
@@ -839,7 +915,13 @@ function sigBanner(arena, name, color){
 
 async function playFight(){
   const me = generate(champion), them = generate(foe.code);
-  const { events, won } = buildFight(me, them);
+  // A duel is deterministic: seed the rng from both codes (order-independent)
+  // so whoever opens the same matchup sees the identical fight. Random
+  // opponents stay live-random.
+  const rng = duelMode
+    ? rngFrom(hash32(SALT + "|duel|" + [champion, foe.code].sort().join("~")))
+    : Math.random;
+  const { events, won } = buildFight(me, them, rng);
   playing = true;
   const fightBtn = document.getElementById("fight"), nf = document.getElementById("newfoe");
   const A = document.getElementById("fA"), B = document.getElementById("fB");
@@ -871,6 +953,7 @@ async function playFight(){
   A.innerHTML = fighterHtml(me, me.maxhp);   paintSprites(A);
   B.innerHTML = fighterHtml(them, them.maxhp); paintSprites(B);
   logLine(`${me.name} faces <b>${them.name}</b> of the ${them.factionName}.`, true);
+  if (duelMode) logLine(`<span style="color:var(--accent)">⚔ DUEL — deterministic. Your friend running these two codes sees the same fight.</span>`);
   logLine(`<span style="color:var(--muted)">Signatures: <b>${me.move.name}</b> vs <b>${them.move.name}</b>.</span>`);
   await wait(520);
 
@@ -927,6 +1010,26 @@ document.getElementById("fight").addEventListener("click", ()=>{
 /* ---------- boot ------------------------------------------------------------ */
 try { if (window.self !== window.top) document.body.classList.add("framed"); } catch { }
 // the opening hint is already in the markup; nothing to say yet
+
+// Incoming challenge link (?vs=CODE): load that creature as the rival and jump
+// straight to the battle so a friend's link drops you into the duel.
+(function(){
+  const vs = new URLSearchParams(location.search).get("vs");
+  if (!vs) return;
+  const parsed = parseCode(vs);
+  if (parsed.err) return;
+  foe = generate(parsed.code);
+  duelMode = true;
+  const banner = document.getElementById("challengeBanner");
+  if (banner){
+    banner.hidden = false;
+    banner.innerHTML = '⚔ <b>'+foe.name+'</b> of the '+foe.factionName+' has been sent to challenge you! ' +
+      (champion ? 'Pick your champion in the Roster if you want, then hit <b>FIGHT</b>.'
+                : 'Scan a product on the SCAN tab to summon your champion, then come back and fight.');
+  }
+  const ds = document.getElementById("duelState"); if (ds) ds.hidden = false;
+  go("battle");
+})();
 
 /* =============================================================================
    TODO before this is a real game
