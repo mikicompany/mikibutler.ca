@@ -333,6 +333,67 @@ const RARITY = [
   {n:"MYTHIC",   c:"#ffd76a", w:0.003, mult:1.70},
 ];
 
+/* ---------- signature moves ----------------------------------------
+   Every creature gets ONE move for life, chosen from its element's kit,
+   so the same product always shouts the same thing. Each element carries
+   one move of each kind (heavy / pierce / double / drain) — the flavour
+   changes, the maths stays fair. {D} = the defender's name. */
+const ELEMENT_MOVES = {
+  ice: [
+    {name:"DEEP FREEZE",  kind:"heavy",  bark:"slams {D} into the freezer wall"},
+    {name:"BRINE SLAM",   kind:"drain",  bark:"drags {D} under the ice and drinks deep"},
+    {name:"FROSTBITE",    kind:"pierce", bark:"finds the gap in {D}'s packaging"},
+    {name:"HAILSTOCK",    kind:"double", bark:"pelts {D} with a two-crate flurry"},
+  ],
+  leaf: [
+    {name:"OVERGROWTH",   kind:"heavy",  bark:"buries {D} under a season of growth"},
+    {name:"ROOT SNARE",   kind:"drain",  bark:"wraps {D} in vines and siphons the sap"},
+    {name:"SPORE BURST",  kind:"pierce", bark:"seeps spores straight through {D}'s guard"},
+    {name:"THORN VOLLEY", kind:"double", bark:"looses a double spray of thorns at {D}"},
+  ],
+  flame: [
+    {name:"WOK HEI",      kind:"heavy",  bark:"sears {D} at restaurant heat"},
+    {name:"EMBER FEAST",  kind:"drain",  bark:"roasts {D} and feeds on the heat"},
+    {name:"CHILI CRASH",  kind:"pierce", bark:"burns clean past {D}'s guard"},
+    {name:"FLASH FRY",    kind:"double", bark:"double-dips {D} in the fryer"},
+  ],
+  stone: [
+    {name:"BULK DROP",    kind:"heavy",  bark:"drops a full pallet on {D}"},
+    {name:"GRAVEL GRIND", kind:"drain",  bark:"grinds {D} down and pockets the dust"},
+    {name:"CRATE CRUSH",  kind:"pierce", bark:"flattens {D} through the crate"},
+    {name:"CAN BARRAGE",  kind:"double", bark:"hurls two cans dead-centre at {D}"},
+  ],
+  static: [
+    {name:"HARD RESET",   kind:"heavy",  bark:"crashes into {D} and reboots the aisle"},
+    {name:"PRICE FAULT",  kind:"drain",  bark:"siphons {D}'s value into itself"},
+    {name:"SCAN ERROR",   kind:"pierce", bark:"glitches straight through {D}"},
+    {name:"BARCODE STORM",kind:"double", bark:"strobes {D} with a double misread"},
+  ],
+  ink: [
+    {name:"SPINE SNAP",   kind:"heavy",  bark:"cracks {D} like a paperback"},
+    {name:"INK FLOOD",    kind:"drain",  bark:"drowns {D} in ink and blots the wound"},
+    {name:"FINE PRINT",   kind:"pierce", bark:"reads {D} a clause it can't escape"},
+    {name:"FOOTNOTE JAB", kind:"double", bark:"jabs {D} twice — citation needed"},
+  ],
+  echo: [
+    {name:"FINAL MARKDOWN",kind:"heavy", bark:"slashes {D}'s price to nothing"},
+    {name:"EXPIRY CURSE", kind:"drain",  bark:"ages {D} a year and pockets the time"},
+    {name:"PHANTOM COUPON",kind:"pierce",bark:"redeems a discount right through {D}"},
+    {name:"DOUBLE VOID",  kind:"double", bark:"cancels {D} out. Twice."},
+  ],
+};
+// Plain swings still get a little life instead of "hits for N".
+const GENERIC_BARKS = [
+  "bodychecks {D}", "lands a clean shot on {D}", "shoulders into {D}",
+  "rattles {D}", "clips {D}", "swings hard at {D}",
+  "shoves {D} down the aisle", "cracks {D} across the shelf",
+];
+function pickMove(code, element){
+  const list = ELEMENT_MOVES[element] || ELEMENT_MOVES.stone;
+  const r = rngFrom(hash32(SALT + "|move|" + code));
+  return list[Math.floor(r() * list.length)];
+}
+
 /* ---------- the generator ------------------------------------------ */
 function generate(rawCode){
   const code    = String(rawCode);
@@ -365,6 +426,7 @@ function generate(rawCode){
     code, prefix, company, item, seed,
     name: nameFor(company, item, rIdx),
     faction: fkey, factionName: fac.name, origin: fac.from, element: fac.el,
+    move: pickMove(code, fac.el),
     rarity: rar.n, rarityColor: rar.c, rarityIdx: rIdx,
     hp, maxhp: hp, atk, def, spd,
   };
@@ -440,6 +502,7 @@ function cardHtml(c){
         &nbsp;${c.factionName} &middot; ${c.element}
       </p>
       <div class="stats">${statRows(c)}</div>
+      <p style="font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--accent);margin:6px 0 0">✦ ${c.move.name}</p>
       <p class="code">${c.code} &mdash; registered in ${c.origin}</p>
     </div>
   </div>`;
@@ -635,7 +698,8 @@ function setupBattle(){
   a.innerHTML = fighterHtml(me, me.maxhp); paintSprites(a);
   b.innerHTML = fighterHtml(foe, foe.maxhp); paintSprites(b);
   document.getElementById("log").innerHTML =
-    `<div>${me.name} faces <b>${foe.name}</b> of the ${foe.factionName}.</div>`;
+    `<div>${me.name} faces <b>${foe.name}</b> of the ${foe.factionName}.</div>
+     <div style="color:var(--muted)">Signatures ready: <b>${me.move.name}</b> vs <b>${foe.move.name}</b>.</div>`;
 }
 document.getElementById("newfoe").addEventListener("click", ()=>{
   foe = generate(randomCode()); setupBattle();
@@ -646,19 +710,39 @@ document.getElementById("fight").addEventListener("click", ()=>{
   let hpA = me.maxhp, hpB = them.maxhp;
   const log = document.getElementById("log");
   const lines = [];
-  const hit = (att, dfn) => {
-    const swing = 0.75 + Math.random()*0.5;
-    return Math.max(3, Math.round((att.atk*swing) - dfn.def*0.4));
-  };
+  const usedSig = { me:false, them:false };
+  const fmt   = (s, d) => s.replace(/{D}/g, d);
+  const swing = () => 0.75 + Math.random()*0.5;
+
+  // Turn a swing of a given kind into {dmg, heal, note}. 'normal' is a plain
+  // hit; the four move kinds each bend the maths a different way.
+  function resolve(att, dfn, kind){
+    if (kind === "heavy")  return { dmg: Math.max(6, Math.round(att.atk*swing()*1.7 - dfn.def*0.4)), heal:0, note:"" };
+    if (kind === "pierce") return { dmg: Math.max(5, Math.round(att.atk*swing())),                   heal:0, note:" — guard pierced" };
+    if (kind === "double"){ const one = Math.max(3, Math.round(att.atk*0.62 - dfn.def*0.4)); return { dmg: one*2, heal:0, note:" (twice)" }; }
+    if (kind === "drain"){ const d = Math.max(5, Math.round(att.atk*swing() - dfn.def*0.4)); const h = Math.round(d*0.4); return { dmg:d, heal:h, note:` (+${h} back)` }; }
+    return { dmg: Math.max(3, Math.round(att.atk*swing() - dfn.def*0.4)), heal:0, note:"" };
+  }
+
   // Faster fighter opens; ties go to the higher rarity.
-  let meFirst = me.spd !== them.spd ? me.spd > them.spd : me.rarityIdx >= them.rarityIdx;
+  const meFirst = me.spd !== them.spd ? me.spd > them.spd : me.rarityIdx >= them.rarityIdx;
   for (let turn=1; turn<=20 && hpA>0 && hpB>0; turn++){
     const order = meFirst ? [[me,them],[them,me]] : [[them,me],[me,them]];
     for (const [att,dfn] of order){
       if (hpA<=0 || hpB<=0) break;
-      const dmg = hit(att,dfn);
-      if (att===me){ hpB -= dmg; } else { hpA -= dmg; }
-      lines.push(`${att===me?"<b>"+att.name+"</b>":att.name} hits for ${dmg}.`);
+      const side = att===me ? "me" : "them";
+      // A fighter's first swing is always its signature; after that, ~1 in 3.
+      const useSig = !usedSig[side] || Math.random() < 0.32;
+      usedSig[side] = true;
+      const { dmg, heal, note } = resolve(att, dfn, useSig ? att.move.kind : "normal");
+
+      if (att===me){ hpB -= dmg; hpA = Math.min(me.maxhp,   hpA + heal); }
+      else         { hpA -= dmg; hpB = Math.min(them.maxhp, hpB + heal); }
+
+      const an = att===me ? "<b>"+att.name+"</b>" : att.name;
+      lines.push(useSig
+        ? `⚡ <b>${att.move.name}</b>! ${an} ${fmt(att.move.bark, dfn.name)} — ${dmg}${note}.`
+        : `${an} ${fmt(GENERIC_BARKS[Math.floor(Math.random()*GENERIC_BARKS.length)], dfn.name)} for ${dmg}.`);
     }
   }
   const won = hpA > 0 && hpA >= hpB;
