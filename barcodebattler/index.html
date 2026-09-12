@@ -1203,10 +1203,42 @@ function renderTypeChart(){
     `<div><b style="color:var(--accent)">${e}</b> beats ${STRONG[e].join(", ")}</div>`).join("");
 }
 
+/* ---------- battlefields (aisles) ------------------------------------
+   Every fight rolls a battlefield that favours one element. Deterministic
+   in duels (seeded from both codes) so both players get the same aisle. */
+const AISLES = [
+  { name:"Freezer Aisle",  boost:"ice",    blurb:"ice runs hot here" },
+  { name:"Hot Bar",        boost:"flame",  blurb:"flame is fed here" },
+  { name:"Produce",        boost:"leaf",   blurb:"leaf thrives here" },
+  { name:"Loading Dock",   boost:"stone",  blurb:"stone rules here" },
+  { name:"Electronics",    boost:"static", blurb:"static crackles here" },
+  { name:"Book Nook",      boost:"ink",    blurb:"ink flows here" },
+  { name:"Clearance Bin",  boost:"echo",   blurb:"echo lingers here" },
+  { name:"Checkout Lane",  boost:"",       blurb:"no element favoured — pure skill" },
+];
+function aisleFor(seedStr){ return AISLES[hash32(SALT + "|aisle|" + seedStr) % AISLES.length]; }
+
+/* ---------- faction passives -----------------------------------------
+   Each element carries an innate quirk, applied inside resolveHit and the
+   per-turn tick. Flavour text drives the pre-fight readout. */
+const PASSIVES = {
+  ice:    "Cold Open — first strike hits +30%",
+  flame:  "Overheat — deals +10% damage",
+  leaf:   "Regrowth — heals a little every turn",
+  stone:  "Bulwark — takes −12% damage",
+  static: "Glitch — 15% chance to dodge",
+  ink:    "Errata — 12% chance to crit (×1.5)",
+  echo:   "Aftertaste — chips whoever hits it",
+};
+// A signature debuffs the target based on its element (no status for
+// leaf/stone — they get regrowth / tankiness instead).
+const SIG_STATUS = { ice:"chill", static:"chill", flame:"expose", echo:"expose", ink:"expose" };
+
 // One blow's maths, shared by duels (seeded rng) and live fights
-// (Math.random) so the type chart applies identically everywhere.
-function resolveHit(att, dfn, kind, rng){
-  rng = rng || Math.random;
+// (Math.random). ctx carries the battlefield, statuses and first-hit flag so
+// aisle bonuses, passives and status effects apply identically everywhere.
+function resolveHit(att, dfn, kind, rng, ctx){
+  rng = rng || Math.random; ctx = ctx || {};
   const sw = 0.75 + rng()*0.5;
   const tm = typeMult(att.element, dfn.element);
   let base, floor = 3, note = "", drain = false;
@@ -1215,51 +1247,83 @@ function resolveHit(att, dfn, kind, rng){
   else if (kind==="double"){ base = Math.max(3, att.atk*0.62 - dfn.def*0.4)*2; note = " (twice)"; }
   else if (kind==="drain"){ base = att.atk*sw - dfn.def*0.4; drain = true; }
   else { base = att.atk*sw - dfn.def*0.4; }
-  const dmg = Math.max(floor, Math.round(base*tm));
+  let mult = tm;
+  if (ctx.aisleBoost && att.element === ctx.aisleBoost) mult *= 1.25;   // battlefield
+  if (att.element === "flame") mult *= 1.10;                            // Overheat
+  if (att.element === "ice" && ctx.firstHit) mult *= 1.30;             // Cold Open
+  if (dfn.element === "stone") mult *= 0.88;                            // Bulwark
+  if (ctx.atkStatus && ctx.atkStatus.chill > 0) mult *= 0.75;          // chilled attacker
+  if (ctx.dfnStatus && ctx.dfnStatus.expose > 0) mult *= 1.22;         // exposed defender
+  // Draw crit/dodge in a fixed order so both duel perspectives agree.
+  let crit = false;
+  if (att.element === "ink" && rng() < 0.12){ crit = true; mult *= 1.5; }   // Errata
+  let dodged = false;
+  if (dfn.element === "static" && rng() < 0.15) dodged = true;              // Glitch
+  const dmg = dodged ? 0 : Math.max(floor, Math.round(base*mult));
   let heal = 0;
-  if (drain){ heal = Math.round(dmg*0.4); note = ` (+${heal} back)`; }
-  const eff = tm>1 ? " — super effective!" : tm<1 ? " — resisted" : "";
-  return { dmg, heal, note: note + eff, tm };
+  if (drain && !dodged) heal = Math.round(dmg*0.4);
+  const thorns = (!dodged && dfn.element === "echo") ? Math.max(1, Math.round(att.maxhp*0.03)) : 0;
+  if (dodged) note = " — dodged!";
+  else {
+    if (heal) note += ` (+${heal} back)`;
+    if (crit) note += " ✸crit";
+    note += tm>1 ? " — super effective!" : tm<1 ? " — resisted" : "";
+  }
+  return { dmg, heal, note, tm, dodged, crit, thorns };
 }
 
 // ── Resolve a whole DUEL up front into a list of swing "events", then
 //    play them back with animation. Keeping the maths and the animation
 //    separate means a KO can never desync from the health bars. (Live
 //    solo fights are interactive instead — see playInteractive.)
-function buildFight(me, them, rng){
+function buildFight(me, them, rng, aisle){
   rng = rng || Math.random;   // duels pass a seeded rng so both players agree
+  aisle = aisle || aisleFor([me.code, them.code].sort().join("~"));
+  const aisleBoost = aisle.boost;
   let hpA = me.maxhp, hpB = them.maxhp;
   const events = [], usedSig = { me:false, them:false };
+  const first = { me:true, them:true };
+  const st = { me:{ chill:0, expose:0 }, them:{ chill:0, expose:0 } };
   const fmt = (s,d)=>s.replace(/{D}/g,d);
-  // Faster fighter opens; ties break on rarity, then on the code itself — a
-  // symmetric rule so both players in a duel compute the same opener.
   const meFirst = me.spd !== them.spd ? me.spd > them.spd
                 : me.rarityIdx !== them.rarityIdx ? me.rarityIdx > them.rarityIdx
                 : me.code < them.code;
   let ko = false;
-  for (let turn=1; turn<=20 && !ko; turn++){
+  for (let turn=1; turn<=24 && !ko; turn++){
     const order = meFirst ? [[me,them],[them,me]] : [[them,me],[me,them]];
     for (const [att,dfn] of order){
       if (hpA<=0 || hpB<=0){ ko=true; break; }
-      const atkIsMe = att===me, side = atkIsMe ? "me" : "them";
-      const useSig = !usedSig[side] || rng() < 0.32;   // first swing is always the signature
+      const atkIsMe = att===me, side = atkIsMe ? "me" : "them", dside = atkIsMe ? "them" : "me";
+      // start of this fighter's turn: Regrowth heal (leaf passive)
+      let regen = 0;
+      if (att.element === "leaf"){ regen = Math.round(att.maxhp*0.04);
+        if (atkIsMe) hpA = Math.min(me.maxhp, hpA+regen); else hpB = Math.min(them.maxhp, hpB+regen); }
+      const useSig = !usedSig[side] || rng() < 0.32;
       usedSig[side] = true;
-      const { dmg, heal, note } = resolveHit(att, dfn, useSig ? att.move.kind : "normal", rng);
-      if (atkIsMe){ hpB -= dmg; hpA = Math.min(me.maxhp,   hpA + heal); }
-      else        { hpA -= dmg; hpB = Math.min(them.maxhp, hpB + heal); }
-      const defDown = atkIsMe ? hpB<=0 : hpA<=0;
+      const ctx = { aisleBoost, firstHit: first[side], atkStatus: st[side], dfnStatus: st[dside] };
+      const r = resolveHit(att, dfn, useSig ? att.move.kind : "normal", rng, ctx);
+      first[side] = false;
+      if (atkIsMe){ hpB -= r.dmg; hpA = Math.min(me.maxhp, hpA + r.heal) - r.thorns; }
+      else        { hpA -= r.dmg; hpB = Math.min(them.maxhp, hpB + r.heal) - r.thorns; }
+      if (useSig && SIG_STATUS[att.element] && !r.dodged) st[dside][SIG_STATUS[att.element]] = 2;   // signature debuff
+      if (st[side].chill > 0) st[side].chill--;                       // tick this fighter's statuses
+      if (st[side].expose > 0) st[side].expose--;
+      const meDown = hpA<=0, themDown = hpB<=0;
       events.push({
         atkIsMe, atkName: att.name, useSig, kind: att.move.kind, moveName: att.move.name,
         bark: fmt(att.move.bark, dfn.name),
         generic: useSig ? null : fmt(GENERIC_BARKS[Math.floor(rng()*GENERIC_BARKS.length)], dfn.name),
-        dmg, heal, note, pal: FACTIONS[att.faction].pal,
+        dmg: r.dmg, heal: r.heal, note: r.note, dodged: r.dodged, thorns: r.thorns, regen,
+        pal: FACTIONS[att.faction].pal,
         hpA: Math.max(0,hpA), hpB: Math.max(0,hpB),
-        ko: defDown, koIsMe: defDown && !atkIsMe,
+        ko: meDown || themDown, koIsMe: meDown,
       });
-      if (defDown){ ko=true; break; }
+      if (meDown || themDown){ ko=true; break; }
     }
   }
-  return { events, won: hpA>0 && hpA>=hpB };
+  // Symmetric winner rule (handles a thorns double-KO the same on both screens).
+  const won = hpA > hpB || (hpA === hpB && me.code < them.code);
+  return { events, won, aisle };
 }
 
 const logEl = ()=>document.getElementById("log");
@@ -1312,7 +1376,7 @@ async function playFight(aCode, bCode, spectator){
   const me = generate(aCode), them = generate(bCode);
   lastFightPair = { a: aCode, b: bCode };
   const rng = rngFrom(hash32(SALT + "|duel|" + [aCode, bCode].sort().join("~")));
-  const { events, won } = buildFight(me, them, rng);
+  const { events, won, aisle } = buildFight(me, them, rng);
   playing = true;
   const shareBtn = document.getElementById("shareResult"); if (shareBtn) shareBtn.hidden = true;
   const fightBtn = document.getElementById("fight"), nf = document.getElementById("newfoe");
@@ -1345,16 +1409,19 @@ async function playFight(aCode, bCode, spectator){
   A.innerHTML = fighterHtml(me, me.maxhp);   paintSprites(A);
   B.innerHTML = fighterHtml(them, them.maxhp); paintSprites(B);
   logLine(`${me.name} faces <b>${them.name}</b> of the ${them.factionName}.`, true);
+  logLine(`<span style="color:#7ec8ff">🛒 ${aisle.name}${aisle.blurb?" — "+aisle.blurb:""}.</span>`);
+  logLine(`<span style="color:var(--muted)">${me.name}: ${PASSIVES[me.element]||"—"} · ${them.name}: ${PASSIVES[them.element]||"—"}.</span>`);
   if (duelMode) logLine(`<span style="color:var(--accent)">⚔ DUEL — deterministic. Your friend running these two codes sees the same fight.</span>`);
   logLine(`<span style="color:var(--muted)">Signatures: <b>${me.move.name}</b> vs <b>${them.move.name}</b>.</span>`);
   await wait(520);
 
   for (const ev of events){
-    const atk = ev.atkIsMe ? A : B, dfn = ev.atkIsMe ? B : A, dfnC = ev.atkIsMe ? them : me;
+    const atk = ev.atkIsMe ? A : B, dfn = ev.atkIsMe ? B : A;
     if (!reduce){ atk.classList.add(ev.atkIsMe?"lunge-a":"lunge-b"); }
     Sfx.swing();
     await wait(reduce?50:150);
     if (!reduce) atk.classList.remove(ev.atkIsMe?"lunge-a":"lunge-b");
+    if (ev.regen && !reduce) floatNum(atk, "+"+ev.regen, "heal");   // Regrowth
 
     if (ev.useSig){
       if (!reduce){ sigBanner(arena, ev.moveName, ev.pal[0]); arena.classList.remove("shake"); void arena.offsetWidth; arena.classList.add("shake"); }
@@ -1362,21 +1429,24 @@ async function playFight(aCode, bCode, spectator){
     } else Sfx.hit();
 
     if (!reduce){
-      dfn.classList.remove("hit","crit"); void dfn.offsetWidth;
-      dfn.classList.add(ev.useSig ? "crit" : "hit");
-      floatNum(dfn, "-"+ev.dmg, ev.useSig ? "dmg big" : "dmg");
-      setTimeout(()=>dfn.classList.remove("hit","crit"), 460);
+      if (ev.dodged){ floatNum(dfn, "miss", "heal"); }
+      else {
+        dfn.classList.remove("hit","crit"); void dfn.offsetWidth;
+        dfn.classList.add(ev.useSig ? "crit" : "hit");
+        floatNum(dfn, "-"+ev.dmg, ev.useSig ? "dmg big" : "dmg");
+        setTimeout(()=>dfn.classList.remove("hit","crit"), 460);
+      }
+      if (ev.thorns) floatNum(atk, "-"+ev.thorns, "dmg");   // Aftertaste chip
+      if (ev.heal>0) floatNum(atk, "+"+ev.heal, "heal");
     }
-    setHp(dfn, dfnC, ev.atkIsMe ? ev.hpB : ev.hpA);
-    if (ev.heal>0){
-      if (!reduce) floatNum(atk, "+"+ev.heal, "heal");
-      Sfx.heal();
-      setHp(atk, ev.atkIsMe ? me : them, ev.atkIsMe ? ev.hpA : ev.hpB);
-    }
+    if (ev.heal>0 && !ev.dodged) Sfx.heal();
+    setHp(A, me, ev.hpA); setHp(B, them, ev.hpB);
 
+    const an = ev.atkIsMe ? "<b>"+ev.atkName+"</b>" : ev.atkName;
+    const hitTxt = ev.dodged ? "" : (ev.useSig ? " — "+ev.dmg : " for "+ev.dmg);
     logLine(ev.useSig
-      ? `⚡ <b>${ev.moveName}</b>! ${ev.atkIsMe?"<b>"+ev.atkName+"</b>":ev.atkName} ${ev.bark} — ${ev.dmg}${ev.note}.`
-      : `${ev.atkIsMe?"<b>"+ev.atkName+"</b>":ev.atkName} ${ev.generic} for ${ev.dmg}.`);
+      ? `⚡ <b>${ev.moveName}</b>! ${an} ${ev.bark}${hitTxt}${ev.note}.`
+      : `${an} ${ev.generic}${hitTxt}${ev.note}.`);
 
     if (ev.ko){
       const koPanel = ev.koIsMe ? A : B;
@@ -1448,40 +1518,63 @@ async function playInteractive(){
   const wait = ms => new Promise(r=>setTimeout(r, reduce ? Math.min(ms,60) : ms));
 
   let hpA = me.maxhp, hpB = them.maxhp, chgA = 0, chgB = 0, guardA = false, guardB = false;
+  let firstA = true, firstB = true;
+  const stA = { chill:0, expose:0 }, stB = { chill:0, expose:0 };
+  const aisle = AISLES[Math.floor(Math.random()*AISLES.length)];   // solo: live-random battlefield
   arena.classList.add("live");   // reveals the charge meters
   A.className = "fighter"; B.className = "fighter";
   A.innerHTML = fighterHtml(me, hpA);   paintSprites(A); setCharge(A, 0);
   B.innerHTML = fighterHtml(them, hpB); paintSprites(B); setCharge(B, 0);
   const tm = typeMult(me.element, them.element);
   logLine(`${me.name} (${me.element}) faces <b>${them.name}</b> (${them.element}).`, true);
+  logLine(`<span style="color:#7ec8ff">🛒 ${aisle.name}${aisle.blurb?" — "+aisle.blurb:""}.</span>`);
+  logLine(`<span style="color:var(--muted)">You: ${PASSIVES[me.element]||"—"}. Them: ${PASSIVES[them.element]||"—"}.</span>`);
   logLine(tm>1 ? `<span style="color:var(--accent)">Your ${me.element} is strong here — press the advantage.</span>`
         : tm<1 ? `<span style="color:#ff9a3c">Your ${me.element} is weak into ${them.element} — consider defending.</span>`
         : `<span style="color:var(--muted)">Even matchup. Time your signature.</span>`);
 
   function setChgUI(){ setCharge(A, chgA); setCharge(B, chgB); actSig.disabled = chgA < 100; }
+  // Start of a fighter's turn: Regrowth heal (leaf). End: tick down its statuses.
+  function turnStart(atkIsMe){
+    const atk = atkIsMe ? me : them;
+    if (atk.element === "leaf"){ const h = Math.round(atk.maxhp*0.04);
+      if (atkIsMe) hpA = Math.min(me.maxhp, hpA+h); else hpB = Math.min(them.maxhp, hpB+h);
+      if (!reduce) floatNum(atkIsMe?A:B, "+"+h, "heal"); setHp(A, me, hpA); setHp(B, them, hpB); }
+  }
+  function turnEnd(atkIsMe){ const s = atkIsMe ? stA : stB; if (s.chill>0) s.chill--; if (s.expose>0) s.expose--; }
 
-  // one blow → visuals + state
+  // one blow → visuals + state (aisle, passives, statuses all via resolveHit)
   async function strike(atkIsMe, useSig){
     const atk = atkIsMe ? me : them, dfn = atkIsMe ? them : me;
     const atkPanel = atkIsMe ? A : B, dfnPanel = atkIsMe ? B : A;
-    const r = resolveHit(atk, dfn, useSig ? atk.move.kind : "normal");
+    const ctx = { aisleBoost: aisle.boost, firstHit: atkIsMe ? firstA : firstB,
+                  atkStatus: atkIsMe ? stA : stB, dfnStatus: atkIsMe ? stB : stA };
+    const r = resolveHit(atk, dfn, useSig ? atk.move.kind : "normal", Math.random, ctx);
+    if (atkIsMe) firstA = false; else firstB = false;
     const guarded = atkIsMe ? guardB : guardA;
-    let dmg = guarded ? Math.max(1, Math.round(r.dmg*0.5)) : r.dmg;
+    const dmg = r.dodged ? 0 : (guarded ? Math.max(1, Math.round(r.dmg*0.5)) : r.dmg);
     if (!reduce){ atkPanel.classList.add(atkIsMe?"lunge-a":"lunge-b"); }
     Sfx.swing(); await wait(reduce?40:150);
     if (!reduce) atkPanel.classList.remove(atkIsMe?"lunge-a":"lunge-b");
     if (useSig){ if(!reduce){ sigBanner(arena, atk.move.name, FACTIONS[atk.faction].pal[0]); arena.classList.remove("shake"); void arena.offsetWidth; arena.classList.add("shake"); } Sfx.sig(); }
     else Sfx.hit();
-    if (!reduce){ dfnPanel.classList.remove("hit","crit"); void dfnPanel.offsetWidth; dfnPanel.classList.add(useSig?"crit":"hit"); floatNum(dfnPanel, "-"+dmg, useSig?"dmg big":"dmg"); setTimeout(()=>dfnPanel.classList.remove("hit","crit"),460); }
-    if (atkIsMe){ hpB = Math.max(0, hpB-dmg); if (r.heal) hpA = Math.min(me.maxhp, hpA+r.heal); }
-    else        { hpA = Math.max(0, hpA-dmg); if (r.heal) hpB = Math.min(them.maxhp, hpB+r.heal); }
-    setHp(dfnPanel, dfn, atkIsMe ? hpB : hpA);
-    if (r.heal){ if(!reduce) floatNum(atkPanel, "+"+r.heal, "heal"); Sfx.heal(); setHp(atkPanel, atk, atkIsMe ? hpA : hpB); }
+    if (!reduce){
+      if (r.dodged) floatNum(dfnPanel, "miss", "heal");
+      else { dfnPanel.classList.remove("hit","crit"); void dfnPanel.offsetWidth; dfnPanel.classList.add(useSig?"crit":"hit"); floatNum(dfnPanel, "-"+dmg, useSig?"dmg big":"dmg"); setTimeout(()=>dfnPanel.classList.remove("hit","crit"),460); }
+      if (r.thorns) floatNum(atkPanel, "-"+r.thorns, "dmg");
+    }
+    if (atkIsMe){ hpB = Math.max(0, hpB-dmg); if (r.heal && !r.dodged) hpA = Math.min(me.maxhp, hpA+r.heal); hpA = Math.max(0, hpA - r.thorns); }
+    else        { hpA = Math.max(0, hpA-dmg); if (r.heal && !r.dodged) hpB = Math.min(them.maxhp, hpB+r.heal); hpB = Math.max(0, hpB - r.thorns); }
+    if (useSig && SIG_STATUS[atk.element] && !r.dodged){ (atkIsMe ? stB : stA)[SIG_STATUS[atk.element]] = 2; }
+    setHp(A, me, hpA); setHp(B, them, hpB);
+    if (r.heal && !r.dodged){ if(!reduce) floatNum(atkPanel, "+"+r.heal, "heal"); Sfx.heal(); }
     if (atkIsMe) guardB = false; else guardA = false;
     const an = atkIsMe ? "<b>"+atk.name+"</b>" : atk.name;
+    const tail = r.dodged ? "" : (useSig ? " — "+dmg : " for "+dmg);
+    const g = (guarded && !r.dodged) ? " (guarded)" : "";
     logLine(useSig
-      ? `⚡ <b>${atk.move.name}</b>! ${an} ${atk.move.bark.replace(/{D}/g,dfn.name)} — ${dmg}${r.note}${guarded?" (guarded)":""}.`
-      : `${an} ${GENERIC_BARKS[Math.floor(Math.random()*GENERIC_BARKS.length)].replace(/{D}/g,dfn.name)} for ${dmg}${r.note}${guarded?" (guarded)":""}.`);
+      ? `⚡ <b>${atk.move.name}</b>! ${an} ${atk.move.bark.replace(/{D}/g,dfn.name)}${tail}${r.note}${g}.`
+      : `${an} ${GENERIC_BARKS[Math.floor(Math.random()*GENERIC_BARKS.length)].replace(/{D}/g,dfn.name)}${tail}${r.note}${g}.`);
   }
 
   function playerTurn(){
@@ -1507,17 +1600,19 @@ async function playInteractive(){
   while (hpA > 0 && hpB > 0 && guardRounds < 80){
     guardRounds++;
     if (turnMe){
+      turnStart(true); if (hpA <= 0) break;
       const act = await playerTurn();
       if (act === "defend"){ guardA = true; chgA = Math.min(100, chgA+55); Sfx.heal(); logLine(`<span style="color:#7ec8ff">${me.name} braces. 🛡 (+charge)</span>`); }
       else if (act === "signature"){ await strike(true, true); chgA = 0; }
       else { await strike(true, false); chgA = Math.min(100, chgA+34); }
-      setChgUI(); if (hpB <= 0) break; await wait(280);
+      turnEnd(true); setChgUI(); if (hpB <= 0) break; await wait(280);
     } else {
+      turnStart(false); if (hpB <= 0) break;
       const act = aiChoose();
       if (act === "defend"){ guardB = true; chgB = Math.min(100, chgB+55); logLine(`${them.name} braces. 🛡`); }
       else if (act === "signature"){ await strike(false, true); chgB = 0; }
       else { await strike(false, false); chgB = Math.min(100, chgB+34); }
-      setChgUI(); if (hpA <= 0) break; await wait(reduce?150:650);
+      turnEnd(false); setChgUI(); if (hpA <= 0) break; await wait(reduce?150:650);
     }
     turnMe = !turnMe;
   }
