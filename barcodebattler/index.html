@@ -135,6 +135,25 @@
   .typechart summary::-webkit-details-marker{display:none}
   .typechart #typeChartBody{margin-top:8px;line-height:1.9}
   .typechart #typeChartBody b{text-transform:capitalize}
+  /* levels + xp */
+  .lvlbadge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.08em;color:#0b0b0b;
+    background:var(--accent);border-radius:2px;padding:1px 5px;vertical-align:middle}
+  .xpbar{height:5px;background:#000;border:1px solid var(--line);border-radius:1px;overflow:hidden;margin:0 0 10px}
+  .xpbar i{display:block;height:100%;width:0;background:#7ec8ff;transition:width .4s ease}
+  /* LEVEL UP celebration */
+  .levelup{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    background:radial-gradient(circle at center, rgba(160,255,0,.16), rgba(11,11,11,.92) 70%);border-radius:3px;text-align:center;
+    animation:lu-in .35s ease}
+  .levelup.noanim{animation:none}
+  @keyframes lu-in{0%{opacity:0;transform:scale(.9)}100%{opacity:1;transform:scale(1)}}
+  .lu-title{font-family:var(--font);font-weight:700;font-size:30px;letter-spacing:.14em;color:var(--accent);
+    text-shadow:0 0 18px rgba(160,255,0,.7),0 3px 0 #14320a;animation:lu-pop .5s ease}
+  .levelup.noanim .lu-title{animation:none}
+  @keyframes lu-pop{0%{transform:scale(.5);opacity:0}55%{transform:scale(1.18)}100%{transform:scale(1);opacity:1}}
+  .lu-name{font-size:14px;color:#fff}.lu-name b{color:var(--accent)}
+  .lu-multi{font-size:11px;color:#ffcf4d;letter-spacing:.1em}
+  .lu-stats{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px;font-size:11px;color:var(--muted)}
+  .lu-stats b{color:#fff}.lu-stats i{color:var(--accent);font-style:normal;font-weight:700}
   .cbody{flex:1 1 auto;min-width:0}
   .cname{font-size:17px;font-weight:700;letter-spacing:.05em;margin:0 0 2px;word-break:break-word}
   .ctag{font-size:10px;letter-spacing:.14em;color:var(--muted);margin:0 0 10px}
@@ -623,35 +642,68 @@ function fillRealNames(scope){
   });
 }
 
-/* ---------- battle record + grocery rank ------------------------------ */
-const RANKS = [
-  {min:0,    name:"Cart Wrangler"},
-  {min:1000, name:"Shelf Stocker"},
-  {min:1150, name:"Aisle Captain"},
-  {min:1300, name:"Floor Manager"},
-  {min:1480, name:"Store Manager"},
-  {min:1680, name:"Regional Boss"},
-];
-function rankFor(r){ let out = RANKS[0]; for (const t of RANKS) if (r >= t.min) out = t; return out.name; }
-let stats = { wins:0, losses:0, streak:0, best:0, rating:1000 };
-try { stats = Object.assign(stats, JSON.parse(localStorage.getItem("pantryraid.stats.v1") || "{}")); } catch {}
+/* ---------- creature leveling ----------------------------------------
+   Progression lives on the creatures: they earn XP from battles and level
+   up, stats climbing a little each time. This is the satisfying part. */
+const MAXLVL = 30;
+let levels = {};
+try { levels = JSON.parse(localStorage.getItem("pantryraid.levels.v1") || "{}"); } catch {}
+function saveLevels(){ try { localStorage.setItem("pantryraid.levels.v1", JSON.stringify(levels)); } catch {} }
+function lvlOf(code){ return (levels[code] && levels[code].lvl) || 1; }
+function xpOf(code){ return (levels[code] && levels[code].xp) || 0; }
+function xpNeed(lvl){ return 45 + (lvl-1)*30; }        // xp to go lvl -> lvl+1
+
+// A creature at a given level: base stats scaled up a touch per level.
+function withLevel(c, lvl){
+  const f = 1 + (lvl-1)*0.05;
+  const hp = Math.round(c.maxhp*f);
+  return Object.assign({}, c, { lvl, hp, maxhp:hp,
+    atk:Math.round(c.atk*f), def:Math.round(c.def*f), spd:Math.round(c.spd*f) });
+}
+function leveled(code){ return withLevel(generate(code), lvlOf(code)); }
+function xpGain(won, foe){ return won ? (35 + (foe.rarityIdx||0)*12 + (foe.lvl?foe.lvl*3:0)) : 12; }
+
+// Add XP; returns {gain, ups:[levels reached], before, after, xp, need}.
+function addXP(code, amount){
+  const rec = levels[code] || { lvl:1, xp:0 };
+  const before = rec.lvl;
+  rec.xp += amount;
+  const ups = [];
+  while (rec.lvl < MAXLVL && rec.xp >= xpNeed(rec.lvl)){ rec.xp -= xpNeed(rec.lvl); rec.lvl++; ups.push(rec.lvl); }
+  if (rec.lvl >= MAXLVL) rec.xp = 0;
+  levels[code] = rec; saveLevels();
+  return { gain:amount, ups, before, after:rec.lvl, xp:rec.xp, need:xpNeed(rec.lvl) };
+}
+
+/* ---------- Pantry Power + grocery rank -------------------------------
+   Pantry Power = the whole collection's levels — a number that only ever
+   goes up. Rank tier tracks your highest creature level. */
+let stats = { wins:0, losses:0, streak:0, best:0 };
+try { const s = JSON.parse(localStorage.getItem("pantryraid.stats.v1") || "{}");
+      stats = { wins:s.wins||0, losses:s.losses||0, streak:s.streak||0, best:s.best||0 }; } catch {}
 function saveStats(){ try { localStorage.setItem("pantryraid.stats.v1", JSON.stringify(stats)); } catch {} }
-function foeRating(c){ return Math.round(900 + c.rarityIdx*55 + ((c.hp/3.6 + c.atk + c.def + c.spd) - 200)*1.6); }
-function recordResult(won, foe){
-  const opp = foeRating(foe);
-  const exp = 1/(1 + Math.pow(10, (opp - stats.rating)/400));
-  stats.rating = Math.max(600, Math.round(stats.rating + 32*((won?1:0) - exp)));
+function pantryPower(){ return roster.reduce((s,r)=> s + 10*lvlOf(r.code), 0); }
+function maxLevel(){ return roster.reduce((m,r)=> Math.max(m, lvlOf(r.code)), 1); }
+const RANKS = [
+  {min:1,  name:"Cart Wrangler"},
+  {min:3,  name:"Shelf Stocker"},
+  {min:6,  name:"Aisle Captain"},
+  {min:10, name:"Floor Manager"},
+  {min:15, name:"Store Manager"},
+  {min:22, name:"Regional Boss"},
+];
+function rankFor(lvl){ let out = RANKS[0]; for (const t of RANKS) if (lvl >= t.min) out = t; return out.name; }
+function recordResult(won){
   if (won){ stats.wins++; stats.streak++; if (stats.streak > stats.best) stats.best = stats.streak; }
   else    { stats.losses++; stats.streak = 0; }
-  saveStats(); renderRankBar();
+  saveStats();
 }
 function renderRankBar(){
   const el = document.getElementById("rankbar"); if (!el) return;
   const dot = '<span class="rk-dot">•</span>';
   const streak = stats.streak > 1 ? dot + '<span class="rk-fire">🔥'+stats.streak+'</span>' : '';
-  const best   = stats.best > 1 ? dot + 'best 🔥'+stats.best : '';
-  el.innerHTML = '<span class="rk-tier">'+rankFor(stats.rating)+'</span>' + dot +
-    '<b>'+stats.rating+'</b>' + dot + 'W'+stats.wins+' L'+stats.losses + streak + best;
+  el.innerHTML = '⚡ <b>'+pantryPower().toLocaleString()+'</b> <span class="rk-tier">Pantry Power</span>' +
+    dot + rankFor(maxLevel()) + dot + 'W'+stats.wins+' L'+stats.losses + streak;
 }
 
 /* ---------- rendering helpers ---------------------------------------- */
@@ -668,11 +720,12 @@ function cardHtml(c){
   return `<div class="card">
     <canvas data-sprite="${c.code}"></canvas>
     <div class="cbody">
-      <p class="cname">${c.name}</p>
+      <p class="cname">${c.name} <span class="lvlbadge">Lv ${lvlOf(c.code)}</span></p>
       <p class="ctag">
         <span class="rar" style="color:${c.rarityColor}">${c.rarity}</span>
         &nbsp;${c.factionName} &middot; ${c.element}
       </p>
+      <div class="xpbar" title="${xpOf(c.code)} / ${xpNeed(lvlOf(c.code))} XP to next level"><i style="width:${lvlOf(c.code)>=MAXLVL?100:Math.round(xpOf(c.code)/xpNeed(lvlOf(c.code))*100)}%"></i></div>
       <div class="stats">${statRows(c)}</div>
       <p style="font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--accent);margin:6px 0 0">✦ ${c.move.name}</p>
       <p class="realname" data-code="${c.code}" hidden></p>
@@ -902,7 +955,7 @@ function renderRoster(){
       <canvas data-sprite="${c.code}"></canvas>
       <div class="n">${c.name}</div>
       <div class="f" style="color:${c.rarityColor}">${c.rarity}</div>
-      <div class="f">${c.factionName}</div>
+      <div class="f">${c.factionName} · <span style="color:var(--accent)">Lv ${lvlOf(c.code)}</span></div>
     </div>`;
   }).join("");
   paintSprites(grid);
@@ -943,7 +996,7 @@ function fighterHtml(c, hpNow){
   const hp = Math.max(0, Math.round(hpNow));
   const pct = Math.max(0,(hp/c.maxhp)*100);
   return `<canvas data-sprite="${c.code}"></canvas>
-    <div class="n">${c.name}</div>
+    <div class="n">${c.name}${c.lvl?' <span class="lvlbadge">Lv '+c.lvl+'</span>':''}</div>
     <div class="f" style="font-size:9px;color:${c.rarityColor}">${c.rarity} · <span style="color:var(--muted)">${c.element}</span></div>
     <div class="hpbar"><i style="width:${pct}%;background:${hpColor(pct)}"></i></div>
     <div class="hpnum">${hp} / ${c.maxhp}</div>
@@ -986,6 +1039,7 @@ const Sfx = (function(){
     scan(){  tone(1200,.04,"square",.05,600); },
     reveal(idx){ const base=[440,520,620,760,920][idx]||440; tone(base,.08,"triangle",.12); tone(base*1.5,.1,"triangle",.09); },
     fanfare(idx){ const seq = idx>=4 ? [523,659,784,1047] : [440,554,659]; seq.forEach((f,i)=>setTimeout(()=>tone(f,.16,"square",.14),i*110)); },
+    levelup(){ [523,659,784,880,1047].forEach((f,i)=>setTimeout(()=>tone(f,.18,"square",.16),i*90)); },
   };
 })();
 function setupBattle(){
@@ -1168,6 +1222,28 @@ function sigBanner(arena, name, color){
   s.className = "sigbanner"; s.textContent = name; s.style.color = color;
   arena.appendChild(s); setTimeout(()=>s.remove(), 920);
 }
+function luStat(k, a, b){ const d = b - a; return '<span>'+k+' <b>'+b+'</b>'+(d>0?' <i>+'+d+'</i>':'')+'</span>'; }
+// The payoff: a full-arena LEVEL UP burst with the stat gains.
+async function celebrateLevel(code, res){
+  const arena = document.querySelector("#v-battle .arena"); if (!arena) return;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const base = generate(code);
+  const from = withLevel(base, res.before), to = withLevel(base, res.after);
+  const multi = res.after - res.before > 1 ? '<div class="lu-multi">'+(res.after-res.before)+' levels!</div>' : '';
+  Sfx.levelup();
+  const ov = document.createElement("div");
+  ov.className = "levelup" + (reduce ? " noanim" : "");
+  ov.innerHTML =
+    '<div class="lu-title">LEVEL&nbsp;UP!</div>' +
+    '<div class="lu-name">'+esc(base.name)+' &rarr; <b>Lv '+res.after+'</b></div>' + multi +
+    '<div class="lu-stats">' +
+      luStat("HP", from.maxhp, to.maxhp) + luStat("ATK", from.atk, to.atk) +
+      luStat("DEF", from.def, to.def) + luStat("SPD", from.spd, to.spd) +
+    '</div>';
+  arena.appendChild(ov);
+  await new Promise(r=>setTimeout(r, reduce ? 500 : 2000));
+  ov.remove();
+}
 
 async function playFight(){
   const me = generate(champion), them = generate(foe.code);
@@ -1252,12 +1328,14 @@ async function playFight(){
     await wait(ev.useSig ? (reduce?110:820) : (reduce?80:500));
   }
 
-  recordResult(won, them);
-  const rank = rankFor(stats.rating);
+  recordResult(won);
+  const res = addXP(champion, xpGain(won, them));
+  renderRankBar();
   logLine(won
-    ? `<b>${me.name} wins.</b> <span style="color:var(--accent)">+rating → ${stats.rating} (${rank})${stats.streak>1?"  🔥"+stats.streak:""}</span>`
-    : `<b>${them.name}</b> wins. <span style="color:var(--muted)">rating → ${stats.rating} (${rank})</span>`);
+    ? `<b>${me.name} wins.</b> <span style="color:var(--accent)">+${res.gain} XP${stats.streak>1?"  🔥"+stats.streak:""}</span>`
+    : `<b>${them.name}</b> wins. <span style="color:var(--muted)">+${res.gain} XP</span>`);
   arena.removeEventListener("click", onSkip); logEl().removeEventListener("click", onSkip);
+  if (res.ups.length){ logLine(`<span style="color:var(--accent)">⭐ ${me.name} reached Lv ${res.after}!</span>`); await celebrateLevel(champion, res); renderRankBar(); }
   fightBtn.disabled = false; nf.disabled = false; fightBtn.textContent = "⚔ FIGHT";
   if (hint) hint.textContent = "";
   playing = false;
@@ -1272,7 +1350,11 @@ document.getElementById("fight").addEventListener("click", ()=>{
 //    A charge meter fills each turn; the signature unlocks at full and hits
 //    harder. Defending braces for half damage and charges faster. Simple AI.
 async function playInteractive(){
-  const me = generate(champion), them = generate(foe.code);
+  // Your champion fights at its level; the foe is scaled near it so the
+  // fight stays a fight as you grow.
+  const me = leveled(champion);
+  const foeLvl = Math.min(MAXLVL, Math.max(1, lvlOf(champion) + (Math.floor(Math.random()*3) - 1)));
+  const them = withLevel(generate(foe.code), foeLvl);
   playing = true;
   const fightBtn = document.getElementById("fight"), nf = document.getElementById("newfoe");
   const A = document.getElementById("fA"), B = document.getElementById("fB");
@@ -1364,11 +1446,13 @@ async function playInteractive(){
   if (!reduce) koPanel.classList.add("ko");
   Sfx.ko();
   actions.hidden = true;
-  recordResult(won, them);
-  const rank = rankFor(stats.rating);
+  recordResult(won);
+  const res = addXP(champion, xpGain(won, them));
+  renderRankBar();
   logLine(won
-    ? `<b>${me.name} wins!</b> <span style="color:var(--accent)">rating → ${stats.rating} (${rank})${stats.streak>1?"  🔥"+stats.streak:""}</span>`
-    : `<b>${them.name}</b> wins. <span style="color:var(--muted)">rating → ${stats.rating} (${rank})</span>`);
+    ? `<b>${me.name} wins!</b> <span style="color:var(--accent)">+${res.gain} XP${stats.streak>1?"  🔥"+stats.streak:""}</span>`
+    : `<b>${them.name}</b> wins. <span style="color:var(--muted)">+${res.gain} XP</span>`);
+  if (res.ups.length){ logLine(`<span style="color:var(--accent)">⭐ ${me.name} reached Lv ${res.after}!</span>`); await celebrateLevel(champion, res); renderRankBar(); }
   fightBtn.disabled = false; nf.disabled = false; fightBtn.textContent = "⚔ FIGHT";
   playing = false;
 }
