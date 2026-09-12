@@ -896,6 +896,7 @@ const camBtn  = document.getElementById("camBtn");
 const cam     = document.getElementById("cam");
 const reticle = document.getElementById("reticle");
 let stream = null, scanning = false;
+let caught = new Set(), batchNew = 0;   // batch scan: distinct codes seen + new finds this session
 
 camBtn.addEventListener("click", async ()=>{
   if (scanning){ stopCam(); return; }
@@ -927,7 +928,8 @@ camBtn.addEventListener("click", async ()=>{
   cam.classList.add("on"); reticle.classList.add("on");
   camBtn.textContent = "STOP CAMERA";
   scanning = true;
-  say("Point at a barcode — fill the frame and hold steady.","");
+  caught = new Set(); batchNew = 0;
+  say("Batch scan on — sweep across your barcodes, one after another.","");
 
   // Only request formats the device actually supports; an unsupported entry
   // in the list makes some detectors silently return nothing.
@@ -941,19 +943,22 @@ camBtn.addEventListener("click", async ()=>{
     catch(e){ say("Scanner couldn't start — type the digits instead.","bad"); stopCam(); return; }
   }
 
+  // Batch mode: stay open and keep catching. Each distinct product is
+  // summoned once per session; the camera keeps running until you STOP.
   (async function loop(){
     while (scanning){
       try{
         if (cam.readyState >= 2 && cam.videoWidth){
           const found = await det.detect(cam);
-          if (found && found.length){
-            const code = found[0].rawValue;
-            if (code){
-              stopCam();
-              const mf = document.getElementById("manual"); if (mf) mf.value = code;   // show what was read
-              summon(code);
-              return;
-            }
+          for (let i = 0; i < (found ? found.length : 0); i++){
+            const raw = found[i].rawValue; if (!raw) continue;
+            const parsed = parseCode(raw);
+            if (parsed.err || caught.has(parsed.code)) continue;   // dedupe on canonical code
+            caught.add(parsed.code);
+            if (!roster.find(r => r.code === parsed.code)) batchNew++;
+            summon(raw);                                           // shows the card + reveal
+            Sfx.scan(); if (navigator.vibrate) try { navigator.vibrate(30); } catch {}
+            camBtn.textContent = "STOP • " + batchNew + " new";
           }
         }
       }catch{ /* transient frame error; keep scanning */ }
@@ -967,6 +972,10 @@ function stopCam(){
   stream = null;
   cam.classList.remove("on"); reticle.classList.remove("on");
   camBtn.textContent = "USE CAMERA";
+  if (caught && caught.size){
+    say(batchNew > 0 ? `Batch done — ${batchNew} new creature${batchNew>1?"s":""} from ${caught.size} scan${caught.size>1?"s":""}.`
+                     : `Batch done — ${caught.size} scanned, all already in your roster.`, "good");
+  }
 }
 
 /* ---------- roster view -------------------------------------------------- */
