@@ -96,6 +96,30 @@
     width:112px;height:112px;flex:0 0 auto;image-rendering:pixelated;
     background:#000;border:1px solid var(--line);border-radius:2px;
   }
+  /* summon reveal + rarity celebration */
+  .card{position:relative;overflow:hidden}
+  .card.revealing::before{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;
+    background:linear-gradient(100deg,transparent 42%,rgba(160,255,0,.55) 50%,transparent 58%);
+    transform:translateX(-100%);animation:pr-sweep .43s ease forwards}
+  @keyframes pr-sweep{to{transform:translateX(100%)}}
+  .card.shown{animation:pr-pop .3s ease}
+  @keyframes pr-pop{0%{transform:scale(.985);opacity:.55}100%{transform:scale(1);opacity:1}}
+  .card.celebrate{box-shadow:0 0 0 1px var(--rc,#fff),0 0 28px var(--rc,#fff)}
+  .rarity-pop{position:absolute;top:10px;right:10px;z-index:5;font-family:var(--font);font-weight:700;
+    font-size:12px;letter-spacing:.12em;text-shadow:0 0 10px currentColor;animation:pr-rib 1.7s ease forwards}
+  @keyframes pr-rib{0%{opacity:0;transform:translateY(-6px) scale(.7)}14%{opacity:1;transform:translateY(0) scale(1.12)}80%{opacity:1}100%{opacity:0}}
+  .realname{font-size:11px;color:#cfcfcf;letter-spacing:.03em;margin:6px 0 0}
+  .realname b{color:#fff}
+  .cardshare{margin-top:10px}
+  @media(prefers-reduced-motion:reduce){.card.revealing::before,.card.shown{animation:none}}
+  /* battle record + rank */
+  .rankbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11px;letter-spacing:.06em;
+    color:var(--muted);border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:8px 12px;margin-bottom:12px}
+  .rankbar:empty{display:none}
+  .rankbar .rk-tier{color:var(--accent);font-weight:700;letter-spacing:.1em}
+  .rankbar b{color:var(--text);font-weight:700}
+  .rankbar .rk-dot{color:#3a3a3a}
+  .rankbar .rk-fire{color:#ff9a3c}
   .cbody{flex:1 1 auto;min-width:0}
   .cname{font-size:17px;font-weight:700;letter-spacing:.05em;margin:0 0 2px;word-break:break-word}
   .ctag{font-size:10px;letter-spacing:.14em;color:var(--muted);margin:0 0 10px}
@@ -221,6 +245,7 @@
   <!-- ================= BATTLE ================= -->
   <section class="view" id="v-battle">
     <h2>BATTLE</h2>
+    <div class="rankbar" id="rankbar"></div>
     <div class="challenge-banner" id="challengeBanner" hidden></div>
     <div class="arena">
       <div class="fighter" id="fA"></div>
@@ -501,8 +526,8 @@ function generate(rawCode){
 /* ---------- sprite --------------------------------------------------
    16x16, left half generated then mirrored — symmetry reads as
    "creature" to the eye at almost no cost. */
-function drawCreature(cv, c){
-  const S = 16, px = 8;
+function drawCreature(cv, c, px){
+  const S = 16; px = px || 8;
   cv.width = S*px; cv.height = S*px;
   const g = cv.getContext("2d");
   const rnd = rngFrom(c.seed ^ 0x5bf03635);
@@ -548,6 +573,66 @@ function saveRoster(r){
 let roster = loadRoster();
 let champion = roster[0] ? roster[0].code : null;
 
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m])); }
+
+/* ---------- real product names (Open Food Facts, best-effort) ---------
+   The barcode alone can't say what the product is, but Open Food Facts
+   can (free, keyless, CORS-enabled). Purely a flavour layer: the creature
+   stays deterministic; the name is a bonus when the scan is a real food
+   product and the shopper is online. Cached so we ask at most once. */
+let ppNames = {};
+try { ppNames = JSON.parse(localStorage.getItem("pantryraid.names.v1") || "{}"); } catch {}
+function saveNames(){ try { localStorage.setItem("pantryraid.names.v1", JSON.stringify(ppNames)); } catch {} }
+function realName(code, cb){
+  if (code in ppNames){ cb(ppNames[code]); return; }
+  const url = "https://world.openfoodfacts.org/api/v2/product/" + encodeURIComponent(code) +
+              ".json?fields=product_name,brands";
+  fetch(url).then(r=>r.ok?r.json():null).then(d=>{
+    let nm = "";
+    if (d && d.status === 1 && d.product){
+      nm = (d.product.product_name || "").trim();
+      if (!nm && d.product.brands) nm = String(d.product.brands).split(",")[0].trim();
+    }
+    ppNames[code] = nm; saveNames(); cb(nm);
+  }).catch(()=>{ cb(""); });   // offline / blocked / non-food: no name, no fuss
+}
+function fillRealNames(scope){
+  scope.querySelectorAll(".realname[data-code]").forEach(el=>{
+    realName(el.dataset.code, nm=>{ if (nm){ el.innerHTML = "🏷️ born from <b>"+esc(nm)+"</b>"; el.hidden = false; } });
+  });
+}
+
+/* ---------- battle record + grocery rank ------------------------------ */
+const RANKS = [
+  {min:0,    name:"Cart Wrangler"},
+  {min:1000, name:"Shelf Stocker"},
+  {min:1150, name:"Aisle Captain"},
+  {min:1300, name:"Floor Manager"},
+  {min:1480, name:"Store Manager"},
+  {min:1680, name:"Regional Boss"},
+];
+function rankFor(r){ let out = RANKS[0]; for (const t of RANKS) if (r >= t.min) out = t; return out.name; }
+let stats = { wins:0, losses:0, streak:0, best:0, rating:1000 };
+try { stats = Object.assign(stats, JSON.parse(localStorage.getItem("pantryraid.stats.v1") || "{}")); } catch {}
+function saveStats(){ try { localStorage.setItem("pantryraid.stats.v1", JSON.stringify(stats)); } catch {} }
+function foeRating(c){ return Math.round(900 + c.rarityIdx*55 + ((c.hp/3.6 + c.atk + c.def + c.spd) - 200)*1.6); }
+function recordResult(won, foe){
+  const opp = foeRating(foe);
+  const exp = 1/(1 + Math.pow(10, (opp - stats.rating)/400));
+  stats.rating = Math.max(600, Math.round(stats.rating + 32*((won?1:0) - exp)));
+  if (won){ stats.wins++; stats.streak++; if (stats.streak > stats.best) stats.best = stats.streak; }
+  else    { stats.losses++; stats.streak = 0; }
+  saveStats(); renderRankBar();
+}
+function renderRankBar(){
+  const el = document.getElementById("rankbar"); if (!el) return;
+  const dot = '<span class="rk-dot">•</span>';
+  const streak = stats.streak > 1 ? dot + '<span class="rk-fire">🔥'+stats.streak+'</span>' : '';
+  const best   = stats.best > 1 ? dot + 'best 🔥'+stats.best : '';
+  el.innerHTML = '<span class="rk-tier">'+rankFor(stats.rating)+'</span>' + dot +
+    '<b>'+stats.rating+'</b>' + dot + 'W'+stats.wins+' L'+stats.losses + streak + best;
+}
+
 /* ---------- rendering helpers ---------------------------------------- */
 function statRows(c){
   const mx = {hp:520, atk:130, def:130, spd:130};
@@ -569,7 +654,9 @@ function cardHtml(c){
       </p>
       <div class="stats">${statRows(c)}</div>
       <p style="font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--accent);margin:6px 0 0">✦ ${c.move.name}</p>
+      <p class="realname" data-code="${c.code}" hidden></p>
       <p class="code">${c.code} &mdash; registered in ${c.origin}</p>
+      <button class="btn ghost sm cardshare" data-code="${c.code}">📇 SHARE CARD</button>
     </div>
   </div>`;
 }
@@ -614,7 +701,91 @@ function summon(raw){
   }
   result.innerHTML = cardHtml(c);
   paintSprites(result);
+  fillRealNames(result);
+  const card = result.querySelector(".card");
+  if (card) playReveal(card, c);
 }
+
+// A summon should feel like a pull: a scan sweep, a rarity-scaled chime,
+// and a real celebration for the good ones.
+function playReveal(card, c){
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  card.style.setProperty("--rc", c.rarityColor);
+  Sfx.resume(); Sfx.scan();
+  const finish = ()=>{
+    card.classList.add("shown");
+    Sfx.reveal(c.rarityIdx);
+    if (c.rarityIdx >= 3){
+      card.classList.add("celebrate");
+      Sfx.fanfare(c.rarityIdx);
+      const rib = document.createElement("div");
+      rib.className = "rarity-pop"; rib.style.color = c.rarityColor;
+      rib.textContent = c.rarityIdx >= 4 ? "★ MYTHIC ★" : "EPIC";
+      card.appendChild(rib);
+      setTimeout(()=>rib.remove(), 1700);
+    }
+  };
+  if (reduce){ finish(); return; }
+  card.classList.add("revealing");
+  setTimeout(()=>{ card.classList.remove("revealing"); finish(); }, 430);
+}
+
+// ── Shareable trading card: compose the creature onto a canvas and hand it
+//    to the OS share sheet (mobile) or a download (desktop). ──────────────
+function shareCard(code){
+  const c = generate(code), by = ppNames[code];
+  const W = 540, H = 760, cv = document.createElement("canvas");
+  cv.width = W; cv.height = H;
+  const g = cv.getContext("2d"), pal = FACTIONS[c.faction].pal;
+  g.fillStyle = "#0b0b0b"; g.fillRect(0,0,W,H);
+  g.fillStyle = pal[0]; g.fillRect(14,14,W-28,10);            // faction bar
+  g.strokeStyle = c.rarityColor; g.lineWidth = 6; g.strokeRect(11,11,W-22,H-22);
+
+  let y = 74;
+  const sp = document.createElement("canvas"); drawCreature(sp, c, 24); const SP = sp.width;
+  g.fillStyle = "#000"; g.fillRect((W-SP)/2-6, y-6, SP+12, SP+12);
+  g.imageSmoothingEnabled = false; g.drawImage(sp, (W-SP)/2, y);
+  y += SP + 46;
+
+  g.textAlign = "center";
+  g.fillStyle = "#fff"; g.font = "700 32px 'Courier New',monospace"; g.fillText(c.name, W/2, y); y += 30;
+  g.fillStyle = c.rarityColor; g.font = "600 15px 'Courier New',monospace";
+  g.fillText(c.rarity + "  ·  " + c.factionName + "  ·  " + c.element, W/2, y); y += 30;
+  if (by){ g.fillStyle = "#cfcfcf"; g.font = "italic 15px 'Courier New',monospace"; g.fillText("born from " + by, W/2, y); y += 28; }
+  y += 6;
+
+  g.textAlign = "left";
+  const mx = { hp:520, atk:130, def:130, spd:130 };
+  ["hp","atk","def","spd"].forEach(k=>{
+    g.fillStyle = "#8b8b8b"; g.font = "600 14px 'Courier New',monospace"; g.fillText(k.toUpperCase(), 42, y+12);
+    const bx = 110, bw = W - 110 - 96, bh = 14;
+    g.fillStyle = "#000"; g.fillRect(bx, y, bw, bh);
+    g.strokeStyle = "#2a2a2a"; g.lineWidth = 1; g.strokeRect(bx+0.5, y+0.5, bw-1, bh-1);
+    g.fillStyle = pal[0]; g.fillRect(bx, y, bw*Math.min(1, c[k]/mx[k]), bh);
+    g.fillStyle = "#fff"; g.textAlign = "right"; g.fillText(String(c[k]), W-42, y+12); g.textAlign = "left";
+    y += 32;
+  });
+  y += 8;
+  g.textAlign = "center"; g.fillStyle = c.rarityColor; g.font = "700 18px 'Courier New',monospace";
+  g.fillText("✦ " + c.move.name, W/2, y);
+  g.fillStyle = "#8b8b8b"; g.font = "600 12px 'Courier New',monospace";
+  g.fillText("PANTRY RAID · mikibutler.ca · " + c.code, W/2, H-26);
+
+  cv.toBlob(blob=>{
+    if (!blob) return;
+    const file = new File([blob], (c.name.replace(/[^\w]+/g,"_") || "creature") + ".png", { type:"image/png" });
+    const data = { files:[file], title:"Pantry Raid", text:c.name + " — " + c.rarity + " " + c.factionName + " in Pantry Raid" };
+    if (navigator.canShare && navigator.canShare({ files:[file] })){ navigator.share(data).catch(()=>{}); return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = file.name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  }, "image/png");
+}
+document.addEventListener("click", e=>{
+  const b = e.target.closest(".cardshare"); if (!b) return;
+  shareCard(b.dataset.code);
+});
 
 document.getElementById("goBtn").addEventListener("click", ()=>{
   const v = document.getElementById("manual").value.trim();
@@ -721,6 +892,7 @@ function renderRoster(){
       const d = document.getElementById("rdetail");
       d.innerHTML = cardHtml(generate(champion));
       paintSprites(d);
+      fillRealNames(d);
     });
   });
 }
@@ -783,6 +955,9 @@ const Sfx = (function(){
     sig(){   tone(300,.09,"square",.13,900); tone(520,.15,"square",.11,180); },
     heal(){  tone(660,.09,"triangle",.11); tone(990,.10,"triangle",.09); },
     ko(){    [330,247,165,110].forEach((f,i)=>setTimeout(()=>tone(f,.16,"square",.15),i*90)); },
+    scan(){  tone(1200,.04,"square",.05,600); },
+    reveal(idx){ const base=[440,520,620,760,920][idx]||440; tone(base,.08,"triangle",.12); tone(base*1.5,.1,"triangle",.09); },
+    fanfare(idx){ const seq = idx>=4 ? [523,659,784,1047] : [440,554,659]; seq.forEach((f,i)=>setTimeout(()=>tone(f,.16,"square",.14),i*110)); },
   };
 })();
 function setupBattle(){
@@ -801,6 +976,7 @@ function setupBattle(){
     (duelMode
       ? `<div style="color:var(--accent)">⚔ DUEL — same result for both players. <b>${me.move.name}</b> vs <b>${foe.move.name}</b>.</div>`
       : `<div style="color:var(--muted)">Signatures ready: <b>${me.move.name}</b> vs <b>${foe.move.name}</b>.</div>`);
+  renderRankBar();
 }
 let playing = false;      // true while a fight is animating
 let duelMode = false;     // true when the opponent is a friend's code (deterministic)
@@ -1005,7 +1181,11 @@ async function playFight(){
     await wait(ev.useSig ? (reduce?110:820) : (reduce?80:500));
   }
 
-  logLine(won ? `<b>${me.name} wins.</b>` : `<b>${them.name}</b> wins. Go find something stronger.`);
+  recordResult(won, them);
+  const rank = rankFor(stats.rating);
+  logLine(won
+    ? `<b>${me.name} wins.</b> <span style="color:var(--accent)">+rating → ${stats.rating} (${rank})${stats.streak>1?"  🔥"+stats.streak:""}</span>`
+    : `<b>${them.name}</b> wins. <span style="color:var(--muted)">rating → ${stats.rating} (${rank})</span>`);
   arena.removeEventListener("click", onSkip); logEl().removeEventListener("click", onSkip);
   fightBtn.disabled = false; nf.disabled = false; fightBtn.textContent = "⚔ FIGHT";
   if (hint) hint.textContent = "";
