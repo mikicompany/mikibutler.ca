@@ -295,6 +295,7 @@
     </div>
     <div class="row">
       <button class="btn" id="fight">⚔ FIGHT</button>
+      <button class="btn sm" id="shareResult" hidden>📤 Send replay</button>
       <button class="btn ghost sm" id="newfoe">RANDOM OPPONENT</button>
       <button class="btn ghost sm" id="bmute" title="Sound">🔊</button>
     </div>
@@ -309,9 +310,9 @@
       <div class="drow" style="margin-top:8px">
         <button class="btn ghost sm" id="challenge">🔗 SEND MY CHALLENGE LINK</button>
       </div>
-      <p class="duelnote" id="duelnote">Your champion is whichever creature you tap in the Roster.
-        Enter a friend's barcode to face <b>their</b> creature — or send them your link.
-        The same two codes always play out the <b>exact same duel</b>, so you both see who really won.</p>
+      <p class="duelnote" id="duelnote"><b>How a friend duel works:</b> send your challenge link →
+        your friend fights your champion whenever they open it → they tap <b>📤 Send replay</b> and
+        send it back → you watch the exact same fight. Same two codes = same result, so nobody can cheat.</p>
     </div>
   </section>
 </main>
@@ -999,6 +1000,7 @@ function renderRoster(){
   grid.querySelectorAll(".tile").forEach(t=>{
     t.addEventListener("click", ()=>{
       champion = t.dataset.code;
+      replayA = replayB = null;   // choosing your own champion leaves replay mode
       renderRoster();
       const d = document.getElementById("rdetail");
       d.innerHTML = cardHtml(generate(champion));
@@ -1081,6 +1083,21 @@ const Sfx = (function(){
 })();
 function setupBattle(){
   const a = document.getElementById("fA"), b = document.getElementById("fB");
+  const sr = document.getElementById("shareResult"); if (sr) sr.hidden = true;
+  document.getElementById("actions").hidden = true;
+  // Spectator replay: two fixed creatures, watch the shared result.
+  if (replayA && replayB){
+    const ra = generate(replayA), rb = generate(replayB);
+    const arena0 = document.querySelector("#v-battle .arena"); if (arena0) arena0.classList.remove("live");
+    a.innerHTML = fighterHtml(ra, ra.maxhp); paintSprites(a); setCharge(a, 0);
+    b.innerHTML = fighterHtml(rb, rb.maxhp); paintSprites(b); setCharge(b, 0);
+    const banner = document.getElementById("challengeBanner");
+    if (banner){ banner.hidden = false; banner.innerHTML = '🎬 <b>Replay</b> — '+esc(ra.name)+' vs '+esc(rb.name)+'. Hit <b>FIGHT</b> to watch (same result every time).'; }
+    document.getElementById("log").innerHTML = '<div>Replay: '+esc(ra.name)+' vs <b>'+esc(rb.name)+'</b>.</div>';
+    document.getElementById("duelState").hidden = false;
+    renderRankBar();
+    return;
+  }
   if (!champion){
     a.innerHTML = `<div class="f" style="color:var(--muted);font-size:11px">
       Pick a champion in the Roster first.</div>`;
@@ -1106,9 +1123,11 @@ function setupBattle(){
 }
 let playing = false;      // true while a fight is animating
 let duelMode = false;     // true when the opponent is a friend's code (deterministic)
+let replayA = null, replayB = null;   // spectator replay: two fixed codes to watch
+let lastFightPair = null;             // {a,b} of the last deterministic fight, for sharing a replay
 document.getElementById("newfoe").addEventListener("click", ()=>{
   if (playing) return;
-  duelMode = false;
+  duelMode = false; replayA = replayB = null;
   document.getElementById("duelState").hidden = true;
   document.getElementById("challengeBanner").hidden = true;
   foe = generate(randomCode()); setupBattle();
@@ -1120,7 +1139,7 @@ function setRival(raw){
   const parsed = parseCode(raw || "");
   if (parsed.err){ note.innerHTML = '<span style="color:#ff5a5a">'+parsed.err+'</span>'; return false; }
   foe = generate(parsed.code);
-  duelMode = true;
+  duelMode = true; replayA = replayB = null;
   document.getElementById("duelState").hidden = false;
   document.getElementById("challengeBanner").hidden = true;
   setupBattle();
@@ -1143,13 +1162,14 @@ document.getElementById("challenge").addEventListener("click", ()=>{
   }
   const link = location.origin + location.pathname + "?vs=" + encodeURIComponent(champion);
   const me = generate(champion);
-  const share = { title:"Pantry Raid duel", text: me.name+" challenges you in Pantry Raid — open to fight it:", url: link };
+  const share = { title:"Pantry Raid duel", text: me.name+" challenges you in Pantry Raid! Scan a snack, pick your champion, fight — then send me the replay:", url: link };
+  const backNote = ' When they\'re done they can tap <b>📤 Send replay</b> so you can watch it too.';
   if (navigator.share){
-    note.innerHTML = 'Challenge sent — your friend will face <b>'+me.name+'</b>.';
+    note.innerHTML = 'Challenge sent — they\'ll face <b>'+me.name+'</b>.' + backNote;
     navigator.share(share).catch(()=>{});
     return;
   }
-  const done = ()=>{ note.innerHTML = 'Link copied — send it to a friend. They\'ll face <b>'+me.name+'</b>.'; };
+  const done = ()=>{ note.innerHTML = 'Link copied — send it to a friend; they\'ll face <b>'+me.name+'</b>.' + backNote; };
   if (navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(link).then(done).catch(()=>{ prompt("Copy your challenge link", link); });
   } else { prompt("Copy your challenge link", link); }
@@ -1282,16 +1302,19 @@ async function celebrateLevel(code, res){
   ov.remove();
 }
 
-async function playFight(){
-  const me = generate(champion), them = generate(foe.code);
-  // A duel is deterministic: seed the rng from both codes (order-independent)
-  // so whoever opens the same matchup sees the identical fight. Random
-  // opponents stay live-random.
-  const rng = duelMode
-    ? rngFrom(hash32(SALT + "|duel|" + [champion, foe.code].sort().join("~")))
-    : Math.random;
+// Deterministic fight between two fixed codes. Used for friend duels (you vs
+// their champion) and for spectator replays (?a=&b= — you just watch). The
+// seed comes from both codes, so everyone who opens the same pair sees the
+// identical fight.
+async function playFight(aCode, bCode, spectator){
+  aCode = aCode || champion;
+  bCode = bCode || (foe && foe.code);
+  const me = generate(aCode), them = generate(bCode);
+  lastFightPair = { a: aCode, b: bCode };
+  const rng = rngFrom(hash32(SALT + "|duel|" + [aCode, bCode].sort().join("~")));
   const { events, won } = buildFight(me, them, rng);
   playing = true;
+  const shareBtn = document.getElementById("shareResult"); if (shareBtn) shareBtn.hidden = true;
   const fightBtn = document.getElementById("fight"), nf = document.getElementById("newfoe");
   const A = document.getElementById("fA"), B = document.getElementById("fB");
   const arena = document.querySelector("#v-battle .arena");
@@ -1365,22 +1388,43 @@ async function playFight(){
     await wait(ev.useSig ? (reduce?110:820) : (reduce?80:500));
   }
 
-  recordResult(won);
-  const res = addXP(champion, xpGain(won, them));
-  renderRankBar();
-  logLine(won
-    ? `<b>${me.name} wins.</b> <span style="color:var(--accent)">+${res.gain} XP${stats.streak>1?"  🔥"+stats.streak:""}</span>`
-    : `<b>${them.name}</b> wins. <span style="color:var(--muted)">+${res.gain} XP</span>`);
   arena.removeEventListener("click", onSkip); logEl().removeEventListener("click", onSkip);
-  if (res.ups.length){ logLine(`<span style="color:var(--accent)">⭐ ${me.name} reached Lv ${res.after}!</span>`); await celebrateLevel(champion, res); renderRankBar(); }
-  fightBtn.disabled = false; nf.disabled = false; fightBtn.textContent = "⚔ FIGHT";
+  if (spectator){
+    // Just watching a replay — no XP, only the verdict.
+    logLine(`<b>${(won?me:them).name}</b> wins the replay.`);
+  } else {
+    recordResult(won);
+    const res = addXP(champion, xpGain(won, them));
+    renderRankBar();
+    logLine(won
+      ? `<b>${me.name} wins.</b> <span style="color:var(--accent)">+${res.gain} XP${stats.streak>1?"  🔥"+stats.streak:""}</span>`
+      : `<b>${them.name}</b> wins. <span style="color:var(--muted)">+${res.gain} XP</span>`);
+    if (res.ups.length){ logLine(`<span style="color:var(--accent)">⭐ ${me.name} reached Lv ${res.after}!</span>`); await celebrateLevel(champion, res); renderRankBar(); }
+  }
+  // Offer a replay link so the loop closes (friend fights → sends it back → you watch).
+  if (shareBtn){ shareBtn.hidden = false; shareBtn.textContent = spectator ? "📤 Share replay" : "📤 Send replay"; }
+  fightBtn.disabled = false; nf.disabled = false; fightBtn.textContent = spectator ? "↻ Watch again" : "⚔ FIGHT";
   if (hint) hint.textContent = "";
   playing = false;
 }
 document.getElementById("fight").addEventListener("click", ()=>{
-  if (!champion || playing) return;
-  if (duelMode) playFight();      // deterministic shared replay
-  else playInteractive();         // live, you pick every move
+  if (playing) return;
+  if (replayA && replayB){ playFight(replayA, replayB, true); return; }   // watch a shared replay
+  if (!champion) return;
+  if (duelMode) playFight();      // your champion vs a friend's code
+  else playInteractive();         // live solo, you pick every move
+});
+// Share the last deterministic fight as a replay link.
+document.getElementById("shareResult").addEventListener("click", ()=>{
+  if (!lastFightPair) return;
+  const link = location.origin + location.pathname +
+    "?a=" + encodeURIComponent(lastFightPair.a) + "&b=" + encodeURIComponent(lastFightPair.b);
+  const note = document.getElementById("duelnote");
+  const share = { title:"Pantry Raid replay", text:"Here's how our Pantry Raid fight went — watch the replay:", url:link };
+  if (navigator.share){ if (note) note.innerHTML = "Replay shared — they'll see the exact same fight."; navigator.share(share).catch(()=>{}); return; }
+  const ok = ()=>{ if (note) note.innerHTML = "Replay link copied — send it to your friend."; };
+  if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(link).then(ok).catch(()=>prompt("Copy replay link", link)); }
+  else prompt("Copy replay link", link);
 });
 
 // ── Live solo fight: turn-based, you choose ATTACK / SIGNATURE / DEFEND.
@@ -1517,6 +1561,20 @@ renderTypeChart();
   }
   const ds = document.getElementById("duelState"); if (ds) ds.hidden = false;
   go("battle");
+})();
+
+// Replay link (?a=CODE&b=CODE): two fixed creatures — drop straight into the
+// battle and auto-play the shared, deterministic result. This is what a
+// friend sends back so the challenger can watch how the fight actually went.
+(function(){
+  const params = new URLSearchParams(location.search);
+  const a = params.get("a"), b = params.get("b");
+  if (!a || !b) return;
+  const pa = parseCode(a), pb = parseCode(b);
+  if (pa.err || pb.err) return;
+  replayA = pa.code; replayB = pb.code;
+  go("battle");
+  setTimeout(()=>{ if (replayA && replayB && !playing) playFight(replayA, replayB, true); }, 500);
 })();
 
 /* =============================================================================
