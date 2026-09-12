@@ -900,36 +900,64 @@ let stream = null, scanning = false;
 camBtn.addEventListener("click", async ()=>{
   if (scanning){ stopCam(); return; }
   if (!("BarcodeDetector" in window)){
-    say("This browser can't read barcodes yet (Chrome on Android can). Type the digits instead.","bad");
+    say("This browser can't scan yet — on iPhone try Chrome, or just type the digits below.","bad");
     return;
   }
+  // Ask for a high-res rear camera; fall back to any camera if that's refused.
   try{
     stream = await navigator.mediaDevices.getUserMedia({
-      video:{ facingMode:"environment" }, audio:false
+      video:{ facingMode:{ ideal:"environment" }, width:{ ideal:1920 }, height:{ ideal:1080 } },
+      audio:false
     });
   }catch(e){
-    say("No camera access — type the digits instead.","bad");
-    return;
+    try { stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false }); }
+    catch(e2){ say("No camera access — allow the camera for this site, or type the digits.","bad"); return; }
   }
-  cam.srcObject = stream; await cam.play();
+  cam.srcObject = stream;
+  try { await cam.play(); } catch {}
+  // Turn on continuous autofocus where the device exposes it — blur is the
+  // usual reason a barcode won't read.
+  try {
+    const track = stream.getVideoTracks()[0];
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+    if (caps.focusMode && caps.focusMode.indexOf("continuous") >= 0){
+      await track.applyConstraints({ advanced:[{ focusMode:"continuous" }] });
+    }
+  } catch {}
   cam.classList.add("on"); reticle.classList.add("on");
   camBtn.textContent = "STOP CAMERA";
   scanning = true;
-  say("Point at a barcode…","");
+  say("Point at a barcode — fill the frame and hold steady.","");
 
-  const det = new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e"]});
+  // Only request formats the device actually supports; an unsupported entry
+  // in the list makes some detectors silently return nothing.
+  let det;
+  try {
+    const supported = await BarcodeDetector.getSupportedFormats().catch(()=>[]);
+    const want = ["ean_13","ean_8","upc_a","upc_e","upc_ean_extension"].filter(f => supported.indexOf(f) >= 0);
+    det = want.length ? new BarcodeDetector({ formats: want }) : new BarcodeDetector();
+  } catch {
+    try { det = new BarcodeDetector(); }
+    catch(e){ say("Scanner couldn't start — type the digits instead.","bad"); stopCam(); return; }
+  }
+
   (async function loop(){
     while (scanning){
       try{
-        const found = await det.detect(cam);
-        if (found.length){
-          const code = found[0].rawValue;
-          stopCam();
-          summon(code);
-          return;
+        if (cam.readyState >= 2 && cam.videoWidth){
+          const found = await det.detect(cam);
+          if (found && found.length){
+            const code = found[0].rawValue;
+            if (code){
+              stopCam();
+              const mf = document.getElementById("manual"); if (mf) mf.value = code;   // show what was read
+              summon(code);
+              return;
+            }
+          }
         }
-      }catch{ /* frame not ready; keep going */ }
-      await new Promise(r=>setTimeout(r,180));
+      }catch{ /* transient frame error; keep scanning */ }
+      await new Promise(r=>setTimeout(r,120));
     }
   })();
 });
