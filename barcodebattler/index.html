@@ -120,6 +120,21 @@
   .rankbar b{color:var(--text);font-weight:700}
   .rankbar .rk-dot{color:#3a3a3a}
   .rankbar .rk-fire{color:#ff9a3c}
+  /* signature charge meter (live fights) */
+  .chgbar{display:none;height:4px;background:#000;border:1px solid var(--line);margin-top:5px;border-radius:1px;overflow:hidden}
+  .arena.live .chgbar{display:block}
+  .chgbar i{display:block;height:100%;width:0;background:#7ec8ff;transition:width .25s ease}
+  .chgbar.ready i{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  /* action buttons */
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .actions .btn{flex:1 1 auto}
+  #actSig:not(:disabled){box-shadow:0 0 0 1px var(--accent),0 0 14px rgba(160,255,0,.4)}
+  /* type chart reference */
+  .typechart{margin-top:14px;font-size:11px;color:var(--muted)}
+  .typechart summary{cursor:pointer;letter-spacing:.1em;color:var(--accent);list-style:none}
+  .typechart summary::-webkit-details-marker{display:none}
+  .typechart #typeChartBody{margin-top:8px;line-height:1.9}
+  .typechart #typeChartBody b{text-transform:capitalize}
   .cbody{flex:1 1 auto;min-width:0}
   .cname{font-size:17px;font-weight:700;letter-spacing:.05em;margin:0 0 2px;word-break:break-word}
   .ctag{font-size:10px;letter-spacing:.14em;color:var(--muted);margin:0 0 10px}
@@ -254,11 +269,17 @@
     </div>
     <div class="log" id="log"></div>
     <p class="skiphint" id="skiphint"></p>
+    <div class="actions" id="actions" hidden>
+      <button class="btn" id="actAttack">ATTACK</button>
+      <button class="btn" id="actSig" disabled>⚡ SIGNATURE</button>
+      <button class="btn ghost" id="actDefend">🛡 DEFEND</button>
+    </div>
     <div class="row">
       <button class="btn" id="fight">⚔ FIGHT</button>
       <button class="btn ghost sm" id="newfoe">RANDOM OPPONENT</button>
       <button class="btn ghost sm" id="bmute" title="Sound">🔊</button>
     </div>
+    <details class="typechart"><summary>▸ Type chart</summary><div id="typeChartBody"></div></details>
     <div class="duel">
       <h3>⚔ DUEL A FRIEND <span id="duelState" class="vs-badge" hidden>DUEL ON</span></h3>
       <div class="drow">
@@ -923,9 +944,10 @@ function fighterHtml(c, hpNow){
   const pct = Math.max(0,(hp/c.maxhp)*100);
   return `<canvas data-sprite="${c.code}"></canvas>
     <div class="n">${c.name}</div>
-    <div class="f" style="font-size:9px;color:${c.rarityColor}">${c.rarity}</div>
+    <div class="f" style="font-size:9px;color:${c.rarityColor}">${c.rarity} · <span style="color:var(--muted)">${c.element}</span></div>
     <div class="hpbar"><i style="width:${pct}%;background:${hpColor(pct)}"></i></div>
-    <div class="hpnum">${hp} / ${c.maxhp}</div>`;
+    <div class="hpnum">${hp} / ${c.maxhp}</div>
+    <div class="chgbar" title="Signature charge"><i style="width:0%"></i></div>`;
 }
 // Live HP update on a fighter panel during playback.
 function setHp(panel, c, hpNow){
@@ -933,6 +955,12 @@ function setHp(panel, c, hpNow){
   const bar = panel.querySelector(".hpbar i"), num = panel.querySelector(".hpnum");
   if (bar){ bar.style.width = pct+"%"; bar.style.background = hpColor(pct); }
   if (num) num.textContent = hp + " / " + c.maxhp;
+}
+// Signature-charge meter (live fights only).
+function setCharge(panel, pct){
+  const wrap = panel.querySelector(".chgbar"), bar = panel.querySelector(".chgbar i");
+  if (bar) bar.style.width = Math.min(100, pct) + "%";
+  if (wrap) wrap.classList.toggle("ready", pct >= 100);
 }
 
 /* ---------- battle sound (tiny synth, no assets) --------------------- */
@@ -969,13 +997,20 @@ function setupBattle(){
   }
   if (!foe) foe = generate(randomCode());
   const me = generate(champion);
-  a.innerHTML = fighterHtml(me, me.maxhp); paintSprites(a);
-  b.innerHTML = fighterHtml(foe, foe.maxhp); paintSprites(b);
+  document.getElementById("actions").hidden = true;
+  const arena = document.querySelector("#v-battle .arena");
+  if (arena) arena.classList.toggle("live", !duelMode);   // charge meters only in live fights
+  a.innerHTML = fighterHtml(me, me.maxhp); paintSprites(a); setCharge(a, 0);
+  b.innerHTML = fighterHtml(foe, foe.maxhp); paintSprites(b); setCharge(b, 0);
+  const tm = typeMult(me.element, foe.element);
+  const edge = tm>1 ? `<div style="color:var(--accent)">Type edge: your <b>${me.element}</b> is strong into ${foe.element}. ⚡</div>`
+             : tm<1 ? `<div style="color:#ff9a3c">Watch out: your <b>${me.element}</b> is weak into ${foe.element}.</div>`
+             : `<div style="color:var(--muted)">Even matchup (${me.element} vs ${foe.element}).</div>`;
   document.getElementById("log").innerHTML =
-    `<div>${me.name} faces <b>${foe.name}</b> of the ${foe.factionName}.</div>` +
+    `<div>${me.name} faces <b>${foe.name}</b> of the ${foe.factionName}.</div>` + edge +
     (duelMode
-      ? `<div style="color:var(--accent)">⚔ DUEL — same result for both players. <b>${me.move.name}</b> vs <b>${foe.move.name}</b>.</div>`
-      : `<div style="color:var(--muted)">Signatures ready: <b>${me.move.name}</b> vs <b>${foe.move.name}</b>.</div>`);
+      ? `<div style="color:var(--accent)">⚔ DUEL — hit FIGHT to watch the deterministic result.</div>`
+      : `<div style="color:var(--muted)">Hit FIGHT, then choose ATTACK, DEFEND, or charge your SIGNATURE.</div>`);
   renderRankBar();
 }
 let playing = false;      // true while a fight is animating
@@ -1033,22 +1068,58 @@ if (bmute){
   bmute.textContent = Sfx.muted() ? "🔇" : "🔊";
   bmute.addEventListener("click", ()=>{ const m = Sfx.toggle(); bmute.textContent = m?"🔇":"🔊"; if(!m) Sfx.resume(); });
 }
-// ── Resolve the whole fight up front into a list of swing "events", then
-//    play them back one at a time with animation. Keeping the maths and the
-//    animation separate means a KO can never desync from the health bars.
+/* ---------- type chart -----------------------------------------------
+   Each element is strong against two others and weak against two — a
+   balanced ring, so which creature you bring actually matters. */
+const STRONG = {
+  flame:  ["leaf","ink"],
+  leaf:   ["stone","static"],
+  ice:    ["flame","echo"],
+  stone:  ["flame","ice"],
+  static: ["ice","echo"],
+  ink:    ["static","stone"],
+  echo:   ["ink","leaf"],
+};
+function matchup(a, d){
+  if ((STRONG[a]||[]).indexOf(d) >= 0) return 1;
+  if ((STRONG[d]||[]).indexOf(a) >= 0) return -1;
+  return 0;
+}
+function typeMult(a, d){ return [0.66, 1, 1.5][matchup(a,d)+1]; }
+function renderTypeChart(){
+  const el = document.getElementById("typeChartBody"); if (!el) return;
+  el.innerHTML = Object.keys(STRONG).map(e =>
+    `<div><b style="color:var(--accent)">${e}</b> beats ${STRONG[e].join(", ")}</div>`).join("");
+}
+
+// One blow's maths, shared by duels (seeded rng) and live fights
+// (Math.random) so the type chart applies identically everywhere.
+function resolveHit(att, dfn, kind, rng){
+  rng = rng || Math.random;
+  const sw = 0.75 + rng()*0.5;
+  const tm = typeMult(att.element, dfn.element);
+  let base, floor = 3, note = "", drain = false;
+  if (kind==="heavy"){ base = att.atk*sw*1.7 - dfn.def*0.4; floor = 6; }
+  else if (kind==="pierce"){ base = att.atk*sw; floor = 5; note = " — guard pierced"; }
+  else if (kind==="double"){ base = Math.max(3, att.atk*0.62 - dfn.def*0.4)*2; note = " (twice)"; }
+  else if (kind==="drain"){ base = att.atk*sw - dfn.def*0.4; drain = true; }
+  else { base = att.atk*sw - dfn.def*0.4; }
+  const dmg = Math.max(floor, Math.round(base*tm));
+  let heal = 0;
+  if (drain){ heal = Math.round(dmg*0.4); note = ` (+${heal} back)`; }
+  const eff = tm>1 ? " — super effective!" : tm<1 ? " — resisted" : "";
+  return { dmg, heal, note: note + eff, tm };
+}
+
+// ── Resolve a whole DUEL up front into a list of swing "events", then
+//    play them back with animation. Keeping the maths and the animation
+//    separate means a KO can never desync from the health bars. (Live
+//    solo fights are interactive instead — see playInteractive.)
 function buildFight(me, them, rng){
   rng = rng || Math.random;   // duels pass a seeded rng so both players agree
   let hpA = me.maxhp, hpB = them.maxhp;
   const events = [], usedSig = { me:false, them:false };
   const fmt = (s,d)=>s.replace(/{D}/g,d);
-  const swing = ()=>0.75 + rng()*0.5;
-  function resolve(att, dfn, kind){
-    if (kind==="heavy")  return { dmg: Math.max(6, Math.round(att.atk*swing()*1.7 - dfn.def*0.4)), heal:0, note:"" };
-    if (kind==="pierce") return { dmg: Math.max(5, Math.round(att.atk*swing())),                   heal:0, note:" — guard pierced" };
-    if (kind==="double"){ const one = Math.max(3, Math.round(att.atk*0.62 - dfn.def*0.4)); return { dmg: one*2, heal:0, note:" (twice)" }; }
-    if (kind==="drain"){ const d = Math.max(5, Math.round(att.atk*swing() - dfn.def*0.4)); const h = Math.round(d*0.4); return { dmg:d, heal:h, note:` (+${h} back)` }; }
-    return { dmg: Math.max(3, Math.round(att.atk*swing() - dfn.def*0.4)), heal:0, note:"" };
-  }
   // Faster fighter opens; ties break on rarity, then on the code itself — a
   // symmetric rule so both players in a duel compute the same opener.
   const meFirst = me.spd !== them.spd ? me.spd > them.spd
@@ -1062,7 +1133,7 @@ function buildFight(me, them, rng){
       const atkIsMe = att===me, side = atkIsMe ? "me" : "them";
       const useSig = !usedSig[side] || rng() < 0.32;   // first swing is always the signature
       usedSig[side] = true;
-      const { dmg, heal, note } = resolve(att, dfn, useSig ? att.move.kind : "normal");
+      const { dmg, heal, note } = resolveHit(att, dfn, useSig ? att.move.kind : "normal", rng);
       if (atkIsMe){ hpB -= dmg; hpA = Math.min(me.maxhp,   hpA + heal); }
       else        { hpA -= dmg; hpB = Math.min(them.maxhp, hpB + heal); }
       const defDown = atkIsMe ? hpB<=0 : hpA<=0;
@@ -1193,11 +1264,118 @@ async function playFight(){
 }
 document.getElementById("fight").addEventListener("click", ()=>{
   if (!champion || playing) return;
-  playFight();
+  if (duelMode) playFight();      // deterministic shared replay
+  else playInteractive();         // live, you pick every move
 });
+
+// ── Live solo fight: turn-based, you choose ATTACK / SIGNATURE / DEFEND.
+//    A charge meter fills each turn; the signature unlocks at full and hits
+//    harder. Defending braces for half damage and charges faster. Simple AI.
+async function playInteractive(){
+  const me = generate(champion), them = generate(foe.code);
+  playing = true;
+  const fightBtn = document.getElementById("fight"), nf = document.getElementById("newfoe");
+  const A = document.getElementById("fA"), B = document.getElementById("fB");
+  const arena = document.querySelector("#v-battle .arena");
+  const actions = document.getElementById("actions");
+  const actAttack = document.getElementById("actAttack"), actSig = document.getElementById("actSig"), actDefend = document.getElementById("actDefend");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  Sfx.resume();
+  fightBtn.disabled = true; nf.disabled = true; fightBtn.textContent = "FIGHTING…";
+  const wait = ms => new Promise(r=>setTimeout(r, reduce ? Math.min(ms,60) : ms));
+
+  let hpA = me.maxhp, hpB = them.maxhp, chgA = 0, chgB = 0, guardA = false, guardB = false;
+  arena.classList.add("live");   // reveals the charge meters
+  A.className = "fighter"; B.className = "fighter";
+  A.innerHTML = fighterHtml(me, hpA);   paintSprites(A); setCharge(A, 0);
+  B.innerHTML = fighterHtml(them, hpB); paintSprites(B); setCharge(B, 0);
+  const tm = typeMult(me.element, them.element);
+  logLine(`${me.name} (${me.element}) faces <b>${them.name}</b> (${them.element}).`, true);
+  logLine(tm>1 ? `<span style="color:var(--accent)">Your ${me.element} is strong here — press the advantage.</span>`
+        : tm<1 ? `<span style="color:#ff9a3c">Your ${me.element} is weak into ${them.element} — consider defending.</span>`
+        : `<span style="color:var(--muted)">Even matchup. Time your signature.</span>`);
+
+  function setChgUI(){ setCharge(A, chgA); setCharge(B, chgB); actSig.disabled = chgA < 100; }
+
+  // one blow → visuals + state
+  async function strike(atkIsMe, useSig){
+    const atk = atkIsMe ? me : them, dfn = atkIsMe ? them : me;
+    const atkPanel = atkIsMe ? A : B, dfnPanel = atkIsMe ? B : A;
+    const r = resolveHit(atk, dfn, useSig ? atk.move.kind : "normal");
+    const guarded = atkIsMe ? guardB : guardA;
+    let dmg = guarded ? Math.max(1, Math.round(r.dmg*0.5)) : r.dmg;
+    if (!reduce){ atkPanel.classList.add(atkIsMe?"lunge-a":"lunge-b"); }
+    Sfx.swing(); await wait(reduce?40:150);
+    if (!reduce) atkPanel.classList.remove(atkIsMe?"lunge-a":"lunge-b");
+    if (useSig){ if(!reduce){ sigBanner(arena, atk.move.name, FACTIONS[atk.faction].pal[0]); arena.classList.remove("shake"); void arena.offsetWidth; arena.classList.add("shake"); } Sfx.sig(); }
+    else Sfx.hit();
+    if (!reduce){ dfnPanel.classList.remove("hit","crit"); void dfnPanel.offsetWidth; dfnPanel.classList.add(useSig?"crit":"hit"); floatNum(dfnPanel, "-"+dmg, useSig?"dmg big":"dmg"); setTimeout(()=>dfnPanel.classList.remove("hit","crit"),460); }
+    if (atkIsMe){ hpB = Math.max(0, hpB-dmg); if (r.heal) hpA = Math.min(me.maxhp, hpA+r.heal); }
+    else        { hpA = Math.max(0, hpA-dmg); if (r.heal) hpB = Math.min(them.maxhp, hpB+r.heal); }
+    setHp(dfnPanel, dfn, atkIsMe ? hpB : hpA);
+    if (r.heal){ if(!reduce) floatNum(atkPanel, "+"+r.heal, "heal"); Sfx.heal(); setHp(atkPanel, atk, atkIsMe ? hpA : hpB); }
+    if (atkIsMe) guardB = false; else guardA = false;
+    const an = atkIsMe ? "<b>"+atk.name+"</b>" : atk.name;
+    logLine(useSig
+      ? `⚡ <b>${atk.move.name}</b>! ${an} ${atk.move.bark.replace(/{D}/g,dfn.name)} — ${dmg}${r.note}${guarded?" (guarded)":""}.`
+      : `${an} ${GENERIC_BARKS[Math.floor(Math.random()*GENERIC_BARKS.length)].replace(/{D}/g,dfn.name)} for ${dmg}${r.note}${guarded?" (guarded)":""}.`);
+  }
+
+  function playerTurn(){
+    return new Promise(res=>{
+      actions.hidden = false; setChgUI();
+      const done = kind => { actions.hidden = true; cleanup(); res(kind); };
+      const onA = ()=>done("attack");
+      const onS = ()=>{ if (chgA >= 100) done("signature"); };
+      const onD = ()=>done("defend");
+      function cleanup(){ actAttack.removeEventListener("click",onA); actSig.removeEventListener("click",onS); actDefend.removeEventListener("click",onD); }
+      actAttack.addEventListener("click",onA); actSig.addEventListener("click",onS); actDefend.addEventListener("click",onD);
+    });
+  }
+  function aiChoose(){
+    if (chgB >= 100 && (Math.random() < 0.75 || hpB < them.maxhp*0.3)) return "signature";
+    if (hpA <= them.atk*0.9 && chgB >= 100) return "signature";
+    if (hpB < them.maxhp*0.25 && Math.random() < 0.4) return "defend";
+    return "attack";
+  }
+
+  let turnMe = me.spd >= them.spd;
+  let guardRounds = 0;
+  while (hpA > 0 && hpB > 0 && guardRounds < 80){
+    guardRounds++;
+    if (turnMe){
+      const act = await playerTurn();
+      if (act === "defend"){ guardA = true; chgA = Math.min(100, chgA+55); Sfx.heal(); logLine(`<span style="color:#7ec8ff">${me.name} braces. 🛡 (+charge)</span>`); }
+      else if (act === "signature"){ await strike(true, true); chgA = 0; }
+      else { await strike(true, false); chgA = Math.min(100, chgA+34); }
+      setChgUI(); if (hpB <= 0) break; await wait(280);
+    } else {
+      const act = aiChoose();
+      if (act === "defend"){ guardB = true; chgB = Math.min(100, chgB+55); logLine(`${them.name} braces. 🛡`); }
+      else if (act === "signature"){ await strike(false, true); chgB = 0; }
+      else { await strike(false, false); chgB = Math.min(100, chgB+34); }
+      setChgUI(); if (hpA <= 0) break; await wait(reduce?150:650);
+    }
+    turnMe = !turnMe;
+  }
+
+  const won = hpA > 0 && hpA >= hpB;
+  const koPanel = won ? B : A;
+  if (!reduce) koPanel.classList.add("ko");
+  Sfx.ko();
+  actions.hidden = true;
+  recordResult(won, them);
+  const rank = rankFor(stats.rating);
+  logLine(won
+    ? `<b>${me.name} wins!</b> <span style="color:var(--accent)">rating → ${stats.rating} (${rank})${stats.streak>1?"  🔥"+stats.streak:""}</span>`
+    : `<b>${them.name}</b> wins. <span style="color:var(--muted)">rating → ${stats.rating} (${rank})</span>`);
+  fightBtn.disabled = false; nf.disabled = false; fightBtn.textContent = "⚔ FIGHT";
+  playing = false;
+}
 
 /* ---------- boot ------------------------------------------------------------ */
 try { if (window.self !== window.top) document.body.classList.add("framed"); } catch { }
+renderTypeChart();
 // the opening hint is already in the markup; nothing to say yet
 
 // Incoming challenge link (?vs=CODE): load that creature as the rival and jump
