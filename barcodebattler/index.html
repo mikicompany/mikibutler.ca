@@ -128,6 +128,7 @@
   /* action buttons */
   .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
   .actions .btn{flex:1 1 auto}
+  .actions .item{flex:0 0 auto;font-size:10px}
   #actSig:not(:disabled){box-shadow:0 0 0 1px var(--accent),0 0 14px rgba(160,255,0,.4)}
   /* type chart reference */
   .typechart{margin-top:14px;font-size:11px;color:var(--muted)}
@@ -292,6 +293,9 @@
       <button class="btn" id="actAttack">ATTACK</button>
       <button class="btn" id="actSig" disabled>⚡ SIGNATURE</button>
       <button class="btn ghost" id="actDefend">🛡 DEFEND</button>
+      <button class="btn ghost sm item" id="itemSnack" hidden>🍫</button>
+      <button class="btn ghost sm item" id="itemBoost" hidden>💥</button>
+      <button class="btn ghost sm item" id="itemCoupon" hidden>🧊</button>
     </div>
     <div class="row">
       <button class="btn" id="fight">⚔ FIGHT</button>
@@ -683,6 +687,22 @@ let stats = { wins:0, losses:0, streak:0, best:0 };
 try { const s = JSON.parse(localStorage.getItem("pantryraid.stats.v1") || "{}");
       stats = { wins:s.wins||0, losses:s.losses||0, streak:s.streak||0, best:s.best||0 }; } catch {}
 function saveStats(){ try { localStorage.setItem("pantryraid.stats.v1", JSON.stringify(stats)); } catch {} }
+
+/* ---------- pantry items (solo battle consumables) --------------------
+   Earned on level-up, spent mid-fight. Solo-only, so they never touch the
+   deterministic duel maths. */
+const ITEM_KINDS = ["snack","boost","coupon"];
+const ITEM_ICON  = { snack:"🍫", boost:"💥", coupon:"🧊" };
+const ITEM_NAME  = { snack:"Snack", boost:"Boost", coupon:"Coupon" };
+const ITEM_DESC  = { snack:"heal 30% HP", boost:"a +50% strike", coupon:"cleanse debuffs + brace" };
+let items = { snack:0, boost:0, coupon:0 };
+try { const s = JSON.parse(localStorage.getItem("pantryraid.items.v1"));
+      if (s) items = { snack:s.snack||0, boost:s.boost||0, coupon:s.coupon||0 };
+      else items = { snack:1, boost:1, coupon:1 };   // starter kit on first run
+} catch {}
+function saveItems(){ try { localStorage.setItem("pantryraid.items.v1", JSON.stringify(items)); } catch {} }
+saveItems();
+function grantItem(){ const k = ITEM_KINDS[Math.floor(Math.random()*ITEM_KINDS.length)]; items[k] = (items[k]||0)+1; saveItems(); return k; }
 function pantryPower(){ return roster.reduce((s,r)=> s + 10*lvlOf(r.code), 0); }
 function maxLevel(){ return roster.reduce((m,r)=> Math.max(m, lvlOf(r.code)), 1); }
 const RANKS = [
@@ -1469,7 +1489,7 @@ async function playFight(aCode, bCode, spectator){
     logLine(won
       ? `<b>${me.name} wins.</b> <span style="color:var(--accent)">+${res.gain} XP${stats.streak>1?"  🔥"+stats.streak:""}</span>`
       : `<b>${them.name}</b> wins. <span style="color:var(--muted)">+${res.gain} XP</span>`);
-    if (res.ups.length){ logLine(`<span style="color:var(--accent)">⭐ ${me.name} reached Lv ${res.after}!</span>`); await celebrateLevel(champion, res); renderRankBar(); }
+    if (res.ups.length){ logLine(`<span style="color:var(--accent)">⭐ ${me.name} reached Lv ${res.after}!</span>`); await celebrateLevel(champion, res); const gi=[]; for(let i=0;i<res.ups.length;i++) gi.push(ITEM_ICON[grantItem()]); logLine(`<span style="color:var(--accent)">🎁 Found ${gi.join(" ")} — spend them mid-fight.</span>`); renderRankBar(); }
   }
   // Offer a replay link so the loop closes (friend fights → sends it back → you watch).
   if (shareBtn){ shareBtn.hidden = false; shareBtn.textContent = spectator ? "📤 Share replay" : "📤 Send replay"; }
@@ -1544,7 +1564,7 @@ async function playInteractive(){
   function turnEnd(atkIsMe){ const s = atkIsMe ? stA : stB; if (s.chill>0) s.chill--; if (s.expose>0) s.expose--; }
 
   // one blow → visuals + state (aisle, passives, statuses all via resolveHit)
-  async function strike(atkIsMe, useSig){
+  async function strike(atkIsMe, useSig, buffMult){
     const atk = atkIsMe ? me : them, dfn = atkIsMe ? them : me;
     const atkPanel = atkIsMe ? A : B, dfnPanel = atkIsMe ? B : A;
     const ctx = { aisleBoost: aisle.boost, firstHit: atkIsMe ? firstA : firstB,
@@ -1552,7 +1572,8 @@ async function playInteractive(){
     const r = resolveHit(atk, dfn, useSig ? atk.move.kind : "normal", Math.random, ctx);
     if (atkIsMe) firstA = false; else firstB = false;
     const guarded = atkIsMe ? guardB : guardA;
-    const dmg = r.dodged ? 0 : (guarded ? Math.max(1, Math.round(r.dmg*0.5)) : r.dmg);
+    let dmg = r.dodged ? 0 : (guarded ? Math.max(1, Math.round(r.dmg*0.5)) : r.dmg);
+    if (buffMult && !r.dodged) dmg = Math.round(dmg*buffMult);
     if (!reduce){ atkPanel.classList.add(atkIsMe?"lunge-a":"lunge-b"); }
     Sfx.swing(); await wait(reduce?40:150);
     if (!reduce) atkPanel.classList.remove(atkIsMe?"lunge-a":"lunge-b");
@@ -1577,16 +1598,35 @@ async function playInteractive(){
       : `${an} ${GENERIC_BARKS[Math.floor(Math.random()*GENERIC_BARKS.length)].replace(/{D}/g,dfn.name)}${tail}${r.note}${g}.`);
   }
 
+  const itemBtn = { snack:document.getElementById("itemSnack"), boost:document.getElementById("itemBoost"), coupon:document.getElementById("itemCoupon") };
   function playerTurn(){
     return new Promise(res=>{
       actions.hidden = false; setChgUI();
+      // show item buttons you own, with counts
+      ITEM_KINDS.forEach(k=>{ const bn=itemBtn[k]; if(!bn) return;
+        if (items[k]>0){ bn.hidden=false; bn.textContent = ITEM_ICON[k]+" "+ITEM_NAME[k]+" ("+items[k]+")"; }
+        else bn.hidden=true; });
       const done = kind => { actions.hidden = true; cleanup(); res(kind); };
       const onA = ()=>done("attack");
       const onS = ()=>{ if (chgA >= 100) done("signature"); };
       const onD = ()=>done("defend");
-      function cleanup(){ actAttack.removeEventListener("click",onA); actSig.removeEventListener("click",onS); actDefend.removeEventListener("click",onD); }
+      const mk = k => ()=>{ if (items[k]>0) done("item:"+k); };
+      const onSn=mk("snack"), onBo=mk("boost"), onCo=mk("coupon");
+      function cleanup(){ actAttack.removeEventListener("click",onA); actSig.removeEventListener("click",onS); actDefend.removeEventListener("click",onD);
+        itemBtn.snack.removeEventListener("click",onSn); itemBtn.boost.removeEventListener("click",onBo); itemBtn.coupon.removeEventListener("click",onCo); }
       actAttack.addEventListener("click",onA); actSig.addEventListener("click",onS); actDefend.addEventListener("click",onD);
+      itemBtn.snack.addEventListener("click",onSn); itemBtn.boost.addEventListener("click",onBo); itemBtn.coupon.addEventListener("click",onCo);
     });
+  }
+  // Spend an item (your turn). Returns true if it also ends the round like a strike.
+  async function useItem(k){
+    items[k] = Math.max(0, items[k]-1); saveItems();
+    if (k === "snack"){ const h = Math.round(me.maxhp*0.30); hpA = Math.min(me.maxhp, hpA+h);
+      if(!reduce) floatNum(A, "+"+h, "heal"); Sfx.heal(); setHp(A, me, hpA);
+      logLine(`<span style="color:var(--accent)">🍫 ${me.name} eats a snack — +${h} HP.</span>`); }
+    else if (k === "boost"){ logLine(`<span style="color:var(--accent)">💥 ${me.name} powers up!</span>`); await strike(true, false, 1.5); }
+    else if (k === "coupon"){ stA.chill=0; stA.expose=0; guardA=true; Sfx.heal();
+      logLine(`<span style="color:var(--accent)">🧊 ${me.name} redeems a coupon — debuffs cleared, braced.</span>`); }
   }
   function aiChoose(){
     if (chgB >= 100 && (Math.random() < 0.75 || hpB < them.maxhp*0.3)) return "signature";
@@ -1604,6 +1644,7 @@ async function playInteractive(){
       const act = await playerTurn();
       if (act === "defend"){ guardA = true; chgA = Math.min(100, chgA+55); Sfx.heal(); logLine(`<span style="color:#7ec8ff">${me.name} braces. 🛡 (+charge)</span>`); }
       else if (act === "signature"){ await strike(true, true); chgA = 0; }
+      else if (act && act.indexOf("item:")===0){ await useItem(act.slice(5)); chgA = Math.min(100, chgA+18); }
       else { await strike(true, false); chgA = Math.min(100, chgA+34); }
       turnEnd(true); setChgUI(); if (hpB <= 0) break; await wait(280);
     } else {
@@ -1628,7 +1669,7 @@ async function playInteractive(){
   logLine(won
     ? `<b>${me.name} wins!</b> <span style="color:var(--accent)">+${res.gain} XP${stats.streak>1?"  🔥"+stats.streak:""}</span>`
     : `<b>${them.name}</b> wins. <span style="color:var(--muted)">+${res.gain} XP</span>`);
-  if (res.ups.length){ logLine(`<span style="color:var(--accent)">⭐ ${me.name} reached Lv ${res.after}!</span>`); await celebrateLevel(champion, res); renderRankBar(); }
+  if (res.ups.length){ logLine(`<span style="color:var(--accent)">⭐ ${me.name} reached Lv ${res.after}!</span>`); await celebrateLevel(champion, res); const gi=[]; for(let i=0;i<res.ups.length;i++) gi.push(ITEM_ICON[grantItem()]); logLine(`<span style="color:var(--accent)">🎁 Found ${gi.join(" ")} — spend them mid-fight.</span>`); renderRankBar(); }
   fightBtn.disabled = false; nf.disabled = false; fightBtn.textContent = "⚔ FIGHT";
   playing = false;
 }
