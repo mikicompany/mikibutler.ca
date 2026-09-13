@@ -167,10 +167,19 @@
   /* ---- roster ---- */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
   .tile{
+    position:relative;
     border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:10px;
     text-align:center;cursor:pointer;transition:border-color .12s;
   }
   .tile:hover,.tile[aria-selected="true"]{border-color:var(--accent)}
+  .tile.in-squad{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .squad-slot{position:absolute;top:4px;left:4px;font-size:8px;font-weight:700;letter-spacing:.06em;
+    color:#0b0b0b;background:var(--accent);border-radius:2px;padding:1px 4px;z-index:2}
+  .squadbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px;min-height:20px}
+  .squadbar .sq-hint{font-size:11px;color:var(--muted)}
+  .squadbar .sq-label{font-size:10px;letter-spacing:.14em;color:var(--accent);font-weight:700}
+  .sq-chip{font-size:10px;padding:3px 8px;border:1px solid var(--line);border-radius:999px;color:#ddd}
+  .sq-chip .sq-lv{color:var(--muted)}
   .tile canvas{width:72px;height:72px;image-rendering:pixelated;background:#000;border-radius:2px}
   .tile .n{font-size:11px;font-weight:700;margin-top:6px;word-break:break-word}
   .tile .f{font-size:9px;color:var(--muted);letter-spacing:.1em;margin-top:2px}
@@ -271,6 +280,7 @@
   <!-- ================= ROSTER ================= -->
   <section class="view" id="v-roster">
     <h2>ROSTER — <span id="rcount">0</span> FOUND</h2>
+    <div class="squadbar" id="squadbar"></div>
     <div class="grid" id="rgrid"></div>
     <div class="empty" id="rempty">Nothing found yet.<br>Go scan something in your kitchen.</div>
     <div class="row" id="rrow" hidden><button class="btn ghost sm" id="wipe">CLEAR ROSTER</button></div>
@@ -1009,7 +1019,10 @@ function renderRoster(){
   row.hidden   = roster.length === 0;
   grid.innerHTML = roster.map(r=>{
     const c = generate(r.code);
-    return `<div class="tile" data-code="${c.code}" aria-selected="${c.code===champion}">
+    const slot = squad.indexOf(c.code);
+    const badge = slot>=0 ? `<div class="squad-slot">${slot===0?"★ LEADER":"#"+(slot+1)}</div>` : "";
+    return `<div class="tile${slot>=0?" in-squad":""}" data-code="${c.code}" aria-selected="${slot>=0}">
+      ${badge}
       <canvas data-sprite="${c.code}"></canvas>
       <div class="n">${c.name}</div>
       <div class="f" style="color:${c.rarityColor}">${c.rarity}</div>
@@ -1017,29 +1030,57 @@ function renderRoster(){
     </div>`;
   }).join("");
   paintSprites(grid);
+  renderSquadBar();
   grid.querySelectorAll(".tile").forEach(t=>{
     t.addEventListener("click", ()=>{
-      champion = t.dataset.code;
-      replayA = replayB = null;   // choosing your own champion leaves replay mode
+      const code = t.dataset.code, at = squad.indexOf(code);
+      if (at >= 0) squad.splice(at, 1);            // tap again to remove
+      else if (squad.length < 3) squad.push(code); // add up to 3
+      // else squad full — ignore
+      champion = squad[0] || code;
+      saveSquad();
+      replayA = replayB = null;   // building a squad leaves replay mode
       renderRoster();
       const d = document.getElementById("rdetail");
-      d.innerHTML = cardHtml(generate(champion));
+      d.innerHTML = cardHtml(generate(code));
       paintSprites(d);
       fillRealNames(d);
     });
   });
 }
+function renderSquadBar(){
+  const bar = document.getElementById("squadbar"); if (!bar) return;
+  if (!squad.length){ bar.innerHTML = '<span class="sq-hint">Tap creatures to build a squad (up to 3). First = leader.</span>'; return; }
+  const chips = squad.map((code,i)=>{
+    const c = generate(code);
+    return `<span class="sq-chip" style="border-color:${c.rarityColor}">${i===0?"★ ":""}${esc(c.name)} <span class="sq-lv">Lv${lvlOf(code)}</span></span>`;
+  }).join("");
+  bar.innerHTML = '<span class="sq-label">SQUAD ('+squad.length+'/3)</span>'+chips+
+    '<button class="btn ghost sm" id="squadClear">clear</button>';
+  const cl = document.getElementById("squadClear");
+  if (cl) cl.addEventListener("click", ()=>{ squad = []; champion = roster[0]?roster[0].code:null; saveSquad(); renderRoster(); });
+}
 document.getElementById("wipe").addEventListener("click", ()=>{
   if (!confirm("Clear your whole roster? This can't be undone.")) return;
-  roster = []; champion = null; saveRoster(roster);
+  roster = []; champion = null; squad = []; saveRoster(roster); saveSquad();
   document.getElementById("rdetail").innerHTML = "";
   renderRoster();
 });
 
 /* ---------- battle -------------------------------------------------------- */
-// Deliberately simple: three stats and some luck, same as the 1991 toy.
-// Depth can come later; the scanning is the game right now.
-let foe = null;
+let foe = null;             // preview opponent (leader) for setupBattle
+let foeTeam = [];           // opponent squad (codes) for duels / replays / random
+// Your squad: up to 3 creatures. squad[0] is the leader (= champion, used for
+// challenge links). Falls back to a solo champion when nothing is chosen.
+let squad = [];
+try { const s = JSON.parse(localStorage.getItem("pantryraid.squad.v1")); if (Array.isArray(s)) squad = s; } catch {}
+function saveSquad(){ try { localStorage.setItem("pantryraid.squad.v1", JSON.stringify(squad)); } catch {} }
+function pruneSquad(){ squad = squad.filter(c => roster.some(r=>r.code===c)).slice(0,3); if (squad.length) champion = squad[0]; }
+pruneSquad();
+if (!squad.length && champion) squad = [champion];
+function mySquad(){ return squad.length ? squad.slice() : (champion ? [champion] : []); }
+const encTeam = arr => arr.join("~");
+const decTeam = str => String(str||"").split("~").map(s=>{ const p = parseCode(s); return p.err ? null : p.code; }).filter(Boolean).slice(0,3);
 function randomCode(){
   // Build a synthetic but check-digit-valid GTIN so opponents obey the
   // same rules your own finds do.
@@ -1105,27 +1146,29 @@ function setupBattle(){
   const a = document.getElementById("fA"), b = document.getElementById("fB");
   const sr = document.getElementById("shareResult"); if (sr) sr.hidden = true;
   document.getElementById("actions").hidden = true;
-  // Spectator replay: two fixed creatures, watch the shared result.
+  const squadTag = (n)=> n>1 ? ' <span style="color:var(--muted)">(squad of '+n+')</span>' : '';
+  // Spectator replay: two fixed squads, watch the shared result.
   if (replayA && replayB){
-    const ra = generate(replayA), rb = generate(replayB);
+    const ra = generate(replayA[0]), rb = generate(replayB[0]);
     const arena0 = document.querySelector("#v-battle .arena"); if (arena0) arena0.classList.remove("live");
     a.innerHTML = fighterHtml(ra, ra.maxhp); paintSprites(a); setCharge(a, 0);
     b.innerHTML = fighterHtml(rb, rb.maxhp); paintSprites(b); setCharge(b, 0);
     const banner = document.getElementById("challengeBanner");
-    if (banner){ banner.hidden = false; banner.innerHTML = '🎬 <b>Replay</b> — '+esc(ra.name)+' vs '+esc(rb.name)+'. Hit <b>FIGHT</b> to watch (same result every time).'; }
+    if (banner){ banner.hidden = false; banner.innerHTML = '🎬 <b>Replay</b> — '+esc(ra.name)+squadTag(replayA.length)+' vs '+esc(rb.name)+squadTag(replayB.length)+'. Hit <b>FIGHT</b> to watch.'; }
     document.getElementById("log").innerHTML = '<div>Replay: '+esc(ra.name)+' vs <b>'+esc(rb.name)+'</b>.</div>';
     document.getElementById("duelState").hidden = false;
     renderRankBar();
     return;
   }
-  if (!champion){
+  const myT = mySquad();
+  if (!myT.length){
     a.innerHTML = `<div class="f" style="color:var(--muted);font-size:11px">
-      Pick a champion in the Roster first.</div>`;
+      Pick a squad in the Roster first.</div>`;
     b.innerHTML = ""; return;
   }
-  if (!foe) foe = generate(randomCode());
-  const me = generate(champion);
-  document.getElementById("actions").hidden = true;
+  if (!foeTeam.length){ foeTeam = Array.from({length:Math.max(1,myT.length)}, randomCode); foe = generate(foeTeam[0]); }
+  if (!foe) foe = generate(foeTeam[0]);
+  const me = generate(myT[0]);
   const arena = document.querySelector("#v-battle .arena");
   if (arena) arena.classList.toggle("live", !duelMode);   // charge meters only in live fights
   a.innerHTML = fighterHtml(me, me.maxhp); paintSprites(a); setCharge(a, 0);
@@ -1135,7 +1178,7 @@ function setupBattle(){
              : tm<1 ? `<div style="color:#ff9a3c">Watch out: your <b>${me.element}</b> is weak into ${foe.element}.</div>`
              : `<div style="color:var(--muted)">Even matchup (${me.element} vs ${foe.element}).</div>`;
   document.getElementById("log").innerHTML =
-    `<div>${me.name} faces <b>${foe.name}</b> of the ${foe.factionName}.</div>` + edge +
+    `<div>${me.name}${squadTag(myT.length)} faces <b>${foe.name}</b>${squadTag(foeTeam.length)}.</div>` + edge +
     (duelMode
       ? `<div style="color:var(--accent)">⚔ DUEL — hit FIGHT to watch the deterministic result.</div>`
       : `<div style="color:var(--muted)">Hit FIGHT, then choose ATTACK, DEFEND, or charge your SIGNATURE.</div>`);
@@ -1143,28 +1186,31 @@ function setupBattle(){
 }
 let playing = false;      // true while a fight is animating
 let duelMode = false;     // true when the opponent is a friend's code (deterministic)
-let replayA = null, replayB = null;   // spectator replay: two fixed codes to watch
-let lastFightPair = null;             // {a,b} of the last deterministic fight, for sharing a replay
+let replayA = null, replayB = null;   // spectator replay: two fixed squads (code arrays)
+let lastFightPair = null;             // {a,b} squads of the last deterministic fight, for sharing a replay
 document.getElementById("newfoe").addEventListener("click", ()=>{
   if (playing) return;
   duelMode = false; replayA = replayB = null;
   document.getElementById("duelState").hidden = true;
   document.getElementById("challengeBanner").hidden = true;
-  foe = generate(randomCode()); setupBattle();
+  const n = Math.max(1, mySquad().length);            // match the opponent squad to yours
+  foeTeam = Array.from({length:n}, randomCode);
+  foe = generate(foeTeam[0]); setupBattle();
 });
-// Lock a friend's creature in as the rival (deterministic duel).
+// Lock a friend's squad in as the rival (deterministic duel). Accepts one code
+// or a ~-joined squad.
 function setRival(raw){
   if (playing) return false;
   const note = document.getElementById("duelnote");
-  const parsed = parseCode(raw || "");
-  if (parsed.err){ note.innerHTML = '<span style="color:#ff5a5a">'+parsed.err+'</span>'; return false; }
-  foe = generate(parsed.code);
+  const team = decTeam(raw);
+  if (!team.length){ note.innerHTML = '<span style="color:#ff5a5a">Type the digits under a barcode (or a ~-joined squad).</span>'; return false; }
+  foeTeam = team; foe = generate(team[0]);
   duelMode = true; replayA = replayB = null;
   document.getElementById("duelState").hidden = false;
   document.getElementById("challengeBanner").hidden = true;
   setupBattle();
-  note.innerHTML = 'Rival locked: <b>'+foe.name+'</b> of the '+foe.factionName+
-    '. This duel is deterministic — hit <b>FIGHT</b>. (Your friend running the same two codes sees the same result.)';
+  note.innerHTML = 'Rival locked: <b>'+foe.name+'</b>'+(team.length>1?" +"+(team.length-1)+" more":"")+
+    '. Deterministic — hit <b>FIGHT</b>. (Your friend running the same squads sees the same result.)';
   return true;
 }
 document.getElementById("foefight").addEventListener("click", ()=>{
@@ -1176,20 +1222,22 @@ document.getElementById("foecode").addEventListener("keydown", e=>{
 // Build a link that loads YOUR champion as the opponent for whoever opens it.
 document.getElementById("challenge").addEventListener("click", ()=>{
   const note = document.getElementById("duelnote");
-  if (!champion){
-    note.innerHTML = '<span style="color:#ff5a5a">Pick a champion in the Roster first — that\'s the creature your friend will fight.</span>';
+  const team = mySquad();
+  if (!team.length){
+    note.innerHTML = '<span style="color:#ff5a5a">Pick a squad in the Roster first — that\'s who your friend will fight.</span>';
     return;
   }
-  const link = location.origin + location.pathname + "?vs=" + encodeURIComponent(champion);
-  const me = generate(champion);
-  const share = { title:"Pantry Raid duel", text: me.name+" challenges you in Pantry Raid! Scan a snack, pick your champion, fight — then send me the replay:", url: link };
+  const link = location.origin + location.pathname + "?vs=" + encodeURIComponent(encTeam(team));
+  const me = generate(team[0]);
+  const who = me.name + (team.length>1 ? " +"+(team.length-1)+" more" : "");
+  const share = { title:"Pantry Raid duel", text: me.name+" challenges you in Pantry Raid! Build a squad, fight — then send me the replay:", url: link };
   const backNote = ' When they\'re done they can tap <b>📤 Send replay</b> so you can watch it too.';
   if (navigator.share){
-    note.innerHTML = 'Challenge sent — they\'ll face <b>'+me.name+'</b>.' + backNote;
+    note.innerHTML = 'Challenge sent — they\'ll face <b>'+who+'</b>.' + backNote;
     navigator.share(share).catch(()=>{});
     return;
   }
-  const done = ()=>{ note.innerHTML = 'Link copied — send it to a friend; they\'ll face <b>'+me.name+'</b>.' + backNote; };
+  const done = ()=>{ note.innerHTML = 'Link copied — send it to a friend; they\'ll face <b>'+who+'</b>.' + backNote; };
   if (navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(link).then(done).catch(()=>{ prompt("Copy your challenge link", link); });
   } else { prompt("Copy your challenge link", link); }
@@ -1274,6 +1322,7 @@ function resolveHit(att, dfn, kind, rng, ctx){
   if (dfn.element === "stone") mult *= 0.88;                            // Bulwark
   if (ctx.atkStatus && ctx.atkStatus.chill > 0) mult *= 0.75;          // chilled attacker
   if (ctx.dfnStatus && ctx.dfnStatus.expose > 0) mult *= 1.22;         // exposed defender
+  if (ctx.fatigue && ctx.fatigue > 1) mult *= ctx.fatigue;             // sudden-death ramp
   // Draw crit/dodge in a fixed order so both duel perspectives agree.
   let crit = false;
   if (att.element === "ink" && rng() < 0.12){ crit = true; mult *= 1.5; }   // Errata
@@ -1292,58 +1341,73 @@ function resolveHit(att, dfn, kind, rng, ctx){
   return { dmg, heal, note, tm, dodged, crit, thorns };
 }
 
-// ── Resolve a whole DUEL up front into a list of swing "events", then
-//    play them back with animation. Keeping the maths and the animation
-//    separate means a KO can never desync from the health bars. (Live
-//    solo fights are interactive instead — see playInteractive.)
-function buildFight(me, them, rng, aisle){
-  rng = rng || Math.random;   // duels pass a seeded rng so both players agree
-  aisle = aisle || aisleFor([me.code, them.code].sort().join("~"));
-  const aisleBoost = aisle.boost;
-  let hpA = me.maxhp, hpB = them.maxhp;
-  const events = [], usedSig = { me:false, them:false };
-  const first = { me:true, them:true };
-  const st = { me:{ chill:0, expose:0 }, them:{ chill:0, expose:0 } };
-  const fmt = (s,d)=>s.replace(/{D}/g,d);
-  const meFirst = me.spd !== them.spd ? me.spd > them.spd
-                : me.rarityIdx !== them.rarityIdx ? me.rarityIdx > them.rarityIdx
-                : me.code < them.code;
-  let ko = false;
-  for (let turn=1; turn<=24 && !ko; turn++){
-    const order = meFirst ? [[me,them],[them,me]] : [[them,me],[me,them]];
-    for (const [att,dfn] of order){
-      if (hpA<=0 || hpB<=0){ ko=true; break; }
-      const atkIsMe = att===me, side = atkIsMe ? "me" : "them", dside = atkIsMe ? "them" : "me";
-      // start of this fighter's turn: Regrowth heal (leaf passive)
+// ── One bout: the two ACTIVE creatures trade blows until one faints. HP is
+//    passed in (a survivor carries its health between bouts). Deterministic
+//    when given a seeded rng.
+function fightBout(cA, cB, hp0A, hp0B, rng, aisleBoost, turnBase){
+  turnBase = turnBase || 0;
+  let hpA = hp0A, hpB = hp0B, usedTurns = 0;
+  const st = { a:{ chill:0, expose:0 }, b:{ chill:0, expose:0 } };
+  const first = { a:true, b:true }, usedSig = { a:false, b:false };
+  const aFirst = cA.spd !== cB.spd ? cA.spd > cB.spd
+               : cA.rarityIdx !== cB.rarityIdx ? cA.rarityIdx > cB.rarityIdx
+               : cA.code < cB.code;
+  const events = []; let done = false;
+  for (let turn=1; turn<=30 && !done; turn++){
+    usedTurns = turn;
+    const fatigue = 1 + Math.max(0, (turnBase + turn) - 14)*0.07;   // sudden death
+    const order = aFirst ? [["a",cA,cB],["b",cB,cA]] : [["b",cB,cA],["a",cA,cB]];
+    for (const [who, att, dfn] of order){
+      if (hpA<=0 || hpB<=0){ done=true; break; }
+      const isA = who === "a", dwho = isA ? "b" : "a";
       let regen = 0;
       if (att.element === "leaf"){ regen = Math.round(att.maxhp*0.04);
-        if (atkIsMe) hpA = Math.min(me.maxhp, hpA+regen); else hpB = Math.min(them.maxhp, hpB+regen); }
-      const useSig = !usedSig[side] || rng() < 0.32;
-      usedSig[side] = true;
-      const ctx = { aisleBoost, firstHit: first[side], atkStatus: st[side], dfnStatus: st[dside] };
+        if (isA) hpA = Math.min(cA.maxhp, hpA+regen); else hpB = Math.min(cB.maxhp, hpB+regen); }
+      const useSig = !usedSig[who] || rng() < 0.32;
+      usedSig[who] = true;
+      const ctx = { aisleBoost, firstHit: first[who], atkStatus: st[who], dfnStatus: st[dwho], fatigue };
       const r = resolveHit(att, dfn, useSig ? att.move.kind : "normal", rng, ctx);
-      first[side] = false;
-      if (atkIsMe){ hpB -= r.dmg; hpA = Math.min(me.maxhp, hpA + r.heal) - r.thorns; }
-      else        { hpA -= r.dmg; hpB = Math.min(them.maxhp, hpB + r.heal) - r.thorns; }
-      if (useSig && SIG_STATUS[att.element] && !r.dodged) st[dside][SIG_STATUS[att.element]] = 2;   // signature debuff
-      if (st[side].chill > 0) st[side].chill--;                       // tick this fighter's statuses
-      if (st[side].expose > 0) st[side].expose--;
-      const meDown = hpA<=0, themDown = hpB<=0;
+      first[who] = false;
+      if (isA){ hpB -= r.dmg; hpA = Math.min(cA.maxhp, hpA + r.heal) - r.thorns; }
+      else    { hpA -= r.dmg; hpB = Math.min(cB.maxhp, hpB + r.heal) - r.thorns; }
+      if (useSig && SIG_STATUS[att.element] && !r.dodged) st[dwho][SIG_STATUS[att.element]] = 2;
+      if (st[who].chill > 0) st[who].chill--;
+      if (st[who].expose > 0) st[who].expose--;
+      const aDown = hpA<=0, bDown = hpB<=0;
       events.push({
-        atkIsMe, atkName: att.name, useSig, kind: att.move.kind, moveName: att.move.name,
-        bark: fmt(att.move.bark, dfn.name),
-        generic: useSig ? null : fmt(GENERIC_BARKS[Math.floor(rng()*GENERIC_BARKS.length)], dfn.name),
+        atkIsMe: isA, atkName: att.name, useSig, kind: att.move.kind, moveName: att.move.name,
+        bark: att.move.bark.replace(/{D}/g, dfn.name),
+        generic: useSig ? null : GENERIC_BARKS[Math.floor(rng()*GENERIC_BARKS.length)].replace(/{D}/g, dfn.name),
         dmg: r.dmg, heal: r.heal, note: r.note, dodged: r.dodged, thorns: r.thorns, regen,
-        pal: FACTIONS[att.faction].pal,
-        hpA: Math.max(0,hpA), hpB: Math.max(0,hpB),
-        ko: meDown || themDown, koIsMe: meDown,
+        pal: FACTIONS[att.faction].pal, hpA: Math.max(0,hpA), hpB: Math.max(0,hpB),
+        aDown, bDown,
       });
-      if (meDown || themDown){ ko=true; break; }
+      if (aDown || bDown){ done=true; break; }
     }
   }
-  // Symmetric winner rule (handles a thorns double-KO the same on both screens).
-  const won = hpA > hpB || (hpA === hpB && me.code < them.code);
-  return { events, won, aisle };
+  return { events, hpA: Math.max(0,hpA), hpB: Math.max(0,hpB), aFell: hpA<=0, bFell: hpB<=0, turns: usedTurns };
+}
+
+// ── A whole squad relay resolved up front into events (attacks + switches),
+//    then played back with animation. Teams are arrays of creature objects.
+function buildTeamFight(teamA, teamB, rng, aisle){
+  rng = rng || Math.random;
+  aisle = aisle || aisleFor(teamA.map(c=>c.code).concat(teamB.map(c=>c.code)).sort().join("~"));
+  const hpA = teamA.map(c=>c.maxhp), hpB = teamB.map(c=>c.maxhp);
+  let iA = 0, iB = 0; const events = []; let guard = 0, turnBase = 0;
+  while (iA < teamA.length && iB < teamB.length && guard < 60){
+    guard++;
+    const bout = fightBout(teamA[iA], teamB[iB], hpA[iA], hpB[iB], rng, aisle.boost, turnBase);
+    turnBase += bout.turns;
+    for (const ev of bout.events) events.push(ev);
+    hpA[iA] = bout.hpA; hpB[iB] = bout.hpB;
+    if (bout.aFell){ iA++; if (iA < teamA.length){ const c = teamA[iA]; events.push({ switchIsMe:true, name:c.name, creature:c, pal:FACTIONS[c.faction].pal }); } }
+    if (bout.bFell){ iB++; if (iB < teamB.length){ const c = teamB[iB]; events.push({ switchIsMe:false, name:c.name, creature:c, pal:FACTIONS[c.faction].pal }); } }
+    if (!bout.aFell && !bout.bFell) break;   // safety: a bout always ends in a faint
+  }
+  const aliveA = iA < teamA.length, aliveB = iB < teamB.length;
+  const won = (aliveA && !aliveB) ? true : (!aliveA && aliveB) ? false : (teamA[0].code < teamB[0].code);
+  return { events, won, aisle, survivorsA: teamA.length - iA, survivorsB: teamB.length - iB };
 }
 
 const logEl = ()=>document.getElementById("log");
@@ -1390,13 +1454,14 @@ async function celebrateLevel(code, res){
 // their champion) and for spectator replays (?a=&b= — you just watch). The
 // seed comes from both codes, so everyone who opens the same pair sees the
 // identical fight.
-async function playFight(aCode, bCode, spectator){
-  aCode = aCode || champion;
-  bCode = bCode || (foe && foe.code);
-  const me = generate(aCode), them = generate(bCode);
-  lastFightPair = { a: aCode, b: bCode };
-  const rng = rngFrom(hash32(SALT + "|duel|" + [aCode, bCode].sort().join("~")));
-  const { events, won, aisle } = buildFight(me, them, rng);
+async function playFight(aTeam, bTeam, spectator){
+  aTeam = (aTeam && aTeam.length ? aTeam : mySquad());
+  bTeam = (bTeam && bTeam.length ? bTeam : foeTeam);
+  const teamA = aTeam.map(generate), teamB = bTeam.map(generate);
+  let me = teamA[0], them = teamB[0], curA = me, curB = them;
+  lastFightPair = { a: aTeam.slice(), b: bTeam.slice() };
+  const rng = rngFrom(hash32(SALT + "|duel|" + aTeam.concat(bTeam).sort().join("~")));
+  const { events, won, aisle } = buildTeamFight(teamA, teamB, rng);
   playing = true;
   const shareBtn = document.getElementById("shareResult"); if (shareBtn) shareBtn.hidden = true;
   const fightBtn = document.getElementById("fight"), nf = document.getElementById("newfoe");
@@ -1428,14 +1493,24 @@ async function playFight(aCode, bCode, spectator){
   A.className = "fighter"; B.className = "fighter";
   A.innerHTML = fighterHtml(me, me.maxhp);   paintSprites(A);
   B.innerHTML = fighterHtml(them, them.maxhp); paintSprites(B);
+  const squads = teamA.length>1 || teamB.length>1;
   logLine(`${me.name} faces <b>${them.name}</b> of the ${them.factionName}.`, true);
+  if (squads) logLine(`<span style="color:var(--accent)">Squad battle — ${teamA.length} vs ${teamB.length}.</span>`);
   logLine(`<span style="color:#7ec8ff">🛒 ${aisle.name}${aisle.blurb?" — "+aisle.blurb:""}.</span>`);
   logLine(`<span style="color:var(--muted)">${me.name}: ${PASSIVES[me.element]||"—"} · ${them.name}: ${PASSIVES[them.element]||"—"}.</span>`);
-  if (duelMode) logLine(`<span style="color:var(--accent)">⚔ DUEL — deterministic. Your friend running these two codes sees the same fight.</span>`);
-  logLine(`<span style="color:var(--muted)">Signatures: <b>${me.move.name}</b> vs <b>${them.move.name}</b>.</span>`);
+  if (duelMode) logLine(`<span style="color:var(--accent)">⚔ DUEL — deterministic. Your friend running the same squads sees the same fight.</span>`);
   await wait(520);
 
   for (const ev of events){
+    if (ev.switchIsMe !== undefined){                 // a creature faints, next steps up
+      const panel = ev.switchIsMe ? A : B;
+      if (ev.switchIsMe) curA = ev.creature; else curB = ev.creature;
+      logLine(`<span style="color:${ev.pal[0]}">↪ <b>${ev.name}</b> steps up!</span>`);
+      panel.className = "fighter"; panel.innerHTML = fighterHtml(ev.creature, ev.creature.maxhp); paintSprites(panel);
+      Sfx.reveal(1);
+      await wait(reduce?150:640);
+      continue;
+    }
     const atk = ev.atkIsMe ? A : B, dfn = ev.atkIsMe ? B : A;
     if (!reduce){ atk.classList.add(ev.atkIsMe?"lunge-a":"lunge-b"); }
     Sfx.swing();
@@ -1460,7 +1535,7 @@ async function playFight(aCode, bCode, spectator){
       if (ev.heal>0) floatNum(atk, "+"+ev.heal, "heal");
     }
     if (ev.heal>0 && !ev.dodged) Sfx.heal();
-    setHp(A, me, ev.hpA); setHp(B, them, ev.hpB);
+    setHp(A, curA, ev.hpA); setHp(B, curB, ev.hpB);
 
     const an = ev.atkIsMe ? "<b>"+ev.atkName+"</b>" : ev.atkName;
     const hitTxt = ev.dodged ? "" : (ev.useSig ? " — "+ev.dmg : " for "+ev.dmg);
@@ -1468,12 +1543,11 @@ async function playFight(aCode, bCode, spectator){
       ? `⚡ <b>${ev.moveName}</b>! ${an} ${ev.bark}${hitTxt}${ev.note}.`
       : `${an} ${ev.generic}${hitTxt}${ev.note}.`);
 
-    if (ev.ko){
-      const koPanel = ev.koIsMe ? A : B;
-      if (!reduce) koPanel.classList.add("ko");
+    if (ev.aDown || ev.bDown){        // a faint — the ko stays unless a switch event re-renders the panel
+      if (!reduce){ if (ev.aDown) A.classList.add("ko"); if (ev.bDown) B.classList.add("ko"); }
       Sfx.ko();
-      await wait(reduce?120:520);
-      break;
+      await wait(reduce?120:540);
+      continue;
     }
     await wait(ev.useSig ? (reduce?110:820) : (reduce?80:500));
   }
@@ -1508,7 +1582,7 @@ document.getElementById("fight").addEventListener("click", ()=>{
 document.getElementById("shareResult").addEventListener("click", ()=>{
   if (!lastFightPair) return;
   const link = location.origin + location.pathname +
-    "?a=" + encodeURIComponent(lastFightPair.a) + "&b=" + encodeURIComponent(lastFightPair.b);
+    "?a=" + encodeURIComponent(encTeam(lastFightPair.a)) + "&b=" + encodeURIComponent(encTeam(lastFightPair.b));
   const note = document.getElementById("duelnote");
   const share = { title:"Pantry Raid replay", text:"Here's how our Pantry Raid fight went — watch the replay:", url:link };
   if (navigator.share){ if (note) note.innerHTML = "Replay shared — they'll see the exact same fight."; navigator.share(share).catch(()=>{}); return; }
@@ -1521,11 +1595,15 @@ document.getElementById("shareResult").addEventListener("click", ()=>{
 //    A charge meter fills each turn; the signature unlocks at full and hits
 //    harder. Defending braces for half damage and charges faster. Simple AI.
 async function playInteractive(){
-  // Your champion fights at its level; the foe is scaled near it so the
-  // fight stays a fight as you grow.
-  const me = leveled(champion);
-  const foeLvl = Math.min(MAXLVL, Math.max(1, lvlOf(champion) + (Math.floor(Math.random()*3) - 1)));
-  const them = withLevel(generate(foe.code), foeLvl);
+  // Your squad fights at level; the foe squad is scaled near it. Fallen
+  // creatures are replaced by the next in line (a relay).
+  const myT = mySquad();
+  const champLvl = lvlOf(myT[0]);
+  const flv = () => Math.min(MAXLVL, Math.max(1, champLvl + (Math.floor(Math.random()*3) - 1)));
+  const teamA = myT.map(leveled);
+  const teamB = (foeTeam.length ? foeTeam : [randomCode()]).map(c => withLevel(generate(c), flv()));
+  let iA = 0, iB = 0;
+  let me = teamA[0], them = teamB[0];
   playing = true;
   const fightBtn = document.getElementById("fight"), nf = document.getElementById("newfoe");
   const A = document.getElementById("fA"), B = document.getElementById("fB");
@@ -1538,20 +1616,36 @@ async function playInteractive(){
   const wait = ms => new Promise(r=>setTimeout(r, reduce ? Math.min(ms,60) : ms));
 
   let hpA = me.maxhp, hpB = them.maxhp, chgA = 0, chgB = 0, guardA = false, guardB = false;
-  let firstA = true, firstB = true;
+  let firstA = true, firstB = true, rounds = 0;
   const stA = { chill:0, expose:0 }, stB = { chill:0, expose:0 };
   const aisle = AISLES[Math.floor(Math.random()*AISLES.length)];   // solo: live-random battlefield
   arena.classList.add("live");   // reveals the charge meters
   A.className = "fighter"; B.className = "fighter";
   A.innerHTML = fighterHtml(me, hpA);   paintSprites(A); setCharge(A, 0);
   B.innerHTML = fighterHtml(them, hpB); paintSprites(B); setCharge(B, 0);
+  const squads = teamA.length>1 || teamB.length>1;
   const tm = typeMult(me.element, them.element);
   logLine(`${me.name} (${me.element}) faces <b>${them.name}</b> (${them.element}).`, true);
+  if (squads) logLine(`<span style="color:var(--accent)">Squad battle — ${teamA.length} vs ${teamB.length}. Fallen creatures get replaced.</span>`);
   logLine(`<span style="color:#7ec8ff">🛒 ${aisle.name}${aisle.blurb?" — "+aisle.blurb:""}.</span>`);
   logLine(`<span style="color:var(--muted)">You: ${PASSIVES[me.element]||"—"}. Them: ${PASSIVES[them.element]||"—"}.</span>`);
   logLine(tm>1 ? `<span style="color:var(--accent)">Your ${me.element} is strong here — press the advantage.</span>`
         : tm<1 ? `<span style="color:#ff9a3c">Your ${me.element} is weak into ${them.element} — consider defending.</span>`
         : `<span style="color:var(--muted)">Even matchup. Time your signature.</span>`);
+
+  // Bring in the next creature on a side; false if that team is wiped out.
+  function switchSide(isMe){
+    if (isMe){ iA++; if (iA >= teamA.length) return false;
+      me = teamA[iA]; hpA = me.maxhp; chgA = 0; guardA = false; firstA = true; stA.chill = 0; stA.expose = 0;
+      A.className = "fighter"; A.innerHTML = fighterHtml(me, hpA); paintSprites(A); setCharge(A, 0);
+      logLine(`<span style="color:var(--accent)">↪ <b>${me.name}</b> steps up! (${teamA.length-iA} left)</span>`);
+    } else { iB++; if (iB >= teamB.length) return false;
+      them = teamB[iB]; hpB = them.maxhp; chgB = 0; guardB = false; firstB = true; stB.chill = 0; stB.expose = 0;
+      B.className = "fighter"; B.innerHTML = fighterHtml(them, hpB); paintSprites(B); setCharge(B, 0);
+      logLine(`<span style="color:#ff9a3c">↪ <b>${them.name}</b> steps up. (${teamB.length-iB} left)</span>`);
+    }
+    Sfx.reveal(1); return true;
+  }
 
   function setChgUI(){ setCharge(A, chgA); setCharge(B, chgB); actSig.disabled = chgA < 100; }
   // Start of a fighter's turn: Regrowth heal (leaf). End: tick down its statuses.
@@ -1568,7 +1662,8 @@ async function playInteractive(){
     const atk = atkIsMe ? me : them, dfn = atkIsMe ? them : me;
     const atkPanel = atkIsMe ? A : B, dfnPanel = atkIsMe ? B : A;
     const ctx = { aisleBoost: aisle.boost, firstHit: atkIsMe ? firstA : firstB,
-                  atkStatus: atkIsMe ? stA : stB, dfnStatus: atkIsMe ? stB : stA };
+                  atkStatus: atkIsMe ? stA : stB, dfnStatus: atkIsMe ? stB : stA,
+                  fatigue: 1 + Math.max(0, rounds - 8)*0.11 };
     const r = resolveHit(atk, dfn, useSig ? atk.move.kind : "normal", Math.random, ctx);
     if (atkIsMe) firstA = false; else firstB = false;
     const guarded = atkIsMe ? guardB : guardA;
@@ -1635,41 +1730,50 @@ async function playInteractive(){
     return "attack";
   }
 
+  // Show a faint, then bring in the next creature. Returns true if a team is wiped.
+  async function checkFaint(){
+    let ended = false;
+    if (hpA <= 0){ if(!reduce) A.classList.add("ko"); Sfx.ko(); await wait(reduce?150:520); if(!switchSide(true)) ended = true; }
+    if (!ended && hpB <= 0){ if(!reduce) B.classList.add("ko"); Sfx.ko(); await wait(reduce?150:520); if(!switchSide(false)) ended = true; }
+    return ended;
+  }
+
   let turnMe = me.spd >= them.spd;
-  let guardRounds = 0;
-  while (hpA > 0 && hpB > 0 && guardRounds < 80){
-    guardRounds++;
+  let over = false;
+  while (!over && rounds < 220){
+    rounds++;
     if (turnMe){
-      turnStart(true); if (hpA <= 0) break;
+      turnStart(true);
       const act = await playerTurn();
       if (act === "defend"){ guardA = true; chgA = Math.min(100, chgA+55); Sfx.heal(); logLine(`<span style="color:#7ec8ff">${me.name} braces. 🛡 (+charge)</span>`); }
       else if (act === "signature"){ await strike(true, true); chgA = 0; }
       else if (act && act.indexOf("item:")===0){ await useItem(act.slice(5)); chgA = Math.min(100, chgA+18); }
       else { await strike(true, false); chgA = Math.min(100, chgA+34); }
-      turnEnd(true); setChgUI(); if (hpB <= 0) break; await wait(280);
+      turnEnd(true); setChgUI();
+      if (await checkFaint()){ over = true; break; }
+      await wait(200);
     } else {
-      turnStart(false); if (hpB <= 0) break;
+      turnStart(false);
       const act = aiChoose();
       if (act === "defend"){ guardB = true; chgB = Math.min(100, chgB+55); logLine(`${them.name} braces. 🛡`); }
       else if (act === "signature"){ await strike(false, true); chgB = 0; }
       else { await strike(false, false); chgB = Math.min(100, chgB+34); }
-      turnEnd(false); setChgUI(); if (hpA <= 0) break; await wait(reduce?150:650);
+      turnEnd(false); setChgUI();
+      if (await checkFaint()){ over = true; break; }
+      await wait(reduce?120:520);
     }
     turnMe = !turnMe;
   }
 
-  const won = hpA > 0 && hpA >= hpB;
-  const koPanel = won ? B : A;
-  if (!reduce) koPanel.classList.add("ko");
-  Sfx.ko();
   actions.hidden = true;
+  const won = iB >= teamB.length ? true : iA >= teamA.length ? false : hpA >= hpB;
   recordResult(won);
-  const res = addXP(champion, xpGain(won, them));
+  const res = addXP(champion, xpGain(won, teamB[Math.min(iB, teamB.length-1)]));
   renderRankBar();
   logLine(won
-    ? `<b>${me.name} wins!</b> <span style="color:var(--accent)">+${res.gain} XP${stats.streak>1?"  🔥"+stats.streak:""}</span>`
-    : `<b>${them.name}</b> wins. <span style="color:var(--muted)">+${res.gain} XP</span>`);
-  if (res.ups.length){ logLine(`<span style="color:var(--accent)">⭐ ${me.name} reached Lv ${res.after}!</span>`); await celebrateLevel(champion, res); const gi=[]; for(let i=0;i<res.ups.length;i++) gi.push(ITEM_ICON[grantItem()]); logLine(`<span style="color:var(--accent)">🎁 Found ${gi.join(" ")} — spend them mid-fight.</span>`); renderRankBar(); }
+    ? `<b>${squads?"Your squad wins!":me.name+" wins!"}</b> <span style="color:var(--accent)">+${res.gain} XP${stats.streak>1?"  🔥"+stats.streak:""}</span>`
+    : `<b>${squads?"Your squad fell.":them.name+" wins."}</b> <span style="color:var(--muted)">+${res.gain} XP</span>`);
+  if (res.ups.length){ logLine(`<span style="color:var(--accent)">⭐ ${generate(champion).name} reached Lv ${res.after}!</span>`); await celebrateLevel(champion, res); const gi=[]; for(let i=0;i<res.ups.length;i++) gi.push(ITEM_ICON[grantItem()]); logLine(`<span style="color:var(--accent)">🎁 Found ${gi.join(" ")} — spend them mid-fight.</span>`); renderRankBar(); }
   fightBtn.disabled = false; nf.disabled = false; fightBtn.textContent = "⚔ FIGHT";
   playing = false;
 }
@@ -1684,16 +1788,17 @@ renderTypeChart();
 (function(){
   const vs = new URLSearchParams(location.search).get("vs");
   if (!vs) return;
-  const parsed = parseCode(vs);
-  if (parsed.err) return;
-  foe = generate(parsed.code);
+  const team = decTeam(vs);
+  if (!team.length) return;
+  foeTeam = team; foe = generate(team[0]);
   duelMode = true;
+  const extra = team.length>1 ? " +"+(team.length-1)+" more" : "";
   const banner = document.getElementById("challengeBanner");
   if (banner){
     banner.hidden = false;
-    banner.innerHTML = '⚔ <b>'+foe.name+'</b> of the '+foe.factionName+' has been sent to challenge you! ' +
-      (champion ? 'Pick your champion in the Roster if you want, then hit <b>FIGHT</b>.'
-                : 'Scan a product on the SCAN tab to summon your champion, then come back and fight.');
+    banner.innerHTML = '⚔ <b>'+foe.name+'</b>'+extra+' has been sent to challenge you! ' +
+      (champion ? 'Pick your squad in the Roster if you want, then hit <b>FIGHT</b>.'
+                : 'Scan a product on the SCAN tab to summon a champion, then come back and fight.');
   }
   const ds = document.getElementById("duelState"); if (ds) ds.hidden = false;
   go("battle");
@@ -1706,9 +1811,9 @@ renderTypeChart();
   const params = new URLSearchParams(location.search);
   const a = params.get("a"), b = params.get("b");
   if (!a || !b) return;
-  const pa = parseCode(a), pb = parseCode(b);
-  if (pa.err || pb.err) return;
-  replayA = pa.code; replayB = pb.code;
+  const ta = decTeam(a), tb = decTeam(b);
+  if (!ta.length || !tb.length) return;
+  replayA = ta; replayB = tb;
   go("battle");
   setTimeout(()=>{ if (replayA && replayB && !playing) playFight(replayA, replayB, true); }, 500);
 })();
