@@ -5,6 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Pantry Raid — Barcode Battler</title>
 <meta name="robots" content="noindex, nofollow" />
+<meta name="description" content="Scan any grocery barcode and it becomes a monster. Collect them, level them up, and duel your friends. A toy by Miki Butler, game environment artist." />
+<!-- Rich previews so shared game + duel/replay links look clickable -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Miki Butler" />
+<meta property="og:title" content="Pantry Raid — turn your groceries into monsters" />
+<meta property="og:description" content="Scan any barcode → it becomes a creature. Collect, level up, and duel friends with a link. Built by environment artist Miki Butler." />
+<meta property="og:url" content="https://mikibutler.ca/barcodebattler/" />
+<meta property="og:image" content="https://mikibutler.ca/images/og-card.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Pantry Raid — turn your groceries into monsters" />
+<meta name="twitter:description" content="Scan a barcode → a creature. Collect, level up, duel friends. By artist Miki Butler." />
+<meta name="twitter:image" content="https://mikibutler.ca/images/og-card.jpg" />
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-D8B37WL1GZ');</script>
 <style>
   :root{
     --bg:#0b0b0b; --panel:#151515; --line:#2a2a2a;
@@ -251,7 +266,7 @@
 <body>
 
 <header>
-  <div class="brand">PANTRY RAID<small>BARCODE BATTLER PROTOTYPE</small></div>
+  <div class="brand">PANTRY RAID<small><a href="/work.html" target="_top" style="color:var(--muted);text-decoration:none">by Miki Butler · environment artist ↗</a></small></div>
   <nav>
     <button data-go="scan" aria-current="true">SCAN</button>
     <button data-go="roster">ROSTER</button>
@@ -1831,5 +1846,9 @@ renderTypeChart();
       sheet of optimal codes.
    ========================================================================== */
 </script>
+<footer style="text-align:center;padding:22px 16px 34px;border-top:1px solid var(--line);margin-top:40px;font-size:12px;color:var(--muted)">
+  A toy built by <a href="/work.html" target="_top" style="color:var(--accent);text-decoration:none;font-weight:700">Miki Butler</a>,
+  senior game <b>environment artist</b>. <a href="/work.html" target="_top" style="color:var(--accent)">See the real work ↗</a>
+</footer>
 </body>
 </html>
