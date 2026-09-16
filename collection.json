@@ -33,6 +33,15 @@
       "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy/master/Named_Boxarts/Super%20Mario%20Land%20%28World%29.png"
     },
     {
+      "title": "Wario Land: Super Mario Land 3",
+      "system": "Game Boy",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "wario-land-super-mario-land-3-game-boy",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy/master/Named_Boxarts/Wario%20Land%20-%20Super%20Mario%20Land%203%20%28World%29.png",
+      "notes": "Wario's debut — the third Super Mario Land game, on Game Boy."
+    },
+    {
       "title": "Home Alone",
       "system": "Genesis",
       "price": "$40",
