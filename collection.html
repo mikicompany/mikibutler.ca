@@ -293,12 +293,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     // nothing is found. An item can force a specific art with "image", or a
     // better search term with "search".
     var coverCache = {};
-    try { coverCache = JSON.parse(localStorage.getItem('mb-covers-v4') || '{}'); } catch (_) {}
-    function saveCovers(){ try { localStorage.setItem('mb-covers-v4', JSON.stringify(coverCache)); } catch (_) {} }
-    function coverKey(it){ return (it.search || it.title) + '|' + (it.system || ''); }
+    try { coverCache = JSON.parse(localStorage.getItem('mb-covers-v5') || '{}'); } catch (_) {}
+    function saveCovers(){ try { localStorage.setItem('mb-covers-v5', JSON.stringify(coverCache)); } catch (_) {} }
+    function coverKey(it){ return (it.wiki || it.search || it.title) + '|' + (it.system || ''); }
     function cachedCover(it){ return it.image || coverCache[coverKey(it)] || ''; }
-    // One Wikipedia search → top page's box art. Action API with origin=*
-    // returns proper anonymous-CORS headers (the REST endpoint does not).
+    // Wikipedia box art via the action API with origin=* (returns proper
+    // anonymous-CORS headers; the REST endpoint does not).
+    // Exact-title lookup: most reliable — pulls the named article's page image
+    // (the box art for game articles), no fuzzy matching that grabs the wrong game.
+    function wikiThumbByTitle(title){
+      var url = 'https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages' +
+                '&piprop=thumbnail&pithumbsize=400&redirects=1&titles=' +
+                encodeURIComponent(title) + '&origin=*';
+      return fetch(url).then(function(r){ return r.json(); }).then(function(d){
+        var src = '', pages = d && d.query && d.query.pages;
+        if (pages) { var k = Object.keys(pages)[0]; if (k && k !== '-1' && pages[k].thumbnail) src = pages[k].thumbnail.source; }
+        return src;
+      }).catch(function(){ return ''; });
+    }
+    // Fuzzy fallback: top search hit's page image.
     function wikiThumb(term){
       var url = 'https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages' +
                 '&piprop=thumbnail&pithumbsize=400&generator=search&gsrsearch=' +
@@ -312,13 +325,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     function fetchCover(it, cb){
       if (it.image) { cb(it.image); return; }
       var key = coverKey(it);
-      if (key in coverCache) { cb(coverCache[key]); return; }
+      if (coverCache[key]) { cb(coverCache[key]); return; } // only trust non-empty; let blanks retry
       var base = it.search || it.title;
       var sys = it.system ? ' ' + it.system : '';
-      // Try a few phrasings before giving up, so more titles resolve.
-      wikiThumb(base + ' video game').then(function(s){ return s || wikiThumb(base + sys + ' game'); })
+      // An exact article title (it.wiki) wins; otherwise try a few search phrasings.
+      var start = it.wiki ? wikiThumbByTitle(it.wiki) : Promise.resolve('');
+      start.then(function(s){ return s || wikiThumb(base + ' video game'); })
+        .then(function(s){ return s || wikiThumb(base + sys + ' game'); })
         .then(function(s){ return s || wikiThumb(base); })
-        .then(function(src){ coverCache[key] = src || ''; saveCovers(); cb(src || ''); });
+        .then(function(src){ if (src) { coverCache[key] = src; saveCovers(); } cb(src || ''); });
     }
     var coverIO = null;
     function observeCovers(){

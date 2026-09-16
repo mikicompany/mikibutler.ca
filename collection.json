@@ -157,11 +157,12 @@
     },
     {
       "title": "Crazy Taxi",
-      "system": "PS1",
+      "system": "PS2",
       "location": "AT NLG",
       "era": "retro",
       "slug": "crazy-taxi-ps1",
-      "search": "Crazy Taxi Dreamcast"
+      "search": "Crazy Taxi Dreamcast",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Crazy%20Taxi%20%28USA%29.png"
     },
     {
       "title": "Tintin",
@@ -177,7 +178,8 @@
       "system": "3DS",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "dark-moon-3ds"
+      "slug": "dark-moon-3ds",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_3DS/master/Named_Boxarts/Luigi%27s%20Mansion%20-%20Dark%20Moon%20%28USA%29%20%28En%2CFr%2CEs%29.png"
     },
     {
       "title": "The Simpsons: Hit & Run",
@@ -652,7 +654,8 @@
       "notes": "Remake of the classic action-adventure game.",
       "era": "modern",
       "slug": "shadow-of-the-colossus-ps4",
-      "search": "Shadow of the Colossus 2018 video game"
+      "search": "Shadow of the Colossus 2018 video game",
+      "wiki": "Shadow of the Colossus (2018 video game)"
     },
     {
       "title": "Days Gone",
@@ -733,7 +736,8 @@
       "notes": "Action RPG from the creators of Dark Souls.",
       "era": "modern",
       "slug": "bloodborne-ps4",
-      "search": "Bloodborne video game"
+      "search": "Bloodborne video game",
+      "wiki": "Bloodborne"
     },
     {
       "title": "The Last of Us Remastered",
@@ -778,7 +782,8 @@
       "notes": "Action-adventure game with puzzle elements.",
       "era": "modern",
       "slug": "the-last-guardian-ps4",
-      "search": "The Last Guardian video game"
+      "search": "The Last Guardian video game",
+      "wiki": "The Last Guardian"
     },
     {
       "title": "Tales of Arise",
@@ -832,7 +837,8 @@
       "notes": "Action-adventure game with creative painting mechanics.",
       "era": "modern",
       "slug": "concrete-genie-ps4",
-      "search": "Concrete Genie video game"
+      "search": "Concrete Genie video game",
+      "wiki": "Concrete Genie"
     },
     {
       "title": "Crash Bandicoot 4: It's About Time",
