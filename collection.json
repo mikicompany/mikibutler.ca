@@ -160,7 +160,8 @@
       "location": "AT NLG",
       "era": "retro",
       "slug": "tintin-3ds",
-      "search": "The Adventures of Tintin The Secret of the Unicorn"
+      "search": "The Adventures of Tintin The Secret of the Unicorn",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_3DS/master/Named_Boxarts/Adventures%20of%20Tintin%2C%20The%20-%20The%20Game%20%28USA%29%20%28En%2CFr%2CEs%2CPt%29.png"
     },
     {
       "title": "Luigi's Mansion: Dark Moon",
@@ -472,7 +473,8 @@
       "price": "$59.99",
       "notes": "Remastered version of the classic game.",
       "era": "modern",
-      "slug": "the-legend-of-zelda-twilight-princess-hd-switch"
+      "slug": "the-legend-of-zelda-twilight-princess-hd-switch",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Wii_U/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20Twilight%20Princess%20HD%20%28USA%29%20%28En%2CFr%2CEs%29%20%28Rev%202%29.png"
     },
     {
       "title": "Ni no Kuni: Wrath of the White Witch",
@@ -640,7 +642,8 @@
       "price": "$39.99",
       "notes": "Remake of the classic action-adventure game.",
       "era": "modern",
-      "slug": "shadow-of-the-colossus-ps4"
+      "slug": "shadow-of-the-colossus-ps4",
+      "search": "Shadow of the Colossus 2018 video game"
     },
     {
       "title": "Days Gone",
@@ -720,7 +723,8 @@
       "price": "$19.99",
       "notes": "Action RPG from the creators of Dark Souls.",
       "era": "modern",
-      "slug": "bloodborne-ps4"
+      "slug": "bloodborne-ps4",
+      "search": "Bloodborne video game"
     },
     {
       "title": "The Last of Us Remastered",
@@ -764,7 +768,8 @@
       "price": "$29.99",
       "notes": "Action-adventure game with puzzle elements.",
       "era": "modern",
-      "slug": "the-last-guardian-ps4"
+      "slug": "the-last-guardian-ps4",
+      "search": "The Last Guardian video game"
     },
     {
       "title": "Tales of Arise",
@@ -817,7 +822,8 @@
       "price": "$29.99",
       "notes": "Action-adventure game with creative painting mechanics.",
       "era": "modern",
-      "slug": "concrete-genie-ps4"
+      "slug": "concrete-genie-ps4",
+      "search": "Concrete Genie video game"
     },
     {
       "title": "Crash Bandicoot 4: It's About Time",
