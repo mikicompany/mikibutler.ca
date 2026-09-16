@@ -56,7 +56,8 @@
       "price": "$79",
       "location": "HOME",
       "era": "retro",
-      "slug": "simpsons-hit-n-run-ps2"
+      "slug": "simpsons-hit-n-run-ps2",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Simpsons%2C%20The%20-%20Hit%20_%20Run%20%28USA%29.png"
     },
     {
       "title": "Paperboy",
@@ -173,7 +174,8 @@
       "system": "PS2",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "hit-n-run-ps2"
+      "slug": "hit-n-run-ps2",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Simpsons%2C%20The%20-%20Hit%20_%20Run%20%28USA%29.png"
     },
     {
       "title": "DuckTales",
@@ -196,11 +198,12 @@
       "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/master/Named_Boxarts/Bubble%20Bobble%20%28USA%29.png"
     },
     {
-      "title": "Doraemon",
+      "title": "Doraemon: Taiketsu Himitsu Dougu!!",
       "system": "Game Boy",
       "location": "AT NLG",
       "era": "retro",
-      "slug": "doraemon-game-boy"
+      "slug": "doraemon-game-boy",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy/master/Named_Boxarts/Doraemon%20-%20Taiketsu%20HimitsuDougu%21%21%20%28Japan%29.png"
     },
     {
       "title": "Blacksad: Under the Skin",
