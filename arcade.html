@@ -1117,6 +1117,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <button type="button" id="lbLogo" class="on">Logo</button>
             <button type="button" id="lbLogoPos" title="Move logo to another corner">◱ corner</button>
             <button type="button" id="lbAccent" class="on">Accent bar</button>
+            <button type="button" id="lbFit" title="Show the whole image with no cropping (fits it inside the frame, letterboxed against the background)">▣ Fit (no crop)</button>
             <label class="tool-slider" title="Background behind gaps">BG <input type="color" id="lbBg" value="#0d0f12" /></label>
             <button type="button" id="lbSave">⬇ Save PNG</button>
           </div>
@@ -2908,7 +2909,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var lastDraw = null;       // geometry from the last redraw, for tap hit-testing
       var opts = { gap: 8, slant: 0, slantDir: 1, zoom: 1, layout: 'film', logoPos: 'br',
                    name: 'Miki Butler', title: 'Senior Environment Artist · Vancouver',
-                   text: true, logo: true, accent: true, bg: '#0d0f12' };
+                   text: true, logo: true, accent: true, bg: '#0d0f12', fit: 'cover' };
       var logoImg = new Image(); var logoReady = false;
       logoImg.onload = function () { logoReady = true; redraw(); };
       logoImg.src = 'images/logo512.jpg';
@@ -2954,8 +2955,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         var xs = poly.map(function (p) { return p[0]; });
         var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
         var w = maxX - minX, h = H;
-        var scale = Math.max(w / iw, h / ih) * zoom, dw = iw * scale, dh = ih * scale;
-        // Pan offset, clamped to the cover overflow so no background shows.
+        // 'cover' fills the tile (crops overflow); 'contain' fits the whole image
+        // inside it with no crop (background shows in the letterbox margins).
+        var fit = (opts.fit === 'contain') ? Math.min(w / iw, h / ih) : Math.max(w / iw, h / ih);
+        var scale = fit * zoom, dw = iw * scale, dh = ih * scale;
+        // Pan offset, clamped to the overflow so nothing shows outside the fit
+        // (in 'contain' at zoom 1 the overflow is 0, so the image stays centered).
         var ovX = Math.max(0, (dw - w) / 2), ovY = Math.max(0, (dh - h) / 2);
         var cx = Math.max(-ovX, Math.min(ovX, ox || 0));
         var cy = Math.max(-ovY, Math.min(ovY, oy || 0));
@@ -3270,6 +3275,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       titleIn.addEventListener('input', function () { opts.title = titleIn.value; redraw(); });
       var aBtn = document.getElementById('lbAccent');
       aBtn.addEventListener('click', function () { opts.accent = !opts.accent; aBtn.classList.toggle('on', opts.accent); redraw(); });
+      var fitBtn = document.getElementById('lbFit');
+      fitBtn.addEventListener('click', function () { opts.fit = (opts.fit === 'contain') ? 'cover' : 'contain'; fitBtn.classList.toggle('on', opts.fit === 'contain'); redraw(); });
       var bg = document.getElementById('lbBg');
       bg.addEventListener('input', function () { opts.bg = bg.value; redraw(); });
 
@@ -3310,6 +3317,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         tBtn.classList.toggle('on', opts.text);
         gBtn.classList.toggle('on', opts.logo);
         aBtn.classList.toggle('on', opts.accent);
+        fitBtn.classList.toggle('on', opts.fit === 'contain');
         Object.keys(layBtns).forEach(function (m) { layBtns[m].classList.toggle('on', m === opts.layout); });
         nameIn.value = opts.name || ''; titleIn.value = opts.title || '';
         bg.value = /^#/.test(opts.bg) ? opts.bg : '#0d0f12';
