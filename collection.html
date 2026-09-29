@@ -427,6 +427,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         '<div class="rc-controls"><input class="rc-search" id="rc-search" type="search" placeholder="Search title, system, notes…" value="'+esc(state.q)+'" /></div>'+
         eraChips +
         '<div class="rc-chips">'+chips+'</div>'+
+        (state.system!=='all' && items.length ? '<div class="rc-3dbar"><button class="rc-3d" id="rc-3d" type="button">🧊 View 3D shelf</button><span class="rc-3d-hint">'+esc(String(items.length))+' on the '+esc(state.system)+' shelf · drag to spin it around</span></div>' : '')+
         (cards ? '<div class="rc-grid">'+cards+'</div>' : '<div class="rc-empty">No items match.</div>');
 
       wrap.querySelectorAll('.rc-chip[data-era]').forEach(function(b){
@@ -435,6 +436,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       wrap.querySelectorAll('.rc-chip[data-sys]').forEach(function(b){
         b.addEventListener('click', function(){ state.system = b.dataset.sys; renderList(); });
       });
+      var d3 = document.getElementById('rc-3d');
+      if (d3) d3.addEventListener('click', function(){ if (window.openShelf3D) openShelf3D(); });
       // This filtered set is what the lightbox browses; cards open it in place.
       view = items;
       wrap.querySelectorAll('.rc-card').forEach(function(a, idx){
@@ -760,6 +763,173 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       window.addEventListener('gamepadconnected', function () { if (!raf) { raf = requestAnimationFrame(loop); } });
       raf = requestAnimationFrame(loop);
     })();
+  </script>
+
+  <style>
+    .rc-3dbar{display:flex;align-items:center;gap:12px;margin:0 0 16px;flex-wrap:wrap}
+    .rc-3d{font:700 13px/1 inherit;padding:9px 14px;border-radius:10px;border:1px solid var(--accent,#a0ff00);background:rgba(160,255,0,.08);color:var(--accent,#a0ff00);cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+    .rc-3d:hover{background:rgba(160,255,0,.18)}
+    .rc-3d-hint{font-size:12px;color:#8a9099}
+    .s3d{position:fixed;inset:0;z-index:120;background:#0b0d0f;display:none}
+    .s3d.on{display:block}
+    .s3d canvas{display:block;width:100%!important;height:100%!important;touch-action:none;cursor:grab}
+    .s3d canvas:active{cursor:grabbing}
+    .s3d-top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:12px;padding:14px 18px;padding-top:calc(14px + env(safe-area-inset-top,0px));z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.6),transparent)}
+    .s3d-title{font:800 16px/1 'Inter',system-ui,sans-serif;color:#fff}
+    .s3d-title span{color:var(--accent,#a0ff00);font-weight:700}
+    .s3d-top .sp{flex:1}
+    .s3d-close{pointer-events:auto;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;font-size:20px;cursor:pointer;display:grid;place-items:center}
+    .s3d-close:hover{border-color:var(--accent,#a0ff00);color:var(--accent,#a0ff00)}
+    .s3d-hint{position:absolute;bottom:16px;left:0;right:0;text-align:center;color:#aeb4bd;font-size:12px;pointer-events:none;text-shadow:0 1px 3px #000}
+    .s3d-load{position:absolute;inset:0;display:grid;place-items:center;color:#8a9099;font:600 14px 'Inter',sans-serif;z-index:1}
+  </style>
+  <script>
+  // ── 3D shelf: a rotatable Three.js shelf of the current console's box art ──
+  (function(){
+    var THREE_URL='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    var overlay, renderer, scene, camera, rafId, disposers=[], threeLoading=null;
+    var target, sph={r:9,theta:0.5,phi:1.2}, drag=null, autorot=true;
+
+    function loadThree(cb){
+      if(window.THREE){ cb(); return; }
+      if(threeLoading){ threeLoading.push(cb); return; }
+      threeLoading=[cb];
+      var s=document.createElement('script'); s.src=THREE_URL;
+      s.onload=function(){ var q=threeLoading; threeLoading=null; q.forEach(function(f){f();}); };
+      s.onerror=function(){ threeLoading=null; var l=document.getElementById('s3d-load'); if(l) l.textContent='Could not load the 3D library.'; };
+      document.head.appendChild(s);
+    }
+
+    function wrapText(x,text,cx,cy,maxW,lh){
+      var words=String(text).split(' '),line='',lines=[],i;
+      for(i=0;i<words.length;i++){ var t=line?line+' '+words[i]:words[i];
+        if(x.measureText(t).width>maxW && line){ lines.push(line); line=words[i]; } else line=t; }
+      if(line) lines.push(line); lines=lines.slice(0,5);
+      var y=cy-(lines.length-1)*lh/2; lines.forEach(function(l){ x.fillText(l,cx,y); y+=lh; });
+    }
+    function plateTexture(it){
+      var c=document.createElement('canvas'); c.width=256; c.height=312; var x=c.getContext('2d');
+      var h=hue(it.system);
+      x.fillStyle='hsl('+h+',34%,15%)'; x.fillRect(0,0,256,312);
+      x.fillStyle='hsl('+h+',46%,42%)'; x.fillRect(0,0,256,9);
+      x.fillStyle='#e9ecf0'; x.font='700 21px Inter, sans-serif'; x.textAlign='center';
+      wrapText(x, it.title||'', 128, 138, 218, 27);
+      x.fillStyle='hsl('+h+',28%,68%)'; x.font='600 13px Inter, sans-serif';
+      x.fillText(String(it.system||'').toUpperCase(), 128, 284);
+      return new THREE.CanvasTexture(c);
+    }
+
+    function open(){
+      if(typeof view==='undefined' || !view.length) return;
+      var its=view.slice();
+      ensureOverlay();
+      overlay.classList.add('on');
+      overlay.querySelector('.s3d-title').innerHTML=esc(state.system)+' <span>· 3D shelf</span>';
+      var l=document.getElementById('s3d-load'); if(l){ l.style.display='grid'; l.textContent='Loading shelf…'; }
+      document.body.style.overflow='hidden';
+      loadThree(function(){ if(overlay.classList.contains('on')) build(its); });
+    }
+    function ensureOverlay(){
+      if(overlay) return;
+      overlay=document.createElement('div'); overlay.className='s3d';
+      overlay.innerHTML='<div class="s3d-top"><div class="s3d-title"></div><div class="sp"></div>'+
+        '<button class="s3d-close" aria-label="Close 3D shelf">×</button></div>'+
+        '<div class="s3d-load" id="s3d-load">Loading shelf…</div>'+
+        '<div class="s3d-hint">drag to rotate · scroll to zoom · Esc to close</div>';
+      document.body.appendChild(overlay);
+      overlay.querySelector('.s3d-close').addEventListener('click', close);
+      document.addEventListener('keydown', function(e){ if(e.key==='Escape' && overlay.classList.contains('on')) close(); });
+    }
+
+    function build(items){
+      teardown();
+      var W=overlay.clientWidth, H=overlay.clientHeight;
+      renderer=new THREE.WebGLRenderer({antialias:true});
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2)); renderer.setSize(W,H);
+      if(THREE.sRGBEncoding) renderer.outputEncoding=THREE.sRGBEncoding;
+      overlay.appendChild(renderer.domElement);
+      scene=new THREE.Scene(); scene.background=new THREE.Color(0x0b0d0f);
+      scene.fog=new THREE.Fog(0x0b0d0f, 16, 34);
+      camera=new THREE.PerspectiveCamera(46, W/H, 0.1, 100);
+      scene.add(new THREE.AmbientLight(0xffffff,0.78));
+      var keyL=new THREE.DirectionalLight(0xffffff,0.85); keyL.position.set(5,9,7); scene.add(keyL);
+      var rim=new THREE.DirectionalLight(0xa0ff00,0.20); rim.position.set(-6,3,-5); scene.add(rim);
+
+      var n=items.length;
+      var perRow=Math.max(4, Math.min(n, Math.round(Math.sqrt(n*1.7))));
+      var rows=Math.ceil(n/perRow);
+      var CW=1.05, CH=1.3, CD=0.2, gap=0.34, shelfDrop=CH+0.55;
+      var maxRowW=perRow*CW+(perRow-1)*gap;
+      var caseGeo=new THREE.BoxGeometry(CW,CH,CD); disposers.push(caseGeo);
+      var plastic=new THREE.MeshStandardMaterial({color:0x1a1c21,roughness:0.8,metalness:0.08});
+      var group=new THREE.Group();
+
+      items.forEach(function(it,i){
+        var r=Math.floor(i/perRow), cIdx=i%perRow;
+        var inRow=Math.min(perRow, n-r*perRow);
+        var rowW=inRow*CW+(inRow-1)*gap;
+        var x=-rowW/2+CW/2+cIdx*(CW+gap);
+        var y=(rows-1)*shelfDrop/2 - r*shelfDrop;
+        var front=new THREE.MeshStandardMaterial({color:0x333539,roughness:0.55,metalness:0.05});
+        var mesh=new THREE.Mesh(caseGeo,[plastic,plastic,plastic,plastic,front,plastic]);
+        mesh.position.set(x,y,0); group.add(mesh);
+        applyCover(front, it, cachedCover(it));
+        if(cIdx===0){
+          var pg=new THREE.BoxGeometry(rowW+0.7,0.12,CD+0.55); disposers.push(pg);
+          var plank=new THREE.Mesh(pg,new THREE.MeshStandardMaterial({color:0x2a2016,roughness:0.95}));
+          plank.position.set(0, y-CH/2-0.09, 0); group.add(plank);
+        }
+      });
+      scene.add(group);
+      target=new THREE.Vector3(0,0,0);
+      sph.r=Math.max(6.5, maxRowW*0.92 + rows*0.6); sph.theta=0.55; sph.phi=1.2; autorot=true;
+      updateCam();
+      var l=document.getElementById('s3d-load'); if(l) l.style.display='none';
+      bindControls(); window.addEventListener('resize', onResize); loop();
+    }
+
+    function applyCover(mat, it, url){
+      function plate(){ var t=plateTexture(it); mat.map=t; mat.color.setHex(0xffffff); mat.needsUpdate=true; disposers.push(t); }
+      function set(u){ var ld=new THREE.TextureLoader(); ld.crossOrigin='anonymous';
+        ld.load(u, function(tex){ if(THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
+          mat.map=tex; mat.color.setHex(0xffffff); mat.needsUpdate=true; disposers.push(tex); },
+          undefined, function(){ if(!mat.map) plate(); }); }
+      if(url){ set(url); }
+      else { plate(); if(typeof fetchCover==='function') fetchCover(it, function(u){ if(u) set(u); }); }
+    }
+
+    // minimal orbit controls
+    function updateCam(){ if(!camera) return; var p=sph.phi,r=sph.r,t=sph.theta;
+      camera.position.set(target.x+r*Math.sin(p)*Math.sin(t), target.y+r*Math.cos(p), target.z+r*Math.sin(p)*Math.cos(t));
+      camera.lookAt(target); }
+    function bindControls(){
+      var el=renderer.domElement;
+      el.addEventListener('pointerdown', function(e){ drag={x:e.clientX,y:e.clientY}; autorot=false; try{el.setPointerCapture(e.pointerId);}catch(_){} });
+      el.addEventListener('pointermove', function(e){ if(!drag) return;
+        var dx=(e.clientX-drag.x)/200, dy=(e.clientY-drag.y)/220; drag.x=e.clientX; drag.y=e.clientY;
+        sph.theta-=dx; sph.phi=Math.max(0.35,Math.min(Math.PI-0.35, sph.phi-dy)); updateCam(); });
+      function end(){ drag=null; }
+      el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+      el.addEventListener('wheel', function(e){ e.preventDefault(); sph.r=Math.max(3.5,Math.min(42, sph.r*(1+(e.deltaY>0?0.12:-0.12)))); updateCam(); }, {passive:false});
+    }
+    function onResize(){ if(!renderer||!camera||!overlay) return; var W=overlay.clientWidth,H=overlay.clientHeight;
+      renderer.setSize(W,H); camera.aspect=W/H; camera.updateProjectionMatrix(); }
+    function loop(){ rafId=requestAnimationFrame(loop);
+      if(autorot){ sph.theta+=0.0024; updateCam(); }
+      if(renderer&&scene&&camera) renderer.render(scene,camera); }
+
+    function teardown(){
+      if(rafId) cancelAnimationFrame(rafId); rafId=null;
+      window.removeEventListener('resize', onResize);
+      if(scene){ scene.traverse(function(o){ if(o.material){ (Array.isArray(o.material)?o.material:[o.material]).forEach(function(m){ try{m.dispose();}catch(e){} }); } }); }
+      disposers.forEach(function(d){ try{ d.dispose(); }catch(e){} }); disposers=[];
+      if(renderer){ try{ renderer.domElement.remove(); renderer.dispose(); }catch(e){} }
+      renderer=scene=camera=null; drag=null;
+    }
+    function close(){ teardown(); if(overlay) overlay.classList.remove('on'); document.body.style.overflow=''; }
+
+    window.openShelf3D=open;
+  })();
   </script>
 </body>
 </html>
