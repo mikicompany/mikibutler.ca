@@ -42,6 +42,15 @@
       "notes": "Wario's debut — the third Super Mario Land game, on Game Boy."
     },
     {
+      "title": "Tiny Toon Adventures: Babs' Big Break",
+      "system": "Game Boy",
+      "location": "AT NLG",
+      "era": "retro",
+      "slug": "tiny-toon-adventures-babs-big-break-game-boy",
+      "image": "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy/master/Named_Boxarts/Tiny%20Toon%20Adventures%20-%20Babs%27%20Big%20Break%20%28USA%2C%20Europe%29.png",
+      "notes": "Konami's Tiny Toons platformer, on Game Boy."
+    },
+    {
       "title": "Home Alone",
       "system": "Genesis",
       "price": "$40",
