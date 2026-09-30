@@ -1162,6 +1162,102 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div class="rz" id="rz"><div class="tool-empty">Loading résumé…</div></div>
         </div>
 
+        <!-- Booking — a Calendly-style scheduler (localStorage preview) -->
+        <div class="tool-block" data-tool="booking">
+          <div class="tool-title">Booking 🗓️</div>
+          <p class="tool-desc">A Calendly-style availability picker — set your weekly hours, then pick an open slot and book it. <b>Preview:</b> bookings save in this browser only (the live, shareable version is a cloud page).</p>
+          <style>
+            .mkbk{--mk-line:#23272e;--mk-line2:#2f3540;--mk-panel:#14171b;--mk-card:#1b1f25;--mk-fg:#e7e9ee;--mk-mut:#8a9099;--mk-faint:#666d78;color:var(--mk-fg);max-width:640px;margin:0 auto}
+            .mkbk-host{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+            .mkbk-av{width:42px;height:42px;border-radius:50%;background:var(--accent);color:#0a0b08;display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
+            .mkbk-host h3{margin:0;font-size:17px;font-weight:800}
+            .mkbk-host .who{font-size:12px;color:var(--mk-mut);font-weight:600}
+            .mkbk-host .sp{flex:1}
+            .mkbk-gear{width:32px;height:32px;border-radius:8px;border:1px solid var(--mk-line);background:var(--mk-panel);color:var(--mk-fg);font-size:14px;cursor:pointer}
+            .mkbk-gear.on{border-color:var(--accent);color:var(--accent)}
+            .mkbk-facts{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--mk-mut);margin-bottom:14px}
+            .mkbk-facts b{color:var(--mk-fg)}
+            .mkbk-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+            @media (max-width:600px){.mkbk-grid{grid-template-columns:1fr}}
+            .mkbk-cal{background:var(--mk-panel);border:1px solid var(--mk-line);border-radius:12px;padding:14px}
+            .mkbk-calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+            .mkbk-calhead .m{font:700 13px/1 Inter,sans-serif}
+            .mkbk-nav button{width:28px;height:28px;border-radius:7px;border:1px solid var(--mk-line);background:var(--mk-card);color:var(--mk-fg);cursor:pointer}
+            .mkbk-nav button:disabled{opacity:.35;cursor:default}
+            .mkbk-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px}
+            .mkbk-dow span{text-align:center;font:700 9px/1 Inter,sans-serif;color:var(--mk-faint);text-transform:uppercase;letter-spacing:.3px}
+            .mkbk-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+            .mkbk-day{aspect-ratio:1;border:0;background:none;border-radius:8px;font:600 12px/1 'JetBrains Mono',monospace;color:var(--mk-fg);position:relative;cursor:pointer}
+            .mkbk-day.empty{visibility:hidden}
+            .mkbk-day.off{color:var(--mk-faint);opacity:.4;cursor:default}
+            .mkbk-day.avail{background:rgba(160,255,0,.1);color:var(--accent)}
+            .mkbk-day.avail:hover{background:var(--accent);color:#0a0b08}
+            .mkbk-day.sel{background:var(--accent)!important;color:#0a0b08!important}
+            .mkbk-day.today::after{content:"";position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:currentColor}
+            .mkbk-right{min-height:200px}
+            .mkbk-rh{font:700 13px/1.3 Inter,sans-serif;margin:0 0 2px}
+            .mkbk-rs{font-size:12px;color:var(--mk-mut);margin:0 0 12px}
+            .mkbk-slots{display:grid;grid-template-columns:1fr 1fr;gap:7px;max-height:280px;overflow-y:auto}
+            .mkbk-slot{padding:10px;border:1px solid var(--mk-line2);background:var(--mk-card);color:var(--mk-fg);border-radius:8px;font:600 13px/1 'JetBrains Mono',monospace;cursor:pointer}
+            .mkbk-slot:hover{border-color:var(--accent);color:var(--accent)}
+            .mkbk-pick,.mkbk-none{padding:34px 10px;text-align:center;color:var(--mk-mut);font-size:13px}
+            .mkbk-pick .big{font-size:26px;margin-bottom:6px}
+            .mkbk-back{background:none;border:0;color:var(--accent);font:700 12px/1 inherit;cursor:pointer;padding:0 0 10px}
+            .mkbk-when{background:var(--mk-card);border:1px solid var(--mk-line);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px;font-weight:600}
+            .mkbk-when .mono{color:var(--accent);font-family:'JetBrains Mono',monospace}
+            .mkbk-f{display:flex;flex-direction:column;gap:5px;margin-bottom:11px}
+            .mkbk-f label{font:700 10px/1 Inter,sans-serif;text-transform:uppercase;letter-spacing:.3px;color:var(--mk-mut)}
+            .mkbk-f input,.mkbk-f textarea,.mkbk-f select{font:14px/1.4 Inter,sans-serif;color:var(--mk-fg);background:#0d0f13;border:1px solid var(--mk-line);border-radius:8px;padding:9px 11px;width:100%}
+            .mkbk-f input:focus,.mkbk-f textarea:focus,.mkbk-f select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(160,255,0,.13)}
+            .mkbk-f.err input{border-color:#e0453d}
+            .mkbk-f textarea{resize:vertical;min-height:54px}
+            .mkbk-btn{width:100%;padding:11px;border:1px solid transparent;background:var(--accent);color:#0a0b08;font:800 14px/1 inherit;border-radius:9px;cursor:pointer}
+            .mkbk-btn:hover{filter:brightness(1.06)}
+            .mkbk-btn.ghost{background:none;border-color:var(--mk-line);color:var(--mk-fg);font-weight:700}
+            .mkbk-ok{text-align:center;padding:18px 6px}
+            .mkbk-tick{width:50px;height:50px;border-radius:50%;background:#3bd07e;color:#08210f;font-size:26px;display:grid;place-items:center;margin:0 auto 12px}
+            .mkbk-ok h4{font-size:18px;font-weight:800;margin:0 0 4px}
+            .mkbk-ok .det{background:var(--mk-card);border:1px solid var(--mk-line);border-radius:9px;padding:12px;margin:14px 0;text-align:left;font-size:13px}
+            .mkbk-ok .det b{display:block;font-size:10px;color:var(--mk-mut);text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
+            .mkbk-settings{background:var(--mk-panel);border:1px solid var(--mk-line);border-radius:12px;padding:16px;margin-bottom:14px}
+            .mkbk-settings h4{margin:0 0 12px;font:800 13px/1 Inter,sans-serif}
+            .mkbk-cfgrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+            .mkbk-cfgrow .mkbk-f{flex:1;min-width:120px;margin-bottom:0}
+            .mkbk-wk{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+            .mkbk-wkrow{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+            .mkbk-wkrow .nm{width:38px;font-weight:700;font-size:12px}
+            .mkbk-wkrow input[type=time]{font:13px 'JetBrains Mono',monospace;color:var(--mk-fg);background:#0d0f13;border:1px solid var(--mk-line);border-radius:7px;padding:5px 7px}
+            .mkbk-wkrow.off input[type=time]{opacity:.4;pointer-events:none}
+            .mkbk-wkrow .to{color:var(--mk-mut);font-size:12px}
+            .mkbk-ck{width:34px;height:20px;position:relative;flex:none}
+            .mkbk-ck input{position:absolute;inset:0;opacity:0;cursor:pointer;margin:0}
+            .mkbk-ck .tk{position:absolute;inset:0;background:var(--mk-line2);border-radius:999px}
+            .mkbk-ck .tk::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .15s}
+            .mkbk-ck input:checked+.tk{background:var(--accent)}
+            .mkbk-ck input:checked+.tk::after{transform:translateX(14px)}
+            .mkbk-note{font-size:11px;color:var(--mk-mut);text-align:center;margin-top:9px}
+          </style>
+          <div class="mkbk" id="mkbk">
+            <div class="mkbk-host">
+              <div class="mkbk-av">M</div>
+              <div><h3 id="mkbkTitle">Meet with Miki Butler</h3><div class="who" id="mkbkWho">Senior Environment Artist</div></div>
+              <div class="sp"></div>
+              <button class="mkbk-gear" id="mkbkGear" title="Edit availability">⚙</button>
+            </div>
+            <div class="mkbk-facts"><span>⏱ <b id="mkbkDur">30 min</b></span><span>🌐 <b id="mkbkTz">Vancouver</b></span></div>
+            <div id="mkbkSettings" hidden></div>
+            <div class="mkbk-grid">
+              <div class="mkbk-cal">
+                <div class="mkbk-calhead"><span class="m" id="mkbkCalM"></span>
+                  <span class="mkbk-nav"><button id="mkbkPrev" aria-label="Previous">‹</button><button id="mkbkNext" aria-label="Next">›</button></span></div>
+                <div class="mkbk-dow"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
+                <div class="mkbk-days" id="mkbkDays"></div>
+              </div>
+              <div class="mkbk-right" id="mkbkRight"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- IG Palette & Value Study (data-driven from ig-swatches.json) -->
         <div class="tool-block" data-tool="igstudy">
           <div class="tool-title">IG Study 🎞️</div>
@@ -3569,6 +3665,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         palette: 'Pull colors from any image',
         sketch: 'Draw with layers & palettes',
         banner: 'Build a LinkedIn banner',
+        booking: 'Pick a time — a scheduling demo',
         glitch: 'RGB glitch + video export',
         resume: 'Interactive résumé + PDF',
         igstudy: 'Colour DNA of @mikicompany',
@@ -3613,6 +3710,127 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           }
         });
       });
+    })();
+
+    // Booking — Calendly-style scheduler (localStorage preview build).
+    (function () {
+      var root = document.getElementById('mkbk'); if (!root) return;
+      var DAYN=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+      var DOW3=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      var MON=["January","February","March","April","May","June","July","August","September","October","November","December"];
+      var TZS=[["America/Vancouver","Vancouver (PT)"],["America/Los_Angeles","Los Angeles (PT)"],["America/Denver","Denver (MT)"],
+        ["America/Chicago","Chicago (CT)"],["America/New_York","New York (ET)"],["Europe/London","London"],["Europe/Berlin","Berlin"],
+        ["Asia/Tokyo","Tokyo"],["Australia/Sydney","Sydney"],["UTC","UTC"]];
+      var tzL={}; TZS.forEach(function(t){ tzL[t[0]]=t[1]; });
+      var CK='arcade.booking.cfg.v1', BK='arcade.booking.bookings.v1';
+      var DEF={title:"Meet with Miki Butler",host:"Senior Environment Artist",tz:"America/Vancouver",durationMin:30,bufferMin:0,horizonDays:30,
+        days:{"1":[{start:"09:00",end:"17:00"}],"2":[{start:"09:00",end:"17:00"}],"3":[{start:"09:00",end:"17:00"}],"4":[{start:"09:00",end:"17:00"}],"5":[{start:"09:00",end:"17:00"}]}};
+
+      var toMin=function(h){var p=h.split(":");return (+p[0])*60+(+p[1]);};
+      var toHM=function(m){var h=Math.floor(m/60),mm=m%60;return (h<10?"0":"")+h+":"+(mm<10?"0":"")+mm;};
+      var f12=function(h){var m=toMin(h),H=Math.floor(m/60),mm=m%60,ap=H<12?"AM":"PM",h12=(H%12)||12;return h12+":"+(mm<10?"0":"")+mm+" "+ap;};
+      var p2=function(n){return (n<10?"0":"")+n;};
+      var isoOf=function(d){return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());};
+      var pISO=function(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2],12,0,0);};
+      var esc=function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");};
+      function nowP(tz){ try{ var f=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"});
+        var m={}; f.formatToParts(new Date()).forEach(function(p){m[p.type]=p.value;}); return {date:m.year+"-"+m.month+"-"+m.day,min:(+m.hour)*60+(+m.minute)};
+        }catch(e){ var d=new Date(); return {date:isoOf(d),min:d.getHours()*60+d.getMinutes()}; } }
+
+      var cfg, bookings, booked={}, selDate=null, cur=null, bfStart=null, confirm=null;
+      try{ cfg=JSON.parse(localStorage.getItem(CK)||"null")||DEF; }catch(e){ cfg=DEF; }
+      try{ bookings=JSON.parse(localStorage.getItem(BK)||"[]")||[]; }catch(e){ bookings=[]; }
+      function reindex(){ booked={}; bookings.forEach(function(b){ booked[b.date+"_"+b.start]=b; }); }
+      function saveCfg(){ try{ localStorage.setItem(CK,JSON.stringify(cfg)); }catch(e){} }
+      function saveBk(){ try{ localStorage.setItem(BK,JSON.stringify(bookings)); }catch(e){} }
+      reindex();
+
+      var $=function(id){ return document.getElementById(id); };
+      function winFor(iso){ var wd=pISO(iso).getDay(); return (cfg.days&&cfg.days[wd])||[]; }
+      function slotsFor(iso){ var step=(cfg.durationMin||30)+(cfg.bufferMin||0),dur=cfg.durationMin||30,out=[];
+        winFor(iso).forEach(function(w){ for(var t=toMin(w.start);t+dur<=toMin(w.end);t+=step) out.push(toHM(t)); });
+        out=out.filter(function(h){ return !booked[iso+"_"+h]; });
+        var np=nowP(cfg.tz); if(iso===np.date) out=out.filter(function(h){ return toMin(h)>np.min+1; }); return out; }
+      function dstate(d){ var iso=isoOf(d),np=nowP(cfg.tz); if(iso<np.date) return "past";
+        var end=pISO(np.date); end.setDate(end.getDate()+(cfg.horizonDays||30)); if(iso>isoOf(end)) return "beyond";
+        return winFor(iso).length?"avail":"off"; }
+
+      function applyCfg(){ $("mkbkTitle").textContent=cfg.title||"Meeting"; $("mkbkWho").textContent=cfg.host||"";
+        $("mkbkDur").textContent=(cfg.durationMin||30)+" min"; $("mkbkTz").textContent=(tzL[cfg.tz]||cfg.tz);
+        if(!cur){ cur=pISO(nowP(cfg.tz).date); cur.setDate(1); } renderCal(); renderRight(); }
+
+      function renderCal(){ var y=cur.getFullYear(),m=cur.getMonth(); $("mkbkCalM").textContent=MON[m]+" "+y;
+        var first=new Date(y,m,1),sd=first.getDay(),dim=new Date(y,m+1,0).getDate(),np=nowP(cfg.tz),today=np.date;
+        var host=$("mkbkDays"); host.innerHTML=""; var i;
+        for(i=0;i<sd;i++){ var e=document.createElement("div"); e.className="mkbk-day empty"; host.appendChild(e); }
+        for(var dd=1;dd<=dim;dd++){ var d=new Date(y,m,dd),iso=isoOf(d),st=dstate(d),b=document.createElement("button"); b.className="mkbk-day"; b.textContent=dd;
+          if(iso===today) b.className+=" today";
+          if(st==="avail"){ b.className+=" avail"; if(iso===selDate) b.className+=" sel"; (function(iso){ b.onclick=function(){ selDate=iso; bfStart=null; confirm=null; renderCal(); renderRight(); }; })(iso); }
+          else { b.className+=" off"; b.disabled=true; } host.appendChild(b); }
+        var cms=new Date(pISO(today).getFullYear(),pISO(today).getMonth(),1),hz=pISO(today); hz.setDate(hz.getDate()+(cfg.horizonDays||30));
+        var pv=$("mkbkPrev"),nx=$("mkbkNext");
+        pv.disabled=(y<cms.getFullYear())||(y===cms.getFullYear()&&m<=cms.getMonth());
+        nx.disabled=(y>hz.getFullYear())||(y===hz.getFullYear()&&m>=hz.getMonth());
+        pv.onclick=function(){ if(pv.disabled) return; cur=new Date(y,m-1,1); renderCal(); };
+        nx.onclick=function(){ if(nx.disabled) return; cur=new Date(y,m+1,1); renderCal(); }; }
+
+      function renderRight(){ var rp=$("mkbkRight");
+        if(confirm){ var d=pISO(confirm.date); rp.innerHTML='<div class="mkbk-ok"><div class="mkbk-tick">✓</div><h4>You’re booked!</h4>'+
+          '<div class="det"><b>When</b>'+DAYN[d.getDay()]+', '+MON[d.getMonth()]+' '+d.getDate()+'<br><span style="font-family:\'JetBrains Mono\',monospace;color:var(--accent)">'+f12(confirm.start)+' – '+f12(confirm.end)+'</span> · '+esc(tzL[confirm.tz]||confirm.tz)+
+          '<div style="height:8px"></div><b>Who</b>'+esc(confirm.name)+' · '+esc(confirm.email)+(confirm.note?'<div style="height:8px"></div><b>Notes</b>'+esc(confirm.note):'')+'</div>'+
+          '<button class="mkbk-btn ghost" id="mkbkAgain">Book another</button></div>';
+          $("mkbkAgain").onclick=function(){ confirm=null; selDate=null; renderCal(); renderRight(); }; return; }
+        if(!selDate){ rp.innerHTML='<div class="mkbk-pick"><div class="big">🗓️</div>Pick a day to see open times.</div>'; return; }
+        var d2=pISO(selDate);
+        if(bfStart){ renderForm(rp,d2); return; }
+        var slots=slotsFor(selDate),head='<p class="mkbk-rh">'+DAYN[d2.getDay()]+'</p><p class="mkbk-rs">'+MON[d2.getMonth()]+' '+d2.getDate()+', '+d2.getFullYear()+' · '+(cfg.durationMin||30)+' min</p>';
+        if(!slots.length){ rp.innerHTML=head+'<div class="mkbk-none">No open times this day.</div>'; return; }
+        rp.innerHTML=head+'<div class="mkbk-slots" id="mkbkSlots"></div>'; var sl=$("mkbkSlots");
+        slots.forEach(function(h){ var b=document.createElement("button"); b.className="mkbk-slot"; b.textContent=f12(h);
+          b.onclick=function(){ bfStart=h; renderRight(); }; sl.appendChild(b); }); }
+
+      function renderForm(rp,d){ var hm=bfStart,endM=toMin(hm)+(cfg.durationMin||30);
+        rp.innerHTML='<button class="mkbk-back" id="mkbkBack">‹ Back to times</button>'+
+          '<div class="mkbk-when">'+DAYN[d.getDay()]+', '+MON[d.getMonth()]+' '+d.getDate()+'<br><span class="mono">'+f12(hm)+' – '+f12(toHM(endM))+'</span></div>'+
+          '<div class="mkbk-f" id="mkfN"><label>Your name</label><input id="mkbkN" placeholder="Jane Doe" autocomplete="name"></div>'+
+          '<div class="mkbk-f" id="mkfE"><label>Email</label><input id="mkbkE" type="email" placeholder="jane@studio.com" autocomplete="email"></div>'+
+          '<div class="mkbk-f"><label>What’s it about? (optional)</label><textarea id="mkbkNote" placeholder="Portfolio review, project chat…"></textarea></div>'+
+          '<button class="mkbk-btn" id="mkbkConfirm">Confirm booking</button><p class="mkbk-note">Preview — saved in this browser only.</p>';
+        $("mkbkBack").onclick=function(){ bfStart=null; renderRight(); };
+        $("mkbkConfirm").onclick=function(){ var name=$("mkbkN").value.trim(),email=$("mkbkE").value.trim(),note=$("mkbkNote").value.trim(),ok=true;
+          if(!name){ $("mkfN").className="mkbk-f err"; ok=false; }
+          if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $("mkfE").className="mkbk-f err"; ok=false; } if(!ok) return;
+          var b={date:selDate,start:hm,end:toHM(endM),tz:cfg.tz,durationMin:cfg.durationMin||30,name:name,email:email,note:note,createdAt:new Date().toISOString()};
+          bookings=bookings.filter(function(x){ return !(x.date===b.date&&x.start===b.start); }).concat(b); reindex(); saveBk();
+          confirm=b; bfStart=null; renderRight(); };
+        setTimeout(function(){ $("mkbkN").focus(); },30); }
+
+      // settings
+      var setOpen=false;
+      $("mkbkGear").onclick=function(){ setOpen=!setOpen; this.classList.toggle("on",setOpen); renderSettings(); };
+      function wkRow(wd){ var w=(cfg.days&&cfg.days[wd]&&cfg.days[wd][0])||null,on=!!w,s=w?w.start:"09:00",e=w?w.end:"17:00";
+        return '<div class="mkbk-wkrow'+(on?"":" off")+'" data-wd="'+wd+'"><label class="mkbk-ck"><input type="checkbox" '+(on?"checked":"")+'><span class="tk"></span></label>'+
+          '<span class="nm">'+DOW3[wd]+'</span><input type="time" class="ws" value="'+s+'"> <span class="to">to</span> <input type="time" class="we" value="'+e+'"></div>'; }
+      function renderSettings(){ var host=$("mkbkSettings"); host.hidden=!setOpen; if(!setOpen) return;
+        var dur=[15,20,30,45,60].map(function(v){ return '<option value="'+v+'"'+(v===(cfg.durationMin||30)?" selected":"")+'>'+v+' min</option>'; }).join("");
+        var tzo=TZS.map(function(t){ return '<option value="'+t[0]+'"'+(t[0]===cfg.tz?" selected":"")+'>'+t[1]+'</option>'; }).join("");
+        var wk=""; [1,2,3,4,5,6,0].forEach(function(wd){ wk+=wkRow(wd); });
+        host.innerHTML='<div class="mkbk-settings"><h4>⚙ Availability</h4>'+
+          '<div class="mkbk-cfgrow"><div class="mkbk-f"><label>Title</label><input id="mkoT" value="'+esc(cfg.title||"")+'"></div>'+
+            '<div class="mkbk-f"><label>Subtitle</label><input id="mkoH" value="'+esc(cfg.host||"")+'"></div></div>'+
+          '<div class="mkbk-cfgrow"><div class="mkbk-f"><label>Duration</label><select id="mkoD">'+dur+'</select></div>'+
+            '<div class="mkbk-f"><label>Time zone</label><select id="mkoZ">'+tzo+'</select></div>'+
+            '<div class="mkbk-f"><label>Days ahead</label><input id="mkoHz" type="number" min="1" max="120" value="'+(cfg.horizonDays||30)+'"></div></div>'+
+          '<label style="font:700 10px/1 Inter,sans-serif;text-transform:uppercase;letter-spacing:.3px;color:var(--mk-mut)">Weekly hours</label>'+
+          '<div class="mkbk-wk" id="mkoWk">'+wk+'</div><button class="mkbk-btn" id="mkoSave">Save availability</button></div>';
+        host.querySelectorAll(".mkbk-ck input").forEach(function(c){ c.onchange=function(){ c.closest(".mkbk-wkrow").classList.toggle("off",!c.checked); }; });
+        $("mkoSave").onclick=function(){ var nc={title:$("mkoT").value.trim()||"Meeting",host:$("mkoH").value.trim(),tz:$("mkoZ").value,
+            durationMin:+$("mkoD").value,bufferMin:cfg.bufferMin||0,horizonDays:Math.max(1,Math.min(120,+$("mkoHz").value||30)),days:{}};
+          host.querySelectorAll(".mkbk-wkrow").forEach(function(r){ if(r.querySelector("input[type=checkbox]").checked){ var s=r.querySelector(".ws").value||"09:00",e=r.querySelector(".we").value||"17:00"; if(toMin(e)>toMin(s)) nc.days[r.dataset.wd]=[{start:s,end:e}]; } });
+          cfg=nc; saveCfg(); var b=$("mkoSave"); b.textContent="Saved ✓"; setTimeout(function(){ b.textContent="Save availability"; },1300); applyCfg(); };
+      }
+
+      applyCfg();
     })();
 
     // Interactive résumé — rendered entirely from resume-data.json (one-file edits).
