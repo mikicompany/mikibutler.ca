@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <title>Email Signature — Miki Butler</title>
+  <style>
+    :root{ color-scheme:light; }
+    body{ margin:0; background:#f4f5f7; color:#1a1d24;
+      font-family:'Inter',-apple-system,Segoe UI,Arial,sans-serif; line-height:1.5; padding:28px 16px; }
+    .wrap{ max-width:620px; margin:0 auto; }
+    h1{ font-size:20px; margin:0 0 4px; }
+    .lede{ color:#5b6472; font-size:14px; margin:0 0 20px; }
+    .card{ background:#fff; border:1px solid #e2e5ea; border-radius:14px; padding:22px; box-shadow:0 1px 3px rgba(20,30,45,.06); }
+    .label{ font-size:11px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:#8a93a0; margin:0 0 10px; }
+    .sig-box{ border:1px dashed #cfd5de; border-radius:10px; padding:18px; background:#fff; }
+    .btnrow{ display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
+    .btn{ font:700 14px/1 inherit; padding:11px 16px; border-radius:9px; border:1px solid transparent;
+      background:#4f8a10; color:#fff; cursor:pointer; }
+    .btn:hover{ filter:brightness(1.07); }
+    .btn.ghost{ background:#fff; border-color:#cfd5de; color:#1a1d24; }
+    .ok{ color:#2f8a2f; font-weight:700; font-size:13px; align-self:center; }
+    ol{ margin:18px 0 0; padding-left:20px; color:#444b57; font-size:13.5px; }
+    ol li{ margin:5px 0; }
+    code{ background:#eef0f3; border:1px solid #e2e5ea; border-radius:5px; padding:1px 6px; font-size:12.5px; }
+    a{ color:#4f8a10; }
+    .alt{ margin-top:22px; font-size:13px; color:#5b6472; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Your email signature</h1>
+    <p class="lede">Preview below. Click <b>Copy signature</b>, then paste it into Gmail’s signature box — the logo and formatting come along.</p>
+
+    <div class="card">
+      <p class="label">Preview</p>
+      <div class="sig-box">
+        <!-- ===== SIGNATURE (this block is what gets copied) ===== -->
+        <table id="sig" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;color:#222222;">
+          <tr>
+            <td style="vertical-align:middle;padding-right:16px;">
+              <img src="https://mikibutler.ca/images/email-logo.png" width="82" height="82" alt="Miki Butler" style="display:block;border:0;outline:none;text-decoration:none;" />
+            </td>
+            <td style="vertical-align:middle;border-left:3px solid #8ac926;padding-left:16px;">
+              <div style="font-size:20px;font-weight:bold;color:#1a1a1a;line-height:1.2;">Miki Butler</div>
+              <div style="font-size:13px;color:#555555;margin-top:2px;">Senior Environment Artist</div>
+              <div style="font-size:12px;color:#777777;margin-top:7px;">Game Environment Art &nbsp;&middot;&nbsp; Props &nbsp;&middot;&nbsp; World Building</div>
+              <div style="font-size:12px;color:#777777;">Vancouver, Canada</div>
+              <div style="font-size:12px;margin-top:7px;">
+                <a href="https://mikibutler.ca" style="color:#4f8a10;text-decoration:none;font-weight:bold;">mikibutler.ca</a>
+                <span style="color:#c4c9d0;">&nbsp;|&nbsp;</span>
+                <a href="https://www.linkedin.com/in/mikicbutler" style="color:#4f8a10;text-decoration:none;font-weight:bold;">LinkedIn</a>
+              </div>
+            </td>
+          </tr>
+        </table>
+        <!-- ===== /SIGNATURE ===== -->
+      </div>
+
+      <div class="btnrow">
+        <button class="btn" id="copyBtn">Copy signature</button>
+        <button class="btn ghost" id="selBtn">Just select it</button>
+        <span class="ok" id="okMsg" hidden>Copied! Now paste into Gmail.</span>
+      </div>
+    </div>
+
+    <ol>
+      <li>In Gmail: <b>⚙ Settings → See all settings → General → Signature</b>.</li>
+      <li>Select your old (broken) signature in the box and delete it.</li>
+      <li>Click <b>Copy signature</b> above, then <b>paste</b> (<code>Ctrl/Cmd + V</code>) into the box.</li>
+      <li>Scroll down and <b>Save Changes</b>.</li>
+    </ol>
+
+    <p class="alt">Just need to fix the broken logo on your current signature instead? In the signature box, click the broken image (or the 🖼 insert-image button) → <b>Web address (URL)</b> → paste:<br>
+    <code>https://mikibutler.ca/images/email-logo.png</code></p>
+  </div>
+
+  <script>
+    var sig=document.getElementById('sig'), ok=document.getElementById('okMsg');
+    function selectSig(){ var r=document.createRange(); r.selectNode(sig); var s=window.getSelection(); s.removeAllRanges(); s.addRange(r); return r; }
+    document.getElementById('selBtn').onclick=function(){ selectSig(); ok.hidden=true; };
+    document.getElementById('copyBtn').onclick=function(){
+      selectSig();
+      var done=false;
+      try{ done=document.execCommand('copy'); }catch(e){}
+      if(done){ ok.hidden=false; } else { alert('Press Ctrl/Cmd + C to copy the selected signature.'); }
+    };
+  </script>
+</body>
+</html>
