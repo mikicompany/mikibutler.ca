@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+  <meta name="description" content="A UV toolkit for game artists by Miki Butler — texel-density calculator, OBJ mesh analyzer, padding guide and UV best-practices checklist." />
+<title>UV Toolkit — Miki Butler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#0f1316; --surface:#161b1f; --surface-2:#1c2228; --border:#28303a; --border-2:#39434f;
+    --fg:#e8edf1; --mut:#8d97a3; --faint:#5f6974;
+    --accent:#2dd4bf; --accent-2:#5ee7d6; --on-accent:#05211d; --accent-soft:#2dd4bf22;
+    --good:#4ade80; --warn:#fbbf24; --bad:#f87171;
+    --radius:14px; --shadow:0 2px 12px rgba(0,0,0,.4);
+  }
+  @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+    color-scheme:light;
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#f3f6f8; --border:#dde3e9; --border-2:#c6cfd8;
+    --fg:#141a1f; --mut:#5f6b78; --faint:#97a2ad;
+    --accent:#0d9488; --accent-2:#0f766e; --on-accent:#ffffff; --accent-soft:#0d948815;
+    --good:#16a34a; --warn:#d97706; --bad:#dc2626; --shadow:0 1px 3px rgba(20,30,45,.08);
+  }}
+  :root[data-theme="light"]{
+    color-scheme:light;
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#f3f6f8; --border:#dde3e9; --border-2:#c6cfd8;
+    --fg:#141a1f; --mut:#5f6b78; --faint:#97a2ad;
+    --accent:#0d9488; --accent-2:#0f766e; --on-accent:#ffffff; --accent-soft:#0d948815;
+    --good:#16a34a; --warn:#d97706; --bad:#dc2626; --shadow:0 1px 3px rgba(20,30,45,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:"Manrope",system-ui,-apple-system,sans-serif;
+    font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;padding:22px 16px;padding-block:22px}
+  .mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+  button{font-family:inherit;cursor:pointer;color:inherit}
+  .wrap{max-width:860px;margin:0 auto}
+
+  header.top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .glyph{width:38px;height:38px;border-radius:10px;flex:none;background:
+    conic-gradient(var(--accent) 0 25%, var(--surface-2) 0 50%, var(--accent) 0 75%, var(--surface-2) 0);
+    border:1px solid var(--border-2);box-shadow:var(--shadow)}
+  .top h1{font-size:19px;font-weight:800;margin:0;letter-spacing:-.3px}
+  .top .sub{font-size:12px;color:var(--mut);font-weight:600}
+  .top .sp{flex:1}
+  .icon-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:var(--surface);font-size:15px;display:grid;place-items:center}
+  .icon-btn:hover{border-color:var(--border-2)}
+
+  .tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:5px}
+  .tab{flex:1;padding:9px 10px;border-radius:8px;border:0;background:none;color:var(--mut);font-weight:700;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+  .tab.on{background:var(--accent-soft);color:var(--accent-2)}
+  .pane{display:none}
+  .pane.on{display:block}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:640px){.grid2{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+  .card h2{font-size:13px;font-weight:800;margin:0 0 14px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut)}
+
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  .field label{font-size:12px;font-weight:700;color:var(--fg)}
+  .field .hint{font-size:11px;color:var(--faint);font-weight:500}
+  .inrow{display:flex;gap:8px}
+  input,select{font:15px/1.4 inherit;color:var(--fg);background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:9px 11px;width:100%}
+  input.mono{font-family:"JetBrains Mono",monospace}
+  input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+  .unit{max-width:92px;flex:none}
+  .presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+  .pill{font:600 11.5px/1 inherit;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--mut)}
+  .pill:hover{border-color:var(--accent);color:var(--accent-2)}
+  .pill.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-2)}
+
+  .result{display:flex;flex-direction:column;gap:3px;margin-bottom:14px}
+  .result .big{font:800 30px/1 "JetBrains Mono",monospace;color:var(--accent-2)}
+  .result .big small{font-size:15px;color:var(--mut);font-weight:600}
+  .result .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--faint)}
+  .kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--border);font-size:13px}
+  .kv span{color:var(--mut)} .kv b{font-family:"JetBrains Mono",monospace;font-weight:600}
+  .verdict{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13px;padding:8px 12px;border-radius:9px;margin-top:4px}
+  .verdict i{width:9px;height:9px;border-radius:50%}
+  .v-good{background:color-mix(in srgb,var(--good) 15%,transparent);color:var(--good)} .v-good i{background:var(--good)}
+  .v-warn{background:color-mix(in srgb,var(--warn) 15%,transparent);color:var(--warn)} .v-warn i{background:var(--warn)}
+  .v-bad{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)} .v-bad i{background:var(--bad)}
+
+  .preview-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+  #checker{width:100%;max-width:320px;aspect-ratio:1;border-radius:10px;border:1px solid var(--border-2);display:block;background:#222}
+  .scalenote{font-size:12px;color:var(--mut);text-align:center}
+  .scalenote b{color:var(--fg);font-family:"JetBrains Mono",monospace}
+
+  table.pad{width:100%;border-collapse:collapse;font-size:13px}
+  table.pad th,table.pad td{padding:9px 8px;text-align:left;border-bottom:1px solid var(--border)}
+  table.pad th{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--faint);font-weight:700}
+  table.pad td{font-family:"JetBrains Mono",monospace}
+  table.pad tr.on td{background:var(--accent-soft);color:var(--accent-2)}
+  table.pad tr.on td:first-child{border-left:3px solid var(--accent)}
+  .padviz{margin-top:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  #padcanvas{width:150px;height:150px;border:1px solid var(--border-2);border-radius:8px;background:var(--surface-2)}
+
+  .check-item{display:flex;gap:11px;padding:12px 2px;border-bottom:1px solid var(--border);align-items:flex-start}
+  .check-item input{width:19px;height:19px;flex:none;margin-top:1px;accent-color:var(--accent)}
+  .check-item .t{font-size:13.5px}
+  .check-item .t b{display:block;font-weight:700;margin-bottom:1px}
+  .check-item .t span{color:var(--mut);font-size:12.5px}
+  .check-item.done .t b{text-decoration:line-through;color:var(--mut)}
+  .cat{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--accent-2);margin:16px 0 2px}
+  .cat:first-child{margin-top:0}
+  .progress{height:7px;background:var(--surface-2);border-radius:999px;overflow:hidden;margin-bottom:6px}
+  .progress i{display:block;height:100%;background:var(--accent);width:0}
+  .foot{text-align:center;font-size:11.5px;color:var(--faint);margin-top:18px}
+  .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:2px dashed var(--border-2);border-radius:12px;padding:24px 14px;text-align:center;color:var(--mut);cursor:pointer;background:var(--surface-2);margin-bottom:14px;font-size:12.5px}
+  .drop.hover{border-color:var(--accent);color:var(--accent-2);background:var(--accent-soft)}
+  .drop .big{font-size:26px}
+  .drop b{color:var(--fg)}
+  .drop .note{font-size:10.5px;color:var(--faint)}
+  #uvmap{width:100%;max-width:340px;aspect-ratio:1;border:1px solid var(--border-2);border-radius:10px;display:block;background:var(--surface-2);margin:0 auto}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:10px;font-size:11px;color:var(--mut)}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+  .meshwarn{font-size:12px;color:var(--warn);margin-top:10px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="glyph"></div>
+    <div><h1>UV Toolkit</h1><div class="sub">Texel density · padding · heuristics</div></div>
+    <div class="sp"></div>
+    <button class="icon-btn" id="theme" title="Toggle theme" aria-label="Toggle theme">◐</button>
+  </header>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="td">📐 Texel Density</button>
+    <button class="tab" data-tab="mesh">📦 Mesh</button>
+    <button class="tab" data-tab="pad">🧩 Padding</button>
+    <button class="tab" data-tab="chk">✅ Checklist</button>
+  </div>
+
+  <!-- TEXEL DENSITY -->
+  <section class="pane on" id="pane-td">
+    <div class="grid2">
+      <div class="card">
+        <h2>Inputs</h2>
+        <div class="field">
+          <label for="tRes">Texture resolution</label>
+          <select id="tRes" class="mono">
+            <option>128</option><option>256</option><option>512</option>
+            <option selected>1024</option><option>2048</option><option>4096</option><option>8192</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="tSize">Real-world size <span class="hint">(one edge of the surface this texture maps to)</span></label>
+          <div class="inrow">
+            <input id="tSize" class="mono" type="number" min="0" step="any" value="200" />
+            <select id="tUnit" class="unit"><option>mm</option><option selected>cm</option><option>m</option><option>in</option><option>ft</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="tCov">UV coverage <span class="hint">(% of 0–1 space this surface's island uses — 100% = fills the texture)</span></label>
+          <input id="tCov" class="mono" type="number" min="1" max="100" step="any" value="100" />
+        </div>
+        <div class="field">
+          <label>Target density <span class="hint">(your project standard, px/m)</span></label>
+          <input id="tTarget" class="mono" type="number" min="0" step="any" value="512" />
+          <div class="presets" id="tgtPresets">
+            <button class="pill" data-tgt="256">Mobile · 256</button>
+            <button class="pill on" data-tgt="512">Console/PC · 512</button>
+            <button class="pill" data-tgt="1024">Hi-detail · 1024</button>
+            <button class="pill" data-tgt="2048">Hero · 2048</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Result</h2>
+        <div class="result">
+          <div class="lbl">Texel density</div>
+          <div class="big"><span id="rTdM">—</span> <small>px/m</small></div>
+        </div>
+        <div class="kv"><span>In px/cm</span><b id="rTdCm">—</b></div>
+        <div class="kv"><span>Texel size</span><b id="rTexel">—</b></div>
+        <div class="kv"><span>A 1&nbsp;cm detail ≈</span><b id="rDetail">—</b></div>
+        <div class="kv"><span>For target, use</span><b id="rRec">—</b></div>
+        <div class="verdict v-good" id="rVerdict"><i></i><span>—</span></div>
+        <div class="preview-wrap" style="margin-top:16px">
+          <canvas id="checker" width="512" height="512"></canvas>
+          <div class="scalenote" id="scaleNote">—</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PADDING -->
+  <section class="pane" id="pane-pad">
+    <div class="card">
+      <h2>Padding & mip guide</h2>
+      <div class="field" style="max-width:260px">
+        <label for="pRes">Texture resolution</label>
+        <select id="pRes" class="mono">
+          <option>128</option><option>256</option><option>512</option>
+          <option selected>1024</option><option>2048</option><option>4096</option><option>8192</option>
+        </select>
+      </div>
+      <table class="pad" id="padTable">
+        <thead><tr><th>Map size</th><th>Edge bleed</th><th>Island gap</th><th>Mip levels</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="padviz">
+        <canvas id="padcanvas" width="300" height="300"></canvas>
+        <div style="flex:1;min-width:180px;font-size:13px;color:var(--mut);line-height:1.6">
+          <p style="margin:0 0 8px"><b style="color:var(--fg)">Edge bleed</b> — paint/bake a few px <i>past</i> every UV edge so lower mips don't suck in the background and show seams.</p>
+          <p style="margin:0"><b style="color:var(--fg)">Island gap</b> — keep this much empty space <i>between</i> islands so neighbors don't bleed into each other as the texture downsamples.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHECKLIST -->
+  <section class="pane" id="pane-chk">
+    <div class="card">
+      <h2>UV heuristics checklist</h2>
+      <div class="progress"><i id="chkBar"></i></div>
+      <div id="chkList"></div>
+      <div style="margin-top:12px"><button class="pill" id="chkReset">Reset checklist</button></div>
+    </div>
+  </section>
+
+  <!-- MESH -->
+  <section class="pane" id="pane-mesh">
+    <div class="grid2">
+      <div class="card">
+        <h2>Load a model</h2>
+        <label class="drop" id="drop">
+          <span class="big">📦</span>
+          <span class="dropmsg"><b>Drop an .obj</b> or tap to choose</span>
+          <span class="note">reads your UVs locally — nothing is uploaded</span>
+          <input type="file" id="objFile" accept=".obj,.OBJ" hidden />
+        </label>
+        <div class="inrow" style="gap:10px">
+          <div class="field" style="flex:1;margin-bottom:12px"><label for="mUnit">Model units <span class="hint">(1 file unit =)</span></label><select id="mUnit"><option>mm</option><option>cm</option><option selected>m</option><option>in</option><option>ft</option></select></div>
+          <div class="field" style="flex:1;margin-bottom:12px"><label for="mRes">Texture</label><select id="mRes" class="mono"><option>256</option><option>512</option><option selected>1024</option><option>2048</option><option>4096</option><option>8192</option></select></div>
+        </div>
+        <div class="field"><label for="mTarget">Target density (px/m)</label><input id="mTarget" class="mono" type="number" value="512" /></div>
+        <div id="mStats"><p style="color:var(--faint);font-size:13px;margin:4px 0 0">Load a model to read its real texel density, UV coverage and consistency.</p></div>
+      </div>
+      <div class="card">
+        <h2>UV density map</h2>
+        <canvas id="uvmap" width="512" height="512"></canvas>
+        <div class="legend">
+          <span><i style="background:#22c55e"></i>even density</span>
+          <span><i style="background:#f59e0b"></i>off</span>
+          <span><i style="background:#ef4444"></i>very off — rescaled / stretched</span>
+        </div>
+        <div class="meshwarn" id="meshWarn" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">Heuristics are rules of thumb — your project's standards always win.</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var LS="uvkit.v1";
+  var state={ res:1024, size:200, unit:"cm", cov:100, target:512, pres:1024, checks:{} };
+  try{ var s=JSON.parse(localStorage.getItem(LS)); if(s) state=Object.assign(state,s); }catch(e){}
+  function save(){ try{ localStorage.setItem(LS, JSON.stringify(state)); }catch(e){} }
+  var $=function(id){ return document.getElementById(id); };
+  var U={ mm:0.001, cm:0.01, m:1, "in":0.0254, ft:0.3048 };
+
+  // theme
+  try{ var th=localStorage.getItem("uvkit.theme"); if(th) document.documentElement.setAttribute("data-theme",th); }catch(e){}
+  $("theme").onclick=function(){ var c=document.documentElement.getAttribute("data-theme");
+    var dark=c?c==="dark":matchMedia("(prefers-color-scheme:dark)").matches; var n=dark?"light":"dark";
+    document.documentElement.setAttribute("data-theme",n); try{ localStorage.setItem("uvkit.theme",n); }catch(e){} draw(); };
+
+  // tabs
+  document.querySelectorAll(".tab").forEach(function(t){ t.onclick=function(){
+    document.querySelectorAll(".tab").forEach(function(x){ x.classList.toggle("on",x===t); });
+    document.querySelectorAll(".pane").forEach(function(p){ p.classList.toggle("on", p.id==="pane-"+t.dataset.tab); });
+  }; });
+
+  // ---------- texel density ----------
+  var tRes=$("tRes"), tSize=$("tSize"), tUnit=$("tUnit"), tCov=$("tCov"), tTarget=$("tTarget");
+  tRes.value=state.res; tSize.value=state.size; tUnit.value=state.unit; tCov.value=state.cov; tTarget.value=state.target;
+  syncPresets();
+  [tRes,tSize,tUnit,tCov,tTarget].forEach(function(el){ el.addEventListener("input", function(){
+    state.res=+tRes.value; state.size=+tSize.value; state.unit=tUnit.value; state.cov=+tCov.value; state.target=+tTarget.value;
+    syncPresets(); save(); computeTD(); }); });
+  $("tgtPresets").querySelectorAll(".pill").forEach(function(p){ p.onclick=function(){ tTarget.value=p.dataset.tgt; state.target=+p.dataset.tgt; state.pres=+p.dataset.tgt; syncPresets(); save(); computeTD(); }; });
+  function syncPresets(){ $("tgtPresets").querySelectorAll(".pill").forEach(function(p){ p.classList.toggle("on", +p.dataset.tgt===+tTarget.value); }); }
+
+  var SIZES=[256,512,1024,2048,4096,8192];
+  function fmt(n){ if(!isFinite(n)) return "—"; if(n>=100) return Math.round(n).toLocaleString(); if(n>=10) return n.toFixed(1); return n.toFixed(2); }
+  function computeTD(){
+    var R=+tRes.value, Sm=(+tSize.value)*(U[tUnit.value]||1), c=Math.max(0,Math.min(1,(+tCov.value||0)/100)), tgt=+tTarget.value;
+    var tdM = (Sm>0&&c>0) ? R*Math.sqrt(c)/Sm : 0;
+    var tdCm = tdM/100, texelMM = tdM>0 ? 1000/tdM : 0;
+    $("rTdM").textContent = fmt(tdM);
+    $("rTdCm").textContent = fmt(tdCm)+" px/cm";
+    $("rTexel").textContent = texelMM>0 ? (texelMM<1?(texelMM*1000).toFixed(0)+" µm":fmt(texelMM)+" mm")+" / texel" : "—";
+    $("rDetail").textContent = tdCm>0 ? fmt(tdCm)+" texels" : "—";
+    // recommended size for target
+    var need = (tgt>0&&Sm>0) ? tgt*Sm/Math.sqrt(c) : 0;
+    var rec = SIZES.find(function(s){ return s>=need-0.5; }) || ">8192";
+    $("rRec").textContent = need>0 ? (typeof rec==="number"? rec+" px":rec) + (typeof rec==="number"&&rec!==R?"":"") : "—";
+    // verdict vs target
+    var v=$("rVerdict"); var ratio = tgt>0 ? tdM/tgt : 1;
+    v.className="verdict "+(ratio>=0.9&&ratio<=1.6?"v-good":(ratio<0.9?"v-bad":"v-warn"));
+    v.querySelector("span").textContent = tgt<=0 ? "Set a target to compare"
+      : ratio<0.9 ? "Below target — texture looks soft ("+Math.round(ratio*100)+"% of target)"
+      : ratio>1.6 ? "Well over target — you could drop to "+ (SIZES.find(function(s){return s>=tgt*Sm/Math.sqrt(c)-0.5;})||R) +" px"
+      : "On target ✓ ("+Math.round(ratio*100)+"% of target)";
+    draw(Sm);
+  }
+  function cssv(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  function draw(Sm){
+    if(Sm==null){ Sm=(+tSize.value)*(U[tUnit.value]||1); }
+    var cv=$("checker"), x=cv.getContext("2d"), W=cv.width;
+    // UV checker (illustrative): 8x8, two greys + orientation corners
+    var N=8, cell=W/N, light=cssv("--surface-2")||"#1c2228", dark=cssv("--border")||"#28303a";
+    for(var i=0;i<N;i++) for(var j=0;j<N;j++){ x.fillStyle=((i+j)%2)?light:dark; x.fillRect(i*cell,j*cell,cell+1,cell+1); }
+    // grid lines
+    x.strokeStyle="rgba(128,140,155,.25)"; x.lineWidth=1;
+    for(var k=0;k<=N;k++){ x.beginPath(); x.moveTo(k*cell,0); x.lineTo(k*cell,W); x.stroke(); x.beginPath(); x.moveTo(0,k*cell); x.lineTo(W,k*cell); x.stroke(); }
+    // orientation corners
+    x.fillStyle="#f87171"; x.fillRect(2,2,cell-4,cell-4);
+    x.fillStyle="#4ade80"; x.fillRect(W-cell+2,2,cell-4,cell-4);
+    x.fillStyle=cssv("--accent")||"#2dd4bf"; x.fillRect(2,W-cell+2,cell-4,cell-4);
+    // scale bar: canvas width = Sm meters. pick a nice world unit for the bar.
+    if(Sm>0){
+      var pxPerM=W/Sm; // on-canvas px per real meter
+      var targets=[0.001,0.01,0.05,0.1,0.25,0.5,1,2,5]; var barM=0.1, barPx;
+      for(var t=0;t<targets.length;t++){ if(targets[t]*pxPerM<=W*0.42){ barM=targets[t]; } }
+      barPx=barM*pxPerM;
+      var y=W-18, x0=12;
+      x.strokeStyle=cssv("--fg")||"#e8edf1"; x.fillStyle=x.strokeStyle; x.lineWidth=3;
+      x.beginPath(); x.moveTo(x0,y); x.lineTo(x0+barPx,y); x.stroke();
+      x.beginPath(); x.moveTo(x0,y-5); x.lineTo(x0,y+5); x.moveTo(x0+barPx,y-5); x.lineTo(x0+barPx,y+5); x.stroke();
+      x.font="bold 20px 'JetBrains Mono',monospace"; x.textBaseline="bottom";
+      var lbl = barM>=1 ? barM+" m" : barM>=0.01 ? (barM*100)+" cm" : (barM*1000)+" mm";
+      x.fillText(lbl, x0, y-8);
+    }
+    var note=$("scaleNote");
+    note.innerHTML = Sm>0 ? "This checker = your surface mapped to the texture. The whole tile covers <b>"+fmtSize(Sm)+"</b> of real surface." : "Enter a real-world size.";
+  }
+  function fmtSize(m){ if(m>=1) return fmt(m)+" m"; if(m>=0.01) return fmt(m*100)+" cm"; return fmt(m*1000)+" mm"; }
+
+  // ---------- padding ----------
+  var pRes=$("pRes"); pRes.value=state.res;
+  function padFor(sz){ var edge=Math.max(2,Math.round(sz/64)); return { edge:edge, gap:edge*2, mips:Math.log2(sz)+1 }; }
+  function renderPad(){
+    var tb=$("padTable").querySelector("tbody"); tb.innerHTML="";
+    [128,256,512,1024,2048,4096,8192].forEach(function(sz){ var p=padFor(sz); var tr=document.createElement("tr");
+      if(sz===+pRes.value) tr.className="on";
+      tr.innerHTML="<td>"+sz+" px</td><td>"+p.edge+" px</td><td>"+p.gap+" px</td><td>"+p.mips+"</td>"; tb.appendChild(tr); });
+    drawPad();
+  }
+  function drawPad(){ var cv=$("padcanvas"), x=cv.getContext("2d"), W=cv.width; var p=padFor(+pRes.value);
+    x.clearRect(0,0,W,W); var scale=W/300;
+    // tile border (0-1 space)
+    x.fillStyle=cssv("--surface")||"#161b1f"; x.fillRect(0,0,W,W);
+    // two islands with gap + bleed shown
+    var pad=Math.max(6, p.edge/ (+pRes.value) * W * 6); // exaggerate for visibility
+    function island(ix,iy,iw,ih,col){
+      x.fillStyle=col; x.fillRect(ix,iy,iw,ih); // bleed halo
+      x.fillStyle=cssv("--surface-2")||"#1c2228"; x.fillRect(ix+pad,iy+pad,iw-2*pad,ih-2*pad);
+      x.strokeStyle=cssv("--accent")||"#2dd4bf"; x.lineWidth=2; x.strokeRect(ix+pad,iy+pad,iw-2*pad,ih-2*pad);
+    }
+    var halo="rgba(45,212,191,.28)";
+    island(22,22,110,110,halo);
+    island(168,22,110,170,halo);
+    island(22,168,110,110,halo);
+    x.fillStyle=cssv("--mut")||"#8d97a3"; x.font="11px 'JetBrains Mono',monospace"; x.textBaseline="top";
+    x.fillText("bleed + gap", 150, 250);
+  }
+  pRes.addEventListener("input", function(){ state.res=+pRes.value; tRes.value=pRes.value; save(); renderPad(); computeTD(); });
+
+  // ---------- checklist ----------
+  var CHECKS=[
+    ["Seams","Hide seams on hard edges, inside corners, or where they'll be occluded."],
+    ["Seams","Keep a small gutter from the 0–1 border; don't let islands touch the edge."],
+    ["Density","Keep texel density consistent across the asset — and matching your project standard."],
+    ["Density","Match density between modular pieces that sit next to each other."],
+    ["Density","Give unique / focal areas (faces, hero details) more UV space."],
+    ["Layout","Straighten UVs for trims, tiling strips and hard-surface pieces."],
+    ["Layout","Orient islands to the U/V axes — helps tiling, bakes and anisotropic filtering."],
+    ["Layout","Pack into 0–1 (or UDIM tiles) with even spacing; maximize used space."],
+    ["Layout","Mirror / overlap symmetrical or repeated parts to save space (watch normal-map handedness)."],
+    ["Safety","Leave edge bleed + island gap appropriate to the map size (see Padding tab)."],
+    ["Safety","Check with a UV checker map to catch stretching and density mismatches before texturing."],
+    ["Safety","For tiling textures, scale UVs to the tile's real-world size so it repeats correctly."]
+  ];
+  function renderChecks(){
+    var host=$("chkList"); host.innerHTML=""; var cat="";
+    CHECKS.forEach(function(c,i){ if(c[0]!==cat){ cat=c[0]; var h=document.createElement("div"); h.className="cat"; h.textContent=cat; host.appendChild(h); }
+      var id="c"+i, on=!!state.checks[id];
+      var row=document.createElement("label"); row.className="check-item"+(on?" done":"");
+      row.innerHTML='<input type="checkbox" '+(on?"checked":"")+'><div class="t"><b></b></div>';
+      row.querySelector("b").textContent=c[1];
+      row.querySelector("input").onchange=function(){ state.checks[id]=this.checked; row.classList.toggle("done",this.checked); save(); bar(); };
+      host.appendChild(row); });
+    bar();
+  }
+  function bar(){ var n=CHECKS.length, d=0; for(var i=0;i<n;i++) if(state.checks["c"+i]) d++; $("chkBar").style.width=(d/n*100)+"%"; }
+  $("chkReset").onclick=function(){ state.checks={}; save(); renderChecks(); };
+
+  // ---------- mesh (OBJ) ----------
+  var meshData=null;
+  function triArea3(a,b,c){ var ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
+    var cx=uy*vz-uz*vy,cy=uz*vx-ux*vz,cz=ux*vy-uy*vx; return 0.5*Math.sqrt(cx*cx+cy*cy+cz*cz); }
+  function triArea2(a,b,c){ return Math.abs((b[0]-a[0])*(c[1]-a[1])-(c[0]-a[0])*(b[1]-a[1]))/2; }
+  function oidx(i,len){ return i<0? len+i : i-1; }
+  function parseOBJ(text){
+    var vs=[],vts=[],tris=[],lines=text.split(/\r?\n/);
+    for(var i=0;i<lines.length;i++){ var ln=lines[i]; if(!ln||ln.charCodeAt(0)===35) continue;
+      if(ln[0]==="v"&&ln[1]===" "){ var a=ln.trim().split(/\s+/); vs.push([+a[1],+a[2],+a[3]]); }
+      else if(ln[0]==="v"&&ln[1]==="t"){ var b=ln.trim().split(/\s+/); vts.push([+b[1],+b[2]]); }
+      else if(ln[0]==="f"&&ln[1]===" "){ var tk=ln.trim().split(/\s+/).slice(1);
+        var fc=tk.map(function(t){ var p=t.split("/"); return { v:oidx(parseInt(p[0],10),vs.length), vt:(p[1]&&p[1]!=="")?oidx(parseInt(p[1],10),vts.length):-1 }; });
+        for(var k=1;k<fc.length-1;k++) tris.push([fc[0],fc[k],fc[k+1]]); } }
+    return { vs:vs, vts:vts, tris:tris };
+  }
+  function analyzeMesh(){
+    if(!meshData) return;
+    var R=+$("mRes").value, unitM=U[$("mUnit").value]||1, tgt=+$("mTarget").value;
+    var vs=meshData.vs, vts=meshData.vts, tris=meshData.tris, totalW=0, totalUV=0, per=[], noUV=0;
+    tris.forEach(function(tr){
+      var p0=vs[tr[0].v],p1=vs[tr[1].v],p2=vs[tr[2].v]; if(!p0||!p1||!p2) return;
+      var wA=triArea3(p0,p1,p2)*unitM*unitM; totalW+=wA;
+      if(tr[0].vt<0||!vts[tr[0].vt]||!vts[tr[1].vt]||!vts[tr[2].vt]){ noUV++; per.push({wA:wA,td:0,uv:null}); return; }
+      var t0=vts[tr[0].vt],t1=vts[tr[1].vt],t2=vts[tr[2].vt], uvA=triArea2(t0,t1,t2); totalUV+=uvA;
+      var td=(wA>0&&uvA>0)?R*Math.sqrt(uvA/wA):0; per.push({wA:wA,td:td,uv:[t0,t1,t2]});
+    });
+    var aggTD=(totalW>0&&totalUV>0)?R*Math.sqrt(totalUV/totalW):0, consist=0;
+    per.forEach(function(t){ if(t.td>0 && t.td>=aggTD*0.8 && t.td<=aggTD*1.25) consist+=t.wA; });
+    var consistPct=totalW>0?consist/totalW*100:0, coverage=totalUV*100;
+    var recR=aggTD>0?R*tgt/aggTD:0, rec=SIZES.find(function(s){return s>=recR-0.5;})||">8192";
+    var v=tgt>0?aggTD/tgt:1, vcls=(v>=0.9&&v<=1.6)?"v-good":(v<0.9?"v-bad":"v-warn");
+    var vtxt=tgt<=0?"—":v<0.9?"Below target ("+Math.round(v*100)+"%)":v>1.6?"Over target ("+Math.round(v*100)+"%)":"On target ✓ ("+Math.round(v*100)+"%)";
+    $("mStats").innerHTML=
+      '<div class="result"><div class="lbl">Average texel density</div><div class="big">'+fmt(aggTD)+' <small>px/m</small></div></div>'+
+      '<div class="kv"><span>Surface area</span><b>'+fmt(totalW)+' m²</b></div>'+
+      '<div class="kv"><span>UV space used</span><b>'+fmt(coverage)+' %</b></div>'+
+      '<div class="kv"><span>Density consistency</span><b>'+fmt(consistPct)+' %</b></div>'+
+      '<div class="kv"><span>Triangles</span><b>'+tris.length.toLocaleString()+'</b></div>'+
+      '<div class="kv"><span>For target, use</span><b>'+(typeof rec==="number"?rec+" px":rec)+'</b></div>'+
+      '<div class="verdict '+vcls+'"><i></i><span>'+vtxt+'</span></div>';
+    var msgs=[];
+    if(totalUV<=0) msgs.push("No UVs found — this model isn't unwrapped.");
+    if(noUV>0) msgs.push(noUV.toLocaleString()+" triangle(s) have no UVs (ignored for density).");
+    if(coverage>102) msgs.push("UV area &gt;100% — overlapping islands or UDIM tiles (coverage counts overlaps).");
+    var warn=$("meshWarn"); warn.hidden=msgs.length===0; warn.innerHTML=msgs.join("<br>");
+    drawUV(per, aggTD);
+  }
+  function heat(ratio){ if(!(ratio>0)) return "#64748b"; var dev=Math.abs(Math.log2(ratio));
+    return dev<0.25?"#22c55e":dev<0.6?"#f59e0b":"#ef4444"; }
+  function drawUV(per, agg){
+    var cv=$("uvmap"), x=cv.getContext("2d"), W=cv.width; x.clearRect(0,0,W,W);
+    x.fillStyle=cssv("--surface-2")||"#1c2228"; x.fillRect(0,0,W,W);
+    per.forEach(function(t){ if(!t.uv) return;
+      var p=t.uv.map(function(u){ return [ Math.max(0,Math.min(1,u[0]))*W, (1-Math.max(0,Math.min(1,u[1])))*W ]; });
+      x.beginPath(); x.moveTo(p[0][0],p[0][1]); x.lineTo(p[1][0],p[1][1]); x.lineTo(p[2][0],p[2][1]); x.closePath();
+      x.fillStyle=heat(agg>0?t.td/agg:1)+"cc"; x.fill();
+    });
+    x.strokeStyle=cssv("--border-2")||"#39434f"; x.lineWidth=1; x.strokeRect(.5,.5,W-1,W-1);
+  }
+  function readObj(file){ var r=new FileReader();
+    r.onload=function(){ try{ meshData=parseOBJ(String(r.result));
+      var m=$("drop").querySelector(".dropmsg"); if(m) m.innerHTML="<b>"+file.name+"</b> · "+meshData.tris.length.toLocaleString()+" tris";
+      analyzeMesh(); }catch(e){ $("mStats").innerHTML='<p style="color:var(--bad)">Could not read that .obj.</p>'; } };
+    r.readAsText(file); }
+  function initMesh(){
+    var fi=$("objFile"), drop=$("drop");
+    drop.addEventListener("click", function(){ fi.click(); });
+    fi.addEventListener("change", function(){ if(fi.files&&fi.files[0]) readObj(fi.files[0]); });
+    ["dragenter","dragover"].forEach(function(e){ drop.addEventListener(e,function(ev){ ev.preventDefault(); drop.classList.add("hover"); }); });
+    ["dragleave","drop"].forEach(function(e){ drop.addEventListener(e,function(ev){ ev.preventDefault(); if(e==="dragleave") drop.classList.remove("hover"); }); });
+    drop.addEventListener("drop", function(ev){ drop.classList.remove("hover"); var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0]; if(f) readObj(f); });
+    [$("mUnit"),$("mRes"),$("mTarget")].forEach(function(el){ el.addEventListener("input", function(){ if(meshData) analyzeMesh(); }); });
+  }
+
+  // boot
+  computeTD(); renderPad(); renderChecks(); initMesh();
+})();
+</script>
+
+</body>
+</html>
