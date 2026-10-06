@@ -251,7 +251,11 @@
           <span class="note">reads your UVs locally — nothing is uploaded</span>
           <input type="file" id="objFile" accept=".obj,.OBJ" hidden />
         </label>
-        <button class="pill" id="loadSample" style="margin:0 0 14px">🐵 Load Suzanne sample</button>
+        <div style="display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap;align-items:center">
+          <span style="font-size:11px;color:var(--faint);font-weight:700;text-transform:uppercase;letter-spacing:.3px">Try a sample:</span>
+          <button class="pill" id="loadSample">🐵 Suzanne</button>
+          <button class="pill" id="loadCube">🧊 Test cube</button>
+        </div>
         <div class="inrow" style="gap:10px">
           <div class="field" style="flex:1;margin-bottom:12px"><label for="mUnit">Model units <span class="hint">(1 file unit =)</span></label><select id="mUnit"><option>mm</option><option>cm</option><option selected>m</option><option>in</option><option>ft</option></select></div>
           <div class="field" style="flex:1;margin-bottom:12px"><label for="mRes">Texture</label><select id="mRes" class="mono"><option>256</option><option>512</option><option selected>1024</option><option>2048</option><option>4096</option><option>8192</option></select></div>
@@ -1843,6 +1847,50 @@ f 505/532 507/549 315/553 323/556
 f 320/458 322/555 504/530 390/437
 f 505/532 323/556 321/460 391/439
 </script>
+<script type="text/plain" id="cubeObj">
+# UV Toolkit test cube — 1 m cube, 6 faces, 3x2 UV layout (set model units = m)
+# expected @1024: ~418 px/m, 6.00 m2, 100% coverage, 100% consistency
+o test_cube
+v 0 0 0
+v 1 0 0
+v 1 1 0
+v 0 1 0
+v 0 0 1
+v 1 0 1
+v 1 1 1
+v 0 1 1
+vt 0 0
+vt 0.333333 0
+vt 0.333333 0.5
+vt 0 0.5
+vt 0.333333 0
+vt 0.666667 0
+vt 0.666667 0.5
+vt 0.333333 0.5
+vt 0.666667 0
+vt 1 0
+vt 1 0.5
+vt 0.666667 0.5
+vt 0 0.5
+vt 0.333333 0.5
+vt 0.333333 1
+vt 0 1
+vt 0.333333 0.5
+vt 0.666667 0.5
+vt 0.666667 1
+vt 0.333333 1
+vt 0.666667 0.5
+vt 1 0.5
+vt 1 1
+vt 0.666667 1
+s off
+f 1/1 2/2 3/3 4/4
+f 5/5 8/6 7/7 6/8
+f 1/9 2/10 6/11 5/12
+f 4/13 3/14 7/15 8/16
+f 1/17 5/18 8/19 4/20
+f 2/21 6/22 7/23 3/24
+</script>
 <script>
 (function(){
   "use strict";
@@ -2062,9 +2110,10 @@ f 505/532 323/556 321/460 391/439
     ["dragenter","dragover"].forEach(function(e){ drop.addEventListener(e,function(ev){ ev.preventDefault(); drop.classList.add("hover"); }); });
     ["dragleave","drop"].forEach(function(e){ drop.addEventListener(e,function(ev){ ev.preventDefault(); if(e==="dragleave") drop.classList.remove("hover"); }); });
     drop.addEventListener("drop", function(ev){ drop.classList.remove("hover"); var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0]; if(f) readObj(f); });
-    var sb=$("loadSample");
-    if(sb) sb.addEventListener("click", function(){ var el=document.getElementById("suzanneObj"); if(!el) return;
-      try{ meshData=parseOBJ(el.textContent); $("mUnit").value="m"; var m=$("drop").querySelector(".dropmsg"); if(m) m.innerHTML="<b>Suzanne</b> (sample) · "+meshData.tris.length.toLocaleString()+" tris"; analyzeMesh(); }catch(e){} });
+    function loadSample(id,label){ var el=document.getElementById(id); if(!el) return;
+      try{ meshData=parseOBJ(el.textContent); $("mUnit").value="m"; var m=$("drop").querySelector(".dropmsg"); if(m) m.innerHTML="<b>"+label+"</b> (sample) · "+meshData.tris.length.toLocaleString()+" tris"; analyzeMesh(); }catch(e){} }
+    var sb=$("loadSample"); if(sb) sb.addEventListener("click", function(){ loadSample("suzanneObj","Suzanne"); });
+    var cb=$("loadCube"); if(cb) cb.addEventListener("click", function(){ loadSample("cubeObj","Test cube"); });
     [$("mUnit"),$("mRes"),$("mTarget")].forEach(function(el){ el.addEventListener("input", function(){ if(meshData) analyzeMesh(); }); });
   }
 
