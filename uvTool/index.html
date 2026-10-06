@@ -133,7 +133,16 @@
   .legend{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:10px;font-size:11px;color:var(--mut)}
   .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
   .meshwarn{font-size:12px;color:var(--warn);margin-top:10px;line-height:1.5}
+  #uvedit{width:100%;max-width:440px;aspect-ratio:1;border:1px solid var(--border-2);border-radius:10px;display:block;background:var(--surface-2);margin:0 auto;touch-action:none;cursor:grab}
+  #uvedit:active{cursor:grabbing}
+  .etools{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+  .etool{font:700 12px/1 inherit;padding:9px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--fg)}
+  .etool:hover{border-color:var(--accent);color:var(--accent-2)}
+  .etool.primary{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+  .esel{text-align:center;font-size:12.5px;color:var(--fg);margin-top:8px;min-height:18px}
+  .ehint{text-align:center;font-size:12px;color:var(--mut);margin-top:6px}
 </style>
+
 </head>
 <body>
 <div class="wrap">
@@ -147,6 +156,7 @@
   <div class="tabs">
     <button class="tab on" data-tab="td">📐 Texel Density</button>
     <button class="tab" data-tab="mesh">📦 Mesh</button>
+    <button class="tab" data-tab="edit">✏️ Edit</button>
     <button class="tab" data-tab="pad">🧩 Padding</button>
     <button class="tab" data-tab="chk">✅ Checklist</button>
   </div>
@@ -272,6 +282,32 @@
           <span><i style="background:#ef4444"></i>very off — rescaled / stretched</span>
         </div>
         <div class="meshwarn" id="meshWarn" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EDIT -->
+  <section class="pane" id="pane-edit">
+    <div class="card">
+      <h2>UV editor <span style="font-weight:600;color:var(--mut);text-transform:none;letter-spacing:0;font-size:11px">· prototype</span></h2>
+      <div id="editEmpty" style="color:var(--faint);font-size:13px">Load a mesh (📦 Mesh tab, or a sample) to edit its UVs here.</div>
+      <div id="editBody" hidden>
+        <canvas id="uvedit" width="512" height="512"></canvas>
+        <div class="esel" id="eSel">Tap an island to select it.</div>
+        <div class="etools">
+          <button class="etool" data-act="scaleDown">− Scale</button>
+          <button class="etool" data-act="scaleUp">+ Scale</button>
+          <button class="etool" data-act="rotL">⟲ Rotate</button>
+          <button class="etool" data-act="rotR">⟳</button>
+          <button class="etool" data-act="flipU">⇆ Flip U</button>
+          <button class="etool" data-act="flipV">⇅ Flip V</button>
+        </div>
+        <div class="etools">
+          <button class="etool" data-act="normalize">⚖ Even out density (all islands)</button>
+          <button class="etool primary" data-act="export">⤓ Export .obj</button>
+        </div>
+        <div class="ehint">Drag an island to move it · edits update the Mesh-tab stats live</div>
+        <div class="esel" id="eStats"></div>
       </div>
     </div>
   </section>
@@ -2039,7 +2075,7 @@ f 2/21 6/22 7/23 3/24
   $("chkReset").onclick=function(){ state.checks={}; save(); renderChecks(); };
 
   // ---------- mesh (OBJ) ----------
-  var meshData=null;
+  var meshData=null, edMeshRef=null;
   function triArea3(a,b,c){ var ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
     var cx=uy*vz-uz*vy,cy=uz*vx-ux*vz,cz=ux*vy-uy*vx; return 0.5*Math.sqrt(cx*cx+cy*cy+cz*cz); }
   function triArea2(a,b,c){ return Math.abs((b[0]-a[0])*(c[1]-a[1])-(c[0]-a[0])*(b[1]-a[1]))/2; }
@@ -2056,6 +2092,7 @@ f 2/21 6/22 7/23 3/24
   }
   function analyzeMesh(){
     if(!meshData) return;
+    if(meshData!==edMeshRef){ edMeshRef=meshData; prepEdit(); showEdit(); }
     var R=+$("mRes").value, unitM=U[$("mUnit").value]||1, tgt=+$("mTarget").value;
     var vs=meshData.vs, vts=meshData.vts, tris=meshData.tris, totalW=0, totalUV=0, per=[], noUV=0;
     tris.forEach(function(tr){
@@ -2117,10 +2154,77 @@ f 2/21 6/22 7/23 3/24
     [$("mUnit"),$("mRes"),$("mTarget")].forEach(function(el){ el.addEventListener("input", function(){ if(meshData) analyzeMesh(); }); });
   }
 
+  // ---------- UV editor (prototype) ----------
+  var edSel=-1, edIslands=[], edTriWorld=[];
+  function _ufind(p,i){ while(p[i]!==i){ p[i]=p[p[i]]; i=p[i]; } return i; }
+  function prepEdit(){ edSel=-1; edIslands=[]; edTriWorld=[]; if(!meshData) return;
+    var vts=meshData.vts, tris=meshData.tris, vs=meshData.vs, p={};
+    function find(i){ if(p[i]===undefined)p[i]=i; return _ufind(p,i); }
+    function uni(a,b){ p[find(a)]=find(b); }
+    tris.forEach(function(tr){ if(tr[0].vt>=0&&tr[1].vt>=0&&tr[2].vt>=0){ uni(tr[0].vt,tr[1].vt); uni(tr[1].vt,tr[2].vt); } });
+    var groups={};
+    tris.forEach(function(tr,ti){ var P=[vs[tr[0].v],vs[tr[1].v],vs[tr[2].v]];
+      edTriWorld[ti]=(P[0]&&P[1]&&P[2])?triArea3(P[0],P[1],P[2]):0;
+      if(tr[0].vt<0) return; var r=find(tr[0].vt); groups[r]=groups[r]||{vts:{},tris:[]};
+      groups[r].tris.push(ti); groups[r].vts[tr[0].vt]=1; groups[r].vts[tr[1].vt]=1; groups[r].vts[tr[2].vt]=1; });
+    edIslands=Object.keys(groups).map(function(k){ return { vts:Object.keys(groups[k].vts).map(Number), tris:groups[k].tris }; });
+  }
+  function islCentroid(is){ var vts=meshData.vts, sx=0,sy=0,n=is.vts.length; is.vts.forEach(function(i){ sx+=vts[i][0]; sy+=vts[i][1]; }); return [sx/n, sy/n]; }
+  function xformIsl(is,fn){ var vts=meshData.vts; is.vts.forEach(function(i){ vts[i]=fn(vts[i]); }); }
+  function transformSel(kind,arg){ if(edSel<0) return; var is=edIslands[edSel], c=islCentroid(is);
+    if(kind==="scale") xformIsl(is,function(p){ return [c[0]+(p[0]-c[0])*arg, c[1]+(p[1]-c[1])*arg]; });
+    else if(kind==="rot"){ var ca=Math.cos(arg),sa=Math.sin(arg); xformIsl(is,function(p){ var dx=p[0]-c[0],dy=p[1]-c[1]; return [c[0]+dx*ca-dy*sa, c[1]+dx*sa+dy*ca]; }); }
+    else if(kind==="flipU") xformIsl(is,function(p){ return [2*c[0]-p[0], p[1]]; });
+    else if(kind==="flipV") xformIsl(is,function(p){ return [p[0], 2*c[1]-p[1]]; });
+    afterEdit(); }
+  function moveSel(d){ if(edSel<0) return; xformIsl(edIslands[edSel],function(p){ return [p[0]+d[0], p[1]+d[1]]; }); afterEdit(); }
+  function normalizeDensity(){ if(!meshData||!edIslands.length) return; var totW=0,totU=0,ir=[];
+    edIslands.forEach(function(is){ var w=0,u=0; is.tris.forEach(function(ti){ var tr=meshData.tris[ti]; w+=edTriWorld[ti]||0; u+=triArea2(meshData.vts[tr[0].vt],meshData.vts[tr[1].vt],meshData.vts[tr[2].vt]); }); totW+=w; totU+=u; ir.push({w:w,u:u}); });
+    var target=totW>0?totU/totW:0;
+    edIslands.forEach(function(is,i){ var cur=ir[i]; if(cur.w<=0||cur.u<=0) return; var sc=Math.sqrt(target/(cur.u/cur.w)); var c=islCentroid(is); xformIsl(is,function(p){ return [c[0]+(p[0]-c[0])*sc, c[1]+(p[1]-c[1])*sc]; }); });
+    afterEdit(); }
+  function afterEdit(){ drawEdit(); analyzeMesh(); updateEStats(); }
+  function updateEStats(){ var el=$("eStats"); if(!el||!meshData) return; var totW=0,totU=0,per=[];
+    meshData.tris.forEach(function(tr,ti){ var w=edTriWorld[ti]||0; totW+=w; if(tr[0].vt<0) return; var u=triArea2(meshData.vts[tr[0].vt],meshData.vts[tr[1].vt],meshData.vts[tr[2].vt]); totU+=u; per.push({w:w,u:u}); });
+    var agg=(totW>0&&totU>0)?Math.sqrt(totU/totW):0, con=0; per.forEach(function(t){ var td=t.w>0&&t.u>0?Math.sqrt(t.u/t.w):0; if(td>0&&td>=agg*0.8&&td<=agg*1.25) con+=t.w; });
+    el.textContent="Coverage "+(totU*100).toFixed(1)+"% · consistency "+(totW>0?(con/totW*100).toFixed(0):0)+"% · "+edIslands.length+" islands"; }
+  function drawEdit(){ var cv=$("uvedit"); if(!cv) return; var x=cv.getContext("2d"), W=cv.width; x.clearRect(0,0,W,W);
+    x.fillStyle=cssv("--surface-2")||"#1c2228"; x.fillRect(0,0,W,W);
+    x.strokeStyle="rgba(128,140,155,.15)"; x.lineWidth=1; for(var g=1;g<4;g++){ x.beginPath(); x.moveTo(g/4*W,0); x.lineTo(g/4*W,W); x.stroke(); x.beginPath(); x.moveTo(0,g/4*W); x.lineTo(W,g/4*W); x.stroke(); }
+    if(!meshData) return; var vts=meshData.vts;
+    function P(u){ return [ Math.max(-0.5,Math.min(1.5,u[0]))*W, (1-Math.max(-0.5,Math.min(1.5,u[1])))*W ]; }
+    edIslands.forEach(function(is,idx){ var sel=idx===edSel; x.fillStyle=sel?((cssv("--accent")||"#2dd4bf")+"55"):"rgba(140,150,165,.22)";
+      is.tris.forEach(function(ti){ var tr=meshData.tris[ti]; var a=P(vts[tr[0].vt]),b=P(vts[tr[1].vt]),c=P(vts[tr[2].vt]); x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.lineTo(c[0],c[1]); x.closePath(); x.fill(); });
+      if(sel){ x.strokeStyle=cssv("--accent")||"#2dd4bf"; x.lineWidth=1.5; is.tris.forEach(function(ti){ var tr=meshData.tris[ti]; var a=P(vts[tr[0].vt]),b=P(vts[tr[1].vt]),c=P(vts[tr[2].vt]); x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.lineTo(c[0],c[1]); x.closePath(); x.stroke(); }); } });
+    x.strokeStyle=cssv("--border-2")||"#39434f"; x.lineWidth=1.5; x.strokeRect(.5,.5,W-1,W-1); }
+  function editPos(e){ var r=$("uvedit").getBoundingClientRect(); return [ (e.clientX-r.left)/r.width, 1-(e.clientY-r.top)/r.height ]; }
+  function ptInTri(p,a,b,c){ var d=(b[1]-c[1])*(a[0]-c[0])+(c[0]-b[0])*(a[1]-c[1]); if(Math.abs(d)<1e-12) return false;
+    var s=((b[1]-c[1])*(p[0]-c[0])+(c[0]-b[0])*(p[1]-c[1]))/d, t=((c[1]-a[1])*(p[0]-c[0])+(a[0]-c[0])*(p[1]-c[1]))/d; return s>=0&&t>=0&&s+t<=1; }
+  function hitIsland(uv){ var vts=meshData.vts; for(var i=0;i<edIslands.length;i++){ var is=edIslands[i]; for(var j=0;j<is.tris.length;j++){ var tr=meshData.tris[is.tris[j]]; if(ptInTri(uv,vts[tr[0].vt],vts[tr[1].vt],vts[tr[2].vt])) return i; } } return -1; }
+  function initEdit(){ var cv=$("uvedit"); if(!cv) return; var dragging=false,last=null;
+    cv.addEventListener("pointerdown", function(e){ if(!meshData) return; e.preventDefault(); var uv=editPos(e), h=hitIsland(uv); edSel=h; last=uv; dragging=h>=0; try{cv.setPointerCapture(e.pointerId);}catch(_){}
+      $("eSel").textContent=h>=0?("Island "+(h+1)+" of "+edIslands.length+" — drag to move"):"Empty spot — tap an island"; drawEdit(); });
+    cv.addEventListener("pointermove", function(e){ if(!dragging||edSel<0) return; e.preventDefault(); var uv=editPos(e); moveSel([uv[0]-last[0], uv[1]-last[1]]); last=uv; });
+    function up(){ dragging=false; } cv.addEventListener("pointerup",up); cv.addEventListener("pointercancel",up);
+    document.querySelectorAll("#pane-edit .etool").forEach(function(btn){ btn.addEventListener("click", function(){ var a=btn.dataset.act;
+      if(a==="scaleUp") transformSel("scale",1.08); else if(a==="scaleDown") transformSel("scale",1/1.08);
+      else if(a==="rotL") transformSel("rot",-Math.PI/12); else if(a==="rotR") transformSel("rot",Math.PI/12);
+      else if(a==="flipU") transformSel("flipU"); else if(a==="flipV") transformSel("flipV");
+      else if(a==="normalize") normalizeDensity(); else if(a==="export") exportObj(); }); });
+    var et=document.querySelector('.tab[data-tab="edit"]'); if(et) et.addEventListener("click", showEdit); }
+  function exportObj(){ if(!meshData) return; var L=["# UVs edited with UV Toolkit — mikibutler.ca/uvTool"];
+    meshData.vs.forEach(function(p){ L.push("v "+p[0]+" "+p[1]+" "+p[2]); });
+    meshData.vts.forEach(function(t){ L.push("vt "+(+t[0]).toFixed(6)+" "+(+t[1]).toFixed(6)); });
+    meshData.tris.forEach(function(tr){ L.push("f "+tr.map(function(c){ return (c.v+1)+(c.vt>=0?"/"+(c.vt+1):""); }).join(" ")); });
+    var blob=new Blob([L.join("\n")+"\n"],{type:"text/plain"});
+    if(window.__dl){ window.__dl.save({filename:"uv-edited.obj",data:blob}).then(function(){}).catch(function(){ fallbackDL(blob); }); } else fallbackDL(blob); }
+  function fallbackDL(blob){ var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="uv-edited.obj"; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500); }
+  function showEdit(){ var has=!!(meshData&&edIslands.length); var ee=$("editEmpty"),eb=$("editBody"); if(ee) ee.hidden=has; if(eb) eb.hidden=!has; if(has){ drawEdit(); updateEStats(); } }
+  function setupDL(){ try{ if(window.claude&&claude.use){ claude.use("downloads").then(function(d){ window.__dl=d; }).catch(function(){}); } }catch(e){} }
+
   // boot
-  computeTD(); renderPad(); renderChecks(); initMesh();
+  computeTD(); renderPad(); renderChecks(); initMesh(); initEdit(); setupDL();
 })();
 </script>
-
 </body>
 </html>
