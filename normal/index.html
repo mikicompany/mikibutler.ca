@@ -18,7 +18,7 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
   <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
-  <meta name="description" content="Normal Baker — convert a grayscale height map to a tangent-space normal map, by Miki Butler. Strength, smoothing, OpenGL/DirectX green, tileable edges, a lit preview, a 3D shader-sphere preview and PNG export." />
+  <meta name="description" content="Normal Baker — convert a grayscale height map to a tangent-space normal map, by Miki Butler. Strength, smoothing, OpenGL/DirectX green, tileable edges, a lit preview, a 3D material-sphere preview (roughness, metalness, reflections, relief) and PNG export." />
 <title>Normal Baker — Miki Butler</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -126,6 +126,12 @@
       <div class="divider"></div>
       <button class="btn primary" id="exp">⬇ Export normal map</button>
       <div class="status" id="status"></div>
+
+      <div class="divider"></div>
+      <h2>3D sphere material</h2>
+      <div class="field"><label>Roughness <span class="val" id="vRough">0.50</span></label><input type="range" id="rough" min="0" max="1" step="0.02" value="0.5"></div>
+      <div class="field"><label>Metalness <span class="val" id="vMetal">0.10</span></label><input type="range" id="metal" min="0" max="1" step="0.02" value="0.1"></div>
+      <div class="field"><label>Relief (displace) <span class="val" id="vRelief">0.00</span></label><input type="range" id="relief" min="0" max="0.5" step="0.01" value="0"></div>
     </div>
 
     <div class="card">
@@ -153,13 +159,15 @@
   "use strict";
   var $=function(id){return document.getElementById(id);};
   var MAXDIM=1600;
-  var S={ str:2, blur:0, green:"gl", invert:false, wrap:true, mode:"normal" };
+  var S={ str:2, blur:0, green:"gl", invert:false, wrap:true, mode:"normal",
+          rough:0.5, metal:0.1, relief:0 };
 
   var W=0,H=0, height=null, nx=null,ny=null,nz=null, normalRGBA=null;
   var src=document.createElement("canvas"), sctx=src.getContext("2d");
   var off=document.createElement("canvas"), octx=off.getContext("2d"); // full-res offscreen for putImageData
   var view=$("view"), vctx=view.getContext("2d");
   var normCanvas=document.createElement("canvas"), nctx=normCanvas.getContext("2d"); // always holds the normal map, for the 3D sphere texture
+  var heightCanvas=document.createElement("canvas"), hctx=heightCanvas.getContext("2d"); // grayscale height, for sphere displacement
   var sph=null; // three.js sphere preview state
   var light={ az:2.3, el:0.9 };
 
@@ -179,6 +187,11 @@
     for(var i=0;i<n;i++){ var o=i*4; var l=(0.299*d[o]+0.587*d[o+1]+0.114*d[o+2])/255; base[i]=S.invert?1-l:l; }
     if(S.blur>0){ base=boxBlur(base,W,H,S.blur); }
     height=base;
+    heightCanvas.width=W; heightCanvas.height=H;
+    var hd=hctx.createImageData(W,H), hdd=hd.data;
+    for(var i2=0;i2<n;i2++){ var c=height[i2]*255, o=i2*4; hdd[o]=hdd[o+1]=hdd[o+2]=c; hdd[o+3]=255; }
+    hctx.putImageData(hd,0,0);
+    if(sph&&sph.heightTex) sph.heightTex.needsUpdate=true;
   }
   function boxBlur(a,w,h,r){ var tmp=new Float32Array(w*h), out=new Float32Array(w*h), d=2*r+1;
     for(var y=0;y<h;y++){ var s=0; for(var x=-r;x<=r;x++) s+=a[y*w+Math.max(0,Math.min(w-1,x))];
@@ -232,13 +245,23 @@
     var cam=new THREE.PerspectiveCamera(32,1,0.1,100); cam.position.set(0,0,4.4);
     var tex=new THREE.CanvasTexture(normCanvas); tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
     tex.anisotropy=rnd.capabilities.getMaxAnisotropy?rnd.capabilities.getMaxAnisotropy():1;
-    var mat=new THREE.MeshStandardMaterial({color:0xb9bec7, roughness:0.5, metalness:0.05,
-      normalMap:tex, normalScale:new THREE.Vector2(1,1)});
-    var mesh=new THREE.Mesh(new THREE.SphereGeometry(1.35,120,80),mat); scene.add(mesh);
-    scene.add(new THREE.AmbientLight(0x3b434d,0.9));
-    var key=new THREE.DirectionalLight(0xfff2e0,1.15); key.position.set(-3,4,3.5); scene.add(key);
-    var rim=new THREE.DirectionalLight(0x6fb8ff,0.55); rim.position.set(3.5,-1,-2); scene.add(rim);
-    sph={renderer:rnd,scene:scene,cam:cam,mesh:mesh,tex:tex, rx:0.1,ry:0.4,trx:0.1,try_:0.4, running:false};
+    var hTex=new THREE.CanvasTexture(heightCanvas); hTex.wrapS=hTex.wrapT=THREE.RepeatWrapping;
+    // procedural studio environment so metal/roughness read realistically
+    var envC=document.createElement("canvas"); envC.width=512; envC.height=256; var eg=envC.getContext("2d");
+    var sky=eg.createLinearGradient(0,0,0,256); sky.addColorStop(0,"#dfeaf5"); sky.addColorStop(0.5,"#7f8a98"); sky.addColorStop(1,"#14181f");
+    eg.fillStyle=sky; eg.fillRect(0,0,512,256);
+    var kl=eg.createRadialGradient(150,70,2,150,70,90); kl.addColorStop(0,"#ffffff"); kl.addColorStop(1,"rgba(255,255,255,0)");
+    eg.fillStyle=kl; eg.fillRect(0,0,512,256);
+    var envTex=new THREE.CanvasTexture(envC); envTex.mapping=THREE.EquirectangularReflectionMapping;
+    var pmrem=new THREE.PMREMGenerator(rnd); pmrem.compileEquirectangularShader();
+    var envRT=pmrem.fromEquirectangular(envTex); scene.environment=envRT.texture; envTex.dispose(); pmrem.dispose();
+    var mat=new THREE.MeshStandardMaterial({color:0xb9bec7, roughness:S.rough, metalness:S.metal,
+      normalMap:tex, normalScale:new THREE.Vector2(1,1), displacementMap:hTex, displacementScale:S.relief, displacementBias:-S.relief*0.5, envMapIntensity:1});
+    var mesh=new THREE.Mesh(new THREE.SphereGeometry(1.35,200,140),mat); scene.add(mesh);
+    scene.add(new THREE.AmbientLight(0x3b434d,0.7));
+    var key=new THREE.DirectionalLight(0xfff2e0,1.1); key.position.set(-3,4,3.5); scene.add(key);
+    var rim=new THREE.DirectionalLight(0x6fb8ff,0.5); rim.position.set(3.5,-1,-2); scene.add(rim);
+    sph={renderer:rnd,scene:scene,cam:cam,mesh:mesh,mat:mat,tex:tex,heightTex:hTex, rx:0.1,ry:0.4,trx:0.1,try_:0.4, running:false};
     var dr=false,lx=0,ly=0;
     c.addEventListener("pointerdown",function(e){ dr=true; c.classList.add("grab"); lx=e.clientX; ly=e.clientY; });
     window.addEventListener("pointermove",function(e){ if(!dr)return; sph.try_-=(e.clientX-lx)*0.01; sph.trx-=(e.clientY-ly)*0.01;
@@ -296,6 +319,12 @@
   }
   sl("str","str",function(v){return v.toFixed(1);},"vStr");
   sl("blur","blur",function(v){return v+" px";},"vBlur",function(){ if(height) computeHeight(); });
+  // sphere-only material sliders (don't rebuild the 2D maps)
+  function applyMat(){ if(!sph)return; sph.mat.roughness=S.rough; sph.mat.metalness=S.metal;
+    sph.mat.displacementScale=S.relief; sph.mat.displacementBias=-S.relief*0.5; }
+  function matsl(id,key,el){ var i=$(id),o=$(el);
+    i.addEventListener("input",function(){ S[key]=parseFloat(i.value); if(o)o.textContent=S[key].toFixed(2); applyMat(); }); }
+  matsl("rough","rough","vRough"); matsl("metal","metal","vMetal"); matsl("relief","relief","vRelief");
   $("invert").addEventListener("change",function(){ S.invert=this.checked; if(height){ computeHeight(); computeNormal(); render(); } });
   $("wrap").addEventListener("change",function(){ S.wrap=this.checked; if(height){ computeNormal(); render(); } });
   function seg(id,key,after){ document.querySelectorAll("#"+id+" button").forEach(function(b){ b.addEventListener("click",function(){
