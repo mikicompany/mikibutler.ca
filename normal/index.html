@@ -18,11 +18,12 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
   <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
-  <meta name="description" content="Normal Baker — convert a grayscale height map to a tangent-space normal map, by Miki Butler. Strength, smoothing, OpenGL/DirectX green, tileable edges, a lit preview and PNG export." />
+  <meta name="description" content="Normal Baker — convert a grayscale height map to a tangent-space normal map, by Miki Butler. Strength, smoothing, OpenGL/DirectX green, tileable edges, a lit preview, a 3D shader-sphere preview and PNG export." />
 <title>Normal Baker — Miki Butler</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   /* Same dark studio-tool identity as the UV Toolkit / Noise Forge — one family. */
   :root{
@@ -34,6 +35,7 @@
     --radius:14px; --shadow:0 2px 12px rgba(0,0,0,.4);
   }
   *{box-sizing:border-box}
+  [hidden]{display:none!important}
   html,body{height:100%}
   body{ margin:0; background:var(--bg); color:var(--fg); font-family:"Manrope",system-ui,-apple-system,sans-serif;
     font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; padding:22px 16px; padding-block:22px; }
@@ -74,6 +76,8 @@
 
   .stage{ position:relative; width:100%; aspect-ratio:1; border:1px solid var(--border-2); border-radius:10px; overflow:hidden; background:#0b0e10; }
   #view{ width:100%; height:100%; display:block; }
+  #sphere{ position:absolute; inset:0; width:100%; height:100%; display:block; cursor:grab; touch-action:none; }
+  #sphere.grab{ cursor:grabbing; }
   .badge{ position:absolute; left:10px; top:10px; font:700 11px/1 "JetBrains Mono",monospace; color:var(--accent-2);
     background:#0b0e10cc; border:1px solid var(--border-2); border-radius:999px; padding:5px 10px; }
   .lighthint{ position:absolute; right:10px; bottom:10px; font:700 10.5px/1 "JetBrains Mono",monospace; color:var(--faint); background:#0b0e10aa; padding:4px 8px; border-radius:6px; }
@@ -129,11 +133,13 @@
         <div class="seg" id="mode" style="flex:1">
           <button data-v="normal" class="on">Normal</button>
           <button data-v="height">Height</button>
-          <button data-v="lit">Lit preview</button>
+          <button data-v="lit">Lit</button>
+          <button data-v="sphere">Sphere</button>
         </div>
       </div>
       <div class="stage">
         <canvas id="view" width="640" height="640"></canvas>
+        <canvas id="sphere" hidden></canvas>
         <span class="badge" id="badge">normal</span>
         <span class="lighthint" id="lhint" hidden>drag to move the light</span>
       </div>
@@ -153,6 +159,8 @@
   var src=document.createElement("canvas"), sctx=src.getContext("2d");
   var off=document.createElement("canvas"), octx=off.getContext("2d"); // full-res offscreen for putImageData
   var view=$("view"), vctx=view.getContext("2d");
+  var normCanvas=document.createElement("canvas"), nctx=normCanvas.getContext("2d"); // always holds the normal map, for the 3D sphere texture
+  var sph=null; // three.js sphere preview state
   var light={ az:2.3, el:0.9 };
 
   // ---------- load image / samples ----------
@@ -191,10 +199,18 @@
       nx[i]=vx; ny[i]=vy; nz[i]=vz; var o=i*4;
       normalRGBA[o]=(vx*0.5+0.5)*255; normalRGBA[o+1]=(vy*0.5+0.5)*255; normalRGBA[o+2]=(vz*0.5+0.5)*255; normalRGBA[o+3]=255;
     }
+    normCanvas.width=W; normCanvas.height=H; nctx.putImageData(new ImageData(normalRGBA,W,H),0,0);
+    if(sph){ sph.tex.needsUpdate=true; }
   }
   function render(){
     if(!height){ return; }
-    $("badge").textContent=S.mode; $("lhint").hidden=(S.mode!=="lit");
+    var isSphere=(S.mode==="sphere");
+    $("sphere").hidden=!isSphere; $("view").hidden=isSphere;
+    $("badge").textContent=S.mode; $("lhint").hidden=(S.mode!=="lit"&&!isSphere);
+    if(isSphere){ $("lhint").textContent="drag to spin the sphere"; initSphere();
+      if(sph){ sph.tex.needsUpdate=true; sphereResize(); if(!sph.running){ sph.running=true; requestAnimationFrame(sphereLoop); } } return; }
+    $("lhint").textContent="drag to move the light";
+    if(sph) sph.running=false;
     var img;
     if(S.mode==="normal"){ img=new ImageData(normalRGBA,W,H); }
     else if(S.mode==="height"){ var d=new Uint8ClampedArray(W*H*4); for(var i=0;i<W*H;i++){ var c=height[i]*255,o=i*4; d[o]=d[o+1]=d[o+2]=c; d[o+3]=255; } img=new ImageData(d,W,H); }
@@ -206,6 +222,37 @@
     var sc=Math.min(view.width/W, view.height/H), dw=W*sc, dh=H*sc;
     vctx.drawImage(off,(view.width-dw)/2,(view.height-dh)/2,dw,dh);
   }
+  // ---------- 3D sphere preview (normal map on a lit material ball) ----------
+  function initSphere(){
+    if(sph || !window.THREE) return;
+    var c=$("sphere");
+    var rnd=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
+    rnd.setPixelRatio(Math.min(devicePixelRatio||1,2));
+    var scene=new THREE.Scene();
+    var cam=new THREE.PerspectiveCamera(32,1,0.1,100); cam.position.set(0,0,4.4);
+    var tex=new THREE.CanvasTexture(normCanvas); tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
+    tex.anisotropy=rnd.capabilities.getMaxAnisotropy?rnd.capabilities.getMaxAnisotropy():1;
+    var mat=new THREE.MeshStandardMaterial({color:0xb9bec7, roughness:0.5, metalness:0.05,
+      normalMap:tex, normalScale:new THREE.Vector2(1,1)});
+    var mesh=new THREE.Mesh(new THREE.SphereGeometry(1.35,120,80),mat); scene.add(mesh);
+    scene.add(new THREE.AmbientLight(0x3b434d,0.9));
+    var key=new THREE.DirectionalLight(0xfff2e0,1.15); key.position.set(-3,4,3.5); scene.add(key);
+    var rim=new THREE.DirectionalLight(0x6fb8ff,0.55); rim.position.set(3.5,-1,-2); scene.add(rim);
+    sph={renderer:rnd,scene:scene,cam:cam,mesh:mesh,tex:tex, rx:0.1,ry:0.4,trx:0.1,try_:0.4, running:false};
+    var dr=false,lx=0,ly=0;
+    c.addEventListener("pointerdown",function(e){ dr=true; c.classList.add("grab"); lx=e.clientX; ly=e.clientY; });
+    window.addEventListener("pointermove",function(e){ if(!dr)return; sph.try_-=(e.clientX-lx)*0.01; sph.trx-=(e.clientY-ly)*0.01;
+      sph.trx=Math.max(-1.3,Math.min(1.3,sph.trx)); lx=e.clientX; ly=e.clientY; });
+    window.addEventListener("pointerup",function(){ dr=false; c.classList.remove("grab"); });
+  }
+  function sphereResize(){ if(!sph)return; var r=$("sphere").getBoundingClientRect(); var w=Math.max(2,r.width|0), h=Math.max(2,r.height|0);
+    sph.renderer.setSize(w,h,false); sph.cam.aspect=w/h; sph.cam.updateProjectionMatrix(); }
+  function sphereLoop(){ if(!sph||!sph.running)return;
+    sph.try_+=0.0016; // gentle auto-spin
+    sph.rx+=(sph.trx-sph.rx)*0.1; sph.ry+=(sph.try_-sph.ry)*0.1;
+    sph.mesh.rotation.set(sph.rx,sph.ry,0);
+    sph.renderer.render(sph.scene,sph.cam); requestAnimationFrame(sphereLoop); }
+
   function litImage(){
     var lx=Math.cos(light.az)*Math.cos(light.el), ly=Math.sin(light.az)*Math.cos(light.el), lz=Math.sin(light.el);
     var d=new Uint8ClampedArray(W*H*4), amb=0.22;
@@ -283,6 +330,7 @@
     off.toBlob(function(b){ if(b) saveBlob(b,"normal_"+W+"x"+H+".png"); },"image/png"); });
   try{ if(window.claude&&claude.use){ claude.use("downloads").then(function(d){ window.__dl=d; }).catch(function(){}); } }catch(e){}
 
+  window.addEventListener("resize",function(){ sphereResize(); });
   loadSample("bricks");
 })();
 </script>
