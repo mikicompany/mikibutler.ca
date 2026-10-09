@@ -18,7 +18,7 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
   <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
-  <meta name="description" content="Noise Forge — a free seamless procedural texture-noise generator for game artists by Miki Butler. Perlin & Worley, two-layer blending, octaves, domain warp, height + normal output, send to Library, PNG export." />
+  <meta name="description" content="Noise Forge — free seamless procedural texture-noise generator by Miki Butler. Perlin & Worley, two-layer blending, octaves, domain warp, height + normal output, send to Library, PNG export." />
 <title>Noise Forge — Miki Butler</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -419,7 +419,7 @@
     setTimeout(function(){
       var c=document.createElement("canvas"); c.width=c.height=res; var cx=c.getContext("2d");
       var g=buildHeight(res); renderTo(cx,res,g);
-      var name="noise_"+S.type+"_"+S.omode+"_"+res+".png";
+      var name=slug(noiseName(res))+".png";
       c.toBlob(function(b){ if(b) saveBlob(b,name); else $("status").textContent="Export failed."; },"image/png");
     },30);
   });
@@ -464,9 +464,13 @@
     cv.toBlob(function(blob){ if(!blob){ mbToast("Couldn't save",1); return; }
       MBLib.add({ id:Date.now()+"-"+((Math.random()*1e6)|0), name:name, kind:kind, w:cv.width, h:cv.height, blob:blob, thumb:thumb, created:new Date().toISOString(), meta:meta||"" })
         .then(function(){ mbToast("Sent to Library ✓"); }).catch(function(){ mbToast("Library save failed",1); }); },"image/png"); }
-  function noiseName(res){ var t=({perlin:"Perlin",worF1:"Worley cells",worEdge:"Worley edges"})[S.type]||S.type;
-    var sh=S.shape!=="normal"?" "+S.shape:""; var bl=S.blend?" × "+({perlin:"Perlin",worF1:"cells",worEdge:"edges"})[S.typeB]+" ("+S.bmode+")":"";
-    return t+sh+bl+(S.omode==="normal"?" normal":"")+" "+res; }
+  function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
+  function noiseName(res){ // SEO-friendly, keyword-rich name
+    var base=({perlin:"Perlin Cloud Noise",worF1:"Worley Cellular Noise",worEdge:"Worley Edge Noise"})[S.type]||"Noise";
+    var sh=({ridged:"Ridged ",billow:"Billow "})[S.shape]||"";
+    var bl=S.blend?" + "+({perlin:"Perlin",worF1:"Cells",worEdge:"Edges"})[S.typeB]:"";
+    var kind=S.omode==="normal"?"Normal Map":"Texture";
+    return "Seamless "+sh+base+bl+" "+kind+" "+res+"px"; }
   $("lib").addEventListener("click",function(){ var res=parseInt($("eres").value,10); $("status").textContent="Saving to Library…";
     setTimeout(function(){ var c=document.createElement("canvas"); c.width=c.height=res; var cx=c.getContext("2d");
       var g=buildHeight(res); renderTo(cx,res,g);

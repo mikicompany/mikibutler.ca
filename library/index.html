@@ -18,7 +18,7 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
   <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
-  <meta name="description" content="Texture Library — a browser-stored, searchable library of textures and noise/normal maps saved from Miki Butler’s Noise Forge and Normal Baker tools." />
+  <meta name="description" content="Texture Library — a browser-stored, searchable gallery of SEO-named textures and noise/normal maps saved from Miki Butler’s Noise Forge and Normal Baker tools." />
 <title>Texture Library — Miki Butler</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -96,8 +96,6 @@
   <header class="top">
     <div class="glyph"></div>
     <div><h1>Texture Library</h1><div class="sub">Saved from Noise Forge &amp; Normal Baker · stored in this browser</div></div>
-    <div class="sp"></div>
-    <a class="home" href="/arcade.html">← Arcade</a>
   </header>
 
   <div class="bar">
@@ -171,6 +169,7 @@
           '<div class="acts"><button class="dl">Download</button><button class="ren">Rename</button><button class="del">Delete</button></div>'+
         '</div>';
       var nameEl=card.querySelector(".name"); nameEl.value=it.name||"Untitled";
+      card.querySelector(".thumb img").alt=(it.name||"texture")+" — "+it.kind+" map, "+it.w+"×"+it.h;
       card.querySelector(".thumb").addEventListener("click",function(){ openLB(url, (it.name||"Untitled")+"  ·  "+it.w+"×"+it.h); });
       card.querySelector(".dl").addEventListener("click",function(){ var a=document.createElement("a"); a.href=url; a.download=safe(it.name)+".png"; document.body.appendChild(a); a.click(); a.remove(); });
       var ren=card.querySelector(".ren");
@@ -183,7 +182,7 @@
       grid.appendChild(card);
     });
   }
-  function safe(s){ return (s||"texture").replace(/[^\w\-]+/g,"_").slice(0,48); }
+  function safe(s){ return ((s||"texture").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60))||"texture"; }
 
   // lightbox
   function openLB(url,cap){ $("lbimg").src=url; $("lbcap").textContent=cap; $("lightbox").classList.add("on"); }

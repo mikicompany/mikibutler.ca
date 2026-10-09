@@ -18,7 +18,7 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
   <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
-  <meta name="description" content="Normal Baker — convert a grayscale height map to a tangent-space normal map, by Miki Butler. Strength, OpenGL/DirectX green, tileable edges, a lit preview, a 3D material-sphere preview, send to Library and PNG export." />
+  <meta name="description" content="Normal Baker — convert a grayscale height map to a tangent-space normal map, by Miki Butler. Strength, OpenGL/DirectX green, tileable edges, lit + 3D material-sphere preview, send to Library, PNG export." />
 <title>Normal Baker — Miki Butler</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -358,7 +358,7 @@
     setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500); $("status").textContent="Saved "+name; }
   $("exp").addEventListener("click",function(){ if(!normalRGBA){ $("status").textContent="Load a height map first."; return; }
     off.width=W; off.height=H; octx.putImageData(new ImageData(normalRGBA,W,H),0,0);
-    off.toBlob(function(b){ if(b) saveBlob(b,"normal_"+W+"x"+H+".png"); },"image/png"); });
+    off.toBlob(function(b){ if(b) saveBlob(b,slug(normalName())+"-"+W+"px.png"); },"image/png"); });
   try{ if(window.claude&&claude.use){ claude.use("downloads").then(function(d){ window.__dl=d; }).catch(function(){}); } }catch(e){}
 
   // ---------- Texture Library (shared IndexedDB on this origin) ----------
@@ -372,10 +372,13 @@
     t.textContent=msg; t.style.background=bad?"#7f1d1d":"#0d9488"; t.style.opacity="1"; clearTimeout(t._h); t._h=setTimeout(function(){ t.style.opacity="0"; },1800); }
   function mbThumb(cv,size){ var r=cv.width/cv.height, tw=r>=1?size:Math.round(size*r), th=r>=1?Math.round(size/r):size;
     var c=document.createElement("canvas"); c.width=tw; c.height=th; c.getContext("2d").drawImage(cv,0,0,tw,th); return c.toDataURL("image/png"); }
+  function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
+  function titleCase(s){ return (s||"map").replace(/[-_]+/g," ").replace(/\s+/g," ").trim().replace(/\b\w/g,function(m){return m.toUpperCase();}); }
+  function normalName(){ var n=titleCase(srcName); if(!/normal/i.test(n)) n+=" Normal Map"; return n; }
   $("lib").addEventListener("click",function(){ if(!normalRGBA){ $("status").textContent="Load a height map first."; return; }
     var cv=normCanvas, thumb=mbThumb(cv,160);
     cv.toBlob(function(blob){ if(!blob){ mbToast("Couldn't save",1); return; }
-      MBLib.add({ id:Date.now()+"-"+((Math.random()*1e6)|0), name:"Normal — "+srcName, kind:"normal", w:cv.width, h:cv.height, blob:blob, thumb:thumb, created:new Date().toISOString(), meta:"source:"+srcName+" strength:"+S.str+" green:"+S.green })
+      MBLib.add({ id:Date.now()+"-"+((Math.random()*1e6)|0), name:normalName(), kind:"normal", w:cv.width, h:cv.height, blob:blob, thumb:thumb, created:new Date().toISOString(), meta:"source:"+srcName+" strength:"+S.str+" green:"+S.green })
         .then(function(){ mbToast("Sent to Library ✓"); }).catch(function(){ mbToast("Library save failed",1); }); },"image/png"); });
   if(window.claude&&window.claude.use) $("lib").hidden=true;
 
