@@ -18,7 +18,7 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
   <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
-  <meta name="description" content="Noise Forge — a free seamless procedural texture-noise generator for game artists by Miki Butler. Perlin & Worley noise, octaves, domain warp, height + normal-map output, PNG export." />
+  <meta name="description" content="Noise Forge — a free seamless procedural texture-noise generator for game artists by Miki Butler. Perlin & Worley noise, two-layer blending, octaves, domain warp, height + normal-map output, PNG export." />
 <title>Noise Forge — Miki Butler</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -140,6 +140,37 @@
       <div class="field"><label>Domain warp <span class="val" id="vWarp">0.0</span></label><input type="range" id="warp" min="0" max="1" step="0.02" value="0"></div>
 
       <div class="divider"></div>
+      <label class="chk" style="margin-bottom:12px"><input type="checkbox" id="blendOn"> Blend a second noise</label>
+      <div id="layerB" hidden>
+        <div class="field">
+          <label for="typeB">Layer B type</label>
+          <select id="typeB" class="mono">
+            <option value="perlin">Perlin (gradient)</option>
+            <option value="worF1" selected>Worley · F1 (cells)</option>
+            <option value="worEdge">Worley · F2−F1 (edges)</option>
+          </select>
+        </div>
+        <div class="row">
+          <div class="field"><label>B scale <span class="val" id="vScaleB">12</span></label><input type="range" id="scaleB" min="1" max="40" step="1" value="12"></div>
+          <div class="field"><label>B octaves <span class="val" id="vOctB">2</span></label><input type="range" id="octB" min="1" max="8" step="1" value="2"></div>
+        </div>
+        <div class="field">
+          <label for="bmode">Blend mode</label>
+          <select id="bmode" class="mono">
+            <option value="mix" selected>Mix</option>
+            <option value="multiply">Multiply</option>
+            <option value="add">Add</option>
+            <option value="sub">Subtract</option>
+            <option value="max">Max (lighten)</option>
+            <option value="min">Min (darken)</option>
+            <option value="overlay">Overlay</option>
+            <option value="diff">Difference</option>
+          </select>
+        </div>
+        <div class="field"><label>Amount <span class="val" id="vBamount">0.50</span></label><input type="range" id="bamount" min="0" max="1" step="0.01" value="0.5"></div>
+      </div>
+
+      <div class="divider"></div>
       <h2>Levels</h2>
       <div class="row">
         <div class="field"><label>Contrast <span class="val" id="vCon">1.0</span></label><input type="range" id="con" min="0.3" max="3" step="0.05" value="1"></div>
@@ -196,7 +227,8 @@
 
   // ---------- state ----------
   var S={ type:"perlin", shape:"normal", scale:6, oct:5, gain:0.5, lac:2, warp:0,
-          con:1, bri:0, invert:false, omode:"height", nstr:2, seed:1337 };
+          con:1, bri:0, invert:false, omode:"height", nstr:2, seed:1337,
+          blend:false, typeB:"worF1", scaleB:12, octB:2, bmode:"mix", bamount:0.5 };
 
   // ---------- seeded hash / prng ----------
   function hashCell(i,j,s){ var h=(i*374761393 + j*668265263 + s*362437)|0;
@@ -236,28 +268,46 @@
     return { f1:Math.min(1,f1), f2:Math.min(1,f2) };
   }
 
-  // fractal sample -> [0,1]
-  function sample(u,v){
-    var amp=1, max=0, f=S.scale, per=S.scale, tot=0;
-    // domain warp
+  // one fractal layer -> [0,1] (shape + shared gain/lac/warp applied)
+  function fractal(u,v, type, scale, oct, seed){
+    var amp=1, max=0, f=scale, per=scale, tot=0;
     if(S.warp>0){
-      var wx=perlin(u*S.scale+11.3, v*S.scale+5.1, S.scale);
-      var wy=perlin(u*S.scale-7.7,  v*S.scale+2.9, S.scale);
-      u=u+ wx*S.warp/S.scale; v=v+ wy*S.warp/S.scale;
+      var wx=perlin(u*scale+11.3, v*scale+5.1, Math.round(scale));
+      var wy=perlin(u*scale-7.7,  v*scale+2.9, Math.round(scale));
+      u=u+ wx*S.warp/scale; v=v+ wy*S.warp/scale;
     }
-    for(var o=0;o<S.oct;o++){
+    for(var o=0;o<oct;o++){
       var n;
-      if(S.type==="perlin"){ n=perlin(u*f, v*f, Math.round(per)); n=n*0.5+0.5; }
-      else { var w=worley(u*f, v*f, Math.round(per), S.seed+o*131);
-             n = (S.type==="worEdge") ? Math.min(1,(w.f2-w.f1)*1.6) : (1-Math.min(1,w.f1)); }
-      // shape
+      if(type==="perlin"){ n=perlin(u*f, v*f, Math.round(per)); n=n*0.5+0.5; }
+      else { var w=worley(u*f, v*f, Math.round(per), seed+o*131);
+             n = (type==="worEdge") ? Math.min(1,(w.f2-w.f1)*1.6) : (1-Math.min(1,w.f1)); }
       if(S.shape==="ridged") n=1-Math.abs(n*2-1);
       else if(S.shape==="billow") n=Math.abs(n*2-1);
       tot += n*amp; max += amp;
       amp*=S.gain; f*=S.lac; per*=S.lac;
     }
-    var val = tot/max;
-    // levels
+    return tot/max;
+  }
+  // blend layer B into A by `t` (t=0 -> pure A)
+  function blendVal(a,b,mode,t){
+    var r;
+    switch(mode){
+      case "multiply": r=a*b; break;
+      case "add": r=a+b; break;
+      case "sub": r=a-b; break;
+      case "max": r=Math.max(a,b); break;
+      case "min": r=Math.min(a,b); break;
+      case "diff": r=Math.abs(a-b); break;
+      case "overlay": r=a<0.5?2*a*b:1-2*(1-a)*(1-b); break;
+      default: r=b; // mix (lerp A->B)
+    }
+    return a+(r-a)*t;
+  }
+  // final sample -> [0,1]
+  function sample(u,v){
+    var a=fractal(u,v, S.type, S.scale, S.oct, S.seed), val;
+    if(S.blend){ var b=fractal(u,v, S.typeB, S.scaleB, S.octB, S.seed+1000);
+      val=blendVal(a,b,S.bmode,S.bamount); } else val=a;
     val = (val-0.5)*S.con + 0.5 + S.bri;
     if(S.invert) val = 1-val;
     return val<0?0:val>1?1:val;
@@ -265,8 +315,7 @@
 
   // build height grid [res*res] float
   function buildHeight(res){
-    if(permReady!==S.seed && S.type==="perlin") buildPerm(S.seed);
-    if(S.type!=="perlin") buildPerm(S.seed); // perm used by warp regardless
+    if(permReady!==S.seed) buildPerm(S.seed); // perm used by warp and any Perlin layer
     var g=new Float32Array(res*res), k=0;
     for(var y=0;y<res;y++){ var v=y/res; for(var x=0;x<res;x++){ g[k++]=sample(x/res, v); } }
     return g;
@@ -335,6 +384,13 @@
   sl("con","con",function(v){return v.toFixed(1);}, "vCon");
   sl("bri","bri",function(v){return v.toFixed(2);}, "vBri");
   sl("nstr","nstr",function(v){return v.toFixed(1);}, "vNstr");
+  sl("scaleB","scaleB",function(v){return v;}, "vScaleB");
+  sl("octB","octB",function(v){return v;}, "vOctB");
+  sl("bamount","bamount",function(v){return v.toFixed(2);}, "vBamount");
+
+  $("blendOn").addEventListener("change",function(){ S.blend=this.checked; $("layerB").hidden=!this.checked; rerender(); });
+  $("typeB").addEventListener("change",function(){ S.typeB=this.value; rerender(); });
+  $("bmode").addEventListener("change",function(){ S.bmode=this.value; rerender(); });
 
   $("ntype").addEventListener("change",function(){ S.type=this.value; rerender(); });
   $("invert").addEventListener("change",function(){ S.invert=this.checked; rerender(); });
