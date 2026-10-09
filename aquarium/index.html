@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+  <meta name="description" content="Pocket Aquarium — a real-time interactive fish tank by Miki Butler. Fish that school, tap the water to feed them, with bubbles and swaying plants." />
+<title>Pocket Aquarium — Miki Butler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Manrope:wght@600;700;800&display=swap">
+<style>
+  /* One committed world: a lit glass tank seen head-on — deep water up top, sand and plants below. */
+  :root{
+    --deep:#063049; --mid:#0b5375; --shallow:#1a86a8; --sand:#d9c58a; --sand2:#b89b5e;
+    --fg:#eaf6fb; --mut:#a9c3d0; --faint:#6f8a98;
+    --panel:#062536cc; --line:#13506e; --line-2:#1d6e92;
+    --accent:#ff8a4c; --accent-2:#ffb07a; --on-accent:#2a1405;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{ margin:0; background:var(--deep); color:var(--fg);
+    font-family:"Manrope",system-ui,-apple-system,sans-serif; overflow:hidden; }
+  #tank{ position:fixed; inset:0; display:block; touch-action:none; cursor:crosshair; }
+
+  .masthead{ position:fixed; top:env(safe-area-inset-top,0px); left:0; padding:18px 20px; pointer-events:none; }
+  .masthead h1{ font-family:"Fredoka",system-ui,sans-serif; font-weight:600; font-size:28px; line-height:.95; margin:0;
+    color:#fff; text-shadow:0 2px 20px #0009; letter-spacing:.2px; }
+  .masthead p{ margin:4px 0 0; font-size:12.5px; font-weight:700; color:var(--mut); text-shadow:0 1px 8px #0007; }
+
+  .count{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 18px); right:18px;
+    font:800 13px/1 "Manrope",sans-serif; color:var(--fg); background:var(--panel); border:1px solid var(--line);
+    border-radius:999px; padding:8px 12px; backdrop-filter:blur(8px); }
+
+  .dock{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(16px + env(safe-area-inset-bottom,0px));
+    display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--panel); backdrop-filter:blur(12px);
+    border:1px solid var(--line); border-radius:16px; box-shadow:0 10px 40px #0007; flex-wrap:wrap; justify-content:center;
+    max-width:calc(100vw - 24px); }
+  .btn{ font:800 12.5px/1 "Manrope",sans-serif; color:var(--fg); background:#0c3a52; border:1px solid var(--line-2);
+    border-radius:11px; padding:10px 13px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .btn:hover{ border-color:var(--accent); color:var(--accent-2); }
+  .btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .btn.on{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .btn.primary:hover{ filter:brightness(1.07); color:var(--on-accent); }
+
+  .hint{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(84px + env(safe-area-inset-bottom,0px));
+    font-size:12.5px; font-weight:700; color:var(--accent-2); pointer-events:none; transition:opacity .5s; text-shadow:0 1px 8px #0008; }
+  .hint.gone{ opacity:0; }
+  @media (max-width:520px){ .masthead h1{ font-size:23px; } }
+</style>
+
+</head>
+<body>
+<canvas id="tank"></canvas>
+<div class="masthead">
+  <h1>Pocket Aquarium</h1>
+  <p>A tiny live tank. Tap the water to feed.</p>
+</div>
+<div class="count" id="count">🐟 0</div>
+<div class="hint" id="hint">tap the water to drop food 🍤</div>
+
+<div class="dock">
+  <button class="btn primary" id="feed">🍤 Feed</button>
+  <button class="btn" id="addFish">＋ Fish</button>
+  <button class="btn on" id="bub">🫧 Bubbles</button>
+  <button class="btn" id="pause">⏸ Pause</button>
+  <button class="btn" id="snap">⬇ Snapshot</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(id){return document.getElementById(id);};
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var cv=$("tank"), ctx=cv.getContext("2d");
+  var dpr=Math.min(window.devicePixelRatio||1,2);
+  var W=0,H=0,SAND=0;
+
+  var fish=[], food=[], bubbles=[], plants=[], rocks=[];
+  var playing=!reduce, bubblesOn=true, t=0;
+
+  function rnd(a,b){ return a+Math.random()*(b-a); }
+  function hsl(h,s,l){ return "hsl("+h+","+s+"%,"+l+"%)"; }
+  function len(x,y){ return Math.hypot(x,y); }
+
+  // ---- entities ----
+  function makeFish(x,y){
+    var kinds=[ {h:rnd(15,40),s:85,l:58},  // orange/goldfish
+                {h:rnd(190,205),s:70,l:60}, // blue tang
+                {h:rnd(45,55),s:90,l:60},  // yellow
+                {h:rnd(330,350),s:70,l:64}, // pink
+                {h:rnd(150,170),s:55,l:58} ]; // green/teal
+    var k=kinds[(Math.random()*kinds.length)|0];
+    var size=rnd(24,52);
+    return { x:x, y:y, vx:rnd(-1,1)*40, vy:rnd(-1,1)*20, size:size, h:k.h, s:k.s, l:k.l,
+      phase:Math.random()*6.28, maxSpd:rnd(55,95)*(40/size+0.4), finP:Math.random()*6.28 };
+  }
+  function addFish(n){ for(var i=0;i<n;i++){ if(fish.length>=34) break;
+    fish.push(makeFish(rnd(W*0.2,W*0.8), rnd(H*0.15, H-SAND-30))); } updateCount(); }
+
+  function makePlants(){
+    plants=[]; rocks=[];
+    var n=Math.max(5, Math.round(W/160));
+    for(var i=0;i<n;i++){ var x=rnd(20,W-20);
+      plants.push({ x:x, h:rnd(H*0.16,H*0.34), w:rnd(7,14), hue:rnd(95,150), phase:Math.random()*6.28,
+        sway:rnd(0.5,1.1), blades:(2+(Math.random()*2|0)) }); }
+    for(var r=0;r<3;r++){ rocks.push({ x:rnd(W*0.1,W*0.9), w:rnd(40,90), h:rnd(16,34), c:rnd(0,30) }); }
+  }
+  function spawnBubble(x){ bubbles.push({ x:x==null?rnd(10,W-10):x, y:H-SAND-rnd(0,10), r:rnd(2,6),
+    vy:rnd(28,60), wob:rnd(6,16), phase:Math.random()*6.28 }); }
+  function feed(x,y){ for(var i=0;i<5;i++){
+    food.push({ x:x+rnd(-14,14), y:(y||H*0.2)+rnd(-10,10), vx:rnd(-6,6), vy:rnd(6,16),
+      r:rnd(2.2,3.8), rot:Math.random()*6.28, hue:rnd(28,46), life:14 }); } hideHint(); }
+
+  // ---- update ----
+  function step(dt){
+    t+=dt;
+    // fish behaviours
+    var per=78, sep=30;
+    for(var i=0;i<fish.length;i++){ var f=fish[i];
+      var ax=0,ay=0, cx=0,cy=0,vx=0,vy=0, nn=0, sx=0,sy=0;
+      for(var j=0;j<fish.length;j++){ if(i===j) continue; var g=fish[j];
+        var dx=g.x-f.x, dy=g.y-f.y, d=len(dx,dy);
+        if(d<per && d>0.01){ cx+=g.x; cy+=g.y; vx+=g.vx; vy+=g.vy; nn++;
+          if(d<sep){ sx-=dx/d; sy-=dy/d; } }
+      }
+      if(nn>0){ cx/=nn; cy/=nn; vx/=nn; vy/=nn;
+        ax += (cx-f.x)*0.25 + (vx-f.vx)*0.7 + sx*46;
+        ay += (cy-f.y)*0.25 + (vy-f.vy)*0.7 + sy*46;
+      }
+      // seek nearest food
+      var best=null,bd=1e9;
+      for(var k=0;k<food.length;k++){ var fo=food[k]; var dx2=fo.x-f.x,dy2=fo.y-f.y,d2=len(dx2,dy2);
+        if(d2<260 && d2<bd){ bd=d2; best=fo; } }
+      if(best){ var dx3=best.x-f.x,dy3=best.y-f.y,d3=len(dx3,dy3)||1;
+        ax += dx3/d3*220; ay += dy3/d3*220;
+        if(d3 < f.size*0.55){ best.life=-1; sparkle(best.x,best.y,f); } }
+      // wander
+      ax += rnd(-1,1)*28; ay += rnd(-1,1)*20;
+      // walls
+      var m=46;
+      if(f.x<m) ax += (m-f.x)*2.2; if(f.x>W-m) ax -= (f.x-(W-m))*2.2;
+      if(f.y<m) ay += (m-f.y)*2.2;
+      var floor=H-SAND-12; if(f.y>floor) ay -= (f.y-floor)*3.0;
+      // integrate
+      f.vx += ax*dt; f.vy += ay*dt;
+      var sp=len(f.vx,f.vy), mx=f.maxSpd, mn=mx*0.28;
+      if(sp>mx){ f.vx=f.vx/sp*mx; f.vy=f.vy/sp*mx; } else if(sp<mn && sp>0){ f.vx=f.vx/sp*mn; f.vy=f.vy/sp*mn; }
+      f.x += f.vx*dt; f.y += f.vy*dt;
+      f.phase += dt*(7 + sp*0.05); f.finP += dt*4;
+    }
+    // food sink
+    for(var a=food.length-1;a>=0;a--){ var fo=food[a];
+      fo.vy += 6*dt; fo.vx*=0.985; fo.y += fo.vy*dt; fo.x += fo.vx*dt; fo.rot += dt*1.5;
+      var fl=H-SAND-3; if(fo.y>fl){ fo.y=fl; fo.vy=0; fo.vx*=0.8; fo.life-=dt; } else fo.life-=dt*0.4;
+      if(fo.life<0) food.splice(a,1);
+    }
+    // bubbles
+    if(bubblesOn && playing){ if(Math.random()< (reduce?0.02:0.08)) spawnBubble();
+      if(Math.random()<0.5) spawnBubble(W*0.5+rnd(-14,14)); } // air stone centre-ish
+    for(var b=bubbles.length-1;b>=0;b--){ var bu=bubbles[b];
+      bu.y -= bu.vy*dt; bu.phase += dt*3; bu.x += Math.sin(bu.phase)*bu.wob*dt;
+      if(bu.y < -10) bubbles.splice(b,1); }
+    // sparkles
+    for(var s=sparks.length-1;s>=0;s--){ var sp2=sparks[s]; sp2.life-=dt; sp2.x+=sp2.vx*dt; sp2.y+=sp2.vy*dt; sp2.vy+=20*dt;
+      if(sp2.life<0) sparks.splice(s,1); }
+  }
+  var sparks=[];
+  function sparkle(x,y,f){ for(var i=0;i<5;i++) sparks.push({x:x,y:y,vx:rnd(-30,30),vy:rnd(-30,10),life:rnd(0.3,0.6),h:f.h}); }
+
+  // ---- render ----
+  function drawFish(f){
+    var sp=len(f.vx,f.vy), ang=Math.atan2(f.vy,f.vx);
+    ctx.save(); ctx.translate(f.x,f.y); ctx.rotate(ang); if(f.vx<0) ctx.scale(1,-1);
+    var L=f.size, Bw=L*0.46, wag=Math.sin(f.phase)*(0.3+Math.min(1,sp/90)*0.3);
+    // tail
+    var tl=L*0.52;
+    ctx.fillStyle=hsl(f.h,f.s,f.l-8);
+    ctx.beginPath(); ctx.moveTo(-L*0.36,0);
+    ctx.lineTo(-L*0.36-tl, wag*Bw*1.3 - Bw*0.55);
+    ctx.quadraticCurveTo(-L*0.36-tl*0.5, wag*Bw*1.2, -L*0.36-tl, wag*Bw*1.3 + Bw*0.55);
+    ctx.closePath(); ctx.fill();
+    // dorsal + pectoral fins
+    ctx.fillStyle=hsl(f.h,f.s,f.l-4);
+    var fin=Math.sin(f.finP)*0.15;
+    ctx.beginPath(); ctx.moveTo(L*0.1,-Bw*0.8); ctx.quadraticCurveTo(-L*0.1,-Bw*1.5-fin*20,-L*0.22,-Bw*0.6); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(L*0.02,Bw*0.55,L*0.16,Bw*0.4, 0.5+fin, 0, 6.3); ctx.fill();
+    // body
+    var g=ctx.createLinearGradient(0,-Bw,0,Bw);
+    g.addColorStop(0,hsl(f.h,f.s,Math.min(80,f.l+16))); g.addColorStop(0.5,hsl(f.h,f.s,f.l)); g.addColorStop(1,hsl(f.h,f.s,f.l-14));
+    ctx.fillStyle=g; ctx.beginPath(); ctx.ellipse(0,0,L*0.5,Bw,0,0,6.3); ctx.fill();
+    // subtle stripe
+    ctx.globalAlpha=0.18; ctx.fillStyle="#ffffff";
+    ctx.beginPath(); ctx.ellipse(L*0.08,-Bw*0.25,L*0.34,Bw*0.4,0,0,6.3); ctx.fill(); ctx.globalAlpha=1;
+    // eye
+    ctx.fillStyle="#0a2230"; ctx.beginPath(); ctx.arc(L*0.3,-Bw*0.22,Math.max(1.6,L*0.055),0,6.3); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(L*0.32,-Bw*0.26,Math.max(0.7,L*0.02),0,6.3); ctx.fill();
+    ctx.restore();
+  }
+  function drawPlant(p){
+    var baseY=H-SAND+6, seg=14, amp=14*p.sway;
+    for(var bl=0; bl<p.blades; bl++){
+      var off=(bl-(p.blades-1)/2)*p.w*1.1;
+      ctx.beginPath(); ctx.moveTo(p.x+off, baseY);
+      for(var sgi=1;sgi<=seg;sgi++){ var fy=sgi/seg; var yy=baseY-fy*p.h;
+        var xx=p.x+off + Math.sin(t*p.sway + p.phase + fy*3.0)*amp*fy;
+        ctx.lineTo(xx,yy); }
+      ctx.lineWidth=p.w*(0.5+0.5*(1-bl/p.blades)); ctx.lineCap="round";
+      var gg=ctx.createLinearGradient(0,baseY-p.h,0,baseY);
+      gg.addColorStop(0,hsl(p.hue,55,52)); gg.addColorStop(1,hsl(p.hue,45,24));
+      ctx.strokeStyle=gg; ctx.stroke();
+    }
+  }
+  function draw(){
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    // water
+    var wg=ctx.createLinearGradient(0,0,0,H);
+    wg.addColorStop(0,"#1a86a8"); wg.addColorStop(0.45,"#0b5375"); wg.addColorStop(1,"#063049");
+    ctx.fillStyle=wg; ctx.fillRect(0,0,W,H);
+    // caustic light shafts from top
+    ctx.save(); ctx.globalCompositeOperation="lighter";
+    for(var i=0;i<4;i++){ var sx=W*(0.15+0.22*i)+Math.sin(t*0.3+i)*40;
+      var lg=ctx.createLinearGradient(sx,0,sx+60,H*0.8);
+      lg.addColorStop(0,"rgba(180,235,255,0.10)"); lg.addColorStop(1,"rgba(180,235,255,0)");
+      ctx.fillStyle=lg; ctx.beginPath(); ctx.moveTo(sx-30,0); ctx.lineTo(sx+30,0); ctx.lineTo(sx+90,H*0.85); ctx.lineTo(sx-10,H*0.85); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+    // sand
+    var sg=ctx.createLinearGradient(0,H-SAND,0,H);
+    sg.addColorStop(0,"#caa96a"); sg.addColorStop(1,"#a98a52");
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.moveTo(0,H-SAND+10);
+    for(var x=0;x<=W;x+=40) ctx.lineTo(x, H-SAND + Math.sin(x*0.03)*6);
+    ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fill();
+    // rocks
+    for(var r=0;r<rocks.length;r++){ var ro=rocks[r]; ctx.fillStyle=hsl(210,10,30+ro.c*0.2);
+      ctx.beginPath(); ctx.ellipse(ro.x,H-SAND+6,ro.w*0.5,ro.h,0,Math.PI,0); ctx.fill(); }
+    // plants
+    for(var p=0;p<plants.length;p++) drawPlant(plants[p]);
+    // food
+    for(var k=0;k<food.length;k++){ var fo=food[k]; ctx.save(); ctx.translate(fo.x,fo.y); ctx.rotate(fo.rot);
+      ctx.globalAlpha=Math.max(0.2,Math.min(1,fo.life)); ctx.fillStyle=hsl(fo.hue,70,55);
+      ctx.beginPath(); ctx.ellipse(0,0,fo.r,fo.r*0.7,0,0,6.3); ctx.fill(); ctx.restore(); }
+    ctx.globalAlpha=1;
+    // fish
+    for(var fI=0;fI<fish.length;fI++) drawFish(fish[fI]);
+    // sparkles
+    ctx.save(); ctx.globalCompositeOperation="lighter";
+    for(var s=0;s<sparks.length;s++){ var sp=sparks[s]; ctx.globalAlpha=Math.max(0,sp.life*1.6);
+      ctx.fillStyle=hsl(sp.h,80,70); ctx.beginPath(); ctx.arc(sp.x,sp.y,2,0,6.3); ctx.fill(); }
+    ctx.restore(); ctx.globalAlpha=1;
+    // bubbles
+    for(var b=0;b<bubbles.length;b++){ var bu=bubbles[b];
+      ctx.strokeStyle="rgba(220,245,255,0.55)"; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(bu.x,bu.y,bu.r,0,6.3); ctx.stroke();
+      ctx.fillStyle="rgba(255,255,255,0.5)"; ctx.beginPath(); ctx.arc(bu.x-bu.r*0.3,bu.y-bu.r*0.3,bu.r*0.3,0,6.3); ctx.fill(); }
+    // top light + vignette (glass feel)
+    var tl=ctx.createLinearGradient(0,0,0,H*0.3);
+    tl.addColorStop(0,"rgba(190,240,255,0.18)"); tl.addColorStop(1,"rgba(190,240,255,0)");
+    ctx.fillStyle=tl; ctx.fillRect(0,0,W,H*0.3);
+    var vg=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3,W/2,H/2,Math.max(W,H)*0.75);
+    vg.addColorStop(0,"rgba(0,0,0,0)"); vg.addColorStop(1,"rgba(2,14,22,0.5)");
+    ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
+  }
+
+  // ---- loop ----
+  var last=performance.now();
+  function frame(now){ var dt=Math.min(0.05,(now-last)/1000); last=now;
+    if(playing) step(dt); draw(); requestAnimationFrame(frame); }
+
+  // ---- interaction ----
+  function pt(e){ var p=e.touches?e.touches[0]:e; var r=cv.getBoundingClientRect(); return {x:p.clientX-r.left,y:p.clientY-r.top}; }
+  cv.addEventListener("pointerdown",function(e){ var p=pt(e); feed(p.x,p.y); });
+  var hintEl=$("hint"),hinted=false; function hideHint(){ if(!hinted){hinted=true; hintEl.classList.add("gone");} }
+
+  $("feed").addEventListener("click",function(){ feed(rnd(W*0.3,W*0.7), H*0.16); });
+  $("addFish").addEventListener("click",function(){ addFish(2); });
+  var bubBtn=$("bub"); bubBtn.addEventListener("click",function(){ bubblesOn=!bubblesOn; bubBtn.classList.toggle("on",bubblesOn); });
+  var pauseBtn=$("pause"); pauseBtn.addEventListener("click",function(){ playing=!playing; pauseBtn.textContent=playing?"⏸ Pause":"▶ Play"; pauseBtn.classList.toggle("on",!playing); });
+  if(reduce){ playing=true; } // aquarium is calm already
+
+  function saveBlob(blob,name){ if(window.__dl){ window.__dl.save({filename:name,data:blob}).catch(function(){}); return; }
+    var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500); }
+  $("snap").addEventListener("click",function(){ cv.toBlob(function(b){ if(b) saveBlob(b,"aquarium.png"); },"image/png"); });
+  try{ if(window.claude&&claude.use){ claude.use("downloads").then(function(d){ window.__dl=d; }).catch(function(){}); } }catch(e){}
+
+  function updateCount(){ $("count").textContent="🐟 "+fish.length; }
+
+  function resize(){ W=innerWidth; H=innerHeight; cv.width=W*dpr; cv.height=H*dpr; cv.style.width=W+"px"; cv.style.height=H+"px";
+    SAND=Math.round(H*0.12); makePlants(); }
+  window.addEventListener("resize",resize); resize();
+  addFish(reduce?8:12);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

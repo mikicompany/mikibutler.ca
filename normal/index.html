@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+  <meta name="description" content="Normal Baker — convert a grayscale height map to a tangent-space normal map, by Miki Butler. Strength, smoothing, OpenGL/DirectX green, tileable edges, a lit preview and PNG export." />
+<title>Normal Baker — Miki Butler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+  /* Same dark studio-tool identity as the UV Toolkit / Noise Forge — one family. */
+  :root{
+    color-scheme:dark;
+    --bg:#0f1316; --surface:#161b1f; --surface-2:#1c2228; --border:#28303a; --border-2:#39434f;
+    --fg:#e8edf1; --mut:#8d97a3; --faint:#5f6974;
+    --accent:#2dd4bf; --accent-2:#5ee7d6; --on-accent:#05211d; --accent-soft:#2dd4bf22;
+    --good:#4ade80; --warn:#fbbf24; --bad:#f87171;
+    --radius:14px; --shadow:0 2px 12px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{ margin:0; background:var(--bg); color:var(--fg); font-family:"Manrope",system-ui,-apple-system,sans-serif;
+    font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; padding:22px 16px; padding-block:22px; }
+  .mono{ font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; }
+  button{ font-family:inherit; cursor:pointer; color:inherit; }
+  .wrap{ max-width:980px; margin:0 auto; }
+  header.top{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .glyph{ width:38px; height:38px; border-radius:10px; flex:none; border:1px solid var(--border-2); box-shadow:var(--shadow);
+    background:linear-gradient(135deg,#8ea0ff 0%,#7a86ff 48%,#aef0e4 100%); }
+  .top h1{ font-size:19px; font-weight:800; margin:0; letter-spacing:-.3px; }
+  .top .sub{ font-size:12px; color:var(--mut); font-weight:600; }
+
+  .grid{ display:grid; grid-template-columns:300px 1fr; gap:16px; align-items:start; }
+  @media (max-width:760px){ .grid{ grid-template-columns:1fr; } }
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); min-width:0; }
+  .card h2{ font-size:12px; font-weight:800; margin:0 0 14px; text-transform:uppercase; letter-spacing:.5px; color:var(--mut); }
+
+  .drop{ display:flex; flex-direction:column; align-items:center; gap:5px; border:2px dashed var(--border-2); border-radius:12px;
+    padding:20px 14px; text-align:center; color:var(--mut); cursor:pointer; background:var(--surface-2); margin-bottom:12px; font-size:12.5px; }
+  .drop.hover{ border-color:var(--accent); color:var(--accent-2); background:var(--accent-soft); }
+  .drop .big{ font-size:24px; } .drop b{ color:var(--fg); } .drop .note{ font-size:10.5px; color:var(--faint); }
+  .samples{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+  .pill{ font:600 11.5px/1 inherit; padding:7px 11px; border-radius:999px; border:1px solid var(--border); background:var(--surface-2); color:var(--mut); }
+  .pill:hover{ border-color:var(--accent); color:var(--accent-2); }
+
+  .field{ margin-bottom:14px; }
+  .field > label{ display:flex; justify-content:space-between; align-items:baseline; font-size:12px; font-weight:700; margin-bottom:6px; }
+  .field .val{ color:var(--accent-2); font-family:"JetBrains Mono",monospace; font-size:12px; }
+  input[type=range]{ width:100%; accent-color:var(--accent); }
+  .seg{ display:flex; gap:6px; }
+  .seg button{ flex:1; padding:8px 6px; border-radius:8px; border:1px solid var(--border); background:var(--surface-2); color:var(--mut); font-weight:700; font-size:12.5px; }
+  .seg button.on{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-2); }
+  .chk{ display:flex; align-items:center; gap:9px; font-size:13px; font-weight:700; cursor:pointer; margin-bottom:12px; }
+  .chk input{ width:18px; height:18px; accent-color:var(--accent); }
+  .btn{ font:800 13px/1 inherit; padding:11px 14px; border-radius:9px; border:1px solid var(--border-2); background:var(--surface-2); color:var(--fg); width:100%; }
+  .btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); } .btn.primary:hover{ filter:brightness(1.06); }
+  .divider{ height:1px; background:var(--border); margin:16px 0; }
+
+  .stage{ position:relative; width:100%; aspect-ratio:1; border:1px solid var(--border-2); border-radius:10px; overflow:hidden; background:#0b0e10; }
+  #view{ width:100%; height:100%; display:block; }
+  .badge{ position:absolute; left:10px; top:10px; font:700 11px/1 "JetBrains Mono",monospace; color:var(--accent-2);
+    background:#0b0e10cc; border:1px solid var(--border-2); border-radius:999px; padding:5px 10px; }
+  .lighthint{ position:absolute; right:10px; bottom:10px; font:700 10.5px/1 "JetBrains Mono",monospace; color:var(--faint); background:#0b0e10aa; padding:4px 8px; border-radius:6px; }
+  .modes{ display:flex; gap:6px; margin-bottom:12px; }
+  .status{ font-size:11.5px; color:var(--mut); min-height:14px; margin-top:8px; }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="glyph"></div>
+    <div><h1>Normal Baker</h1><div class="sub">Height map → tangent-space normal map</div></div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Source height map</h2>
+      <label class="drop" id="drop">
+        <span class="big">⛰️</span>
+        <span class="dropmsg"><b>Drop a height map</b> or tap to choose</span>
+        <span class="note">grayscale image · stays on your device</span>
+        <input type="file" id="file" accept="image/*" hidden>
+      </label>
+      <div class="samples">
+        <span style="font-size:11px;color:var(--faint);font-weight:700;align-self:center">Try:</span>
+        <button class="pill" data-s="bricks">🧱 Bricks</button>
+        <button class="pill" data-s="noise">🌫️ Noise</button>
+        <button class="pill" data-s="rivets">⚙️ Rivets</button>
+      </div>
+
+      <div class="divider"></div>
+      <h2>Settings</h2>
+      <div class="field"><label>Strength <span class="val" id="vStr">2.0</span></label><input type="range" id="str" min="0.1" max="8" step="0.1" value="2"></div>
+      <div class="field"><label>Smooth <span class="val" id="vBlur">0 px</span></label><input type="range" id="blur" min="0" max="6" step="1" value="0"></div>
+      <div class="field">
+        <label>Green channel</label>
+        <div class="seg" id="green">
+          <button data-v="gl" class="on">OpenGL +Y</button>
+          <button data-v="dx">DirectX −Y</button>
+        </div>
+      </div>
+      <label class="chk"><input type="checkbox" id="invert"> Invert height (white = low)</label>
+      <label class="chk"><input type="checkbox" id="wrap" checked> Tileable edges (wrap)</label>
+
+      <div class="divider"></div>
+      <button class="btn primary" id="exp">⬇ Export normal map</button>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="card">
+      <div class="modes">
+        <div class="seg" id="mode" style="flex:1">
+          <button data-v="normal" class="on">Normal</button>
+          <button data-v="height">Height</button>
+          <button data-v="lit">Lit preview</button>
+        </div>
+      </div>
+      <div class="stage">
+        <canvas id="view" width="640" height="640"></canvas>
+        <span class="badge" id="badge">normal</span>
+        <span class="lighthint" id="lhint" hidden>drag to move the light</span>
+      </div>
+      <div class="status" id="dims"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(id){return document.getElementById(id);};
+  var MAXDIM=1600;
+  var S={ str:2, blur:0, green:"gl", invert:false, wrap:true, mode:"normal" };
+
+  var W=0,H=0, height=null, nx=null,ny=null,nz=null, normalRGBA=null;
+  var src=document.createElement("canvas"), sctx=src.getContext("2d");
+  var off=document.createElement("canvas"), octx=off.getContext("2d"); // full-res offscreen for putImageData
+  var view=$("view"), vctx=view.getContext("2d");
+  var light={ az:2.3, el:0.9 };
+
+  // ---------- load image / samples ----------
+  function setSource(img){
+    var w=img.width,h=img.height, sc=Math.min(1, MAXDIM/Math.max(w,h));
+    W=Math.max(2,Math.round(w*sc)); H=Math.max(2,Math.round(h*sc));
+    src.width=W; src.height=H; sctx.drawImage(img,0,0,W,H);
+    off.width=W; off.height=H;
+    computeHeight(); computeNormal(); render();
+    $("dims").textContent=W+" × "+H+" px"+(sc<1?" (downscaled from "+w+"×"+h+")":"");
+  }
+  function loadFile(f){ var img=new Image(); img.onload=function(){ setSource(img); }; img.src=URL.createObjectURL(f); }
+
+  function computeHeight(){
+    var d=sctx.getImageData(0,0,W,H).data, n=W*H, base=new Float32Array(n);
+    for(var i=0;i<n;i++){ var o=i*4; var l=(0.299*d[o]+0.587*d[o+1]+0.114*d[o+2])/255; base[i]=S.invert?1-l:l; }
+    if(S.blur>0){ base=boxBlur(base,W,H,S.blur); }
+    height=base;
+  }
+  function boxBlur(a,w,h,r){ var tmp=new Float32Array(w*h), out=new Float32Array(w*h), d=2*r+1;
+    for(var y=0;y<h;y++){ var s=0; for(var x=-r;x<=r;x++) s+=a[y*w+Math.max(0,Math.min(w-1,x))];
+      for(var x2=0;x2<w;x2++){ tmp[y*w+x2]=s/d; var add=Math.min(w-1,x2+r+1), sub=Math.max(0,x2-r); s+=a[y*w+add]-a[y*w+sub]; } }
+    for(var x3=0;x3<w;x3++){ var s2=0; for(var y2=-r;y2<=r;y2++) s2+=tmp[Math.max(0,Math.min(h-1,y2))*w+x3];
+      for(var y3=0;y3<h;y3++){ out[y3*w+x3]=s2/d; var add2=Math.min(h-1,y3+r+1), sub2=Math.max(0,y3-r); s2+=tmp[add2*w+x3]-tmp[sub2*w+x3]; } }
+    return out;
+  }
+  function computeNormal(){
+    var n=W*H; nx=new Float32Array(n); ny=new Float32Array(n); nz=new Float32Array(n); normalRGBA=new Uint8ClampedArray(n*4);
+    var str=S.str, gy=(S.green==="dx")?-1:1, wrap=S.wrap;
+    function H2(x,y){ if(wrap){ x=(x+W)%W; y=(y+H)%H; } else { x=x<0?0:x>=W?W-1:x; y=y<0?0:y>=H?H-1:y; } return height[y*W+x]; }
+    for(var y=0;y<H;y++)for(var x=0;x<W;x++){
+      var tl=H2(x-1,y-1),tc=H2(x,y-1),tr=H2(x+1,y-1),ml=H2(x-1,y),mr=H2(x+1,y),bl=H2(x-1,y+1),bc=H2(x,y+1),br=H2(x+1,y+1);
+      var dx=(tr+2*mr+br)-(tl+2*ml+bl), dy=(bl+2*bc+br)-(tl+2*tc+tr);
+      var vx=-dx*str, vy=-dy*str*gy, vz=1, inv=1/Math.sqrt(vx*vx+vy*vy+1);
+      vx*=inv; vy*=inv; vz*=inv; var i=y*W+x;
+      nx[i]=vx; ny[i]=vy; nz[i]=vz; var o=i*4;
+      normalRGBA[o]=(vx*0.5+0.5)*255; normalRGBA[o+1]=(vy*0.5+0.5)*255; normalRGBA[o+2]=(vz*0.5+0.5)*255; normalRGBA[o+3]=255;
+    }
+  }
+  function render(){
+    if(!height){ return; }
+    $("badge").textContent=S.mode; $("lhint").hidden=(S.mode!=="lit");
+    var img;
+    if(S.mode==="normal"){ img=new ImageData(normalRGBA,W,H); }
+    else if(S.mode==="height"){ var d=new Uint8ClampedArray(W*H*4); for(var i=0;i<W*H;i++){ var c=height[i]*255,o=i*4; d[o]=d[o+1]=d[o+2]=c; d[o+3]=255; } img=new ImageData(d,W,H); }
+    else { img=litImage(); }
+    octx.putImageData(img,0,0);
+    // draw fit into square view, preserve aspect
+    vctx.fillStyle="#0b0e10"; vctx.fillRect(0,0,view.width,view.height);
+    vctx.imageSmoothingEnabled=true;
+    var sc=Math.min(view.width/W, view.height/H), dw=W*sc, dh=H*sc;
+    vctx.drawImage(off,(view.width-dw)/2,(view.height-dh)/2,dw,dh);
+  }
+  function litImage(){
+    var lx=Math.cos(light.az)*Math.cos(light.el), ly=Math.sin(light.az)*Math.cos(light.el), lz=Math.sin(light.el);
+    var d=new Uint8ClampedArray(W*H*4), amb=0.22;
+    for(var i=0;i<W*H;i++){ var diff=nx[i]*lx+ny[i]*ly+nz[i]*lz; if(diff<0)diff=0;
+      var v=(amb+diff*0.95); if(v>1)v=1; var c=v*255, o=i*4;
+      d[o]=c*0.92; d[o+1]=c*0.95; d[o+2]=c; d[o+3]=255; }
+    return new ImageData(d,W,H);
+  }
+
+  // ---------- samples ----------
+  function sampleCanvas(kind){
+    var c=document.createElement("canvas"); c.width=c.height=512; var g=c.getContext("2d");
+    if(kind==="noise"){ var im=g.createImageData(512,512), dd=im.data;
+      // value-ish noise via smoothed random
+      var grid=24, rnd=[]; for(var i=0;i<(grid+1)*(grid+1);i++) rnd.push(Math.random());
+      function at(gx,gy){ return rnd[gy*(grid+1)+gx]; }
+      for(var y=0;y<512;y++)for(var x=0;x<512;x++){ var fx=x/512*grid, fy=y/512*grid, x0=fx|0,y0=fy|0,tx=fx-x0,ty=fy-y0;
+        function sm(t){return t*t*(3-2*t);} var a=at(x0,y0),b=at(x0+1,y0),cc=at(x0,y0+1),dd2=at(x0+1,y0+1);
+        var top=a+(b-a)*sm(tx), bot=cc+(dd2-cc)*sm(tx), v=(top+(bot-top)*sm(ty))*255, o=(y*512+x)*4;
+        dd[o]=dd[o+1]=dd[o+2]=v; dd[o+3]=255; } g.putImageData(im,0,0);
+    } else if(kind==="rivets"){ g.fillStyle="#4a4a4a"; g.fillRect(0,0,512,512);
+      for(var ry=0;ry<512;ry+=64)for(var rx=0;rx<512;rx+=64){ var cx=rx+32,cy=ry+32;
+        var rg=g.createRadialGradient(cx-6,cy-6,1,cx,cy,22); rg.addColorStop(0,"#ffffff"); rg.addColorStop(0.7,"#9a9a9a"); rg.addColorStop(1,"#3a3a3a");
+        g.fillStyle=rg; g.beginPath(); g.arc(cx,cy,20,0,6.3); g.fill(); }
+    } else { // bricks
+      g.fillStyle="#2a2a2a"; g.fillRect(0,0,512,512); // mortar (low)
+      var bw=120,bh=56,mp=8;
+      for(var row=0,yy=0;yy<512;yy+=bh+mp,row++){ var offx=(row%2)?-(bw/2):0;
+        for(var xx=offx;xx<512;xx+=bw+mp){ var gx=g.createLinearGradient(xx,yy,xx,yy+bh);
+          gx.addColorStop(0,"#d8d8d8"); gx.addColorStop(0.5,"#bdbdbd"); gx.addColorStop(1,"#8f8f8f");
+          g.fillStyle=gx; roundRect(g,xx+2,yy+2,bw-4,bh-4,7); g.fill(); } }
+    }
+    return c;
+  }
+  function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+  function loadSample(kind){ var c=sampleCanvas(kind); var img=new Image(); img.onload=function(){ setSource(img); }; img.src=c.toDataURL(); }
+
+  // ---------- wiring ----------
+  function sl(id,key,fmt,el,after){ var i=$(id),o=$(el);
+    i.addEventListener("input",function(){ S[key]=parseFloat(i.value); if(o)o.textContent=fmt(S[key]); if(after)after(); if(height){ computeNormal(); render(); } });
+  }
+  sl("str","str",function(v){return v.toFixed(1);},"vStr");
+  sl("blur","blur",function(v){return v+" px";},"vBlur",function(){ if(height) computeHeight(); });
+  $("invert").addEventListener("change",function(){ S.invert=this.checked; if(height){ computeHeight(); computeNormal(); render(); } });
+  $("wrap").addEventListener("change",function(){ S.wrap=this.checked; if(height){ computeNormal(); render(); } });
+  function seg(id,key,after){ document.querySelectorAll("#"+id+" button").forEach(function(b){ b.addEventListener("click",function(){
+    document.querySelectorAll("#"+id+" button").forEach(function(x){x.classList.remove("on");}); b.classList.add("on"); S[key]=b.dataset.v; if(after)after(); }); }); }
+  seg("green","green",function(){ if(height){ computeNormal(); render(); } });
+  seg("mode","mode",function(){ render(); });
+
+  // upload
+  var drop=$("drop"), file=$("file");
+  drop.addEventListener("click",function(){ file.click(); });
+  file.addEventListener("change",function(){ if(file.files&&file.files[0]) loadFile(file.files[0]); });
+  ["dragenter","dragover"].forEach(function(e){ drop.addEventListener(e,function(ev){ ev.preventDefault(); drop.classList.add("hover"); }); });
+  ["dragleave","drop"].forEach(function(e){ drop.addEventListener(e,function(ev){ ev.preventDefault(); if(e==="dragleave") drop.classList.remove("hover"); }); });
+  drop.addEventListener("drop",function(ev){ drop.classList.remove("hover"); var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0]; if(f) loadFile(f); });
+  document.querySelectorAll(".samples .pill").forEach(function(b){ b.addEventListener("click",function(){ loadSample(b.dataset.s); }); });
+
+  // light drag (lit mode)
+  var ldrag=false;
+  function setLight(e){ var r=view.getBoundingClientRect(), p=e.touches?e.touches[0]:e;
+    var u=((p.clientX-r.left)/r.width)*2-1, v=((p.clientY-r.top)/r.height)*2-1;
+    var m=Math.min(1,Math.hypot(u,v)); light.az=Math.atan2(-v,u); light.el=(1-m)*1.4+0.12; render(); }
+  view.addEventListener("pointerdown",function(e){ if(S.mode!=="lit")return; ldrag=true; setLight(e); });
+  window.addEventListener("pointermove",function(e){ if(ldrag) setLight(e); });
+  window.addEventListener("pointerup",function(){ ldrag=false; });
+
+  // export
+  function saveBlob(blob,name){ if(window.__dl){ window.__dl.save({filename:name,data:blob}).then(function(){ $("status").textContent="Saved "+name; }).catch(function(){ $("status").textContent="Save cancelled."; }); return; }
+    var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500); $("status").textContent="Saved "+name; }
+  $("exp").addEventListener("click",function(){ if(!normalRGBA){ $("status").textContent="Load a height map first."; return; }
+    off.width=W; off.height=H; octx.putImageData(new ImageData(normalRGBA,W,H),0,0);
+    off.toBlob(function(b){ if(b) saveBlob(b,"normal_"+W+"x"+H+".png"); },"image/png"); });
+  try{ if(window.claude&&claude.use){ claude.use("downloads").then(function(d){ window.__dl=d; }).catch(function(){}); } }catch(e){}
+
+  loadSample("bricks");
+})();
+</script>
+</body>
+</html>

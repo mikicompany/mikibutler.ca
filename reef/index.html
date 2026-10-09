@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+  <meta name="description" content="Reef Tank 3D — a real-time 3D aquarium by Miki Butler. Orbit the glass tank and tap to feed schooling fish, with caustic light, shadows and bubbles." />
+<title>Reef Tank 3D — Miki Butler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Manrope:wght@600;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  /* One committed world: a glass aquarium viewed in 3D, lit from above, hazy with depth. */
+  :root{
+    --fg:#eaf6fb; --mut:#a9c3d0; --accent:#ff8a4c; --accent-2:#ffb07a; --on-accent:#2a1405;
+    --panel:#062434cc; --line:#13506e; --line-2:#1d6e92;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{ margin:0; background:#07293a; color:var(--fg); font-family:"Manrope",system-ui,-apple-system,sans-serif; overflow:hidden; }
+  #gl{ position:fixed; inset:0; display:block; touch-action:none; cursor:grab; }
+  #gl.grab{ cursor:grabbing; }
+  .masthead{ position:fixed; top:env(safe-area-inset-top,0px); left:0; padding:18px 20px; pointer-events:none; }
+  .masthead h1{ font-family:"Fredoka",system-ui,sans-serif; font-weight:600; font-size:27px; margin:0; color:#fff; text-shadow:0 2px 20px #0009; }
+  .masthead p{ margin:4px 0 0; font-size:12.5px; font-weight:700; color:var(--mut); text-shadow:0 1px 8px #0007; }
+  .count{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 18px); right:18px; font:800 13px/1 "Manrope",sans-serif;
+    color:var(--fg); background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:8px 12px; backdrop-filter:blur(8px); }
+  .dock{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(16px + env(safe-area-inset-bottom,0px));
+    display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--panel); backdrop-filter:blur(12px);
+    border:1px solid var(--line); border-radius:16px; box-shadow:0 10px 40px #0007; flex-wrap:wrap; justify-content:center; max-width:calc(100vw - 24px); }
+  .btn{ font:800 12.5px/1 "Manrope",sans-serif; color:var(--fg); background:#0c3a52; border:1px solid var(--line-2);
+    border-radius:11px; padding:10px 13px; cursor:pointer; white-space:nowrap; }
+  .btn:hover{ border-color:var(--accent); color:var(--accent-2); }
+  .btn.on{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .hint{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(84px + env(safe-area-inset-bottom,0px));
+    font-size:12.5px; font-weight:700; color:var(--accent-2); pointer-events:none; transition:opacity .5s; text-shadow:0 1px 8px #0008; }
+  .hint.gone{ opacity:0; }
+  @media (max-width:520px){ .masthead h1{ font-size:22px; } }
+</style>
+
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div class="masthead"><h1>Reef Tank 3D</h1><p>Drag to look around &middot; tap the glass to feed</p></div>
+<div class="count" id="count">🐟 0</div>
+<div class="hint" id="hint">tap inside the tank to drop food 🍤</div>
+<div class="dock">
+  <button class="btn primary" id="feed">🍤 Feed</button>
+  <button class="btn" id="addFish">＋ Fish</button>
+  <button class="btn on" id="bub">🫧 Bubbles</button>
+  <button class="btn" id="pause">⏸ Pause</button>
+  <button class="btn" id="snap">⬇ Snapshot</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(id){return document.getElementById(id);};
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var cv=$("gl");
+  var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+
+  var scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x07293a);
+  scene.fog=new THREE.Fog(0x0b4a66, 26, 60);
+  var camera=new THREE.PerspectiveCamera(42,1,0.1,200);
+
+  // tank dims
+  var TW=24, TH=14, TD=14, HX=TW/2, HY=TH/2, HZ=TD/2, floorY=-HY;
+
+  // ---- lights ----
+  scene.add(new THREE.AmbientLight(0x8fbfd6, 0.55));
+  var sun=new THREE.DirectionalLight(0xfff4e0, 1.05);
+  sun.position.set(-8,26,10); sun.castShadow=true;
+  sun.shadow.mapSize.set(1024,1024); sun.shadow.camera.near=1; sun.shadow.camera.far=70;
+  sun.shadow.camera.left=-18; sun.shadow.camera.right=18; sun.shadow.camera.top=18; sun.shadow.camera.bottom=-18;
+  sun.shadow.bias=-0.0008; scene.add(sun);
+  var fill=new THREE.DirectionalLight(0x6fd0ff,0.4); fill.position.set(10,6,-12); scene.add(fill);
+
+  // ---- caustic canvas texture ----
+  function causticTex(){ var c=document.createElement("canvas"); c.width=c.height=256; var g=c.getContext("2d");
+    g.fillStyle="#000"; g.fillRect(0,0,256,256); g.globalCompositeOperation="lighter";
+    for(var i=0;i<26;i++){ var x=Math.random()*256,y=Math.random()*256,r=18+Math.random()*34;
+      var rg=g.createRadialGradient(x,y,0,x,y,r); rg.addColorStop(0,"rgba(190,235,255,0.5)"); rg.addColorStop(1,"rgba(190,235,255,0)");
+      g.fillStyle=rg; g.beginPath(); g.arc(x,y,r,0,6.3); g.fill(); }
+    var t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(2,2); return t; }
+  function sandTex(){ var c=document.createElement("canvas"); c.width=c.height=256; var g=c.getContext("2d");
+    g.fillStyle="#cbab6e"; g.fillRect(0,0,256,256);
+    for(var i=0;i<4000;i++){ g.fillStyle="rgba("+(150+Math.random()*80|0)+","+(120+Math.random()*70|0)+",70,0.5)";
+      g.fillRect(Math.random()*256,Math.random()*256,2,2); }
+    var t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(3,3); return t; }
+
+  // ---- substrate ----
+  var floorMat=new THREE.MeshStandardMaterial({map:sandTex(),roughness:1,metalness:0,color:0xffffff});
+  var floor=new THREE.Mesh(new THREE.PlaneGeometry(TW,TD,1,1),floorMat);
+  floor.rotation.x=-Math.PI/2; floor.position.y=floorY+0.02; floor.receiveShadow=true; scene.add(floor);
+  // caustic overlay just above sand
+  var caus=causticTex();
+  var causMat=new THREE.MeshBasicMaterial({map:caus,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false});
+  var causMesh=new THREE.Mesh(new THREE.PlaneGeometry(TW,TD),causMat);
+  causMesh.rotation.x=-Math.PI/2; causMesh.position.y=floorY+0.05; scene.add(causMesh);
+
+  // ---- rocks ----
+  for(var r=0;r<5;r++){ var rg=new THREE.IcosahedronGeometry(1,0);
+    var rk=new THREE.Mesh(rg,new THREE.MeshStandardMaterial({color:0x6d7177,roughness:1,flatShading:true}));
+    var sc=1+Math.random()*2.2; rk.scale.set(sc*1.3,sc*(0.5+Math.random()*0.4),sc*1.1);
+    rk.position.set((Math.random()-0.5)*TW*0.8, floorY+rk.scale.y*0.4, (Math.random()-0.5)*TD*0.7);
+    rk.rotation.y=Math.random()*6.3; rk.castShadow=true; rk.receiveShadow=true; scene.add(rk); }
+
+  // ---- plants ----
+  var plants=[];
+  function makePlant(x,z,hue){
+    var h=4+Math.random()*5, blades=2+(Math.random()*2|0), grp=new THREE.Group(); grp.position.set(x,floorY,z);
+    var mat=new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(hue/360,0.5,0.4),roughness:0.8,side:THREE.DoubleSide,emissive:new THREE.Color().setHSL(hue/360,0.5,0.06)});
+    for(var b=0;b<blades;b++){ var g=new THREE.PlaneGeometry(0.7+Math.random()*0.4,h,1,10);
+      g.translate(0,h/2,0); var m=new THREE.Mesh(g,mat); m.position.x=(b-(blades-1)/2)*0.5; m.rotation.y=Math.random()*6.3;
+      m.castShadow=true; m.userData.base=g.attributes.position.array.slice(); m.userData.h=h; grp.add(m); }
+    grp.userData.phase=Math.random()*6.3; grp.userData.sway=0.6+Math.random()*0.6; scene.add(grp); plants.push(grp);
+  }
+  for(var pi=0; pi<7; pi++) makePlant((Math.random()-0.5)*TW*0.82,(Math.random()-0.5)*TD*0.72, 95+Math.random()*60);
+
+  // ---- glass tank ----
+  var glassMat=new THREE.MeshPhongMaterial({color:0x9fd8ec,transparent:true,opacity:0.07,side:THREE.DoubleSide,depthWrite:false,shininess:90});
+  var glass=new THREE.Mesh(new THREE.BoxGeometry(TW,TH,TD),glassMat); scene.add(glass);
+  var waterMat=new THREE.MeshBasicMaterial({color:0x2d86a8,transparent:true,opacity:0.1,side:THREE.BackSide,depthWrite:false});
+  scene.add(new THREE.Mesh(new THREE.BoxGeometry(TW-0.2,TH-0.2,TD-0.2),waterMat));
+  var tankFrame=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(TW,TH,TD)),
+    new THREE.LineBasicMaterial({color:0x0a1e28})); scene.add(tankFrame);
+
+  // ---- fish ----
+  var fish=[], FUP=new THREE.Vector3(0,0,1), _q=new THREE.Quaternion(), _d=new THREE.Vector3();
+  var PAL=[ [18,0.9,0.56],[198,0.7,0.6],[50,0.9,0.6],[340,0.7,0.64],[160,0.55,0.55],[280,0.5,0.62] ];
+  function makeFish(){
+    var s=1.1+Math.random()*1.4, c=PAL[(Math.random()*PAL.length)|0];
+    var col=new THREE.Color().setHSL(c[0]/360,c[1],c[2]);
+    var g=new THREE.Group();
+    var bodyMat=new THREE.MeshStandardMaterial({color:col,roughness:0.42,metalness:0.05,
+      emissive:col.clone().multiplyScalar(0.08)});
+    var body=new THREE.Mesh(new THREE.SphereGeometry(1,20,16),bodyMat);
+    body.scale.set(0.34*s,0.4*s,0.72*s); body.castShadow=true; g.add(body);
+    // tail (pivot so it can wag)
+    var tailPiv=new THREE.Group(); tailPiv.position.set(0,0,-0.62*s); g.add(tailPiv);
+    var tail=new THREE.Mesh(new THREE.ConeGeometry(0.5*s,0.75*s,4),bodyMat);
+    tail.rotation.x=-Math.PI/2; tail.scale.set(0.12,1,1); tail.castShadow=true; tailPiv.add(tail);
+    // dorsal fin
+    var dor=new THREE.Mesh(new THREE.ConeGeometry(0.28*s,0.5*s,3),bodyMat);
+    dor.position.set(0,0.34*s,0.02*s); dor.scale.set(1,1,0.12); dor.castShadow=true; g.add(dor);
+    // eyes
+    var em=new THREE.MeshStandardMaterial({color:0x0a1a22,roughness:0.3});
+    [-1,1].forEach(function(sx){ var e=new THREE.Mesh(new THREE.SphereGeometry(0.08*s,8,8),em);
+      e.position.set(sx*0.22*s,0.08*s,0.42*s); g.add(e); });
+    scene.add(g);
+    fish.push({ x:(Math.random()-0.5)*TW*0.6, y:(Math.random()-0.5)*TH*0.4, z:(Math.random()-0.5)*TD*0.6,
+      vx:(Math.random()-0.5)*4, vy:(Math.random()-0.5)*2, vz:(Math.random()-0.5)*4,
+      s:s, g:g, tail:tailPiv, phase:Math.random()*6.3, maxSpd:(5+Math.random()*4)*(1.6/s+0.3) });
+  }
+  function addFish(n){ for(var i=0;i<n;i++){ if(fish.length>=26) break; makeFish(); } $("count").textContent="🐟 "+fish.length; }
+
+  // ---- food & bubbles ----
+  var food=[], foodGeo=new THREE.SphereGeometry(0.16,8,8),
+      foodMat=new THREE.MeshStandardMaterial({color:0xe8a33a,emissive:0x3a2600,roughness:0.6});
+  function dropFood(x,y,z){ for(var i=0;i<6;i++){ var m=new THREE.Mesh(foodGeo,foodMat); m.castShadow=true;
+    m.position.set(x+(Math.random()-0.5)*2, y+(Math.random()-0.5)*1.5, z+(Math.random()-0.5)*2); scene.add(m);
+    food.push({m:m, vy:-1-Math.random()*1.5, vx:(Math.random()-0.5), vz:(Math.random()-0.5), life:16}); } hideHint(); }
+  var bubbles=[], bubGeo=new THREE.SphereGeometry(1,8,8),
+      bubMat=new THREE.MeshPhongMaterial({color:0xcdeeff,transparent:true,opacity:0.4,shininess:100});
+  var bubblesOn=true;
+  function spawnBubble(x,z){ var m=new THREE.Mesh(bubGeo,bubMat); var r=0.08+Math.random()*0.18; m.scale.setScalar(r);
+    m.position.set(x==null?(Math.random()-0.5)*TW*0.8:x, floorY+0.3, z==null?(Math.random()-0.5)*TD*0.8:z); scene.add(m);
+    bubbles.push({m:m, vy:1.6+Math.random()*2, wob:0.4+Math.random()*0.8, phase:Math.random()*6.3}); }
+
+  // ---- boids update ----
+  function clampSpd(f){ var sp=Math.hypot(f.vx,f.vy,f.vz), mx=f.maxSpd, mn=mx*0.3;
+    if(sp>mx){ var k=mx/sp; f.vx*=k; f.vy*=k; f.vz*=k; } else if(sp<mn&&sp>0){ var k2=mn/sp; f.vx*=k2; f.vy*=k2; f.vz*=k2; } }
+  function step(dt){
+    var per=6, sep=2.6;
+    for(var i=0;i<fish.length;i++){ var f=fish[i], ax=0,ay=0,az=0, cx=0,cy=0,cz=0,vx=0,vy=0,vz=0,sx=0,sy=0,sz=0,nn=0;
+      for(var j=0;j<fish.length;j++){ if(i===j)continue; var o=fish[j];
+        var dx=o.x-f.x,dy=o.y-f.y,dz=o.z-f.z,d=Math.hypot(dx,dy,dz);
+        if(d<per&&d>0.001){ cx+=o.x;cy+=o.y;cz+=o.z; vx+=o.vx;vy+=o.vy;vz+=o.vz; nn++;
+          if(d<sep){ sx-=dx/d; sy-=dy/d; sz-=dz/d; } } }
+      if(nn>0){ cx/=nn;cy/=nn;cz/=nn; vx/=nn;vy/=nn;vz/=nn;
+        ax+=(cx-f.x)*0.3+(vx-f.vx)*0.8+sx*9; ay+=(cy-f.y)*0.3+(vy-f.vy)*0.8+sy*9; az+=(cz-f.z)*0.3+(vz-f.vz)*0.8+sz*9; }
+      // food seek
+      var best=null,bd=1e9;
+      for(var k=0;k<food.length;k++){ var fo=food[k].m.position; var dx2=fo.x-f.x,dy2=fo.y-f.y,dz2=fo.z-f.z,d2=Math.hypot(dx2,dy2,dz2);
+        if(d2<18&&d2<bd){bd=d2;best=food[k];} }
+      if(best){ var p=best.m.position,dx3=p.x-f.x,dy3=p.y-f.y,dz3=p.z-f.z,d3=Math.hypot(dx3,dy3,dz3)||1;
+        ax+=dx3/d3*16; ay+=dy3/d3*16; az+=dz3/d3*16; if(d3<f.s*0.7){ best.life=-1; } }
+      // wander
+      ax+=(Math.random()-0.5)*5; ay+=(Math.random()-0.5)*4; az+=(Math.random()-0.5)*5;
+      // tank walls (soft)
+      var m=2.2;
+      if(f.x<-HX+m)ax+=(-HX+m-f.x)*6; if(f.x>HX-m)ax+=(HX-m-f.x)*6;
+      if(f.y<-HY+m)ay+=(-HY+m-f.y)*7; if(f.y>HY-m)ay+=(HY-m-f.y)*7;
+      if(f.z<-HZ+m)az+=(-HZ+m-f.z)*6; if(f.z>HZ-m)az+=(HZ-m-f.z)*6;
+      f.vx+=ax*dt; f.vy+=ay*dt; f.vz+=az*dt; clampSpd(f);
+      f.x+=f.vx*dt; f.y+=f.vy*dt; f.z+=f.vz*dt;
+      // place + orient
+      f.g.position.set(f.x,f.y,f.z);
+      var sp=Math.hypot(f.vx,f.vy,f.vz);
+      if(sp>0.01){ _d.set(f.vx/sp,f.vy/sp,f.vz/sp); _q.setFromUnitVectors(FUP,_d); f.g.quaternion.copy(_q); }
+      f.phase+=dt*(8+sp*0.3); f.tail.rotation.y=Math.sin(f.phase)*0.5;
+    }
+    // food
+    for(var a=food.length-1;a>=0;a--){ var fd=food[a]; fd.vy-=1.2*dt; var pp=fd.m.position;
+      pp.x+=fd.vx*dt; pp.z+=fd.vz*dt; pp.y+=fd.vy*dt; fd.vx*=0.98; fd.vz*=0.98;
+      if(pp.y<floorY+0.16){ pp.y=floorY+0.16; fd.vy=0; fd.life-=dt*2; } else fd.life-=dt*0.3;
+      if(fd.life<0){ scene.remove(fd.m); food.splice(a,1); } }
+    // bubbles
+    if(bubblesOn){ if(Math.random()<0.22) spawnBubble(); if(Math.random()<0.5) spawnBubble((Math.random()-0.5)*4,(Math.random()-0.5)*4); }
+    for(var b=bubbles.length-1;b>=0;b--){ var bu=bubbles[b]; bu.phase+=dt*3; var bp=bu.m.position;
+      bp.y+=bu.vy*dt; bp.x+=Math.sin(bu.phase)*bu.wob*dt; if(bp.y>HY-0.3){ scene.remove(bu.m); bubbles.splice(b,1); } }
+    // plant sway
+    for(var pI=0;pI<plants.length;pI++){ var grp=plants[pI];
+      for(var c=0;c<grp.children.length;c++){ var m2=grp.children[c], base=m2.userData.base, pos=m2.geometry.attributes.position.array, hh=m2.userData.h;
+        for(var v=0;v<pos.length;v+=3){ var by=base[v+1], fr=by/hh;
+          pos[v]=base[v]+Math.sin(t*grp.userData.sway+grp.userData.phase+fr*3)*fr*0.9*grp.userData.sway;
+          pos[v+2]=base[v+2]+Math.cos(t*grp.userData.sway*0.8+grp.userData.phase+fr*2)*fr*0.5; }
+        m2.geometry.attributes.position.needsUpdate=true; } }
+    // caustic drift
+    caus.offset.x=(t*0.01)%1; caus.offset.y=(t*0.006)%1; causMat.opacity=0.4+Math.sin(t*0.8)*0.1;
+  }
+
+  // ---- camera orbit ----
+  var az=0.5, pol=1.25, rad=34, taz=az, tpol=pol, trad=rad;
+  var target=new THREE.Vector3(0,0,0);
+  function placeCam(){ var sp=Math.sin(pol); camera.position.set(target.x+rad*sp*Math.sin(az), target.y+rad*Math.cos(pol), target.z+rad*sp*Math.cos(az)); camera.lookAt(target); }
+  var dragging=false,lx=0,ly=0,usedDrag=false,moved=false;
+  function pe(e){ var p=e.touches?e.touches[0]:e; return {x:p.clientX,y:p.clientY}; }
+  cv.addEventListener("pointerdown",function(e){ dragging=true; moved=false; cv.classList.add("grab"); var p=pe(e); lx=p.x; ly=p.y; });
+  window.addEventListener("pointermove",function(e){ if(!dragging)return; var p=pe(e); var dx=p.x-lx,dy=p.y-ly; lx=p.x; ly=p.y;
+    if(Math.abs(dx)+Math.abs(dy)>3){ moved=true; usedDrag=true; }
+    taz-=dx*0.006; tpol-=dy*0.006; tpol=Math.max(0.35,Math.min(Math.PI-0.5,tpol)); });
+  window.addEventListener("pointerup",function(e){ cv.classList.remove("grab"); dragging=false;
+    if(!moved){ feedAtPointer(e); } });
+  cv.addEventListener("wheel",function(e){ e.preventDefault(); trad=Math.max(16,Math.min(70,trad+e.deltaY*0.03)); },{passive:false});
+
+  // raycast tap -> food inside tank
+  var ray=new THREE.Raycaster(), ndc=new THREE.Vector2();
+  function feedAtPointer(e){ var p=pe(e||{}); if(e&&e.clientX==null && e.changedTouches) p=e.changedTouches[0];
+    var rect=cv.getBoundingClientRect(); var cxp=(p.x!=null?p.x:lx), cyp=(p.y!=null?p.y:ly);
+    ndc.x=((cxp-rect.left)/rect.width)*2-1; ndc.y=-((cyp-rect.top)/rect.height)*2+1;
+    ray.setFromCamera(ndc,camera);
+    // intersect a vertical plane through tank centre (z=0), clamp into tank
+    var pt=new THREE.Vector3(); var plane=new THREE.Plane(new THREE.Vector3(0,0,1),0);
+    if(ray.ray.intersectPlane(plane,pt)){
+      pt.x=Math.max(-HX+1,Math.min(HX-1,pt.x)); pt.y=Math.max(-HY+1,Math.min(HY-2,pt.y));
+      dropFood(pt.x, Math.min(pt.y, HY-2), 0);
+    } else dropFood((Math.random()-0.5)*6, HY-3, 0);
+  }
+
+  var hintEl=$("hint"),hinted=false; function hideHint(){ if(!hinted){hinted=true; hintEl.classList.add("gone");} }
+
+  // ---- controls ----
+  $("feed").addEventListener("click",function(){ dropFood((Math.random()-0.5)*8, HY-3, (Math.random()-0.5)*6); });
+  $("addFish").addEventListener("click",function(){ addFish(2); });
+  var bubBtn=$("bub"); bubBtn.addEventListener("click",function(){ bubblesOn=!bubblesOn; bubBtn.classList.toggle("on",bubblesOn); });
+  var playing=true, pauseBtn=$("pause");
+  pauseBtn.addEventListener("click",function(){ playing=!playing; pauseBtn.textContent=playing?"⏸ Pause":"▶ Play"; pauseBtn.classList.toggle("on",!playing); });
+  function saveBlob(blob,name){ if(window.__dl){ window.__dl.save({filename:name,data:blob}).catch(function(){}); return; }
+    var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500); }
+  $("snap").addEventListener("click",function(){ renderer.render(scene,camera); cv.toBlob(function(b){ if(b) saveBlob(b,"reef-tank.png"); },"image/png"); });
+  try{ if(window.claude&&claude.use){ claude.use("downloads").then(function(d){ window.__dl=d; }).catch(function(){}); } }catch(e){}
+
+  // ---- resize + loop ----
+  function resize(){ var w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+  window.addEventListener("resize",resize); resize();
+
+  var t=0,last=performance.now();
+  function frame(now){ var dt=Math.min(0.05,(now-last)/1000); last=now;
+    if(!usedDrag && !dragging) taz+=dt*0.05;
+    az+=(taz-az)*0.1; pol+=(tpol-pol)*0.1; rad+=(trad-rad)*0.1; placeCam();
+    if(playing){ t+=dt; step(dt); }
+    renderer.render(scene,camera); requestAnimationFrame(frame); }
+  addFish(reduce?8:13); placeCam();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
