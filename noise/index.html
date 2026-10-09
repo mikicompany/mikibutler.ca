@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
   <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
-  <meta name="description" content="Noise Forge — free seamless procedural texture-noise generator by Miki Butler. Perlin & Worley, two-layer blending, octaves, domain warp, height + normal output, send to Library, PNG export." />
+  <meta name="description" content="Noise Forge — free seamless procedural texture-noise generator for game artists by Miki Butler. Perlin & Worley, two-layer blending, octaves, domain warp, height + normal output, send to Library, PNG export." />
   <link rel="canonical" href="https://mikibutler.ca/noise" />
 <title>Noise Forge — Miki Butler</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -215,6 +215,7 @@
         <button class="btn primary" id="exp" style="margin-bottom:0">⬇ Export PNG</button>
       </div>
       <button class="btn" id="lib" style="margin-top:8px">＋ Send to Library</button>
+      <a id="libLink" href="/library" style="display:block;text-align:center;margin-top:8px;font-size:12.5px;font-weight:700;color:var(--accent-2);text-decoration:none">🗂️ Open Texture Library →</a>
       <div class="status" id="status" style="margin-top:8px"></div>
     </div>
   </div>
@@ -477,7 +478,7 @@
       sendToLibrary(c, S.omode==="normal"?"normal":"noise", noiseName(res), "noise:"+S.type+" scale:"+S.scale+" oct:"+S.oct+(S.blend?" blendB:"+S.typeB:"")); $("status").textContent=""; },20);
   });
   // The Library viewer is a site page; hide the button inside the Claude artifact preview
-  if(window.claude&&window.claude.use) $("lib").hidden=true;
+  if(window.claude&&window.claude.use){ $("lib").hidden=true; var _ll=$("libLink"); if(_ll) _ll.hidden=true; }
 
   // downloads capability (artifact); on the website the native <a download> is used
   try{ if(window.claude&&claude.use){ claude.use("downloads").then(function(d){ window.__dl=d; }).catch(function(){}); } }catch(e){}
@@ -487,5 +488,3 @@
   if(firstPreset) firstPreset.click(); else rerender();
 })();
 </script>
-</body>
-</html>
