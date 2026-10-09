@@ -1,0 +1,83 @@
+[
+  {
+    "name": "Seamless Perlin Cloud Noise Texture",
+    "file": "seamless-perlin-cloud-noise-texture.png",
+    "kind": "height",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable Perlin cloud noise texture at 1024\u00d71024px \u2014 generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Ridged Rock Noise Texture",
+    "file": "seamless-ridged-rock-noise-texture.png",
+    "kind": "height",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable ridged Perlin rock noise texture at 1024\u00d71024px \u2014 generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Billow Cloud Noise Texture",
+    "file": "seamless-billow-cloud-noise-texture.png",
+    "kind": "height",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable billow cloud noise texture at 1024\u00d71024px \u2014 generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Worley Cellular Noise Texture",
+    "file": "seamless-worley-cellular-noise-texture.png",
+    "kind": "height",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable Worley / Voronoi cellular noise texture at 1024\u00d71024px \u2014 generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Cracked Cells Noise Texture",
+    "file": "seamless-cracked-cells-noise-texture.png",
+    "kind": "height",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable Worley cracked-cell noise texture at 1024\u00d71024px \u2014 generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Fine Fractal Noise Texture",
+    "file": "seamless-fine-fractal-noise-texture.png",
+    "kind": "height",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable fine fractal (fBm) noise texture at 1024\u00d71024px \u2014 generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Perlin Cloud Normal Map",
+    "file": "seamless-perlin-cloud-normal-map.png",
+    "kind": "normal",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable Perlin cloud normal map at 1024\u00d71024px \u2014 generated with Normal Baker by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Normal Baker"
+  },
+  {
+    "name": "Seamless Worley Cellular Normal Map",
+    "file": "seamless-worley-cellular-normal-map.png",
+    "kind": "normal",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable Worley cellular normal map at 1024\u00d71024px \u2014 generated with Normal Baker by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Normal Baker"
+  },
+  {
+    "name": "Seamless Cracked Cells Normal Map",
+    "file": "seamless-cracked-cells-normal-map.png",
+    "kind": "normal",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable cracked-cell normal map at 1024\u00d71024px \u2014 generated with Normal Baker by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Normal Baker"
+  }
+]
