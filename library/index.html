@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+  <meta name="description" content="Texture Library — a browser-stored, searchable library of textures and noise/normal maps saved from Miki Butler’s Noise Forge and Normal Baker tools." />
+<title>Texture Library — Miki Butler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+  /* Same dark studio-tool identity as Noise Forge / Normal Baker / UV Toolkit. */
+  :root{
+    color-scheme:dark;
+    --bg:#0f1316; --surface:#161b1f; --surface-2:#1c2228; --border:#28303a; --border-2:#39434f;
+    --fg:#e8edf1; --mut:#8d97a3; --faint:#5f6974;
+    --accent:#2dd4bf; --accent-2:#5ee7d6; --on-accent:#05211d; --accent-soft:#2dd4bf22;
+    --bad:#f87171; --radius:14px; --shadow:0 2px 12px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  body{ margin:0; background:var(--bg); color:var(--fg); font-family:"Manrope",system-ui,-apple-system,sans-serif;
+    font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; padding:22px 16px; padding-block:22px; }
+  .mono{ font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; }
+  button{ font-family:inherit; cursor:pointer; color:inherit; }
+  .wrap{ max-width:1040px; margin:0 auto; }
+  header.top{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .glyph{ width:38px; height:38px; border-radius:10px; flex:none; border:1px solid var(--border-2); box-shadow:var(--shadow);
+    background:conic-gradient(from 45deg,#2dd4bf,#5ee7d6,#8ea0ff,#2dd4bf); }
+  .top h1{ font-size:19px; font-weight:800; margin:0; letter-spacing:-.3px; }
+  .top .sub{ font-size:12px; color:var(--mut); font-weight:600; }
+  .top .sp{ flex:1; }
+  .home{ font-size:12.5px; font-weight:700; color:var(--mut); text-decoration:none; border:1px solid var(--border); border-radius:9px; padding:8px 12px; }
+  .home:hover{ border-color:var(--accent); color:var(--accent-2); }
+
+  .bar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+  .search{ flex:1; min-width:180px; }
+  input[type=search]{ width:100%; font:14px/1.3 inherit; color:var(--fg); background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:10px 12px; }
+  input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft); }
+  .chips{ display:flex; gap:6px; flex-wrap:wrap; }
+  .chip{ font:700 12px/1 inherit; padding:8px 12px; border-radius:999px; border:1px solid var(--border); background:var(--surface-2); color:var(--mut); }
+  .chip.on{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-2); }
+  .meta-line{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; font-size:12px; color:var(--faint); }
+  .danger{ font:700 12px/1 inherit; color:var(--bad); background:none; border:1px solid #512; border-radius:9px; padding:7px 11px; }
+  .danger:hover{ background:#2a1416; }
+
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px; }
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
+  .thumb{ aspect-ratio:1; background:
+      linear-gradient(45deg,#20262c 25%,transparent 25%),linear-gradient(-45deg,#20262c 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#20262c 75%),linear-gradient(-45deg,transparent 75%,#20262c 75%);
+    background-size:18px 18px; background-position:0 0,0 9px,9px -9px,-9px 0; background-color:#12161a;
+    display:grid; place-items:center; cursor:zoom-in; position:relative; }
+  .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .kind{ position:absolute; left:8px; top:8px; font:700 10px/1 "JetBrains Mono",monospace; text-transform:uppercase; letter-spacing:.4px;
+    padding:4px 7px; border-radius:999px; border:1px solid var(--border-2); background:#0b0e10cc; }
+  .k-noise{ color:#5ee7d6; } .k-normal{ color:#8ea0ff; } .k-height{ color:#d7dde3; }
+  .body{ padding:10px 11px; display:flex; flex-direction:column; gap:7px; }
+  .name{ font:700 13px/1.3 inherit; color:var(--fg); background:var(--surface-2); border:1px solid transparent; border-radius:7px; padding:5px 7px; width:100%; }
+  .name[readonly]{ background:transparent; border-color:transparent; cursor:text; }
+  .name:not([readonly]){ border-color:var(--accent); outline:none; }
+  .sub2{ font:600 11px/1 "JetBrains Mono",monospace; color:var(--faint); display:flex; justify-content:space-between; gap:8px; }
+  .acts{ display:flex; gap:6px; }
+  .acts button{ flex:1; font:700 11.5px/1 inherit; padding:8px 6px; border-radius:8px; border:1px solid var(--border-2); background:var(--surface-2); color:var(--mut); }
+  .acts button:hover{ border-color:var(--accent); color:var(--accent-2); }
+  .acts .del:hover{ border-color:var(--bad); color:var(--bad); }
+
+  .empty{ text-align:center; color:var(--mut); padding:60px 20px; border:2px dashed var(--border-2); border-radius:14px; }
+  .empty .big{ font-size:34px; } .empty b{ color:var(--fg); }
+  .empty a{ color:var(--accent-2); }
+
+  .lightbox{ position:fixed; inset:0; background:#060809ee; display:none; place-items:center; z-index:30; padding:24px; }
+  .lightbox.on{ display:grid; }
+  .lightbox img{ max-width:92vw; max-height:82vh; border:1px solid var(--border-2); border-radius:10px; background:#12161a; }
+  .lightbox .cap{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%); font:700 13px/1 inherit; color:var(--fg); background:#0b0e10cc; border:1px solid var(--border); border-radius:999px; padding:9px 14px; }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="glyph"></div>
+    <div><h1>Texture Library</h1><div class="sub">Saved from Noise Forge &amp; Normal Baker · stored in this browser</div></div>
+    <div class="sp"></div>
+    <a class="home" href="/arcade.html">← Arcade</a>
+  </header>
+
+  <div class="bar">
+    <div class="search"><input type="search" id="q" placeholder="Search by name…"></div>
+    <div class="chips" id="chips">
+      <button class="chip on" data-k="all">All</button>
+      <button class="chip" data-k="noise">Noise</button>
+      <button class="chip" data-k="normal">Normal</button>
+      <button class="chip" data-k="height">Height</button>
+    </div>
+  </div>
+  <div class="meta-line">
+    <span id="count">—</span>
+    <button class="danger" id="clear">Clear all</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden>
+    <div class="big">🗂️</div>
+    <p>No textures saved yet.<br>Generate one in <b><a href="/noise">Noise Forge</a></b> or <b><a href="/normal">Normal Baker</a></b> and hit <b>＋ Library</b>.</p>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox"><img id="lbimg" alt=""><div class="cap" id="lbcap"></div></div>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(id){return document.getElementById(id);};
+
+  // ---------- IndexedDB store (shared across the tool pages on this origin) ----------
+  var MBLib=(function(){
+    var DB="mbTextureLib", STORE="items", _db=null;
+    function open(){ return new Promise(function(res,rej){ if(_db)return res(_db);
+      var r=indexedDB.open(DB,1);
+      r.onupgradeneeded=function(e){ var db=e.target.result; if(!db.objectStoreNames.contains(STORE)){ var s=db.createObjectStore(STORE,{keyPath:"id"}); s.createIndex("created","created"); } };
+      r.onsuccess=function(){ _db=r.result; res(_db); }; r.onerror=function(){ rej(r.error); }; }); }
+    function tx(m){ return open().then(function(db){ return db.transaction(STORE,m).objectStore(STORE); }); }
+    function wrap(req){ return new Promise(function(res,rej){ req.onsuccess=function(){res(req.result);}; req.onerror=function(){rej(req.error);}; }); }
+    return {
+      all:function(){ return tx("readonly").then(function(s){ return wrap(s.getAll()); }); },
+      put:function(it){ return tx("readwrite").then(function(s){ return wrap(s.put(it)); }); },
+      del:function(id){ return tx("readwrite").then(function(s){ return wrap(s.delete(id)); }); },
+      clear:function(){ return tx("readwrite").then(function(s){ return wrap(s.clear()); }); }
+    };
+  })();
+
+  var items=[], filter="all", query="";
+
+  function fmtDate(iso){ try{ var d=new Date(iso); return d.toLocaleDateString(undefined,{month:"short",day:"numeric"})+" "+d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
+  function bytes(n){ if(n<1024)return n+" B"; if(n<1048576)return (n/1024).toFixed(0)+" KB"; return (n/1048576).toFixed(1)+" MB"; }
+
+  function load(){ MBLib.all().then(function(arr){ items=(arr||[]).sort(function(a,b){ return b.created<a.created?-1:1; }); draw(); })
+    .catch(function(){ $("count").textContent="Library unavailable in this browser."; }); }
+
+  function draw(){
+    var list=items.filter(function(it){ return (filter==="all"||it.kind===filter) && (!query || (it.name||"").toLowerCase().indexOf(query)>=0); });
+    var totalBytes=items.reduce(function(s,it){ return s+((it.blob&&it.blob.size)||0); },0);
+    $("count").textContent = items.length+" item"+(items.length!==1?"s":"")+" · "+bytes(totalBytes)+(list.length!==items.length?" · "+list.length+" shown":"");
+    $("empty").hidden = items.length>0;
+    var grid=$("grid"); grid.innerHTML="";
+    list.forEach(function(it){
+      var url=URL.createObjectURL(it.blob);
+      var card=document.createElement("div"); card.className="card";
+      card.innerHTML=
+        '<div class="thumb"><span class="kind k-'+it.kind+'">'+it.kind+'</span>'+
+          '<img loading="lazy" alt="" src="'+(it.thumb||url)+'"></div>'+
+        '<div class="body">'+
+          '<input class="name" value="" readonly>'+
+          '<div class="sub2"><span>'+it.w+'×'+it.h+'</span><span>'+fmtDate(it.created)+'</span></div>'+
+          '<div class="acts"><button class="dl">Download</button><button class="ren">Rename</button><button class="del">Delete</button></div>'+
+        '</div>';
+      var nameEl=card.querySelector(".name"); nameEl.value=it.name||"Untitled";
+      card.querySelector(".thumb").addEventListener("click",function(){ openLB(url, (it.name||"Untitled")+"  ·  "+it.w+"×"+it.h); });
+      card.querySelector(".dl").addEventListener("click",function(){ var a=document.createElement("a"); a.href=url; a.download=safe(it.name)+".png"; document.body.appendChild(a); a.click(); a.remove(); });
+      var ren=card.querySelector(".ren");
+      ren.addEventListener("click",function(){ if(nameEl.hasAttribute("readonly")){ nameEl.removeAttribute("readonly"); nameEl.focus(); nameEl.select(); ren.textContent="Save"; }
+        else saveName(); });
+      function saveName(){ nameEl.setAttribute("readonly",""); ren.textContent="Rename"; it.name=nameEl.value.trim()||"Untitled"; MBLib.put(it); }
+      nameEl.addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); nameEl.blur(); } });
+      nameEl.addEventListener("blur",function(){ if(!nameEl.hasAttribute("readonly")) saveName(); });
+      card.querySelector(".del").addEventListener("click",function(){ MBLib.del(it.id).then(function(){ items=items.filter(function(x){return x.id!==it.id;}); draw(); }); });
+      grid.appendChild(card);
+    });
+  }
+  function safe(s){ return (s||"texture").replace(/[^\w\-]+/g,"_").slice(0,48); }
+
+  // lightbox
+  function openLB(url,cap){ $("lbimg").src=url; $("lbcap").textContent=cap; $("lightbox").classList.add("on"); }
+  $("lightbox").addEventListener("click",function(){ this.classList.remove("on"); });
+
+  // controls
+  $("q").addEventListener("input",function(){ query=this.value.trim().toLowerCase(); draw(); });
+  document.querySelectorAll("#chips .chip").forEach(function(c){ c.addEventListener("click",function(){
+    document.querySelectorAll("#chips .chip").forEach(function(x){x.classList.remove("on");}); c.classList.add("on"); filter=c.dataset.k; draw(); }); });
+  $("clear").addEventListener("click",function(){ if($("clear").dataset.armed){ MBLib.clear().then(function(){ items=[]; draw(); }); $("clear").textContent="Clear all"; delete $("clear").dataset.armed; }
+    else { $("clear").dataset.armed="1"; $("clear").textContent="Click again to wipe"; setTimeout(function(){ $("clear").textContent="Clear all"; delete $("clear").dataset.armed; },2600); } });
+
+  load();
+})();
+</script>
+</body>
+</html>

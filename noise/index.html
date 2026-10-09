@@ -18,7 +18,7 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
   <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
-  <meta name="description" content="Noise Forge — a free seamless procedural texture-noise generator for game artists by Miki Butler. Perlin & Worley noise, two-layer blending, octaves, domain warp, height + normal-map output, PNG export." />
+  <meta name="description" content="Noise Forge — a free seamless procedural texture-noise generator for game artists by Miki Butler. Perlin & Worley, two-layer blending, octaves, domain warp, height + normal output, send to Library, PNG export." />
 <title>Noise Forge — Miki Butler</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -214,6 +214,7 @@
         </div>
         <button class="btn primary" id="exp" style="margin-bottom:0">⬇ Export PNG</button>
       </div>
+      <button class="btn" id="lib" style="margin-top:8px">＋ Send to Library</button>
       <div class="status" id="status" style="margin-top:8px"></div>
     </div>
   </div>
@@ -447,6 +448,32 @@
       b.classList.add("on"); applyPreset(PRESETS[b.dataset.p]);
     });
   });
+
+  // ---------- Texture Library (shared IndexedDB on this origin) ----------
+  var MBLib=(function(){ var DB="mbTextureLib",STORE="items",_db=null;
+    function open(){return new Promise(function(res,rej){ if(_db)return res(_db); var r=indexedDB.open(DB,1);
+      r.onupgradeneeded=function(e){var db=e.target.result; if(!db.objectStoreNames.contains(STORE)){var s=db.createObjectStore(STORE,{keyPath:"id"}); s.createIndex("created","created");}};
+      r.onsuccess=function(){_db=r.result;res(_db);}; r.onerror=function(){rej(r.error);}; });}
+    return { add:function(it){ return open().then(function(db){ return new Promise(function(res,rej){ var r=db.transaction(STORE,"readwrite").objectStore(STORE).add(it); r.onsuccess=function(){res();}; r.onerror=function(){rej(r.error);}; }); }); } }; })();
+  function mbToast(msg,bad){ var t=document.getElementById("mbToast"); if(!t){ t=document.createElement("div"); t.id="mbToast";
+    t.style.cssText="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;font:800 13px/1 Manrope,sans-serif;padding:11px 16px;border-radius:999px;box-shadow:0 8px 30px #0008;transition:opacity .3s;color:#fff;"; document.body.appendChild(t); }
+    t.textContent=msg; t.style.background=bad?"#7f1d1d":"#0d9488"; t.style.opacity="1"; clearTimeout(t._h); t._h=setTimeout(function(){ t.style.opacity="0"; },1800); }
+  function mbThumb(cv,size){ var r=cv.width/cv.height, tw=r>=1?size:Math.round(size*r), th=r>=1?Math.round(size/r):size;
+    var c=document.createElement("canvas"); c.width=tw; c.height=th; c.getContext("2d").drawImage(cv,0,0,tw,th); return c.toDataURL("image/png"); }
+  function sendToLibrary(cv,kind,name,meta){ var thumb=mbThumb(cv,160);
+    cv.toBlob(function(blob){ if(!blob){ mbToast("Couldn't save",1); return; }
+      MBLib.add({ id:Date.now()+"-"+((Math.random()*1e6)|0), name:name, kind:kind, w:cv.width, h:cv.height, blob:blob, thumb:thumb, created:new Date().toISOString(), meta:meta||"" })
+        .then(function(){ mbToast("Sent to Library ✓"); }).catch(function(){ mbToast("Library save failed",1); }); },"image/png"); }
+  function noiseName(res){ var t=({perlin:"Perlin",worF1:"Worley cells",worEdge:"Worley edges"})[S.type]||S.type;
+    var sh=S.shape!=="normal"?" "+S.shape:""; var bl=S.blend?" × "+({perlin:"Perlin",worF1:"cells",worEdge:"edges"})[S.typeB]+" ("+S.bmode+")":"";
+    return t+sh+bl+(S.omode==="normal"?" normal":"")+" "+res; }
+  $("lib").addEventListener("click",function(){ var res=parseInt($("eres").value,10); $("status").textContent="Saving to Library…";
+    setTimeout(function(){ var c=document.createElement("canvas"); c.width=c.height=res; var cx=c.getContext("2d");
+      var g=buildHeight(res); renderTo(cx,res,g);
+      sendToLibrary(c, S.omode==="normal"?"normal":"noise", noiseName(res), "noise:"+S.type+" scale:"+S.scale+" oct:"+S.oct+(S.blend?" blendB:"+S.typeB:"")); $("status").textContent=""; },20);
+  });
+  // The Library viewer is a site page; hide the button inside the Claude artifact preview
+  if(window.claude&&window.claude.use) $("lib").hidden=true;
 
   // downloads capability (artifact); on the website the native <a download> is used
   try{ if(window.claude&&claude.use){ claude.use("downloads").then(function(d){ window.__dl=d; }).catch(function(){}); } }catch(e){}

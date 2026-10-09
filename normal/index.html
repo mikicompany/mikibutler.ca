@@ -18,7 +18,7 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
   <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
-  <meta name="description" content="Normal Baker — convert a grayscale height map to a tangent-space normal map, by Miki Butler. Strength, smoothing, OpenGL/DirectX green, tileable edges, a lit preview, a 3D material-sphere preview (roughness, metalness, reflections, relief) and PNG export." />
+  <meta name="description" content="Normal Baker — convert a grayscale height map to a tangent-space normal map, by Miki Butler. Strength, OpenGL/DirectX green, tileable edges, a lit preview, a 3D material-sphere preview, send to Library and PNG export." />
 <title>Normal Baker — Miki Butler</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -125,6 +125,7 @@
 
       <div class="divider"></div>
       <button class="btn primary" id="exp">⬇ Export normal map</button>
+      <button class="btn" id="lib" style="margin-top:8px">＋ Send to Library</button>
       <div class="status" id="status"></div>
 
       <div class="divider"></div>
@@ -180,7 +181,8 @@
     computeHeight(); computeNormal(); render();
     $("dims").textContent=W+" × "+H+" px"+(sc<1?" (downscaled from "+w+"×"+h+")":"");
   }
-  function loadFile(f){ var img=new Image(); img.onload=function(){ setSource(img); }; img.src=URL.createObjectURL(f); }
+  var srcName="bricks";
+  function loadFile(f){ srcName=(f.name||"map").replace(/\.[^.]+$/,""); var img=new Image(); img.onload=function(){ setSource(img); }; img.src=URL.createObjectURL(f); }
 
   function computeHeight(){
     var d=sctx.getImageData(0,0,W,H).data, n=W*H, base=new Float32Array(n);
@@ -311,7 +313,7 @@
     return c;
   }
   function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
-  function loadSample(kind){ var c=sampleCanvas(kind); var img=new Image(); img.onload=function(){ setSource(img); }; img.src=c.toDataURL(); }
+  function loadSample(kind){ srcName=kind; var c=sampleCanvas(kind); var img=new Image(); img.onload=function(){ setSource(img); }; img.src=c.toDataURL(); }
 
   // ---------- wiring ----------
   function sl(id,key,fmt,el,after){ var i=$(id),o=$(el);
@@ -358,6 +360,24 @@
     off.width=W; off.height=H; octx.putImageData(new ImageData(normalRGBA,W,H),0,0);
     off.toBlob(function(b){ if(b) saveBlob(b,"normal_"+W+"x"+H+".png"); },"image/png"); });
   try{ if(window.claude&&claude.use){ claude.use("downloads").then(function(d){ window.__dl=d; }).catch(function(){}); } }catch(e){}
+
+  // ---------- Texture Library (shared IndexedDB on this origin) ----------
+  var MBLib=(function(){ var DB="mbTextureLib",STORE="items",_db=null;
+    function open(){return new Promise(function(res,rej){ if(_db)return res(_db); var r=indexedDB.open(DB,1);
+      r.onupgradeneeded=function(e){var db=e.target.result; if(!db.objectStoreNames.contains(STORE)){var s=db.createObjectStore(STORE,{keyPath:"id"}); s.createIndex("created","created");}};
+      r.onsuccess=function(){_db=r.result;res(_db);}; r.onerror=function(){rej(r.error);}; });}
+    return { add:function(it){ return open().then(function(db){ return new Promise(function(res,rej){ var r=db.transaction(STORE,"readwrite").objectStore(STORE).add(it); r.onsuccess=function(){res();}; r.onerror=function(){rej(r.error);}; }); }); } }; })();
+  function mbToast(msg,bad){ var t=document.getElementById("mbToast"); if(!t){ t=document.createElement("div"); t.id="mbToast";
+    t.style.cssText="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;font:800 13px/1 Manrope,sans-serif;padding:11px 16px;border-radius:999px;box-shadow:0 8px 30px #0008;transition:opacity .3s;color:#fff;"; document.body.appendChild(t); }
+    t.textContent=msg; t.style.background=bad?"#7f1d1d":"#0d9488"; t.style.opacity="1"; clearTimeout(t._h); t._h=setTimeout(function(){ t.style.opacity="0"; },1800); }
+  function mbThumb(cv,size){ var r=cv.width/cv.height, tw=r>=1?size:Math.round(size*r), th=r>=1?Math.round(size/r):size;
+    var c=document.createElement("canvas"); c.width=tw; c.height=th; c.getContext("2d").drawImage(cv,0,0,tw,th); return c.toDataURL("image/png"); }
+  $("lib").addEventListener("click",function(){ if(!normalRGBA){ $("status").textContent="Load a height map first."; return; }
+    var cv=normCanvas, thumb=mbThumb(cv,160);
+    cv.toBlob(function(blob){ if(!blob){ mbToast("Couldn't save",1); return; }
+      MBLib.add({ id:Date.now()+"-"+((Math.random()*1e6)|0), name:"Normal — "+srcName, kind:"normal", w:cv.width, h:cv.height, blob:blob, thumb:thumb, created:new Date().toISOString(), meta:"source:"+srcName+" strength:"+S.str+" green:"+S.green })
+        .then(function(){ mbToast("Sent to Library ✓"); }).catch(function(){ mbToast("Library save failed",1); }); },"image/png"); });
+  if(window.claude&&window.claude.use) $("lib").hidden=true;
 
   window.addEventListener("resize",function(){ sphereResize(); });
   loadSample("bricks");
