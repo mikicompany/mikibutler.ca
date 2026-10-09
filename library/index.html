@@ -19,10 +19,12 @@
   <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
   <meta name="description" content="Texture Library — a browser-stored, searchable gallery of SEO-named textures and noise/normal maps saved from Miki Butler’s Noise Forge and Normal Baker tools." />
+  <link rel="canonical" href="https://mikibutler.ca/uvTool" />
 <title>Texture Library — Miki Butler</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
   /* Same dark studio-tool identity as Noise Forge / Normal Baker / UV Toolkit. */
   :root{
@@ -112,8 +114,9 @@
   </div>
   <div class="meta-line">
     <span id="count">—</span>
-    <span style="display:flex;gap:12px;align-items:center">
+    <span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <a href="/textures" style="font-weight:700;color:var(--accent-2);text-decoration:none">🧩 Public gallery →</a>
+      <button class="chip" id="pack" style="border-color:var(--accent);color:var(--accent-2)">⬇ Export publish pack</button>
       <button class="danger" id="clear">Clear all</button>
     </span>
   </div>
@@ -200,6 +203,31 @@
     document.querySelectorAll("#chips .chip").forEach(function(x){x.classList.remove("on");}); c.classList.add("on"); filter=c.dataset.k; draw(); }); });
   $("clear").addEventListener("click",function(){ if($("clear").dataset.armed){ MBLib.clear().then(function(){ items=[]; draw(); }); $("clear").textContent="Clear all"; delete $("clear").dataset.armed; }
     else { $("clear").dataset.armed="1"; $("clear").textContent="Click again to wipe"; setTimeout(function(){ $("clear").textContent="Clear all"; delete $("clear").dataset.armed; },2600); } });
+
+  // export a publish pack (zip of PNGs + manifest) to hand off for the public gallery
+  $("pack").addEventListener("click",function(){
+    if(!items.length){ $("count").textContent="Nothing to export yet."; return; }
+    if(!window.JSZip){ $("count").textContent="Zip library didn't load — try again online."; return; }
+    var btn=$("pack"), old=btn.textContent; btn.textContent="Packing…"; btn.disabled=true;
+    var zip=new JSZip(), folder=zip.folder("textures"), manifest=[], seen={};
+    items.forEach(function(it){ var base=safe(it.name), fn=base, i=2; while(seen[fn]){ fn=base+"-"+i; i++; } seen[fn]=1;
+      var file=fn+".png"; folder.file(file, it.blob);
+      manifest.push({ name:it.name, file:file, kind:it.kind, w:it.w, h:it.h,
+        desc:"Free seamless, tileable "+it.name+" ("+it.w+"×"+it.h+") — by Miki Butler.",
+        tool:(it.kind==="normal"?"Normal Baker":"Noise Forge") }); });
+    folder.file("manifest.json", JSON.stringify(manifest,null,2));
+    zip.file("README.txt","Texture publish pack from the mikibutler.ca Library.\n\n"+
+      "To publish these to the public gallery (mikibutler.ca/textures):\n"+
+      "1. Copy the PNGs in /textures into the site's /textures folder.\n"+
+      "2. Merge the entries in textures/manifest.json into textures/index.json.\n"+
+      "3. Rebuild the gallery page + sitemap.\n\n"+
+      "Or just send this .zip to Claude and it will do steps 1-3.\n");
+    zip.generateAsync({type:"blob"}).then(function(blob){
+      var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="mikibutler-textures-pack.zip";
+      document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500);
+      btn.textContent=old; btn.disabled=false;
+    }).catch(function(){ btn.textContent=old; btn.disabled=false; $("count").textContent="Pack failed."; });
+  });
 
   load();
 })();

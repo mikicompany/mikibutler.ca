@@ -13,6 +13,14 @@
     <image:image><image:loc>https://mikibutler.ca/textures/seamless-worley-cellular-normal-map.png</image:loc><image:title>Seamless Worley Cellular Normal Map</image:title></image:image>
     <image:image><image:loc>https://mikibutler.ca/textures/seamless-cracked-cells-normal-map.png</image:loc><image:title>Seamless Cracked Cells Normal Map</image:title></image:image>
   </url>
+  <url><loc>https://mikibutler.ca/uvTool</loc><lastmod>2026-10-09</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mikibutler.ca/noise</loc><lastmod>2026-10-09</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mikibutler.ca/normal</loc><lastmod>2026-10-09</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mikibutler.ca/flipbook.html</loc><lastmod>2026-10-09</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://mikibutler.ca/kaleidoscope</loc><lastmod>2026-10-09</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://mikibutler.ca/reef</loc><lastmod>2026-10-09</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://mikibutler.ca/aquarium</loc><lastmod>2026-10-09</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://mikibutler.ca/board.html</loc><lastmod>2026-10-09</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://mikibutler.ca/resume.html</loc><lastmod>2026-08-25</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://mikibutler.ca/taikomate.html</loc><lastmod>2026-10-06</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://mikibutler.ca/contact.html</loc><lastmod>2026-08-25</lastmod><changefreq>yearly</changefreq><priority>0.5</priority></url>
