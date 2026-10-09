@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+  <meta name="description" content="Pocket Kaleidoscope — a free interactive kaleidoscope toy by Miki Butler. Spin, zoom, recolor, drop in your own image, and snapshot the mirrored pattern as a PNG." />
+<title>Pocket Kaleidoscope — Miki Butler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@600;700;800&display=swap">
+<style>
+  /* One committed world: a dark velvet viewing-room with a single glowing mirrored disc as the hero. */
+  :root{
+    --bg:#0a0a0f; --bg2:#121019; --fg:#ece6f5; --mut:#9a93ad; --faint:#6a647c;
+    --panel:#15121fcc; --line:#2a2540; --line-2:#3a3356;
+    --accent:#b98bff; --accent-2:#d9c2ff; --on-accent:#1a0f2e;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{ margin:0; background:radial-gradient(130% 100% at 50% 0%, #17132480 0%, var(--bg) 60%), var(--bg);
+    color:var(--fg); font-family:"Manrope",system-ui,-apple-system,sans-serif; overflow:hidden; }
+  #scope{ position:fixed; inset:0; display:block; touch-action:none; cursor:grab; }
+  #scope.grab{ cursor:grabbing; }
+
+  .masthead{ position:fixed; top:env(safe-area-inset-top,0px); left:0; padding:20px 22px; pointer-events:none; }
+  .masthead h1{ font-family:"Fraunces",Georgia,serif; font-weight:600; font-size:30px; line-height:.95; margin:0;
+    letter-spacing:-.01em; color:var(--fg); text-shadow:0 2px 24px #0008; }
+  .masthead p{ margin:5px 0 0; font-size:12.5px; font-weight:700; color:var(--mut); letter-spacing:.01em; }
+
+  .hint{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(96px + env(safe-area-inset-bottom,0px));
+    font-size:12.5px; font-weight:700; color:var(--faint); pointer-events:none; transition:opacity .5s; letter-spacing:.03em; }
+  .hint.gone{ opacity:0; }
+
+  .dock{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(16px + env(safe-area-inset-bottom,0px));
+    display:flex; align-items:center; gap:14px; padding:12px 16px; background:var(--panel); backdrop-filter:blur(12px);
+    border:1px solid var(--line); border-radius:18px; box-shadow:0 10px 40px #000a; max-width:calc(100vw - 24px);
+    flex-wrap:wrap; justify-content:center; }
+  .ctrl{ display:flex; flex-direction:column; gap:5px; min-width:92px; }
+  .ctrl label{ font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--faint);
+    display:flex; justify-content:space-between; gap:8px; }
+  .ctrl label b{ color:var(--accent-2); font-weight:800; }
+  input[type=range]{ width:100%; accent-color:var(--accent); height:18px; }
+  select{ font:700 13px/1 "Manrope",sans-serif; color:var(--fg); background:#1b1728; border:1px solid var(--line-2);
+    border-radius:10px; padding:8px 10px; }
+  select:focus{ outline:none; border-color:var(--accent); }
+  .sep{ width:1px; align-self:stretch; background:var(--line); margin:2px 0; }
+  .btns{ display:flex; gap:8px; flex-wrap:wrap; }
+  .btn{ font:800 12.5px/1 "Manrope",sans-serif; color:var(--fg); background:#1b1728; border:1px solid var(--line-2);
+    border-radius:11px; padding:10px 12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+  .btn:hover{ border-color:var(--accent); color:var(--accent-2); }
+  .btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .btn.primary:hover{ filter:brightness(1.07); color:var(--on-accent); }
+  .btn.on{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .status{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(16px + env(safe-area-inset-bottom,0px));
+    display:none; }
+  @media (max-width:560px){ .masthead h1{ font-size:23px; } .ctrl{ min-width:74px; } .dock{ gap:10px; padding:10px 12px; } }
+</style>
+
+</head>
+<body>
+<canvas id="scope"></canvas>
+
+<div class="masthead">
+  <h1>Pocket Kaleidoscope</h1>
+  <p>Drag to turn &middot; scroll to zoom</p>
+</div>
+<div class="hint" id="hint">drag the disc to turn it</div>
+
+<div class="dock">
+  <div class="ctrl"><label>Mirrors <b id="vSeg">10</b></label><input type="range" id="seg" min="4" max="22" step="2" value="10"></div>
+  <div class="ctrl"><label>Spin <b id="vSpin">0.25</b></label><input type="range" id="spin" min="0" max="1" step="0.01" value="0.25"></div>
+  <div class="ctrl"><label>Zoom <b id="vZoom">1.4</b></label><input type="range" id="zoom" min="1" max="3" step="0.05" value="1.4"></div>
+  <div class="ctrl" style="min-width:110px"><label>Palette</label>
+    <select id="pal">
+      <option value="aurora" selected>Aurora</option>
+      <option value="sunset">Sunset</option>
+      <option value="reef">Reef</option>
+      <option value="candy">Candy</option>
+      <option value="ember">Ember</option>
+      <option value="mono">Moonstone</option>
+    </select>
+  </div>
+  <div class="ctrl" style="min-width:100px"><label>Source</label>
+    <select id="srcSel">
+      <option value="glow" selected>Glow</option>
+      <option value="beads">Glass beads</option>
+    </select>
+  </div>
+  <div class="sep"></div>
+  <div class="btns">
+    <button class="btn" id="shuffle">🎲 Shuffle</button>
+    <button class="btn" id="pause">⏸ Pause</button>
+    <button class="btn" id="upload">🖼 Image</button>
+    <button class="btn primary" id="snap">⬇ Snapshot</button>
+  </div>
+  <input type="file" id="file" accept="image/*" hidden>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(id){return document.getElementById(id);};
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var cv=$("scope"), ctx=cv.getContext("2d");
+  var dpr=Math.min(window.devicePixelRatio||1,2);
+  var W=0,H=0,cx=0,cy=0,R=0;
+
+  // ---- palettes (base + glow colors) ----
+  var PALS={
+    aurora:{bg:"#07131a", cols:["#39e6c3","#2aa6ff","#8b5cff","#58f0a6"]},
+    sunset:{bg:"#1a0a12", cols:["#ff5d6c","#ff9f45","#ffd56b","#c04bff"]},
+    reef:{bg:"#04141a", cols:["#19d3da","#2b7fff","#6effc2","#b65bff"]},
+    candy:{bg:"#190a1a", cols:["#ff7ad9","#7a9bff","#7affd6","#fff07a"]},
+    ember:{bg:"#140805", cols:["#ff7a2f","#ff3b6b","#ffd23f","#9b2fff"]},
+    mono:{bg:"#0a0f14", cols:["#bcd3ff","#8fb4ff","#dfe9ff","#6f86c9"]}
+  };
+
+  // ---- state ----
+  var S={ seg:10, spin:0.25, zoom:1.4, pal:"aurora", src:"glow" };
+  var scopeRot=0, srcRot=0, panX=0, panY=0, playing=!reduce;
+  var dragging=false, lastX=0, lastY=0, usedDrag=false;
+  var imgMode=false, userImg=null;
+
+  // ---- source canvas ----
+  var src=document.createElement("canvas"), sctx=src.getContext("2d"), SP=900;
+  var blobs=[], sparks=[];
+  function makeBlobs(){
+    var p=PALS[S.pal]; blobs=[]; sparks=[];
+    for(var i=0;i<14;i++){
+      blobs.push({ hx:(0.1+Math.random()*0.8), hy:(0.1+Math.random()*0.8),
+        r:(0.05+Math.random()*0.16), col:p.cols[(Math.random()*p.cols.length)|0],
+        amp:(0.02+Math.random()*0.06), sa:(Math.random()*0.6+0.25)*(Math.random()<0.5?-1:1),
+        sb:(Math.random()*0.6+0.25)*(Math.random()<0.5?-1:1), ph:Math.random()*Math.PI*2 });
+    }
+    for(var k=0;k<6;k++){
+      sparks.push({ hx:(0.15+Math.random()*0.7), hy:(0.15+Math.random()*0.7),
+        r:(0.012+Math.random()*0.028), col:p.cols[(Math.random()*p.cols.length)|0],
+        amp:(0.03+Math.random()*0.05), sa:(Math.random()*0.9+0.4)*(Math.random()<0.5?-1:1), ph:Math.random()*Math.PI*2 });
+    }
+    buildBeads();
+  }
+  var beads=[];
+  function buildBeads(){
+    var p=PALS[S.pal]; beads=[]; var cells=9, cs=1/cells, j=cs*0.42;
+    for(var gy=-1;gy<cells+1;gy++)for(var gx=-1;gx<cells+1;gx++){
+      beads.push({ hx:(gx+0.5)*cs+(Math.random()*2-1)*j, hy:(gy+0.5)*cs+(Math.random()*2-1)*j,
+        r:cs*(0.6+Math.random()*0.5), col:p.cols[(Math.random()*p.cols.length)|0],
+        amp:cs*0.1, sa:(Math.random()*0.5+0.2)*(Math.random()<0.5?-1:1), ph:Math.random()*Math.PI*2 });
+    }
+    beads.sort(function(a,b){ return b.r-a.r; }); // big first so small sit on top
+  }
+  function renderBeads(t){
+    var p=PALS[S.pal], tt=playing?t:0;
+    sctx.fillStyle=p.bg; sctx.fillRect(0,0,SP,SP);
+    for(var i=0;i<beads.length;i++){ var b=beads[i];
+      var x=(b.hx+Math.sin(tt*b.sa+b.ph)*b.amp)*SP, y=(b.hy+Math.cos(tt*b.sa*0.8+b.ph)*b.amp)*SP, r=b.r*SP;
+      var g=sctx.createRadialGradient(x-r*0.3,y-r*0.3,r*0.1, x,y,r);
+      g.addColorStop(0,lighten(b.col,0.5)); g.addColorStop(0.6,b.col); g.addColorStop(1,darken(b.col,0.35));
+      sctx.fillStyle=g; sctx.beginPath(); sctx.arc(x,y,r,0,Math.PI*2); sctx.fill();
+      sctx.lineWidth=Math.max(1,SP*0.003); sctx.strokeStyle="rgba(0,0,0,0.45)"; sctx.stroke();
+      // glass highlight
+      sctx.globalAlpha=0.55; sctx.fillStyle="#ffffff";
+      sctx.beginPath(); sctx.arc(x-r*0.34,y-r*0.34,r*0.22,0,Math.PI*2); sctx.fill(); sctx.globalAlpha=1;
+    }
+  }
+  function mix(hex,to,a){ hex=hex.replace("#","");
+    var r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16);
+    r=Math.round(r+(to-r)*a); g=Math.round(g+(to-g)*a); b=Math.round(b+(to-b)*a);
+    return "rgb("+r+","+g+","+b+")"; }
+  function lighten(hex,a){ return mix(hex,255,a); }
+  function darken(hex,a){ return mix(hex,0,a); }
+  function hexA(hex,a){ hex=hex.replace("#",""); var r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16);
+    return "rgba("+r+","+g+","+b+","+a+")"; }
+  function renderSource(t){
+    var p=PALS[S.pal];
+    sctx.setTransform(1,0,0,1,0,0);
+    if(imgMode && userImg){
+      sctx.fillStyle=p.bg; sctx.fillRect(0,0,SP,SP);
+      sctx.save(); sctx.translate(SP/2,SP/2); sctx.rotate(playing?t*0.06:0);
+      var s=Math.max(SP/userImg.width, SP/userImg.height)*1.15;
+      var w=userImg.width*s, h=userImg.height*s;
+      sctx.drawImage(userImg,-w/2,-h/2,w,h); sctx.restore();
+      return;
+    }
+    if(S.src==="beads"){ renderBeads(t); return; }
+    // dark base so colored shards read with contrast
+    var bg=sctx.createLinearGradient(0,0,SP,SP);
+    bg.addColorStop(0,p.bg); bg.addColorStop(1,"#040509");
+    sctx.fillStyle=bg; sctx.fillRect(0,0,SP,SP);
+    sctx.globalCompositeOperation="lighter";
+    var tt=playing?t:0;
+    for(var i=0;i<blobs.length;i++){ var b=blobs[i];
+      var x=(b.hx+Math.sin(tt*b.sa+b.ph)*b.amp)*SP, y=(b.hy+Math.cos(tt*b.sb+b.ph)*b.amp)*SP, r=b.r*SP;
+      var g=sctx.createRadialGradient(x,y,0,x,y,r);
+      g.addColorStop(0,hexA(b.col,0.98)); g.addColorStop(0.45,hexA(b.col,0.5)); g.addColorStop(1,hexA(b.col,0));
+      sctx.fillStyle=g; sctx.beginPath(); sctx.arc(x,y,r,0,Math.PI*2); sctx.fill();
+    }
+    for(var s=0;s<sparks.length;s++){ var sp=sparks[s];
+      var x2=(sp.hx+Math.sin(tt*sp.sa+sp.ph)*sp.amp)*SP, y2=(sp.hy+Math.cos(tt*sp.sa*1.3)*sp.amp)*SP, r2=sp.r*SP;
+      var g2=sctx.createRadialGradient(x2,y2,0,x2,y2,r2);
+      g2.addColorStop(0,"rgba(255,255,255,0.95)"); g2.addColorStop(0.4,hexA(sp.col,0.8)); g2.addColorStop(1,hexA(sp.col,0));
+      sctx.fillStyle=g2; sctx.beginPath(); sctx.arc(x2,y2,r2,0,Math.PI*2); sctx.fill();
+    }
+    sctx.globalCompositeOperation="source-over";
+  }
+
+  var EPS=0.012; // tiny wedge overlap so adjacent facets have no dark seam
+  function clipWedge(a,b){ ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,R,a-EPS,b+EPS); ctx.closePath(); ctx.clip(); }
+  function drawSource(){
+    ctx.save();
+    ctx.rotate(srcRot); ctx.scale(S.zoom,S.zoom); ctx.translate(panX,panY);
+    var D=2*R;
+    ctx.drawImage(src, -D/2, -D/2, D, D);
+    ctx.restore();
+  }
+
+  function draw(t){
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,W,H);
+    var ang=Math.PI*2/S.seg, half=ang/2;
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(scopeRot);
+    for(var i=0;i<S.seg;i++){
+      ctx.save(); ctx.rotate(i*ang);
+      // half A: source in sector [0, half]
+      ctx.save(); clipWedge(0,half); drawSource(); ctx.restore();
+      // half B: reflection of A across the wedge bisector (line at angle = half) -> fills [half, ang]
+      ctx.save(); ctx.rotate(half); ctx.scale(1,-1); ctx.rotate(-half); clipWedge(0,half); drawSource(); ctx.restore();
+      ctx.restore();
+    }
+    ctx.restore();
+    // rim + inner glow
+    ctx.save(); ctx.translate(cx,cy);
+    ctx.globalCompositeOperation="source-over";
+    var rg=ctx.createRadialGradient(0,0,R*0.62,0,0,R*1.02);
+    rg.addColorStop(0,"rgba(0,0,0,0)"); rg.addColorStop(1,"rgba(0,0,0,0.55)");
+    ctx.fillStyle=rg; ctx.beginPath(); ctx.arc(0,0,R,0,Math.PI*2); ctx.fill();
+    ctx.lineWidth=2; ctx.strokeStyle="rgba(255,255,255,0.10)"; ctx.beginPath(); ctx.arc(0,0,R-1,0,Math.PI*2); ctx.stroke();
+    ctx.restore();
+  }
+
+  function frame(now){
+    var t=now/1000;
+    if(playing){ scopeRot += S.spin*0.006; if(imgMode) srcRot += 0.0007; }
+    if(playing && !dragging && !usedDrag){ // sample an off-centre, drifting region (richer facets than the source centre)
+      panX = SP*0.17 + Math.sin(t*0.21)*SP*0.07; panY = -SP*0.11 + Math.cos(t*0.17)*SP*0.07;
+    }
+    renderSource(t);
+    draw(t);
+    requestAnimationFrame(frame);
+  }
+
+  // ---- interaction ----
+  function pt(e){ var p=e.touches?e.touches[0]:e; return {x:p.clientX,y:p.clientY}; }
+  cv.addEventListener("pointerdown",function(e){ dragging=true; cv.classList.add("grab"); var p=pt(e); lastX=p.x; lastY=p.y; hideHint(); });
+  window.addEventListener("pointermove",function(e){
+    if(!dragging) return; var p=pt(e); var dx=p.x-lastX, dy=p.y-lastY; lastX=p.x; lastY=p.y; usedDrag=true;
+    // horizontal drag spins the disc, both axes pan the source
+    scopeRot += dx*0.004;
+    panX += dx*0.9; panY += dy*0.9;
+    var lim=SP*0.42; panX=Math.max(-lim,Math.min(lim,panX)); panY=Math.max(-lim,Math.min(lim,panY));
+  });
+  window.addEventListener("pointerup",function(){ dragging=false; cv.classList.remove("grab"); });
+  cv.addEventListener("wheel",function(e){ e.preventDefault(); S.zoom=Math.max(1,Math.min(3, S.zoom - e.deltaY*0.0015));
+    $("zoom").value=S.zoom; $("vZoom").textContent=S.zoom.toFixed(2); },{passive:false});
+
+  var hintEl=$("hint"),hinted=false; function hideHint(){ if(!hinted){hinted=true; hintEl.classList.add("gone");} }
+  if(reduce) hideHint();
+
+  // ---- controls ----
+  function bind(id,key,fmt,el){ var i=$(id),o=$(el);
+    i.addEventListener("input",function(){ S[key]=parseFloat(i.value); if(o)o.textContent=fmt(S[key]); }); }
+  bind("seg","seg",function(v){return v;},"vSeg");
+  bind("spin","spin",function(v){return v.toFixed(2);},"vSpin");
+  bind("zoom","zoom",function(v){return v.toFixed(2);},"vZoom");
+  $("pal").addEventListener("change",function(){ S.pal=this.value; makeBlobs(); });
+  $("srcSel").addEventListener("change",function(){ S.src=this.value; imgMode=false; });
+
+  $("shuffle").addEventListener("click",function(){
+    var keys=Object.keys(PALS); S.pal=keys[(Math.random()*keys.length)|0]; $("pal").value=S.pal;
+    S.seg=[6,8,10,12,14,16,20][(Math.random()*7)|0]; $("seg").value=S.seg; $("vSeg").textContent=S.seg;
+    imgMode=false; makeBlobs();
+  });
+  var pauseBtn=$("pause");
+  pauseBtn.addEventListener("click",function(){ playing=!playing; pauseBtn.textContent=playing?"⏸ Pause":"▶ Play"; pauseBtn.classList.toggle("on",!playing); });
+  if(reduce){ playing=false; pauseBtn.textContent="▶ Play"; pauseBtn.classList.add("on"); }
+
+  $("upload").addEventListener("click",function(){ $("file").click(); });
+  $("file").addEventListener("change",function(){ var f=this.files&&this.files[0]; if(!f) return;
+    var img=new Image(); img.onload=function(){ userImg=img; imgMode=true; }; img.src=URL.createObjectURL(f); });
+
+  // snapshot
+  function saveBlob(blob,name){
+    if(window.__dl){ window.__dl.save({filename:name,data:blob}).catch(function(){}); return; }
+    var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name;
+    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500);
+  }
+  $("snap").addEventListener("click",function(){ cv.toBlob(function(b){ if(b) saveBlob(b,"kaleidoscope.png"); },"image/png"); });
+  try{ if(window.claude&&claude.use){ claude.use("downloads").then(function(d){ window.__dl=d; }).catch(function(){}); } }catch(e){}
+
+  // ---- resize ----
+  function resize(){ W=innerWidth; H=innerHeight; cv.width=W*dpr; cv.height=H*dpr; cv.style.width=W+"px"; cv.style.height=H+"px";
+    cx=W/2; cy=H/2; R=Math.min(W,H)*0.46;
+    SP=Math.min(1000, Math.round(2*R*dpr)); src.width=SP; src.height=SP; }
+  window.addEventListener("resize",resize); resize();
+
+  makeBlobs();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
