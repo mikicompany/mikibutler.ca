@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+  <meta name="description" content="Tri Budget — a free polygon / triangle budget planner for 3D scenes and game art, by Miki Butler. Plan on-screen tri counts across assets and instances against platform budgets." />
+  <link rel="canonical" href="https://mikibutler.ca/tribudget" />
+<title>Tri Budget — Miki Butler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+  /* Same dark studio-tool identity as the UV Toolkit / Noise Forge family. */
+  :root{
+    color-scheme:dark;
+    --bg:#0f1316; --surface:#161b1f; --surface-2:#1c2228; --border:#28303a; --border-2:#39434f;
+    --fg:#e8edf1; --mut:#8d97a3; --faint:#5f6974;
+    --accent:#2dd4bf; --accent-2:#5ee7d6; --on-accent:#05211d; --accent-soft:#2dd4bf22;
+    --good:#4ade80; --warn:#fbbf24; --bad:#f87171;
+    --radius:14px; --shadow:0 2px 12px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  body{ margin:0; background:var(--bg); color:var(--fg); font-family:"Manrope",system-ui,-apple-system,sans-serif;
+    font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; padding:22px 16px; padding-block:22px; }
+  .mono{ font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; }
+  button{ font-family:inherit; cursor:pointer; color:inherit; }
+  .wrap{ max-width:900px; margin:0 auto; }
+  header.top{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .glyph{ width:38px; height:38px; border-radius:10px; flex:none; border:1px solid var(--border-2); box-shadow:var(--shadow);
+    background:conic-gradient(from 210deg,#2dd4bf,#5ee7d6,#8ea0ff,#2dd4bf); }
+  .top h1{ font-size:19px; font-weight:800; margin:0; letter-spacing:-.3px; }
+  .top .sub{ font-size:12px; color:var(--mut); font-weight:600; }
+  .top .sp{ flex:1; }
+  .home{ font-size:12px; font-weight:700; color:var(--mut); text-decoration:none; border:1px solid var(--border); border-radius:9px; padding:8px 12px; }
+  .home:hover{ border-color:var(--accent); color:var(--accent-2); }
+
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); margin-bottom:16px; }
+  .card h2{ font-size:12px; font-weight:800; margin:0 0 14px; text-transform:uppercase; letter-spacing:.5px; color:var(--mut); }
+
+  .budgetrow{ display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field label{ font-size:12px; font-weight:700; }
+  select, input[type=number], input[type=text]{ font:14px/1.3 inherit; color:var(--fg); background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:9px 11px; }
+  select:focus, input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft); }
+  .budgetrow .num{ width:160px; }
+
+  .summary{ display:flex; flex-direction:column; gap:10px; }
+  .big{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .big b{ font:800 30px/1 "JetBrains Mono",monospace; }
+  .big span{ color:var(--mut); font-size:13px; font-weight:700; }
+  .bar{ height:16px; border-radius:999px; background:var(--surface-2); border:1px solid var(--border); overflow:hidden; display:flex; }
+  .seg{ height:100%; }
+  .meter{ height:10px; border-radius:999px; background:var(--surface-2); border:1px solid var(--border); overflow:hidden; position:relative; }
+  .meter i{ display:block; height:100%; }
+  .verdict{ display:inline-flex; align-items:center; gap:7px; font-weight:800; font-size:13px; padding:7px 12px; border-radius:9px; align-self:flex-start; }
+  .v-good{ background:color-mix(in srgb,var(--good) 15%,transparent); color:var(--good); }
+  .v-warn{ background:color-mix(in srgb,var(--warn) 16%,transparent); color:var(--warn); }
+  .v-bad{ background:color-mix(in srgb,var(--bad) 16%,transparent); color:var(--bad); }
+  .legend{ display:flex; gap:12px 16px; flex-wrap:wrap; font-size:11.5px; color:var(--mut); }
+  .legend i{ width:10px; height:10px; border-radius:3px; display:inline-block; margin-right:5px; vertical-align:-1px; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  th{ font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:var(--faint); font-weight:700; text-align:right; padding:6px 8px; }
+  th.l, td.l{ text-align:left; } td{ padding:5px 8px; border-top:1px solid var(--border); text-align:right; }
+  td .mono{ color:var(--fg); }
+  td input{ width:100%; padding:7px 8px; }
+  td.name input{ font-weight:600; }
+  td.num input{ text-align:right; font-family:"JetBrains Mono",monospace; }
+  .swatch{ width:10px; height:10px; border-radius:3px; display:inline-block; margin-right:6px; vertical-align:-1px; }
+  .pct{ color:var(--mut); font-family:"JetBrains Mono",monospace; }
+  .del{ background:none; border:1px solid var(--border); color:var(--faint); border-radius:7px; padding:5px 9px; font-weight:800; }
+  .del:hover{ border-color:var(--bad); color:var(--bad); }
+  .total-row td{ border-top:2px solid var(--border-2); font-weight:800; padding-top:10px; }
+  .btns{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+  .btn{ font:800 13px/1 inherit; padding:10px 14px; border-radius:9px; border:1px solid var(--border-2); background:var(--surface-2); color:var(--fg); }
+  .btn:hover{ border-color:var(--accent); color:var(--accent-2); }
+  .btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); } .btn.primary:hover{ filter:brightness(1.06); }
+  .hint{ font-size:11.5px; color:var(--faint); margin-top:10px; }
+  .scroll{ overflow-x:auto; }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="glyph"></div>
+    <div><h1>Tri Budget</h1><div class="sub">Plan on-screen triangle budget for a scene</div></div>
+    <div class="sp"></div>
+    <a class="home" href="/">mikibutler.ca ↗</a>
+  </header>
+
+  <div class="card">
+    <h2>Budget</h2>
+    <div class="budgetrow">
+      <div class="field"><label for="preset">Target platform</label>
+        <select id="preset" class="mono">
+          <option value="150000">Mobile — 150k</option>
+          <option value="1000000">Nintendo Switch — 1M</option>
+          <option value="3000000" selected>Last-gen console — 3M</option>
+          <option value="12000000">Current-gen console — 12M</option>
+          <option value="30000000">PC / hero shot — 30M</option>
+          <option value="custom">Custom…</option>
+        </select>
+      </div>
+      <div class="field"><label for="budget">On-screen tri budget</label>
+        <input id="budget" class="num mono" type="number" min="0" step="1000" value="3000000">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Scene total</h2>
+    <div class="summary">
+      <div class="big"><b id="total" class="mono">0</b><span id="ofbudget">of 3,000,000 tris</span><span id="verdictWrap"><span class="verdict v-good" id="verdict">—</span></span></div>
+      <div class="meter"><i id="meter"></i></div>
+      <div class="bar" id="stack" title="each asset's share of the budget"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Assets</h2>
+    <div class="scroll">
+      <table id="tbl">
+        <thead><tr>
+          <th class="l">Asset</th><th>Tris each</th><th>Instances</th><th>Total tris</th><th>% budget</th><th></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+        <tfoot><tr class="total-row"><td class="l">Scene total</td><td></td><td class="mono" id="tInst">0</td><td class="mono" id="tTris">0</td><td class="mono pct" id="tPct">0%</td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <div class="btns">
+      <button class="btn primary" id="add">＋ Add asset</button>
+      <button class="btn" id="reset">Reset to example</button>
+    </div>
+    <p class="hint">Counts are triangles. "Instances" multiplies the per-asset tris — handy for modular kits, foliage and props. Everything is saved in this browser.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(id){return document.getElementById(id);};
+  var KEY="mb.tribudget.v1";
+  var COLORS=["#2dd4bf","#5ee7d6","#8ea0ff","#fbbf24","#f87171","#4ade80","#c084fc","#f472b6","#38bdf8","#a3e635","#fb923c","#22d3ee"];
+  var EXAMPLE=[
+    {name:"Hero statue", tris:45000, inst:1},
+    {name:"Stone wall module", tris:1800, inst:48},
+    {name:"Pillar", tris:3200, inst:12},
+    {name:"Ground foliage clump", tris:250, inst:1500},
+    {name:"Barrel prop", tris:900, inst:30},
+    {name:"Wall torch", tris:600, inst:16}
+  ];
+  var state={ budget:3000000, preset:"3000000", assets:[] };
+
+  function load(){ try{ var s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.assets){ state=s; return; } }catch(e){}
+    state={ budget:3000000, preset:"3000000", assets:EXAMPLE.map(function(a){return{name:a.name,tris:a.tris,inst:a.inst};}) }; }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  function fmt(n){ return Math.round(n).toLocaleString(); }
+
+  function rowTotal(a){ return (+a.tris||0)*(+a.inst||0); }
+  function sceneTotal(){ return state.assets.reduce(function(s,a){ return s+rowTotal(a); },0); }
+
+  function render(){
+    // table
+    var rows=$("rows"); rows.innerHTML="";
+    var budget=+state.budget||0, total=sceneTotal(), totInst=0;
+    state.assets.forEach(function(a,i){
+      totInst+=(+a.inst||0);
+      var tr=document.createElement("tr");
+      var rt=rowTotal(a), pct=budget>0?rt/budget*100:0;
+      tr.innerHTML=
+        '<td class="l name"><span class="swatch" style="background:'+COLORS[i%COLORS.length]+'"></span><input data-i="'+i+'" data-k="name" value=""></td>'+
+        '<td class="num"><input data-i="'+i+'" data-k="tris" type="number" min="0" step="100" value="'+(+a.tris||0)+'"></td>'+
+        '<td class="num"><input data-i="'+i+'" data-k="inst" type="number" min="0" step="1" value="'+(+a.inst||0)+'"></td>'+
+        '<td class="mono">'+fmt(rt)+'</td>'+
+        '<td class="pct">'+pct.toFixed(1)+'%</td>'+
+        '<td><button class="del" data-del="'+i+'">✕</button></td>';
+      rows.appendChild(tr);
+      tr.querySelector('input[data-k="name"]').value=a.name||"";
+    });
+    $("tInst").textContent=fmt(totInst); $("tTris").textContent=fmt(total);
+    $("tPct").textContent=(budget>0?(total/budget*100).toFixed(1):0)+"%";
+    // summary
+    $("total").textContent=fmt(total);
+    $("ofbudget").textContent="of "+fmt(budget)+" tris"+(budget>0?" · "+fmt(Math.max(0,budget-total))+" left":"");
+    var ratio=budget>0?total/budget:0;
+    var v=$("verdict");
+    if(ratio>1){ v.className="verdict v-bad"; v.textContent="Over budget by "+fmt(total-budget); }
+    else if(ratio>0.85){ v.className="verdict v-warn"; v.textContent=Math.round(ratio*100)+"% — getting tight"; }
+    else { v.className="verdict v-good"; v.textContent=Math.round(ratio*100)+"% of budget"; }
+    var m=$("meter"); m.style.width=Math.min(100,ratio*100)+"%";
+    m.style.background=ratio>1?"var(--bad)":ratio>0.85?"var(--warn)":"var(--accent)";
+    // stacked bar (shares of budget)
+    var stack=$("stack"), legend=$("legend"); stack.innerHTML=""; legend.innerHTML="";
+    state.assets.forEach(function(a,i){ var rt=rowTotal(a); if(rt<=0||budget<=0) return;
+      var seg=document.createElement("div"); seg.className="seg";
+      seg.style.width=Math.min(100,rt/budget*100)+"%"; seg.style.background=COLORS[i%COLORS.length];
+      seg.title=(a.name||"asset")+": "+fmt(rt); stack.appendChild(seg);
+    });
+    if(total>budget && budget>0){ var over=document.createElement("div"); over.className="seg";
+      over.style.width="100%"; over.style.background="repeating-linear-gradient(45deg,#f8717155,#f8717155 6px,transparent 6px,transparent 12px)"; stack.appendChild(over); }
+    state.assets.forEach(function(a,i){ if(rowTotal(a)<=0) return; var s=document.createElement("span");
+      s.innerHTML='<i style="background:'+COLORS[i%COLORS.length]+'"></i>'+(a.name||"asset"); legend.appendChild(s); });
+    save();
+  }
+
+  // events (delegated)
+  $("rows").addEventListener("input",function(e){ var el=e.target; if(el.dataset.i===undefined) return;
+    var i=+el.dataset.i, k=el.dataset.k; state.assets[i][k] = (k==="name")?el.value:(+el.value||0); render(); });
+  $("rows").addEventListener("click",function(e){ var d=e.target.getAttribute&&e.target.getAttribute("data-del");
+    if(d!==null && d!==undefined){ state.assets.splice(+d,1); render(); } });
+  $("add").addEventListener("click",function(){ state.assets.push({name:"New asset",tris:1000,inst:1}); render(); });
+  $("reset").addEventListener("click",function(){ state.assets=EXAMPLE.map(function(a){return{name:a.name,tris:a.tris,inst:a.inst};}); render(); });
+  $("budget").addEventListener("input",function(){ state.budget=+this.value||0; $("preset").value="custom"; state.preset="custom"; render(); });
+  $("preset").addEventListener("change",function(){ state.preset=this.value; if(this.value!=="custom"){ state.budget=+this.value; $("budget").value=state.budget; } render(); });
+
+  load();
+  $("budget").value=state.budget; $("preset").value=(state.preset||"custom");
+  render();
+})();
+</script>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+  <meta name="description" content="Scale Reference — a free tool to check a 3D model’s real-world size against everyday objects (human, door, car, mug…), by Miki Butler. Drop an OBJ or type dimensions." />
+  <link rel="canonical" href="https://mikibutler.ca/scale" />
+<title>Scale Reference — Miki Butler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#0f1316; --surface:#161b1f; --surface-2:#1c2228; --border:#28303a; --border-2:#39434f;
+    --fg:#e8edf1; --mut:#8d97a3; --faint:#5f6974;
+    --accent:#2dd4bf; --accent-2:#5ee7d6; --on-accent:#05211d; --accent-soft:#2dd4bf22;
+    --radius:14px; --shadow:0 2px 12px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  body{ margin:0; background:var(--bg); color:var(--fg); font-family:"Manrope",system-ui,-apple-system,sans-serif;
+    font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; padding:22px 16px; padding-block:22px; }
+  .mono{ font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; }
+  button{ font-family:inherit; cursor:pointer; color:inherit; }
+  .wrap{ max-width:980px; margin:0 auto; }
+  header.top{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .glyph{ width:38px; height:38px; border-radius:10px; flex:none; border:1px solid var(--border-2); box-shadow:var(--shadow);
+    background:conic-gradient(from 160deg,#2dd4bf,#5ee7d6,#8ea0ff,#2dd4bf); }
+  .top h1{ font-size:19px; font-weight:800; margin:0; letter-spacing:-.3px; }
+  .top .sub{ font-size:12px; color:var(--mut); font-weight:600; }
+  .top .sp{ flex:1; }
+  .home{ font-size:12px; font-weight:700; color:var(--mut); text-decoration:none; border:1px solid var(--border); border-radius:9px; padding:8px 12px; }
+  .home:hover{ border-color:var(--accent); color:var(--accent-2); }
+
+  .grid{ display:grid; grid-template-columns:300px 1fr; gap:16px; align-items:start; }
+  @media (max-width:760px){ .grid{ grid-template-columns:1fr; } }
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); min-width:0; }
+  .card h2{ font-size:12px; font-weight:800; margin:0 0 14px; text-transform:uppercase; letter-spacing:.5px; color:var(--mut); }
+
+  .drop{ display:flex; flex-direction:column; align-items:center; gap:4px; border:2px dashed var(--border-2); border-radius:12px;
+    padding:16px 12px; text-align:center; color:var(--mut); cursor:pointer; background:var(--surface-2); margin-bottom:12px; font-size:12px; }
+  .drop.hover{ border-color:var(--accent); color:var(--accent-2); background:var(--accent-soft); }
+  .drop .big{ font-size:22px; } .drop b{ color:var(--fg); }
+  .dims{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:10px; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field label{ font-size:11px; font-weight:700; color:var(--mut); }
+  input, select{ font:14px/1.3 inherit; color:var(--fg); background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:9px 10px; width:100%; }
+  input.mono{ font-family:"JetBrains Mono",monospace; }
+  input:focus, select:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft); }
+  .samples{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px; }
+  .pill{ font:600 11.5px/1 inherit; padding:7px 10px; border-radius:999px; border:1px solid var(--border); background:var(--surface-2); color:var(--mut); }
+  .pill:hover{ border-color:var(--accent); color:var(--accent-2); }
+  .divider{ height:1px; background:var(--border); margin:14px 0; }
+  .refs{ display:flex; flex-direction:column; gap:4px; }
+  .refs label{ display:flex; align-items:center; gap:9px; font-size:13px; font-weight:600; cursor:pointer; padding:3px 0; }
+  .refs input{ width:17px; height:17px; accent-color:var(--accent); }
+  .refs .h{ margin-left:auto; color:var(--faint); font:600 11px/1 "JetBrains Mono",monospace; }
+
+  .stage{ width:100%; aspect-ratio:16/10; border:1px solid var(--border-2); border-radius:10px; overflow:hidden; background:#0c1014; }
+  #view{ width:100%; height:100%; display:block; }
+  .readout{ margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; }
+  .stat{ background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:9px 12px; font-size:12.5px; }
+  .stat b{ font-family:"JetBrains Mono",monospace; color:var(--accent-2); }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="glyph"></div>
+    <div><h1>Scale Reference</h1><div class="sub">Check your model's real-world size against everyday things</div></div>
+    <div class="sp"></div>
+    <a class="home" href="/">mikibutler.ca ↗</a>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Your model</h2>
+      <label class="drop" id="drop">
+        <span class="big">📦</span>
+        <span class="dropmsg"><b>Drop an .obj</b> for auto size</span>
+        <span class="note" style="font-size:10.5px;color:var(--faint)">reads the bounding box · Y-up</span>
+        <input type="file" id="file" accept=".obj,.OBJ" hidden>
+      </label>
+      <div class="field" style="margin-bottom:10px"><label>Units (1 model unit =)</label>
+        <select id="unit"><option>mm</option><option>cm</option><option selected>m</option><option>in</option><option>ft</option></select>
+      </div>
+      <div class="dims">
+        <div class="field"><label>Width</label><input id="w" class="mono" type="number" min="0" step="any" value="1"></div>
+        <div class="field"><label>Height</label><input id="h" class="mono" type="number" min="0" step="any" value="1"></div>
+        <div class="field"><label>Depth</label><input id="d" class="mono" type="number" min="0" step="any" value="1"></div>
+      </div>
+      <div class="samples">
+        <button class="pill" data-s="1,1,1">Crate 1³</button>
+        <button class="pill" data-s="0.9,1.2,0.9">Barrel</button>
+        <button class="pill" data-s="0.9,2.0,0.1">Door</button>
+        <button class="pill" data-s="0.3,6,0.3">Street lamp</button>
+      </div>
+
+      <div class="divider"></div>
+      <h2>Compare with</h2>
+      <div class="refs" id="refs"></div>
+    </div>
+
+    <div class="card">
+      <h2>Side-by-side (to scale)</h2>
+      <div class="stage"><canvas id="view" width="1280" height="800"></canvas></div>
+      <div class="readout" id="readout"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(id){return document.getElementById(id);};
+  var U={mm:0.001,cm:0.01,m:1,"in":0.0254,ft:0.3048};
+  var obj={w:1,h:1,d:1}; // metres
+
+  // reference library: height & width in metres, draw(ctx,cx,groundY,s)  (s = px per metre)
+  var REFS=[
+    {id:"human",name:"Adult (1.8 m)",h:1.8,w:0.5,on:true,draw:function(x,g,s,c){ human(x,g,s,c,1.8); }},
+    {id:"child",name:"Child (1.1 m)",h:1.1,w:0.38,on:false,draw:function(x,g,s,c){ human(x,g,s,c,1.1); }},
+    {id:"door",name:"Door (2.0 m)",h:2.03,w:0.9,on:true,draw:door},
+    {id:"chair",name:"Chair (0.9 m)",h:0.9,w:0.5,on:true,draw:chair},
+    {id:"car",name:"Car (1.45 m)",h:1.45,w:4.3,on:true,draw:car},
+    {id:"mug",name:"Coffee mug (0.1 m)",h:0.1,w:0.09,on:true,draw:mug},
+    {id:"ball",name:"Basketball (0.24 m)",h:0.24,w:0.24,on:false,draw:function(x,g,s,c){ ball(x,g,s,c,0.24); }},
+    {id:"lamp",name:"Street lamp (6 m)",h:6,w:0.9,on:false,draw:lamp},
+    {id:"bus",name:"City bus (3.2 m)",h:3.2,w:12,on:false,draw:bus},
+    {id:"tree",name:"Tree (8 m)",h:8,w:6,on:false,draw:tree}
+  ];
+
+  var cv=$("view"), ctx=cv.getContext("2d");
+  function cssv(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+  // ---------- silhouettes (drawn with base centred at x, standing on groundY; s px/m) ----------
+  var SIL="#8b96a3", SIL2="#6f7a87";
+  function human(x,g,s,c,H){ var hh=H*s, hw=hh*0.26; ctx.fillStyle=c||SIL;
+    var headR=hw*0.42, hy=g-hh+headR;
+    ctx.beginPath(); ctx.arc(x,hy,headR,0,7); ctx.fill();
+    // torso
+    ctx.beginPath(); ctx.moveTo(x-hw*0.34,hy+headR*0.6); ctx.quadraticCurveTo(x-hw*0.5,g-hh*0.42,x-hw*0.3,g-hh*0.42);
+    ctx.lineTo(x+hw*0.3,g-hh*0.42); ctx.quadraticCurveTo(x+hw*0.5,g-hh*0.42,x+hw*0.34,hy+headR*0.6); ctx.closePath(); ctx.fill();
+    // legs
+    ctx.fillRect(x-hw*0.28,g-hh*0.46,hw*0.22,hh*0.46); ctx.fillRect(x+hw*0.06,g-hh*0.46,hw*0.22,hh*0.46);
+  }
+  function door(x,g,s,c){ var H=2.03*s,W=0.9*s; ctx.strokeStyle=SIL2; ctx.lineWidth=Math.max(2,s*0.05); ctx.fillStyle="rgba(139,150,163,.14)";
+    ctx.fillRect(x-W/2,g-H,W,H); ctx.strokeRect(x-W/2,g-H,W,H);
+    ctx.fillStyle=SIL; ctx.beginPath(); ctx.arc(x+W*0.33,g-H*0.5,Math.max(2,s*0.04),0,7); ctx.fill(); }
+  function chair(x,g,s,c){ var H=0.9*s,W=0.5*s,seat=0.45*s; ctx.fillStyle=SIL;
+    ctx.fillRect(x-W/2,g-seat,W*0.08,seat); ctx.fillRect(x+W/2-W*0.08,g-seat,W*0.08,seat); // front legs
+    ctx.fillRect(x-W/2,g-seat,W,s*0.06); // seat
+    ctx.fillRect(x-W/2,g-H,W*0.08,H-seat+s*0.06); } // back
+  function car(x,g,s,c){ var W=4.3*s,H=1.45*s,bodyH=H*0.55,r=H*0.2; ctx.fillStyle=SIL;
+    rr(x-W/2,g-bodyH-r,W,bodyH,r*0.6); ctx.fill();
+    // cabin
+    ctx.beginPath(); ctx.moveTo(x-W*0.22,g-bodyH-r); ctx.lineTo(x-W*0.1,g-H);
+    ctx.lineTo(x+W*0.12,g-H); ctx.lineTo(x+W*0.26,g-bodyH-r); ctx.closePath(); ctx.fill();
+    ctx.fillStyle=SIL2; var wy=g-r*0.7; ctx.beginPath(); ctx.arc(x-W*0.28,wy,r*0.9,0,7); ctx.fill(); ctx.beginPath(); ctx.arc(x+W*0.28,wy,r*0.9,0,7); ctx.fill(); }
+  function mug(x,g,s,c){ var H=0.1*s,W=0.085*s; ctx.fillStyle=SIL; rr(x-W/2,g-H,W,H,W*0.15); ctx.fill();
+    ctx.strokeStyle=SIL; ctx.lineWidth=Math.max(1.5,s*0.012); ctx.beginPath(); ctx.arc(x+W*0.55,g-H*0.5,H*0.28,-1.2,1.2); ctx.stroke(); }
+  function ball(x,g,s,c,D){ var r=D*s/2; ctx.fillStyle=c||"#c47a3a"; ctx.beginPath(); ctx.arc(x,g-r,r,0,7); ctx.fill(); }
+  function lamp(x,g,s,c){ var H=6*s; ctx.fillStyle=SIL; ctx.fillRect(x-s*0.06,g-H,s*0.12,H);
+    ctx.fillRect(x-s*0.06,g-H,s*0.9,s*0.1); ctx.fillStyle="#d9b24a"; rr(x+s*0.72,g-H,s*0.2,s*0.28,s*0.06); ctx.fill(); }
+  function bus(x,g,s,c){ var W=12*s,H=3.2*s,r=H*0.12; ctx.fillStyle=SIL; rr(x-W/2,g-H,W,H,r); ctx.fill();
+    ctx.fillStyle="#0c1014"; for(var i=0;i<6;i++) rr(x-W/2+W*0.08+i*W*0.14,g-H*0.78,W*0.1,H*0.3,r*0.4),ctx.fill();
+    ctx.fillStyle=SIL2; ctx.beginPath(); ctx.arc(x-W*0.3,g-H*0.08,H*0.16,0,7); ctx.fill(); ctx.beginPath(); ctx.arc(x+W*0.3,g-H*0.08,H*0.16,0,7); ctx.fill(); }
+  function tree(x,g,s,c){ var H=8*s; ctx.fillStyle="#6b4a2f"; ctx.fillRect(x-s*0.2,g-H*0.42,s*0.4,H*0.42);
+    ctx.fillStyle="#3f7a4a"; ctx.beginPath(); ctx.arc(x,g-H*0.62,H*0.4,0,7); ctx.fill(); }
+  function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+  function fmtLen(m){ var u=$("unit").value, v=m/U[u]; return (v<10?v.toFixed(2):v<100?v.toFixed(1):Math.round(v))+" "+u; }
+
+  function render(){
+    var W=cv.width,H=cv.height, dpr=1; ctx.setTransform(1,0,0,1,0,0);
+    ctx.fillStyle=cssv("--surface-2")||"#1c2228"; ctx.fillRect(0,0,W,H);
+    var pad=56, groundY=H-60, availH=groundY-40, availW=W-pad*2;
+    // items: object + selected refs
+    var items=[{name:"Your model",h:obj.h,w:Math.max(obj.w,0.05),isObj:true}];
+    REFS.forEach(function(r){ if(r.on) items.push({name:r.name,h:r.h,w:r.w,ref:r}); });
+    var maxH=0,totalW=0; items.forEach(function(it){ maxH=Math.max(maxH,it.h); totalW+=Math.max(it.w,it.h*0.4); });
+    var gap=0.7*items.length, totalWm=totalW+gap;
+    var s=Math.min(availW/totalWm, availH/(maxH*1.08)); // px per metre, uniform
+    // ground + ruler
+    ctx.strokeStyle="rgba(140,150,165,.35)"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(pad*0.5,groundY); ctx.lineTo(W-pad*0.3,groundY); ctx.stroke();
+    // height ticks
+    var tick=niceTick(maxH); ctx.fillStyle=cssv("--faint")||"#5f6974"; ctx.font='11px "JetBrains Mono",monospace'; ctx.textAlign="left";
+    ctx.strokeStyle="rgba(128,140,155,.12)"; ctx.lineWidth=1;
+    for(var yv=tick; yv<=maxH*1.06; yv+=tick){ var yy=groundY-yv*s; if(yy<16) break;
+      ctx.beginPath(); ctx.moveTo(pad*0.5,yy); ctx.lineTo(W-pad*0.3,yy); ctx.stroke();
+      ctx.fillText(fmtLen(yv), 6, yy-3); }
+    // lay out items left->right
+    var x=pad, gapPx=0.7*s;
+    items.forEach(function(it){ var fw=Math.max(it.w,it.h*0.4)*s, cx=x+fw/2;
+      if(it.isObj){ drawObj(cx,groundY,s); } else { it.ref.draw(cx,groundY,s); labelItem(cx,groundY,it,s,false); }
+      x+=fw+gapPx;
+    });
+  }
+  function drawObj(cx,g,s){ var w=Math.max(obj.w,0.05)*s, h=obj.h*s, ac=cssv("--accent")||"#2dd4bf";
+    ctx.fillStyle=(cssv("--accent")||"#2dd4bf")+"26"; ctx.fillRect(cx-w/2,g-h,w,h);
+    ctx.strokeStyle=ac; ctx.lineWidth=2.5; ctx.strokeRect(cx-w/2,g-h,w,h);
+    // dim labels
+    ctx.fillStyle=cssv("--accent-2")||"#5ee7d6"; ctx.font='bold 12px "JetBrains Mono",monospace'; ctx.textAlign="center";
+    ctx.fillText(fmtLen(obj.h), cx, g-h-8);
+    ctx.save(); ctx.translate(cx-w/2-8,g-h/2); ctx.rotate(-Math.PI/2); ctx.fillText(fmtLen(obj.w),0,0); ctx.restore();
+    ctx.fillStyle=cssv("--fg")||"#e8edf1"; ctx.font='700 12px Manrope,sans-serif'; ctx.fillText("Your model", cx, g+18);
+  }
+  function labelItem(cx,g,it,s,obj){ ctx.fillStyle=cssv("--mut")||"#8d97a3"; ctx.font='600 11.5px Manrope,sans-serif'; ctx.textAlign="center";
+    ctx.fillText(it.name.replace(/\s*\(.*\)/,""), cx, g+18); }
+  function niceTick(maxH){ var raw=maxH/6, pow=Math.pow(10,Math.floor(Math.log10(raw))); var n=raw/pow;
+    var m=n<1.5?1:n<3.5?2:n<7.5?5:10; return m*pow; }
+
+  function readout(){ var r=$("readout");
+    r.innerHTML='<div class="stat">Size <b>'+fmtLen(obj.w)+' × '+fmtLen(obj.h)+' × '+fmtLen(obj.d)+'</b></div>'+
+      '<div class="stat">≈ <b>'+(obj.h/1.8).toFixed(1)+'</b> people tall</div>'+
+      '<div class="stat">Footprint <b>'+(obj.w*obj.d).toFixed(obj.w*obj.d<10?2:0)+' m²</b></div>'; }
+
+  function syncFromInputs(){ var u=U[$("unit").value]||1; obj={ w:(+$("w").value||0)*u, h:(+$("h").value||0)*u, d:(+$("d").value||0)*u }; render(); readout(); }
+
+  // refs UI
+  var refsEl=$("refs");
+  REFS.forEach(function(r){ var lab=document.createElement("label");
+    lab.innerHTML='<input type="checkbox" '+(r.on?"checked":"")+' data-id="'+r.id+'"><span>'+r.name.replace(/\s*\(.*\)/,"")+'</span><span class="h">'+r.name.replace(/.*\((.*)\)/,"$1")+'</span>';
+    refsEl.appendChild(lab);
+    lab.querySelector("input").addEventListener("change",function(){ r.on=this.checked; render(); }); });
+
+  ["w","h","d","unit"].forEach(function(id){ $(id).addEventListener("input",syncFromInputs); $(id).addEventListener("change",syncFromInputs); });
+  document.querySelectorAll(".samples .pill").forEach(function(b){ b.addEventListener("click",function(){ var p=b.dataset.s.split(",");
+    $("unit").value="m"; $("w").value=p[0]; $("h").value=p[1]; $("d").value=p[2]; syncFromInputs(); }); });
+
+  // OBJ bbox
+  function parseBBox(text){ var lines=text.split(/\r?\n/), mn=[1e9,1e9,1e9], mx=[-1e9,-1e9,-1e9], any=false;
+    for(var i=0;i<lines.length;i++){ var ln=lines[i]; if(ln.charCodeAt(0)===118 && ln[1]===" "){ var a=ln.trim().split(/\s+/);
+      var x=+a[1],y=+a[2],z=+a[3]; if(isFinite(x)&&isFinite(y)&&isFinite(z)){ any=true;
+        if(x<mn[0])mn[0]=x; if(y<mn[1])mn[1]=y; if(z<mn[2])mn[2]=z; if(x>mx[0])mx[0]=x; if(y>mx[1])mx[1]=y; if(z>mx[2])mx[2]=z; } } }
+    return any?{w:mx[0]-mn[0],h:mx[1]-mn[1],d:mx[2]-mn[2]}:null; }
+  function loadObj(f){ var r=new FileReader(); r.onload=function(){ var b=parseBBox(String(r.result)); if(b){
+    $("w").value=+b.w.toFixed(4); $("h").value=+b.h.toFixed(4); $("d").value=+b.d.toFixed(4);
+    var m=$("drop").querySelector(".dropmsg"); if(m) m.innerHTML="<b>"+f.name+"</b> loaded"; syncFromInputs(); } }; r.readAsText(f); }
+  var drop=$("drop"), file=$("file");
+  drop.addEventListener("click",function(){ file.click(); });
+  file.addEventListener("change",function(){ if(file.files&&file.files[0]) loadObj(file.files[0]); });
+  ["dragenter","dragover"].forEach(function(e){ drop.addEventListener(e,function(ev){ ev.preventDefault(); drop.classList.add("hover"); }); });
+  ["dragleave","drop"].forEach(function(e){ drop.addEventListener(e,function(ev){ ev.preventDefault(); if(e==="dragleave") drop.classList.remove("hover"); }); });
+  drop.addEventListener("drop",function(ev){ drop.classList.remove("hover"); var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0]; if(f) loadObj(f); });
+
+  syncFromInputs();
+})();
+</script>
