@@ -124,17 +124,18 @@ function revealArcade() {
           // stem
           '<path d="M46 10c-1-6 3-9 6-7 2 1 0 4 2 6 2 2 5 1 5 4 0 2-4 2-7 2-4 0-6-1-6-5z" fill="#6b8e23" stroke="#4e6b16" stroke-width="1"/>' +
           // carved glow behind the face
-          '<ellipse class="glow" cx="50" cy="64" rx="30" ry="22" fill="url(#gl)"/>' +
-          // eyes (angry) + grin cut dark
+          '<ellipse class="glow" cx="50" cy="66" rx="33" ry="25" fill="url(#gl)"/>' +
+          // big angry slanted eyes + nose + wide toothy grin (matched to the sculpt)
           '<g fill="#2a1403">' +
-            '<path d="M24 50 L45 44 L42 60 Z"/>' +            // left eye
-            '<path d="M76 50 L55 44 L58 60 Z"/>' +            // right eye
-            '<path d="M30 70 L38 66 L44 72 L50 67 L56 72 L62 66 L70 70 ' +
-                    'L64 84 L58 76 L50 82 L42 76 L36 84 Z"/>' + // jagged grin
+            '<path d="M18 44 L46 55 L30 64 Z"/>' +            // left eye (slants down to centre)
+            '<path d="M82 44 L54 55 L70 64 Z"/>' +            // right eye
+            '<path d="M50 59 L45.5 66 L54.5 66 Z"/>' +        // nose
+            '<path d="M25 67 L31 77 L37 67 L44 79 L50 68 L56 79 L63 67 L69 77 L75 67 ' +
+                    'L72 83 L64 75 L57 85 L50 76 L43 85 L36 75 L28 83 Z"/>' + // toothy grin, corners up
           '</g>' +
-          // thin inner light on the cuts
+          // thin inner light on the cut edges
           '<g fill="none" stroke="#ffd36b" stroke-width=".7" opacity=".5">' +
-            '<path d="M24 50 L45 44 L42 60 Z"/><path d="M76 50 L55 44 L58 60 Z"/></g>' +
+            '<path d="M18 44 L46 55 L30 64 Z"/><path d="M82 44 L54 55 L70 64 Z"/></g>' +
         '</g>' +
       '</svg>';
     logo.appendChild(jol);
