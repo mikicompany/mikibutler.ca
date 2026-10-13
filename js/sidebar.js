@@ -84,6 +84,7 @@ function revealArcade() {
 // 3) Halloween: the logo briefly becomes a glowing jack-o'-lantern (October only)
 (function () {
   try {
+    return;                                             // disabled pending final pumpkin design pick
     if (new Date().getMonth() !== 9) return;            // October = month 9
     var logo = document.querySelector('.sidebar-logo');
     if (!logo) return;
