@@ -80,3 +80,76 @@ function revealArcade() {
   });
 })();
 
+
+// 3) Halloween: the logo briefly becomes a glowing jack-o'-lantern (October only)
+(function () {
+  try {
+    if (new Date().getMonth() !== 9) return;            // October = month 9
+    var logo = document.querySelector('.sidebar-logo');
+    if (!logo) return;
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    var css = document.createElement('style');
+    css.textContent =
+      '.sidebar-logo{position:relative}' +
+      '.jol{position:absolute;inset:0;border-radius:50%;opacity:0;transform:scale(.6) rotate(-12deg);' +
+        'transition:opacity .45s ease,transform .55s cubic-bezier(.34,1.56,.64,1);pointer-events:none;z-index:2}' +
+      '.jol.on{opacity:1;transform:scale(1) rotate(0)}' +
+      '.jol.on{box-shadow:0 0 14px rgba(255,140,20,.75),0 0 30px rgba(255,90,0,.45)}' +
+      '.sidebar-logo.jol-on img{filter:brightness(.4) saturate(.4)}' +
+      '.jol svg{width:100%;height:100%;display:block}' +
+      '@keyframes jolFlick{0%,100%{opacity:.95}45%{opacity:.6}70%{opacity:1}}' +
+      '.jol.on .glow{animation:jolFlick 1.1s ease-in-out infinite}';
+    document.head.appendChild(css);
+
+    var jol = document.createElement('div');
+    jol.className = 'jol';
+    jol.innerHTML =
+      '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+        '<defs>' +
+          '<radialGradient id="pk" cx="38%" cy="32%" r="78%">' +
+            '<stop offset="0%" stop-color="#ffc24d"/><stop offset="45%" stop-color="#ff8a1e"/>' +
+            '<stop offset="100%" stop-color="#d94e06"/></radialGradient>' +
+          '<radialGradient id="gl" cx="50%" cy="60%" r="60%">' +
+            '<stop offset="0%" stop-color="#fff3b0"/><stop offset="55%" stop-color="#ffcf3f"/>' +
+            '<stop offset="100%" stop-color="#ff8a00" stop-opacity="0"/></radialGradient>' +
+          '<clipPath id="cc"><circle cx="50" cy="52" r="47"/></clipPath>' +
+        '</defs>' +
+        '<g clip-path="url(#cc)">' +
+          '<circle cx="50" cy="52" r="47" fill="url(#pk)"/>' +
+          // ridges
+          '<g stroke="#c9480a" stroke-width="2" fill="none" opacity=".45" stroke-linecap="round">' +
+            '<path d="M30 10C24 30 24 74 30 94"/><path d="M42 7C38 30 38 74 42 97"/>' +
+            '<path d="M58 7C62 30 62 74 58 97"/><path d="M70 10C76 30 76 74 70 94"/></g>' +
+          // stem
+          '<path d="M46 10c-1-6 3-9 6-7 2 1 0 4 2 6 2 2 5 1 5 4 0 2-4 2-7 2-4 0-6-1-6-5z" fill="#6b8e23" stroke="#4e6b16" stroke-width="1"/>' +
+          // carved glow behind the face
+          '<ellipse class="glow" cx="50" cy="64" rx="30" ry="22" fill="url(#gl)"/>' +
+          // eyes (angry) + grin cut dark
+          '<g fill="#2a1403">' +
+            '<path d="M24 50 L45 44 L42 60 Z"/>' +            // left eye
+            '<path d="M76 50 L55 44 L58 60 Z"/>' +            // right eye
+            '<path d="M30 70 L38 66 L44 72 L50 67 L56 72 L62 66 L70 70 ' +
+                    'L64 84 L58 76 L50 82 L42 76 L36 84 Z"/>' + // jagged grin
+          '</g>' +
+          // thin inner light on the cuts
+          '<g fill="none" stroke="#ffd36b" stroke-width=".7" opacity=".5">' +
+            '<path d="M24 50 L45 44 L42 60 Z"/><path d="M76 50 L55 44 L58 60 Z"/></g>' +
+        '</g>' +
+      '</svg>';
+    logo.appendChild(jol);
+
+    var busy = false;
+    function flash(hold) {
+      if (busy) return; busy = true;
+      jol.classList.add('on'); logo.classList.add('jol-on');
+      setTimeout(function () {
+        jol.classList.remove('on'); logo.classList.remove('jol-on');
+        setTimeout(function () { busy = false; }, 700);
+      }, hold || (reduce ? 2200 : 3600));
+    }
+    setTimeout(function () { flash(); }, 1600);                     // once shortly after load
+    if (!reduce) setInterval(function () { flash(); }, 27000);      // then every ~27s
+    logo.addEventListener('mouseenter', function () { flash(); });  // and on hover
+  } catch (e) {}
+})();
