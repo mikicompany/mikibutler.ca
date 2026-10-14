@@ -387,7 +387,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               (p.free
                 ? (dlUrl(p)
                     ? '<a class="btn-primary" id="dl-now" href="'+esc(dlUrl(p))+'" download>Download free ▸</a>'
-                    : '<span class="buy-hint">Download link coming soon.</span>')
+                    : hasBuy(p.slug)
+                      ? '<button class="btn-primary" id="buy-now" type="button">Get it free ▸</button>'
+                      : '<span class="buy-hint">Download link coming soon.</span>')
                 : (hasBuy(p.slug) ? '<button class="btn-primary" id="buy-now" type="button">Buy now ▸</button>' : '')+
                   '<button class="btn-secondary" id="add-btn" type="button">Add to cart</button>')+
             '</div>'+
