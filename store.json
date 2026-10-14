@@ -4,6 +4,26 @@
   "note": "",
   "products": [
     {
+      "slug": "blender-themes",
+      "title": "Blender Themes",
+      "type": "digital",
+      "price": 0,
+      "free": true,
+      "image": "images/store-blender-themes.svg",
+      "tags": [
+        "blender",
+        "theme",
+        "free"
+      ],
+      "excerpt": "Free dark UI themes I use for environment work — download & import.",
+      "formats": [
+        ".xml",
+        "Blender 4.x"
+      ],
+      "download": "",
+      "body": "A set of **free Blender themes** tuned for long environment-art sessions — calm contrast, clear selection colours, easy on the eyes.\n\n**Install**\n1. Download the `.xml` theme file(s).\n2. In Blender: **Edit ▸ Preferences ▸ Themes ▸ Install…**\n3. Pick the `.xml` and it applies instantly. Switch any time from the Themes presets.\n\nNo strings — just hit **Download**. If you like them, a tag on socials is always appreciated."
+    },
+    {
       "slug": "peruvian-timing",
       "title": "Peruvian Timing",
       "type": "digital",

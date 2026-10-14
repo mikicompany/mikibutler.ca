@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Blender themes preview">
+  <defs>
+    <linearGradient id="vp" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a4654"/>
+      <stop offset="1" stop-color="#232a32"/>
+    </linearGradient>
+    <linearGradient id="hdr" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2d2d31"/>
+      <stop offset="1" stop-color="#252528"/>
+    </linearGradient>
+  </defs>
+
+  <!-- window -->
+  <rect width="800" height="600" fill="#1a1a1c"/>
+
+  <!-- top header bar -->
+  <rect x="0" y="0" width="800" height="54" fill="url(#hdr)"/>
+  <circle cx="30" cy="27" r="9" fill="#e87d0d"/>
+  <rect x="52" y="20" width="58" height="14" rx="3" fill="#3a3a3f"/>
+  <rect x="122" y="20" width="58" height="14" rx="3" fill="#3a3a3f"/>
+  <rect x="192" y="20" width="58" height="14" rx="3" fill="#3a3a3f"/>
+  <rect x="690" y="18" width="86" height="18" rx="9" fill="#4772b3"/>
+
+  <!-- 3D viewport -->
+  <rect x="14" y="66" width="520" height="430" rx="8" fill="url(#vp)"/>
+  <!-- floor grid -->
+  <g stroke="#4a5563" stroke-width="1" opacity="0.5">
+    <line x1="14" y1="420" x2="534" y2="420"/>
+    <line x1="14" y1="452" x2="534" y2="452"/>
+    <line x1="120" y1="388" x2="120" y2="496"/>
+    <line x1="274" y1="388" x2="274" y2="496"/>
+    <line x1="428" y1="388" x2="428" y2="496"/>
+  </g>
+  <!-- a monkey-ish primitive: selected object w/ orange outline -->
+  <g>
+    <ellipse cx="274" cy="300" rx="96" ry="84" fill="#5b6b7d"/>
+    <ellipse cx="274" cy="300" rx="96" ry="84" fill="none" stroke="#e87d0d" stroke-width="3"/>
+    <ellipse cx="238" cy="276" rx="16" ry="20" fill="#2d3741"/>
+    <ellipse cx="310" cy="276" rx="16" ry="20" fill="#2d3741"/>
+    <path d="M234 334 Q274 360 314 334" fill="none" stroke="#2d3741" stroke-width="5" stroke-linecap="round"/>
+    <!-- 3D manipulator -->
+    <g stroke-width="4" stroke-linecap="round" opacity="0.95">
+      <line x1="274" y1="300" x2="274" y2="214" stroke="#5bd35b"/>
+      <line x1="274" y1="300" x2="360" y2="300" stroke="#e85b5b"/>
+      <line x1="274" y1="300" x2="214" y2="346" stroke="#5b86e8"/>
+    </g>
+  </g>
+
+  <!-- properties / outliner panel -->
+  <rect x="546" y="66" width="240" height="196" rx="8" fill="#252528"/>
+  <rect x="562" y="82" width="140" height="12" rx="3" fill="#4a4a50"/>
+  <g fill="#333338">
+    <rect x="562" y="106" width="208" height="12" rx="3"/>
+    <rect x="562" y="126" width="208" height="12" rx="3"/>
+    <rect x="562" y="146" width="208" height="12" rx="3"/>
+    <rect x="562" y="166" width="208" height="12" rx="3"/>
+    <rect x="562" y="186" width="208" height="12" rx="3"/>
+    <rect x="562" y="206" width="208" height="12" rx="3"/>
+    <rect x="562" y="226" width="140" height="12" rx="3"/>
+  </g>
+  <rect x="562" y="106" width="78" height="12" rx="3" fill="#4772b3"/>
+
+  <!-- theme swatch tray: this is the "themes" idea -->
+  <rect x="546" y="274" width="240" height="222" rx="8" fill="#252528"/>
+  <rect x="562" y="290" width="120" height="12" rx="3" fill="#4a4a50"/>
+  <g>
+    <rect x="562" y="316" width="48" height="48" rx="7" fill="#e87d0d"/>
+    <rect x="620" y="316" width="48" height="48" rx="7" fill="#4772b3"/>
+    <rect x="678" y="316" width="48" height="48" rx="7" fill="#5bd35b"/>
+    <rect x="562" y="374" width="48" height="48" rx="7" fill="#9b6bd8"/>
+    <rect x="620" y="374" width="48" height="48" rx="7" fill="#d8b24a"/>
+    <rect x="678" y="374" width="48" height="48" rx="7" fill="#2d3741"/>
+    <rect x="562" y="432" width="48" height="48" rx="7" fill="#c85b7d"/>
+    <rect x="620" y="432" width="48" height="48" rx="7" fill="#3a9b8f"/>
+    <rect x="678" y="432" width="48" height="48" rx="7" fill="#1a1a1c" stroke="#4a4a50" stroke-width="2"/>
+  </g>
+
+  <!-- bottom timeline strip -->
+  <rect x="14" y="508" width="772" height="40" rx="8" fill="#252528"/>
+  <g fill="#3a3a3f">
+    <rect x="30" y="522" width="60" height="12" rx="3"/>
+    <rect x="100" y="522" width="200" height="12" rx="3"/>
+  </g>
+  <rect x="150" y="514" width="4" height="34" fill="#4772b3"/>
+</svg>

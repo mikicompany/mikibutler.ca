@@ -314,10 +314,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     function money(n){ return STORE.symbol + Number(n).toLocaleString('en-US'); }
     // When a product has no set price, show a hint instead of "$0".
     function priceStr(p){
+      if(p && p.free) return 'Free';
       if(p && p.price > 0) return money(p.price) + '<span class="cur">' + STORE.currency + '</span>';
       if(p && p.buyUrl) return 'See sizes &amp; prices';
       return 'View options';
     }
+    function dlUrl(p){ return (p && p.free && p.download) ? p.download : ''; }
     function typeBadge(t){ return '<span class="type-badge '+t+'">'+(t==='digital'?'⬇ Digital':'📦 Physical')+'</span>'; }
 
     // ── Views ──
@@ -334,7 +336,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             '<h2>'+esc(p.title)+'</h2>'+
             '<div class="excerpt">'+esc(p.excerpt||'')+'</div>'+
             '<div class="price-row"><span class="price">'+priceStr(p)+'</span>'+
-              '<span class="buy-hint">View →</span></div>'+
+              '<span class="buy-hint">'+(p.free?'Get it →':'View →')+'</span></div>'+
           '</div>'+
         '</a>';
       }).join('');
@@ -357,9 +359,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     function renderDetail(p){
       var digital = p.type==='digital';
-      var fulfil = digital
-        ? '⬇ Instant download after checkout'
-        : '📦 Ships worldwide · made to order';
+      var fulfil = p.free
+        ? '⬇ Instant free download — no checkout'
+        : digital
+          ? '⬇ Instant download after checkout'
+          : '📦 Ships worldwide · made to order';
       var optRow = p.options
         ? '<div class="opt-row"><label>'+esc(p.options.label)+'</label><select id="d-option">'+
             p.options.values.map(function(v){return '<option>'+esc(v)+'</option>';}).join('')+'</select></div>'
@@ -380,15 +384,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             '<div class="fulfil-note">'+fulfil+'</div>'+
             formats+ optRow + qtyRow +
             '<div class="buy-actions">'+
-              (hasBuy(p.slug) ? '<button class="btn-primary" id="buy-now" type="button">Buy now ▸</button>' : '')+
-              '<button class="btn-secondary" id="add-btn" type="button">Add to cart</button>'+
+              (p.free
+                ? (dlUrl(p)
+                    ? '<a class="btn-primary" id="dl-now" href="'+esc(dlUrl(p))+'" download>Download free ▸</a>'
+                    : '<span class="buy-hint">Download link coming soon.</span>')
+                : (hasBuy(p.slug) ? '<button class="btn-primary" id="buy-now" type="button">Buy now ▸</button>' : '')+
+                  '<button class="btn-secondary" id="add-btn" type="button">Add to cart</button>')+
             '</div>'+
           '</div>'+
           '<div class="prose">'+markdown(p.body||'')+'</div>'+
         '</div>';
       var buyNow = document.getElementById('buy-now');
       if(buyNow) buyNow.addEventListener('click', function(){ openBuy(p.slug); });
-      document.getElementById('add-btn').addEventListener('click', function(){
+      var addBtn = document.getElementById('add-btn');
+      if(addBtn) addBtn.addEventListener('click', function(){
         var opt = document.getElementById('d-option');
         var qtySel = document.getElementById('d-qty');
         var qty = qtySel ? parseInt(qtySel.value,10) : 1;
