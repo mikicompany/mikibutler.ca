@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+  <meta name="description" content="Blender Theme Maker — design a Blender UI theme in your browser with a live preview and export a .xml you can install straight into Blender (Edit ▸ Preferences ▸ Themes ▸ Install). Free tool by Miki Butler." />
+  <meta name="keywords" content="blender theme, blender theme maker, blender theme editor, blender xml theme, blender ui theme, custom blender theme" />
+  <link rel="canonical" href="https://mikibutler.ca/blendertheme" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Miki Butler" />
+  <meta property="og:title" content="Blender Theme Maker — Miki Butler" />
+  <meta property="og:description" content="Design a Blender theme in the browser with a live preview and export an install-ready .xml." />
+  <meta property="og:url" content="https://mikibutler.ca/blendertheme" />
+  <meta property="og:image" content="https://mikibutler.ca/images/og-card.jpg" />
+  <title>Blender Theme Maker — Miki Butler</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Blender Theme Maker","url":"https://mikibutler.ca/blendertheme","applicationCategory":"DesignApplication","operatingSystem":"Any (web)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Design a Blender UI theme in the browser with a live preview and export an install-ready .xml.","author":{"@type":"Person","name":"Miki Butler","url":"https://mikibutler.ca"}}
+  </script>
+  <style>
+    :root{
+      color-scheme:dark;
+      --bg:#14110e; --surface:#1b1713; --surface-2:#231d17; --border:#352c22; --border-2:#48392b;
+      --fg:#f0e9e1; --mut:#a49686; --faint:#6f6153;
+      --accent:#e8812e; --accent-2:#ff9d4d; --on-accent:#241002; --accent-soft:#e8812e22;
+      --radius:14px; --shadow:0 2px 12px rgba(0,0,0,.45);
+    }
+    *{box-sizing:border-box}
+    [hidden]{display:none!important}
+    body{ margin:0; background:var(--bg); color:var(--fg); font-family:"Manrope",system-ui,-apple-system,sans-serif;
+      font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; padding:22px 16px; }
+    .mono{ font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; }
+    button{ font-family:inherit; cursor:pointer; color:inherit; }
+    a{ color:var(--accent-2); }
+    .wrap{ max-width:1180px; margin:0 auto; }
+
+    header.top{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+    .glyph{ width:40px; height:40px; border-radius:11px; flex:none; border:1px solid var(--border-2); box-shadow:var(--shadow);
+      background:conic-gradient(from 210deg,#e8812e,#ff9d4d,#ffd089,#e8812e); display:grid; place-items:center; font-size:20px; }
+    .top h1{ font-size:20px; font-weight:800; margin:0; letter-spacing:-.3px; }
+    .top .sub{ font-size:12px; color:var(--mut); font-weight:600; }
+    .top .sp{ flex:1; }
+    .home{ font-size:12px; font-weight:700; color:var(--mut); text-decoration:none; border:1px solid var(--border); border-radius:9px; padding:8px 12px; }
+    .home:hover{ border-color:var(--accent); color:var(--accent-2); }
+
+    .layout{ display:grid; grid-template-columns:1.25fr .9fr; gap:18px; align-items:start; }
+    @media (max-width:880px){ .layout{ grid-template-columns:1fr; } }
+
+    .card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); margin-bottom:16px; }
+    .card h2{ font-size:11.5px; font-weight:800; margin:0 0 13px; text-transform:uppercase; letter-spacing:.6px; color:var(--mut); }
+    .preview-col{ position:sticky; top:16px; }
+
+    /* ── Live Blender preview ─────────────────────────────── */
+    .bl{ --b-bg:#303030; --b-head:#232323; --b-panel:#3d3d3d; --b-text:#e6e6e6; --b-texthi:#fff;
+      --b-btn:#545454; --b-accent:#4772b3; --b-vt:#4b4b4b; --b-vb:#303030; --b-osel:#ed5700; --b-oact:#ffaa40; --b-ve:#ff8500; --b-round:5px;
+      border:1px solid #000; border-radius:8px; overflow:hidden; font-size:11px; user-select:none; box-shadow:0 10px 30px rgba(0,0,0,.5); }
+    .bl-topbar{ background:var(--b-head); color:var(--b-text); display:flex; align-items:center; gap:14px; padding:6px 10px; }
+    .bl-topbar .mtab{ opacity:.85 } .bl-topbar .wsp{ flex:1 }
+    .bl-topbar .chip{ background:var(--b-accent); color:var(--b-texthi); padding:2px 9px; border-radius:var(--b-round); font-weight:700; }
+    .bl-body{ display:grid; grid-template-columns:1fr 168px; height:320px; }
+    .bl-viewport{ position:relative; background:linear-gradient(var(--b-vt),var(--b-vb)); overflow:hidden; }
+    .bl-grid{ position:absolute; inset:0;
+      background-image:linear-gradient(var(--b-gridln) 1px,transparent 1px),linear-gradient(90deg,var(--b-gridln) 1px,transparent 1px);
+      background-size:28px 28px; mask-image:radial-gradient(ellipse at 45% 60%,#000 35%,transparent 85%); }
+    .bl-vhead{ position:absolute; top:0; left:0; right:0; background:var(--b-vheadbg); color:var(--b-text); padding:4px 8px; display:flex; gap:12px; z-index:2;}
+    .bl-obj{ position:absolute; left:46%; top:58%; transform:translate(-50%,-50%); }
+    .bl-gizmo{ position:absolute; right:12px; top:34px; width:40px; height:40px; }
+    .bl-side{ background:var(--b-panel); color:var(--b-text); border-left:1px solid #000; display:flex; flex-direction:column; }
+    .bl-outliner{ border-bottom:1px solid rgba(0,0,0,.35); padding:6px; height:112px; overflow:hidden; }
+    .bl-row{ padding:2px 5px; border-radius:3px; display:flex; gap:6px; align-items:center; }
+    .bl-row.sel{ background:var(--b-accent); color:var(--b-texthi); }
+    .bl-dot{ width:8px;height:8px;border-radius:2px;background:var(--b-oact); flex:none }
+    .bl-props{ padding:8px; display:flex; flex-direction:column; gap:6px; flex:1; }
+    .bl-plabel{ color:var(--b-text); opacity:.75; font-weight:700; letter-spacing:.3px; }
+    .bl-btn{ background:var(--b-btn); color:var(--b-text); border-radius:var(--b-round); padding:5px 8px; text-align:center; }
+    .bl-btn.act{ background:var(--b-accent); color:var(--b-texthi); }
+    .bl-field{ background:#00000040; color:var(--b-text); border-radius:var(--b-round); padding:5px 8px; display:flex; justify-content:space-between; }
+    .bl-status{ background:var(--b-head); color:var(--b-text); padding:4px 10px; opacity:.9; }
+
+    /* ── Controls ─────────────────────────────── */
+    .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .presets{ display:flex; gap:7px; flex-wrap:wrap; }
+    .preset{ font-size:12px; font-weight:700; border:1px solid var(--border); background:var(--surface-2); color:var(--fg); border-radius:999px; padding:7px 12px; }
+    .preset:hover{ border-color:var(--accent); color:var(--accent-2); }
+    .swatches{ display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; }
+    .sw{ display:flex; align-items:center; gap:9px; }
+    .sw label{ font-size:12px; font-weight:600; flex:1; }
+    .sw input[type=color]{ width:34px; height:28px; padding:0; border:1px solid var(--border-2); border-radius:7px; background:none; cursor:pointer; }
+    .sw input[type=color]::-webkit-color-swatch-wrapper{ padding:2px }
+    .sw input[type=color]::-webkit-color-swatch{ border:none; border-radius:4px }
+    .sw .hex{ width:74px; font-size:12px; background:var(--surface-2); border:1px solid var(--border); border-radius:7px; padding:5px 7px; color:var(--fg); }
+    input[type=text]{ font:14px/1.3 inherit; color:var(--fg); background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:9px 11px; }
+    input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft); }
+    .slider{ display:flex; align-items:center; gap:10px; }
+    input[type=range]{ accent-color:var(--accent); flex:1; }
+    .check{ display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; }
+    .btn{ font-size:14px; font-weight:800; border:0; border-radius:10px; padding:12px 16px; background:var(--accent); color:var(--on-accent); }
+    .btn:hover{ background:var(--accent-2); }
+    .btn.ghost{ background:transparent; color:var(--fg); border:1px solid var(--border-2); font-weight:700; }
+    .btn.ghost:hover{ border-color:var(--accent); color:var(--accent-2); }
+    .hint{ font-size:12px; color:var(--mut); line-height:1.6; }
+    .hint b{ color:var(--fg); }
+    .steps{ margin:0; padding-left:1.1em; font-size:12.5px; color:var(--mut); line-height:1.7; }
+    .steps b{ color:var(--fg); }
+    .toast{ position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(20px); opacity:0; pointer-events:none;
+      background:var(--accent); color:var(--on-accent); font-weight:800; font-size:13px; padding:11px 18px; border-radius:999px; box-shadow:var(--shadow); transition:all .22s ease; z-index:50; }
+    .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+    .intro{ font-size:13px; color:var(--mut); max-width:70ch; margin:-4px 0 16px; line-height:1.6; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="glyph">🎨</div>
+    <div><h1>Blender Theme Maker</h1><div class="sub">Design a theme live · export install-ready <span class="mono">.xml</span></div></div>
+    <div class="sp"></div>
+    <a class="home" href="/">mikibutler.ca ↗</a>
+  </header>
+
+  <p class="intro">Pick colours, watch a mock Blender UI update in real time, then export a <b>.xml</b> you drop straight into Blender via <b>Edit ▸ Preferences ▸ Themes ▸ Install…</b>. Themes the widgets, panels, menus, every editor background and the 3D viewport. No account, nothing uploaded — it all runs in your browser.</p>
+
+  <div class="layout">
+    <!-- PREVIEW -->
+    <div class="preview-col">
+      <div class="card">
+        <h2>Live preview</h2>
+        <div class="bl" id="bl">
+          <div class="bl-topbar">
+            <span style="font-weight:800">☰</span>
+            <span class="mtab">File</span><span class="mtab">Edit</span><span class="mtab">Render</span><span class="mtab">Window</span>
+            <span class="wsp"></span>
+            <span class="chip">Layout</span>
+          </div>
+          <div class="bl-body">
+            <div class="bl-viewport">
+              <div class="bl-grid"></div>
+              <div class="bl-vhead"><span>View</span><span>Select</span><span>Add</span><span>Object</span></div>
+              <svg class="bl-obj" width="150" height="130" viewBox="0 0 150 130" aria-hidden="true">
+                <!-- shaded "object" with selection outline -->
+                <ellipse cx="75" cy="66" rx="52" ry="46" fill="var(--b-objfill)" stroke="var(--b-osel)" stroke-width="2.5"/>
+                <ellipse cx="56" cy="54" rx="9" ry="12" fill="#1c1c1c"/>
+                <ellipse cx="94" cy="54" rx="9" ry="12" fill="#1c1c1c"/>
+                <path d="M54 84 Q75 100 96 84" fill="none" stroke="#1c1c1c" stroke-width="4" stroke-linecap="round"/>
+                <circle cx="75" cy="66" r="3" fill="var(--b-oact)"/>
+              </svg>
+              <svg class="bl-gizmo" viewBox="0 0 40 40" aria-hidden="true">
+                <line x1="20" y1="20" x2="20" y2="4" stroke="#6ab04c" stroke-width="3" stroke-linecap="round"/>
+                <line x1="20" y1="20" x2="36" y2="20" stroke="#eb4d4b" stroke-width="3" stroke-linecap="round"/>
+                <line x1="20" y1="20" x2="9" y2="31" stroke="#4d79eb" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="bl-side">
+              <div class="bl-outliner">
+                <div class="bl-row"><span class="bl-dot"></span>Scene Collection</div>
+                <div class="bl-row sel"><span class="bl-dot"></span>Cube</div>
+                <div class="bl-row"><span class="bl-dot"></span>Camera</div>
+                <div class="bl-row"><span class="bl-dot"></span>Light</div>
+              </div>
+              <div class="bl-props">
+                <div class="bl-plabel">Transform</div>
+                <div class="bl-field"><span>Location X</span><span>0 m</span></div>
+                <div class="bl-field"><span>Location Y</span><span>0 m</span></div>
+                <div class="row" style="gap:6px">
+                  <div class="bl-btn" style="flex:1">Global</div>
+                  <div class="bl-btn act" style="flex:1">Local</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bl-status">Verts 8 · Faces 6 · Tris 12 — Miki Butler</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls-col">
+      <div class="card">
+        <h2>Presets</h2>
+        <div class="presets" id="presets"></div>
+      </div>
+
+      <div class="card">
+        <h2>Colours</h2>
+        <div class="swatches" id="swatches"></div>
+        <div style="margin-top:14px">
+          <div class="slider"><span style="font-size:12px;font-weight:700;width:86px">Roundness</span>
+            <input type="range" id="round" min="0" max="1" step="0.05" value="0.4">
+            <span class="mono" id="roundval" style="width:34px;text-align:right">0.40</span></div>
+        </div>
+        <label class="check" style="margin-top:12px"><input type="checkbox" id="vpsingle"> Flat (single-colour) viewport</label>
+      </div>
+
+      <div class="card">
+        <h2>Export</h2>
+        <div class="row" style="margin-bottom:12px">
+          <input type="text" id="tname" value="Miki Theme" style="flex:1" aria-label="Theme name" />
+        </div>
+        <div class="row">
+          <button class="btn" id="export">⬇ Download .xml</button>
+          <button class="btn ghost" id="import">Import .xml…</button>
+          <input type="file" id="file" accept=".xml" hidden>
+        </div>
+        <p class="hint" style="margin-top:12px">File name becomes the theme name in Blender's Themes list.</p>
+      </div>
+
+      <div class="card">
+        <h2>Install in Blender</h2>
+        <ol class="steps">
+          <li>Download your <b>.xml</b> above.</li>
+          <li>In Blender: <b>Edit ▸ Preferences ▸ Themes</b>.</li>
+          <li>Click <b>Install…</b>, pick the <b>.xml</b> — it applies instantly.</li>
+          <li>Switch back any time from the Themes <b>presets</b> dropdown.</li>
+        </ol>
+        <p class="hint" style="margin-top:10px">Works on Blender 4.x. Like it? Grab more free themes in the <a href="/store.html">store</a>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Palette model ───────────────────────────────────────────
+var FIELDS = [
+  ['bg','Editor background'],
+  ['header','Header bars'],
+  ['panel','Panel / region'],
+  ['text','Text'],
+  ['textHi','Text (highlight)'],
+  ['button','Button inner'],
+  ['accent','Accent / active'],
+  ['vpTop','Viewport top'],
+  ['vpBottom','Viewport bottom'],
+  ['objSel','Object selected'],
+  ['objActive','Object active'],
+  ['vertEdge','Vertex / edge select']
+];
+
+var PRESETS = {
+  'Blender Dark':  {bg:'#303030',header:'#232323',panel:'#3d3d3d',text:'#e6e6e6',textHi:'#ffffff',button:'#545454',accent:'#4772b3',vpTop:'#4b4b4b',vpBottom:'#303030',objSel:'#ed5700',objActive:'#ffaa40',vertEdge:'#ff8500',round:0.4,single:false},
+  'Blender Light': {bg:'#b3b3b3',header:'#adadad',panel:'#cccccc',text:'#1a1a1a',textHi:'#ffffff',button:'#dbdbdb',accent:'#4772b3',vpTop:'#646464',vpBottom:'#646464',objSel:'#f15800',objActive:'#ffaa40',vertEdge:'#ff7a00',round:0.4,single:true},
+  'Miki Purple':   {bg:'#241b33',header:'#1c1530',panel:'#2d2342',text:'#e9e2f5',textHi:'#ffffff',button:'#392c54',accent:'#ff2d78',vpTop:'#3a2d57',vpBottom:'#241a3a',objSel:'#ff2d78',objActive:'#ff9ec4',vertEdge:'#46e8d0',round:0.3,single:false},
+  'Nord':          {bg:'#2e3440',header:'#272c36',panel:'#3b4252',text:'#d8dee9',textHi:'#eceff4',button:'#434c5e',accent:'#88c0d0',vpTop:'#3b4252',vpBottom:'#2e3440',objSel:'#ebcb8b',objActive:'#a3be8c',vertEdge:'#d08770',round:0.3,single:false},
+  'Dracula':       {bg:'#282a36',header:'#21222c',panel:'#343746',text:'#f8f8f2',textHi:'#ffffff',button:'#44475a',accent:'#bd93f9',vpTop:'#343746',vpBottom:'#282a36',objSel:'#ff79c6',objActive:'#50fa7b',vertEdge:'#ffb86c',round:0.4,single:false},
+  'Forest':        {bg:'#232a24',header:'#1b211c',panel:'#2d362e',text:'#dfe7df',textHi:'#ffffff',button:'#3a453b',accent:'#7bb661',vpTop:'#313c33',vpBottom:'#232a24',objSel:'#e0a33e',objActive:'#f2d08a',vertEdge:'#7bb661',round:0.35,single:false},
+  'Mono Slate':    {bg:'#2b2b2b',header:'#202020',panel:'#363636',text:'#e0e0e0',textHi:'#ffffff',button:'#4a4a4a',accent:'#9aa0a6',vpTop:'#3a3a3a',vpBottom:'#262626',objSel:'#d0d0d0',objActive:'#ffffff',vertEdge:'#bdbdbd',round:0.25,single:false}
+};
+
+var P = Object.assign({}, PRESETS['Blender Dark']);
+
+// ── Colour helpers ──────────────────────────────────────────
+function clean(h){ h=(h||'').trim(); if(h[0]!=='#')h='#'+h; return (h+'000000').slice(0,7).toLowerCase(); }
+function h6(h){ return clean(h); }
+function h8(h,a){ return clean(h)+(a||'ff'); }
+function shade(h,amt){ h=clean(h);
+  var r=parseInt(h.substr(1,2),16),g=parseInt(h.substr(3,2),16),b=parseInt(h.substr(5,2),16);
+  function f(x){ return Math.max(0,Math.min(255,Math.round(amt<0? x*(1+amt) : x+(255-x)*amt))); }
+  return '#'+[f(r),f(g),f(b)].map(function(x){return ('0'+x.toString(16)).slice(-2);}).join('');
+}
+function luma(h){ h=clean(h); return (0.2126*parseInt(h.substr(1,2),16)+0.7152*parseInt(h.substr(3,2),16)+0.0722*parseInt(h.substr(5,2),16))/255; }
+
+// ── Live preview binding ────────────────────────────────────
+function applyPreview(){
+  var bl=document.getElementById('bl'), s=bl.style;
+  s.setProperty('--b-bg',P.bg); s.setProperty('--b-head',P.header); s.setProperty('--b-panel',P.panel);
+  s.setProperty('--b-text',P.text); s.setProperty('--b-texthi',P.textHi); s.setProperty('--b-btn',P.button);
+  s.setProperty('--b-accent',P.accent); s.setProperty('--b-vt', P.single?P.vpBottom:P.vpTop); s.setProperty('--b-vb',P.vpBottom);
+  s.setProperty('--b-osel',P.objSel); s.setProperty('--b-oact',P.objActive); s.setProperty('--b-ve',P.vertEdge);
+  s.setProperty('--b-round',(P.round*9)+'px');
+  s.setProperty('--b-gridln', (luma(P.vpBottom)>0.5?'rgba(0,0,0,.18)':'rgba(255,255,255,.16)'));
+  s.setProperty('--b-vheadbg', (luma(P.vpBottom)>0.5?'rgba(255,255,255,.35)':'rgba(0,0,0,.3)'));
+  s.setProperty('--b-objfill', shade(P.vpBottom, luma(P.vpBottom)>0.5?-0.25:0.28));
+}
+
+// ── Build controls ──────────────────────────────────────────
+var swHost=document.getElementById('swatches');
+FIELDS.forEach(function(f){
+  var key=f[0];
+  var el=document.createElement('div'); el.className='sw';
+  el.innerHTML='<input type="color" id="c_'+key+'"><label for="c_'+key+'">'+f[1]+'</label><input class="hex mono" id="h_'+key+'" maxlength="7">';
+  swHost.appendChild(el);
+  var cp=el.querySelector('#c_'+key), hx=el.querySelector('#h_'+key);
+  cp.addEventListener('input',function(){ P[key]=cp.value; hx.value=cp.value; applyPreview(); });
+  hx.addEventListener('change',function(){ P[key]=clean(hx.value); cp.value=P[key]; hx.value=P[key]; applyPreview(); });
+});
+var presetHost=document.getElementById('presets');
+Object.keys(PRESETS).forEach(function(name){
+  var b=document.createElement('button'); b.className='preset'; b.textContent=name;
+  b.addEventListener('click',function(){ loadPalette(PRESETS[name]); });
+  presetHost.appendChild(b);
+});
+var roundEl=document.getElementById('round'), roundVal=document.getElementById('roundval'), vpSingle=document.getElementById('vpsingle');
+roundEl.addEventListener('input',function(){ P.round=parseFloat(roundEl.value); roundVal.textContent=P.round.toFixed(2); applyPreview(); });
+vpSingle.addEventListener('change',function(){ P.single=vpSingle.checked; applyPreview(); });
+
+function syncControls(){
+  FIELDS.forEach(function(f){ var k=f[0]; document.getElementById('c_'+k).value=clean(P[k]); document.getElementById('h_'+k).value=clean(P[k]); });
+  roundEl.value=P.round; roundVal.textContent=Number(P.round).toFixed(2); vpSingle.checked=!!P.single;
+}
+function loadPalette(src){ P=Object.assign({}, src); syncControls(); applyPreview(); }
+
+// ── XML export ──────────────────────────────────────────────
+function wcol(tag,inner,innerSel,text,textSel,item,outline,round,shaded,st,sd){
+  return '      <'+tag+'>\n        <ThemeWidgetColors\n'+
+    '          outline="'+h8(outline)+'"\n          outline_sel="'+h8(shade(outline,-0.15))+'"\n'+
+    '          inner="'+inner+'"\n          inner_sel="'+innerSel+'"\n          item="'+h8(item)+'"\n'+
+    '          text="'+h6(text)+'"\n          text_sel="'+h6(textSel)+'"\n'+
+    '          show_shaded="'+(shaded?'TRUE':'FALSE')+'"\n          shadetop="'+(st||0)+'"\n          shadedown="'+(sd||0)+'"\n'+
+    '          roundness="'+P.round+'"\n          >\n        </ThemeWidgetColors>\n      </'+tag+'>\n';
+}
+function genericEditor(tag,cls){
+  return '    <'+tag+'>\n      <'+cls+'>\n        <space>\n          <ThemeSpaceGeneric\n'+
+    '            back="'+h6(P.bg)+'"\n            text="'+h6(P.text)+'"\n            text_hi="'+h6(P.textHi)+'"\n            header="'+h8(P.header)+'"\n'+
+    '            >\n          </ThemeSpaceGeneric>\n        </space>\n      </'+cls+'>\n    </'+tag+'>\n';
+}
+
+function buildXML(){
+  var btn=h8(P.button), acc=h8(P.accent), pan=h8(P.panel), fld=h8(shade(P.button,-0.14)), trans=h8(P.panel,'00');
+  var ol=shade(P.bg,-0.25);
+  var xml='<bpy>\n  <Theme>\n    <user_interface>\n      <ThemeUserInterface\n';
+  xml+= '        panel_roundness="'+P.round+'"\n';
+  xml+= '        widget_emboss="#00000026"\n';
+  xml+= '        editor_border="'+h6(shade(P.bg,-0.28))+'"\n';
+  xml+= '        editor_outline="'+h8(shade(P.bg,-0.12))+'"\n';
+  xml+= '        editor_outline_active="'+h8(P.accent)+'"\n';
+  xml+= '        widget_text_cursor="'+h6(P.accent)+'"\n';
+  xml+= '        panel_header="'+h8(P.header)+'"\n';
+  xml+= '        panel_title="'+h6(P.text)+'"\n';
+  xml+= '        panel_text="'+h6(P.text)+'"\n';
+  xml+= '        panel_back="'+h8(P.panel)+'"\n';
+  xml+= '        panel_sub_back="'+h8(P.text,'1f')+'"\n';
+  xml+= '        panel_outline="'+h8(P.textHi,'22')+'"\n';
+  xml+= '        panel_active="'+h8(P.accent)+'"\n';
+  xml+= '        >\n';
+  // widget blocks
+  xml+= wcol('wcol_regular',   btn, acc, P.text, P.textHi, P.text, ol, P.round,false,0,-5);
+  xml+= wcol('wcol_tool',      btn, acc, P.text, P.textHi, P.text, ol, P.round,false,0,-5);
+  xml+= wcol('wcol_toolbar_item',btn, acc, P.text, P.textHi, P.text, ol, P.round,false,0,0);
+  xml+= wcol('wcol_radio',     h8(shade(P.button,-0.08)), acc, P.text, P.textHi, P.text, ol, P.round,false,0,-5);
+  xml+= wcol('wcol_text',      fld, h8(shade(P.button,-0.06)), P.text, P.textHi, P.text, ol, P.round,false,0,0);
+  xml+= wcol('wcol_option',    h8(shade(P.button,-0.1)), acc, P.text, P.textHi, P.textHi, ol, P.round,false,0,0);
+  xml+= wcol('wcol_toggle',    btn, acc, P.text, P.textHi, P.text, ol, P.round,false,0,0);
+  xml+= wcol('wcol_num',       fld, h8(shade(P.button,-0.04)), P.text, P.textHi, P.accent, ol, P.round,false,0,0);
+  xml+= wcol('wcol_numslider', fld, h8(P.accent), P.text, P.textHi, P.accent, ol, P.round,false,0,0);
+  xml+= wcol('wcol_box',       h8(shade(P.panel,0.04)), acc, P.text, P.textHi, P.text, ol, P.round,false,0,0);
+  xml+= wcol('wcol_menu',      pan, acc, P.text, P.textHi, P.text, ol, P.round,false,0,0);
+  xml+= wcol('wcol_pulldown',  pan, acc, P.text, P.textHi, P.text, ol, P.round,false,0,0);
+  xml+= wcol('wcol_menu_back', h8(shade(P.panel,-0.04)), h8(shade(P.panel,-0.02)), P.text, P.textHi, P.text, shade(P.bg,-0.35), P.round,false,0,0);
+  xml+= wcol('wcol_pie_menu',  pan, acc, P.text, P.textHi, P.text, ol, P.round,false,0,0);
+  xml+= wcol('wcol_tooltip',   h8(shade(P.panel,-0.08)), acc, P.textHi, P.textHi, P.text, shade(P.bg,-0.35), P.round,false,0,0);
+  xml+= wcol('wcol_menu_item', trans, acc, P.text, P.textHi, P.text, trans, P.round,false,0,0);
+  xml+= wcol('wcol_scroll',    h8(shade(P.panel,0.06)), acc, P.text, P.textHi, P.text, trans, P.round,false,0,0);
+  xml+= wcol('wcol_progress',  h8(shade(P.panel,-0.05)), acc, P.text, P.textHi, P.text, ol, P.round,false,0,0);
+  xml+= wcol('wcol_list_item', trans, acc, P.text, P.textHi, P.text, trans, P.round,false,0,0);
+  xml+= wcol('wcol_tab',       h8(shade(P.panel,-0.03)), h8(P.bg), P.text, P.textHi, P.text, shade(P.bg,-0.3), P.round,false,0,0);
+  xml+= '      </ThemeUserInterface>\n    </user_interface>\n';
+
+  // 3D viewport
+  var vtop = P.single ? P.vpBottom : P.vpTop;
+  xml+= '    <view_3d>\n      <ThemeView3D\n';
+  xml+= '        grid="'+h8(P.text,'26')+'"\n        grid_major="'+h8(P.text,'4d')+'"\n        grid_axis_brightness="0.5"\n';
+  xml+= '        wire="'+h6(shade(P.text,-0.1))+'"\n        wire_edit="'+h6(shade(P.text,-0.1))+'"\n        edge_width="1"\n';
+  xml+= '        object_selected="'+h6(P.objSel)+'"\n        object_active="'+h6(P.objActive)+'"\n';
+  xml+= '        vertex="'+h6(shade(P.text,-0.1))+'"\n        vertex_select="'+h6(P.vertEdge)+'"\n        vertex_size="3"\n';
+  xml+= '        edge_select="'+h6(P.vertEdge)+'"\n        edge_mode_select="'+h6(shade(P.vertEdge,0.2))+'"\n';
+  xml+= '        face="'+h8(P.text,'12')+'"\n        face_select="'+h8(P.vertEdge,'33')+'"\n        facedot_size="4"\n';
+  xml+= '        editmesh_active="'+h8(P.textHi,'80')+'"\n        transform="'+h6(P.textHi)+'"\n';
+  xml+= '        object_origin_size="6"\n        outline_width="1"\n        >\n';
+  xml+= '        <space>\n          <ThemeSpaceGradient\n';
+  xml+= '            text="'+h6(P.text)+'"\n            text_hi="'+h6(P.textHi)+'"\n            header="'+h8(P.header)+'"\n            >\n';
+  xml+= '            <gradients>\n              <ThemeGradientColors\n';
+  xml+= '                background_type="'+(P.single?'SINGLE_COLOR':'LINEAR')+'"\n';
+  xml+= '                high_gradient="'+h6(vtop)+'"\n                gradient="'+h6(P.vpBottom)+'"\n                >\n';
+  xml+= '              </ThemeGradientColors>\n            </gradients>\n          </ThemeSpaceGradient>\n        </space>\n';
+  xml+= '      </ThemeView3D>\n    </view_3d>\n';
+
+  // other editors (background cohesion)
+  var EDS=[['properties','ThemeProperties'],['outliner','ThemeOutliner'],['info','ThemeInfo'],
+    ['file_browser','ThemeFileBrowser'],['node_editor','ThemeNodeEditor'],['text_editor','ThemeTextEditor'],
+    ['preferences','ThemePreferences'],['console','ThemeConsole'],['sequence_editor','ThemeSequenceEditor'],
+    ['image_editor','ThemeImageEditor'],['clip_editor','ThemeClipEditor'],['graph_editor','ThemeGraphEditor'],
+    ['dopesheet_editor','ThemeDopeSheet'],['nla_editor','ThemeNLAEditor'],['spreadsheet','ThemeSpreadsheet'],
+    ['topbar','ThemeTopBar'],['statusbar','ThemeStatusBar']];
+  EDS.forEach(function(e){ xml+=genericEditor(e[0],e[1]); });
+
+  xml+= '  </Theme>\n</bpy>\n';
+  return xml;
+}
+
+function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},1900); }
+
+document.getElementById('export').addEventListener('click',function(){
+  var name=(document.getElementById('tname').value||'Miki Theme').trim();
+  var fname=name.replace(/[^\w\- ]+/g,'').replace(/\s+/g,'_')||'Miki_Theme';
+  var blob=new Blob([buildXML()],{type:'application/xml'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname+'.xml';
+  document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },0);
+  toast('Downloaded '+fname+'.xml');
+});
+
+// ── Import an existing theme .xml ───────────────────────────
+document.getElementById('import').addEventListener('click',function(){ document.getElementById('file').click(); });
+document.getElementById('file').addEventListener('change',function(e){
+  var f=e.target.files[0]; if(!f) return;
+  var fr=new FileReader();
+  fr.onload=function(){
+    try{
+      var doc=new DOMParser().parseFromString(fr.result,'application/xml');
+      if(doc.querySelector('parsererror')) throw new Error('bad xml');
+      var np=Object.assign({}, P);
+      function at(sel,attr){ var el=doc.querySelector(sel); return el? el.getAttribute(attr):null; }
+      function rgb(v){ return v? clean(v.slice(0,7)) : null; }
+      var ui=doc.querySelector('ThemeUserInterface');
+      if(ui){ np.panel = rgb(ui.getAttribute('panel_back'))||np.panel;
+        np.accent = rgb(ui.getAttribute('panel_active'))||np.accent;
+        np.header = rgb(ui.getAttribute('panel_header'))||np.header;
+        np.text = rgb(ui.getAttribute('panel_text'))||np.text;
+        if(ui.getAttribute('panel_roundness')) np.round=parseFloat(ui.getAttribute('panel_roundness')); }
+      var reg=doc.querySelector('wcol_regular ThemeWidgetColors');
+      if(reg){ np.button=rgb(reg.getAttribute('inner'))||np.button; np.text=rgb(reg.getAttribute('text'))||np.text; np.textHi=rgb(reg.getAttribute('text_sel'))||np.textHi; }
+      var v3=doc.querySelector('ThemeView3D');
+      if(v3){ np.objSel=rgb(v3.getAttribute('object_selected'))||np.objSel; np.objActive=rgb(v3.getAttribute('object_active'))||np.objActive; np.vertEdge=rgb(v3.getAttribute('edge_select'))||np.vertEdge; }
+      var grad=doc.querySelector('ThemeGradientColors');
+      if(grad){ np.vpBottom=rgb(grad.getAttribute('gradient'))||np.vpBottom; np.vpTop=rgb(grad.getAttribute('high_gradient'))||np.vpTop; np.single=(grad.getAttribute('background_type')==='SINGLE_COLOR'); }
+      var sg=doc.querySelector('ThemeSpaceGeneric');
+      if(sg){ np.bg=rgb(sg.getAttribute('back'))||np.bg; }
+      loadPalette(np); toast('Imported '+f.name);
+    }catch(err){ toast('Could not read that .xml'); }
+  };
+  fr.readAsText(f);
+  e.target.value='';
+});
+
+// init
+syncControls(); applyPreview();
+</script>
+</body>
+</html>
