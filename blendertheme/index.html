@@ -16,21 +16,36 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96.png" />
   <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
-  <meta name="description" content="Blender Theme Maker — design a Blender UI theme in your browser with a live preview and export a .xml you can install straight into Blender (Edit ▸ Preferences ▸ Themes ▸ Install). Free tool by Miki Butler." />
-  <meta name="keywords" content="blender theme, blender theme maker, blender theme editor, blender xml theme, blender ui theme, custom blender theme" />
+  <meta name="description" content="Free online Blender theme maker: design a custom Blender UI theme with a live full-window preview and export an install-ready .xml for Blender 4.x. No signup — runs in your browser." />
+  <meta name="keywords" content="blender theme, blender theme maker, blender theme editor, blender theme generator, blender xml theme, blender ui theme, custom blender theme, free blender theme, blender dark theme, make blender theme" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="author" content="Miki Butler" />
   <link rel="canonical" href="https://mikibutler.ca/blendertheme" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Miki Butler" />
-  <meta property="og:title" content="Blender Theme Maker — Miki Butler" />
-  <meta property="og:description" content="Design a Blender theme in the browser with a live preview and export an install-ready .xml." />
+  <meta property="og:title" content="Blender Theme Maker — Free Online Blender Theme Editor" />
+  <meta property="og:description" content="Design a Blender theme in your browser with a live full-window preview and export an install-ready .xml for Blender 4.x. Free, no signup." />
   <meta property="og:url" content="https://mikibutler.ca/blendertheme" />
   <meta property="og:image" content="https://mikibutler.ca/images/og-card.jpg" />
-  <title>Blender Theme Maker — Miki Butler</title>
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Blender Theme Maker — Free Online Blender Theme Editor" />
+  <meta name="twitter:description" content="Design a Blender theme live in your browser and export an install-ready .xml for Blender 4.x. Free, no signup." />
+  <meta name="twitter:image" content="https://mikibutler.ca/images/og-card.jpg" />
+  <title>Blender Theme Maker — Free Online Theme Editor &amp; .xml Export</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebApplication","name":"Blender Theme Maker","url":"https://mikibutler.ca/blendertheme","applicationCategory":"DesignApplication","operatingSystem":"Any (web)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Design a Blender UI theme in the browser with a live preview and export an install-ready .xml.","author":{"@type":"Person","name":"Miki Butler","url":"https://mikibutler.ca"}}
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Blender Theme Maker","url":"https://mikibutler.ca/blendertheme","applicationCategory":"DesignApplication","operatingSystem":"Any (web)","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"featureList":["Live full-window Blender UI preview","Export install-ready .xml theme for Blender 4.x","Import and edit an existing theme","Starter presets","Runs entirely in the browser"],"description":"Design a Blender UI theme in the browser with a live preview and export an install-ready .xml.","author":{"@type":"Person","name":"Miki Butler","url":"https://mikibutler.ca"}}
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+    {"@type":"Question","name":"Is the Blender Theme Maker free?","acceptedAnswer":{"@type":"Answer","text":"Yes. It is completely free, needs no account or signup, and runs entirely in your browser — nothing is uploaded."}},
+    {"@type":"Question","name":"Does it export a real Blender theme file?","acceptedAnswer":{"@type":"Answer","text":"Yes. It exports a standard Blender theme .xml. Install it in Blender via Edit ▸ Preferences ▸ Themes ▸ Install, then it applies instantly."}},
+    {"@type":"Question","name":"Which Blender version does it support?","acceptedAnswer":{"@type":"Answer","text":"The exported .xml targets the Blender 4.x theme format and installs through Preferences ▸ Themes ▸ Install."}},
+    {"@type":"Question","name":"Can I edit an existing Blender theme?","acceptedAnswer":{"@type":"Answer","text":"Yes. Use Import .xml to load a theme you already have, tweak the colours live, and export it again."}},
+    {"@type":"Question","name":"How do I install the theme in Blender?","acceptedAnswer":{"@type":"Answer","text":"Download the .xml, open Blender, go to Edit ▸ Preferences ▸ Themes, click Install, choose the .xml file, and it applies right away. The file name becomes the theme name in the Themes preset list."}}
+  ]}
   </script>
   <style>
     :root{
@@ -51,7 +66,8 @@
 
     header.top{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
     .glyph{ width:40px; height:40px; border-radius:11px; flex:none; border:1px solid var(--border-2); box-shadow:var(--shadow);
-      background:conic-gradient(from 210deg,#e8812e,#ff9d4d,#ffd089,#e8812e); display:grid; place-items:center; font-size:20px; }
+      background:var(--surface-2); display:grid; place-items:center; }
+    .glyph svg{ width:28px; height:28px; display:block; }
     .top h1{ font-size:20px; font-weight:800; margin:0; letter-spacing:-.3px; }
     .top .sub{ font-size:12px; color:var(--mut); font-weight:600; }
     .top .sp{ flex:1; }
@@ -155,12 +171,33 @@
       background:var(--accent); color:var(--on-accent); font-weight:800; font-size:13px; padding:11px 18px; border-radius:999px; box-shadow:var(--shadow); transition:all .22s ease; z-index:50; }
     .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
     .intro{ font-size:13px; color:var(--mut); max-width:70ch; margin:-4px 0 16px; line-height:1.6; }
+    .seo{ margin-top:4px; }
+    .seo h2{ font-size:18px; font-weight:800; margin:26px 0 8px; letter-spacing:-.2px; color:var(--fg); }
+    .seo h3{ font-size:14.5px; font-weight:800; margin:16px 0 4px; color:var(--fg); }
+    .seo p{ font-size:14px; color:var(--mut); line-height:1.7; max-width:72ch; margin:0 0 8px; }
+    .seo a{ font-weight:700; }
+    .seo ul{ max-width:72ch; color:var(--mut); font-size:14px; line-height:1.7; padding-left:1.1em; }
+    .seo li{ margin:3px 0; } .seo li::marker{ color:var(--accent); }
+    .seo b{ color:var(--fg); }
+    .feat{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; margin:10px 0 2px; list-style:none; padding:0; }
+    .feat li{ background:var(--surface); border:1px solid var(--border); border-radius:11px; padding:12px 14px; font-size:13px; color:var(--mut); }
+    .feat b{ display:block; color:var(--fg); margin-bottom:2px; }
   </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="glyph">🎨</div>
+    <div class="glyph" aria-hidden="true">
+      <svg viewBox="0 0 48 48">
+        <defs><radialGradient id="bll" cx="38%" cy="34%" r="74%">
+          <stop offset="0" stop-color="#ffb366"/><stop offset="55%" stop-color="#f3791f"/><stop offset="100%" stop-color="#cf5f0a"/>
+        </radialGradient></defs>
+        <circle cx="24" cy="25" r="18.5" fill="url(#bll)"/>
+        <path d="M26.5 24C22 27 18 31 15.5 37.5C21 32 26 30.5 30.5 29.5Z" fill="#fff"/>
+        <circle cx="29" cy="23" r="4.7" fill="#fff"/>
+        <circle cx="30" cy="23.6" r="2.2" fill="#15365c"/>
+      </svg>
+    </div>
     <div><h1>Blender Theme Maker</h1><div class="sub">Design a theme live · export install-ready <span class="mono">.xml</span></div></div>
     <div class="sp"></div>
     <a class="home" href="/">mikibutler.ca ↗</a>
@@ -333,8 +370,43 @@
         <p class="hint" style="margin-top:10px">Works on Blender 4.x. Like it? Grab more free themes in the <a href="/store.html">store</a>.</p>
       </div>
     </div>
+
+    <!-- SEO / helpful content -->
+    <section class="seo">
+      <h2>A free Blender theme maker in your browser</h2>
+      <p>Changing Blender's interface colours by hand means digging through dozens of widget, panel and 3D-viewport settings in Preferences. This <b>Blender theme editor</b> does it visually: pick colours, watch a full mock Blender window — menus, tool shelf, outliner, properties and the 3D viewport — recolour in real time, then <b>export a theme <code>.xml</code></b> you install in one click. It's free, needs no account, and runs entirely in your browser, so nothing you make is uploaded anywhere.</p>
+
+      <h2>What you can do</h2>
+      <ul class="feat">
+        <li><b>Live full-window preview</b>See every menu and panel update as you pick colours.</li>
+        <li><b>Export install-ready .xml</b>A real Blender 4.x theme file for Preferences ▸ Themes ▸ Install.</li>
+        <li><b>Import &amp; edit</b>Load an existing theme .xml and tweak it.</li>
+        <li><b>Starter presets</b>Dark, Light, Nord, Dracula and more to build from.</li>
+      </ul>
+
+      <h2>How to install a Blender theme (.xml)</h2>
+      <ol class="steps">
+        <li>Design your theme above and click <b>Download .xml</b>.</li>
+        <li>In Blender, open <b>Edit ▸ Preferences ▸ Themes</b>.</li>
+        <li>Click <b>Install…</b> and choose your <b>.xml</b> file — it applies instantly.</li>
+        <li>The file name becomes the theme's name in the Themes preset dropdown, so you can switch back any time.</li>
+      </ol>
+
+      <h2>Frequently asked questions</h2>
+      <h3>Is the Blender Theme Maker free?</h3>
+      <p>Yes — completely free, no account or signup, and it runs entirely in your browser. Nothing is uploaded.</p>
+      <h3>Does it export a real Blender theme file?</h3>
+      <p>Yes. It exports a standard Blender theme <code>.xml</code>. Install it via <b>Edit ▸ Preferences ▸ Themes ▸ Install</b> and it applies right away.</p>
+      <h3>Which Blender version does it support?</h3>
+      <p>The exported <code>.xml</code> targets the Blender 4.x theme format.</p>
+      <h3>Can I edit an existing Blender theme?</h3>
+      <p>Yes — use <b>Import .xml</b> to load a theme you already have, adjust the colours live, and export it again.</p>
+      <h3>Does it upload or store my data?</h3>
+      <p>No. Everything happens locally in your browser; your theme only leaves your machine when you download the file.</p>
+
+      <p style="margin-top:16px">Made by <a href="/">Miki Butler</a>, a senior game environment artist. Want ready-made themes instead? Grab free ones in the <a href="/store.html">store</a>, or explore more <a href="/arcade.html">free tools</a>.</p>
+    </section>
   </div>
-</div>
 
 <div class="toast" id="toast"></div>
 
