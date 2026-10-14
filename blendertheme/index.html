@@ -216,15 +216,23 @@
 
             <div class="bl-viewport">
               <div class="bl-grid"></div>
-              <svg class="bl-obj" width="152" height="128" viewBox="0 0 152 128" aria-hidden="true">
-                <ellipse cx="76" cy="62" rx="50" ry="44" fill="var(--b-objfill)" stroke="var(--b-osel)" stroke-width="2.5"/>
-                <ellipse cx="58" cy="50" rx="8" ry="11" fill="#1c1c1c"/>
-                <ellipse cx="94" cy="50" rx="8" ry="11" fill="#1c1c1c"/>
-                <path d="M56 80 Q76 95 96 80" fill="none" stroke="#1c1c1c" stroke-width="4" stroke-linecap="round"/>
-                <line x1="76" y1="62" x2="76" y2="34" stroke="#6ab04c" stroke-width="2.5"/>
-                <line x1="76" y1="62" x2="104" y2="62" stroke="#eb4d4b" stroke-width="2.5"/>
-                <line x1="76" y1="62" x2="57" y2="80" stroke="#4d79eb" stroke-width="2.5"/>
-                <circle cx="76" cy="62" r="3" fill="var(--b-oact)"/>
+              <svg class="bl-obj" width="152" height="132" viewBox="0 0 152 132" aria-hidden="true">
+                <!-- isometric cube: shaded faces + selection-coloured edges -->
+                <polygon points="76,22 120,46 76,70 32,46" fill="var(--b-objtop)" stroke="var(--b-osel)" stroke-width="2.5" stroke-linejoin="round"/>
+                <polygon points="32,46 76,70 76,110 32,86" fill="var(--b-objfill)" stroke="var(--b-osel)" stroke-width="2.5" stroke-linejoin="round"/>
+                <polygon points="76,70 120,46 120,86 76,110" fill="var(--b-objdark)" stroke="var(--b-osel)" stroke-width="2.5" stroke-linejoin="round"/>
+                <!-- vertices -->
+                <g fill="var(--b-ve)">
+                  <circle cx="76" cy="22" r="2.6"/><circle cx="120" cy="46" r="2.6"/><circle cx="32" cy="46" r="2.6"/>
+                  <circle cx="32" cy="86" r="2.6"/><circle cx="120" cy="86" r="2.6"/><circle cx="76" cy="110" r="2.6"/>
+                </g>
+                <!-- transform gizmo at the front-centre origin -->
+                <g stroke-width="2.5" stroke-linecap="round">
+                  <line x1="76" y1="70" x2="76" y2="46" stroke="#6ab04c"/>
+                  <line x1="76" y1="70" x2="100" y2="82" stroke="#eb4d4b"/>
+                  <line x1="76" y1="70" x2="52" y2="82" stroke="#4d79eb"/>
+                </g>
+                <circle cx="76" cy="70" r="3.2" fill="var(--b-oact)"/>
               </svg>
               <svg class="bl-nav" viewBox="0 0 46 46" aria-hidden="true">
                 <line x1="23" y1="23" x2="23" y2="9" stroke="#6ab04c" stroke-width="2"/>
@@ -382,7 +390,10 @@ function applyPreview(){
   s.setProperty('--b-tool', shade(P.panel, luma(P.panel)>0.5?-0.04:-0.08));
   s.setProperty('--b-field', (luma(P.panel)>0.5?'rgba(0,0,0,.14)':'rgba(0,0,0,.33)'));
   s.setProperty('--b-gridln', (luma(P.vpBottom)>0.5?'rgba(0,0,0,.18)':'rgba(255,255,255,.16)'));
-  s.setProperty('--b-objfill', shade(P.vpBottom, luma(P.vpBottom)>0.5?-0.25:0.28));
+  var objbase = shade(P.vpBottom, luma(P.vpBottom)>0.5?-0.22:0.30);
+  s.setProperty('--b-objfill', objbase);
+  s.setProperty('--b-objtop', shade(objbase, 0.20));
+  s.setProperty('--b-objdark', shade(objbase, -0.22));
 }
 
 // ── Build controls ──────────────────────────────────────────
