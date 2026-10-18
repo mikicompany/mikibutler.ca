@@ -5,7 +5,7 @@
     "kind": "height",
     "w": 1024,
     "h": 1024,
-    "desc": "Free seamless, tileable Perlin cloud noise texture at 1024\u00d71024px \u2014 generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "desc": "Free seamless, tileable Perlin cloud noise texture at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
     "tool": "Noise Forge"
   },
   {
@@ -14,7 +14,7 @@
     "kind": "height",
     "w": 1024,
     "h": 1024,
-    "desc": "Free seamless, tileable ridged Perlin rock noise texture at 1024\u00d71024px \u2014 generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "desc": "Free seamless, tileable ridged Perlin rock noise texture at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
     "tool": "Noise Forge"
   },
   {
@@ -23,7 +23,7 @@
     "kind": "height",
     "w": 1024,
     "h": 1024,
-    "desc": "Free seamless, tileable billow cloud noise texture at 1024\u00d71024px \u2014 generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "desc": "Free seamless, tileable billow cloud noise texture at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
     "tool": "Noise Forge"
   },
   {
@@ -32,7 +32,7 @@
     "kind": "height",
     "w": 1024,
     "h": 1024,
-    "desc": "Free seamless, tileable Worley / Voronoi cellular noise texture at 1024\u00d71024px \u2014 generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "desc": "Free seamless, tileable Worley / Voronoi cellular noise texture at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
     "tool": "Noise Forge"
   },
   {
@@ -41,7 +41,7 @@
     "kind": "height",
     "w": 1024,
     "h": 1024,
-    "desc": "Free seamless, tileable Worley cracked-cell noise texture at 1024\u00d71024px \u2014 generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "desc": "Free seamless, tileable Worley cracked-cell noise texture at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
     "tool": "Noise Forge"
   },
   {
@@ -50,7 +50,7 @@
     "kind": "height",
     "w": 1024,
     "h": 1024,
-    "desc": "Free seamless, tileable fine fractal (fBm) noise texture at 1024\u00d71024px \u2014 generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "desc": "Free seamless, tileable fine fractal (fBm) noise texture at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
     "tool": "Noise Forge"
   },
   {
@@ -59,7 +59,7 @@
     "kind": "normal",
     "w": 1024,
     "h": 1024,
-    "desc": "Free seamless, tileable Perlin cloud normal map at 1024\u00d71024px \u2014 generated with Normal Baker by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "desc": "Free seamless, tileable Perlin cloud normal map at 1024×1024px — generated with Normal Baker by Miki Butler. Use it freely in your game-art and 3D material work.",
     "tool": "Normal Baker"
   },
   {
@@ -68,7 +68,7 @@
     "kind": "normal",
     "w": 1024,
     "h": 1024,
-    "desc": "Free seamless, tileable Worley cellular normal map at 1024\u00d71024px \u2014 generated with Normal Baker by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "desc": "Free seamless, tileable Worley cellular normal map at 1024×1024px — generated with Normal Baker by Miki Butler. Use it freely in your game-art and 3D material work.",
     "tool": "Normal Baker"
   },
   {
@@ -77,7 +77,97 @@
     "kind": "normal",
     "w": 1024,
     "h": 1024,
-    "desc": "Free seamless, tileable cracked-cell normal map at 1024\u00d71024px \u2014 generated with Normal Baker by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "desc": "Free seamless, tileable cracked-cell normal map at 1024×1024px — generated with Normal Baker by Miki Butler. Use it freely in your game-art and 3D material work.",
     "tool": "Normal Baker"
+  },
+  {
+    "name": "Seamless Lava Texture",
+    "file": "seamless-lava-texture.png",
+    "kind": "color",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable lava / molten rock texture at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Lava Normal Map",
+    "file": "seamless-lava-normal-map.png",
+    "kind": "normal",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable lava normal map at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Sand Dunes Texture",
+    "file": "seamless-sand-dunes-texture.png",
+    "kind": "color",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable sand dunes texture at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Sand Dunes Normal Map",
+    "file": "seamless-sand-dunes-normal-map.png",
+    "kind": "normal",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable sand dunes normal map at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Moss Texture",
+    "file": "seamless-moss-texture.png",
+    "kind": "color",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable moss / lichen texture at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Moss Normal Map",
+    "file": "seamless-moss-normal-map.png",
+    "kind": "normal",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable moss normal map at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Cracked Ice Texture",
+    "file": "seamless-cracked-ice-texture.png",
+    "kind": "color",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable cracked ice texture at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Cracked Ice Normal Map",
+    "file": "seamless-cracked-ice-normal-map.png",
+    "kind": "normal",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable cracked ice normal map at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Terrain Material",
+    "file": "seamless-terrain-material.png",
+    "kind": "color",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable stylised terrain material texture at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
+  },
+  {
+    "name": "Seamless Terrain Normal Map",
+    "file": "seamless-terrain-normal-map.png",
+    "kind": "normal",
+    "w": 1024,
+    "h": 1024,
+    "desc": "Free seamless, tileable terrain normal map at 1024×1024px — generated with Noise Forge by Miki Butler. Use it freely in your game-art and 3D material work.",
+    "tool": "Noise Forge"
   }
 ]
