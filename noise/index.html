@@ -41,6 +41,7 @@
     --radius:14px; --shadow:0 2px 12px rgba(0,0,0,.4);
   }
   *{box-sizing:border-box}
+  [hidden]{display:none!important}
   html,body{height:100%}
   body{ margin:0; background:var(--bg); color:var(--fg);
     font-family:"Manrope",system-ui,-apple-system,sans-serif; font-size:14px; line-height:1.5;
@@ -57,6 +58,9 @@
       radial-gradient(circle at 70% 64%, #5ee7d655 0 14%, transparent 16%),
       radial-gradient(circle at 48% 80%, #2dd4bf33 0 20%, transparent 22%),
       var(--surface-2); }
+  .brand{ flex:none; display:block; line-height:0; }
+  .brand img{ width:40px; height:40px; border-radius:50%; display:block; box-shadow:var(--shadow); }
+  .brand:hover img{ box-shadow:0 0 0 2px var(--accent); }
   .top h1{ font-size:19px; font-weight:800; margin:0; letter-spacing:-.3px; }
   .top .sub{ font-size:12px; color:var(--mut); font-weight:600; }
   .top .sp{ flex:1; }
@@ -110,7 +114,7 @@
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="glyph"></div>
+    <a class="brand" href="/" title="mikibutler.ca — home"><img src="/images/email-logo.png" alt="Miki Butler" width="40" height="40"></a>
     <div><h1>Noise Forge</h1><div class="sub">Seamless procedural material maker · height / normal / rough / AO / metal / colour</div></div>
     <div class="sp"></div>
     <a class="home" href="/">mikibutler.ca ↗</a>
@@ -211,7 +215,10 @@
         <div class="field"><label>Contrast <span class="val" id="vCon">1.00</span></label><input type="range" id="con" min="0.3" max="3" step="0.05" value="1"></div>
         <div class="field"><label>Bright <span class="val" id="vBri">0.00</span></label><input type="range" id="bri" min="-0.4" max="0.4" step="0.02" value="0"></div>
       </div>
-      <div class="field"><label>Posterize steps <span class="val" id="vSteps">off</span></label><input type="range" id="steps" min="0" max="12" step="1" value="0"></div>
+      <div class="row">
+        <div class="field"><label>Gamma <span class="val" id="vGamma">1.00</span></label><input type="range" id="gamma" min="0.3" max="3" step="0.05" value="1"></div>
+        <div class="field"><label>Posterize <span class="val" id="vSteps">off</span></label><input type="range" id="steps" min="0" max="12" step="1" value="0"></div>
+      </div>
       <label class="chk"><input type="checkbox" id="invert"> Invert</label>
 
       <div class="divider"></div>
@@ -226,7 +233,11 @@
           <button data-v="color">Colour</button>
         </div>
       </div>
-      <div class="field" id="nStrWrap" hidden><label>Normal strength <span class="val" id="vNstr">2.0</span></label><input type="range" id="nstr" min="0.2" max="6" step="0.1" value="2"></div>
+      <div id="nStrWrap" hidden>
+        <div class="field"><label>Normal strength <span class="val" id="vNstr">2.0</span></label><input type="range" id="nstr" min="0.2" max="6" step="0.1" value="2"></div>
+        <div class="field"><label for="nfmt">Normal format</label>
+          <select id="nfmt" class="mono"><option value="gl" selected>OpenGL (+Y)</option><option value="dx">DirectX (−Y)</option></select></div>
+      </div>
       <div id="roughWrap" hidden>
         <label class="chk"><input type="checkbox" id="roughInv"> Invert roughness</label>
         <div class="row">
@@ -239,18 +250,27 @@
         <div class="field"><label>Metal threshold <span class="val" id="vMetalThr">0.60</span></label><input type="range" id="metalthr" min="0" max="1" step="0.02" value="0.6"></div>
         <label class="chk"><input type="checkbox" id="metalInv"> Invert metal mask</label>
       </div>
-      <div class="field" id="colorWrap" hidden>
-        <label for="ramp">Colour ramp</label>
-        <select id="ramp" class="mono">
-          <option value="none">Grayscale</option>
-          <option value="rock">Rock</option>
-          <option value="lava">Lava</option>
-          <option value="sand">Sand</option>
-          <option value="moss">Moss</option>
-          <option value="ice">Ice</option>
-          <option value="terrain">Terrain</option>
-          <option value="ember">Ember</option>
-        </select>
+      <div id="colorWrap" hidden>
+        <div class="field"><label for="ramp">Colour ramp</label>
+          <select id="ramp" class="mono">
+            <option value="none">Grayscale</option>
+            <option value="rock">Rock</option>
+            <option value="lava">Lava</option>
+            <option value="sand">Sand</option>
+            <option value="moss">Moss</option>
+            <option value="ice">Ice</option>
+            <option value="terrain">Terrain</option>
+            <option value="ember">Ember</option>
+            <option value="rust">Rust</option>
+            <option value="copper">Copper</option>
+            <option value="toxic">Toxic</option>
+            <option value="custom">Custom (2-stop)</option>
+          </select>
+        </div>
+        <div class="row" id="customRamp" hidden>
+          <div class="field"><label>Low colour</label><input type="color" id="rampA" value="#1b2a4a" style="width:100%;height:36px;padding:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;cursor:pointer"></div>
+          <div class="field"><label>High colour</label><input type="color" id="rampB" value="#e8f1ff" style="width:100%;height:36px;padding:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;cursor:pointer"></div>
+        </div>
       </div>
 
       <div class="divider"></div>
@@ -258,8 +278,21 @@
         <div class="field" style="margin:0"><label for="seed">Seed</label><input type="number" id="seed" class="mono" value="1337"></div>
         <button class="btn ghost" id="rnd" style="margin-bottom:0">🎲 Random</button>
       </div>
-      <button class="btn" id="copylink" style="margin-top:10px">🔗 Copy share link</button>
-      <div class="hintline">Shortcuts: <b>R</b> random · <b>E</b> export PNG · <b>Z</b> material ZIP · <b>L</b> library</div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="surprise">✨ Surprise me</button>
+        <button class="btn" id="copylink">🔗 Copy link</button>
+      </div>
+      <div class="hintline">Shortcuts: <b>R</b> random · <b>S</b> surprise · <b>E</b> export PNG · <b>Z</b> material ZIP · <b>L</b> library</div>
+
+      <div class="divider"></div>
+      <h2>My presets</h2>
+      <div class="row" style="align-items:flex-end">
+        <div class="field" style="margin:0"><input type="text" id="presetName" placeholder="Name this recipe…" autocomplete="off"
+          style="width:100%;font:13px/1.3 inherit;color:var(--fg);background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:9px 10px"></div>
+        <button class="btn ghost" id="savePreset" style="margin-bottom:0">💾 Save</button>
+      </div>
+      <div id="myPresets" class="presets" style="margin:12px 0 0"></div>
+      <div class="hintline" id="myPresetsEmpty">Save a recipe to reuse it later — stored in this browser.</div>
     </div>
 
     <!-- PREVIEW -->
@@ -270,13 +303,14 @@
         <span class="badge" id="badge">Height</span>
       </div>
       <div class="pvfoot">
-        <div class="seg" id="tile" style="max-width:220px">
+        <div class="seg" id="tile" style="max-width:180px">
           <button data-v="1" class="on">1×</button>
           <button data-v="2">2×2</button>
           <button data-v="3">3×3</button>
         </div>
-        <span class="note" id="seamNote"></span>
+        <label class="chk" style="margin:0"><input type="checkbox" id="litOn"> 💡 Lit preview</label>
       </div>
+      <div class="note" id="seamNote" style="margin-top:6px"></div>
       <div class="divider"></div>
       <div class="row" style="align-items:flex-end">
         <div class="field" style="margin:0"><label for="eres">Export size</label>
@@ -300,12 +334,12 @@
 
   // ---------- defaults + state ----------
   var DEF={ type:"perlin", shape:"normal", scale:6, oct:5, gain:0.5, lac:2, warp:0, warpOct:1,
-            con:1, bri:0, invert:false, steps:0, mirror:"none",
-            omode:"height", nstr:2, ramp:"none", roughInv:false, roughLo:0.2, roughHi:0.9,
-            aoStr:2, metalThr:0.6, metalInv:false, seed:1337,
+            con:1, bri:0, gamma:1, invert:false, steps:0, mirror:"none",
+            omode:"height", nstr:2, normalDir:"gl", ramp:"none", rampA:"#1b2a4a", rampB:"#e8f1ff",
+            roughInv:false, roughLo:0.2, roughHi:0.9, aoStr:2, metalThr:0.6, metalInv:false, seed:1337,
             blend:false, typeB:"worF1", scaleB:12, octB:2, bmode:"mix", bamount:0.5 };
   var S=Object.assign({},DEF);
-  var tileN=1;
+  var tileN=1, litLight={x:-0.45,y:0.55,z:0.70}, curAO=null;
 
   // ---------- seeded hash / prng ----------
   function hashCell(i,j,s){ var h=(i*374761393 + j*668265263 + s*362437)|0;
@@ -403,6 +437,7 @@
     if(S.blend){ var b=fractal(u,v, S.typeB, S.scaleB, S.octB, S.seed+1000);
       val=blendVal(a,b,S.bmode,S.bamount); } else val=a;
     val = (val-0.5)*S.con + 0.5 + S.bri;
+    if(S.gamma!==1){ var cv=val<0?0:val>1?1:val; val=Math.pow(cv,S.gamma); }
     if(S.steps>0){ var st=S.steps; val=Math.round(val*(st-1))/(st-1); }
     if(S.invert) val = 1-val;
     return val<0?0:val>1?1:val;
@@ -445,9 +480,15 @@
     moss:   [[0,[22,30,18]],[0.5,[58,86,42]],[0.8,[110,140,70]],[1,[172,198,122]]],
     ice:    [[0,[30,54,78]],[0.5,[120,170,210]],[1,[234,247,255]]],
     terrain:[[0,[36,58,110]],[0.42,[40,110,70]],[0.6,[92,142,70]],[0.76,[150,130,90]],[0.9,[152,152,152]],[1,[255,255,255]]],
-    ember:  [[0,[10,10,14]],[0.6,[60,20,30]],[0.85,[204,62,52]],[1,[255,204,122]]]
+    ember:  [[0,[10,10,14]],[0.6,[60,20,30]],[0.85,[204,62,52]],[1,[255,204,122]]],
+    rust:   [[0,[34,18,12]],[0.45,[120,56,28]],[0.75,[186,98,46]],[1,[214,150,96]]],
+    copper: [[0,[40,22,16]],[0.45,[150,84,52]],[0.72,[214,140,96]],[1,[120,186,166]]],
+    toxic:  [[0,[8,18,8]],[0.5,[40,112,30]],[0.8,[120,202,42]],[1,[212,255,122]]]
   };
-  function rampColor(t,ramp){ var s=RAMPS[ramp]; if(!s){ var c=t*255; return [c,c,c]; }
+  function hexToRgb(h){ h=(h||"#000000").replace("#",""); return [parseInt(h.substr(0,2),16)||0, parseInt(h.substr(2,2),16)||0, parseInt(h.substr(4,2),16)||0]; }
+  function rampColor(t,ramp){
+    if(ramp==="custom"){ var A=hexToRgb(S.rampA), B=hexToRgb(S.rampB); return [A[0]+(B[0]-A[0])*t, A[1]+(B[1]-A[1])*t, A[2]+(B[2]-A[2])*t]; }
+    var s=RAMPS[ramp]; if(!s){ var c=t*255; return [c,c,c]; }
     if(t<=s[0][0]) return s[0][1].slice();
     for(var i=0;i<s.length-1;i++){ if(t<=s[i+1][0]){ var a=s[i],b=s[i+1],k=(t-a[0])/((b[0]-a[0])||1);
       return [a[1][0]+(b[1][0]-a[1][0])*k, a[1][1]+(b[1][1]-a[1][1])*k, a[1][2]+(b[1][2]-a[1][2])*k]; } }
@@ -456,10 +497,10 @@
   // render one map into ctx
   function renderMap(ctx,res,g,mode,ao){
     var img=ctx.createImageData(res,res), d=img.data, i,o,c,x,y;
-    if(mode==="normal"){ var str=S.nstr;
+    if(mode==="normal"){ var str=S.nstr, gy=(S.normalDir==="dx")?-1:1;
       for(y=0;y<res;y++)for(x=0;x<res;x++){ var xl=(x-1+res)%res,xr=(x+1)%res,yu=(y-1+res)%res,yd=(y+1)%res;
         var dx=(g[y*res+xr]-g[y*res+xl])*str, dy=(g[yd*res+x]-g[yu*res+x])*str, inv=1/Math.sqrt(dx*dx+dy*dy+1); o=(y*res+x)*4;
-        d[o]=((-dx*inv)*0.5+0.5)*255; d[o+1]=((dy*inv)*0.5+0.5)*255; d[o+2]=((inv)*0.5+0.5)*255; d[o+3]=255; }
+        d[o]=((-dx*inv)*0.5+0.5)*255; d[o+1]=((dy*inv*gy)*0.5+0.5)*255; d[o+2]=((inv)*0.5+0.5)*255; d[o+3]=255; }
     } else if(mode==="color"){ var A=ao||computeAO(g,res);
       for(i=0;i<g.length;i++){ var col=rampColor(g[i],S.ramp), sh=0.5+0.5*A[i]; o=i*4;
         d[o]=col[0]*sh; d[o+1]=col[1]*sh; d[o+2]=col[2]*sh; d[o+3]=255; }
@@ -472,6 +513,25 @@
         else c=A2[i]*255; // ao
         o=i*4; d[o]=d[o+1]=d[o+2]=c; d[o+3]=255;
       }
+    }
+    ctx.putImageData(img,0,0);
+  }
+
+  // lit "3D-ish" shaded preview from the height field (preview only)
+  function renderLit(ctx,res,g,ao,L){
+    var img=ctx.createImageData(res,res), d=img.data, str=Math.max(1.6,S.nstr), amb=0.26;
+    var hx=L.x, hy=L.y, hz=L.z+1, hl=1/Math.sqrt(hx*hx+hy*hy+hz*hz); hx*=hl; hy*=hl; hz*=hl; // half-vector (V=+Z)
+    var useRamp=(S.omode==="color"&&S.ramp!=="none")||S.ramp==="custom";
+    for(var y=0;y<res;y++)for(var x=0;x<res;x++){
+      var i=y*res+x, row=y*res, xl=(x-1+res)%res, xr=(x+1)%res, yu=(y-1+res)%res, yd=(y+1)%res;
+      var dx=(g[row+xr]-g[row+xl])*str, dy=(g[yd*res+x]-g[yu*res+x])*str, inv=1/Math.sqrt(dx*dx+dy*dy+1);
+      var nx=-dx*inv, ny=dy*inv, nz=inv;
+      var diff=nx*L.x+ny*L.y+nz*L.z; if(diff<0)diff=0;
+      var spec=nx*hx+ny*hy+nz*hz; spec=spec>0?Math.pow(spec,22)*0.28:0;
+      var sh=(amb+diff*0.92)*(0.55+0.45*ao[i]);
+      var col=useRamp?rampColor(g[i],S.ramp):[194,196,200];
+      var o=i*4, sp=spec*255;
+      d[o]  =Math.min(255,col[0]*sh+sp); d[o+1]=Math.min(255,col[1]*sh+sp); d[o+2]=Math.min(255,col[2]*sh+sp); d[o+3]=255;
     }
     ctx.putImageData(img,0,0);
   }
@@ -498,9 +558,11 @@
     clearTimeout(rerT);
     rerT=setTimeout(function(){
       var g=buildHeight(PREVIEW); curGrid=g;
-      var ao=(S.omode==="ao"||S.omode==="color")?computeAO(g,PREVIEW):null;
-      renderMap(sctx,PREVIEW,g,S.omode,ao); paintView();
-      $("badge").textContent=mapLabel(S.omode);
+      var needAO=S.lit||S.omode==="ao"||S.omode==="color";
+      var ao=needAO?computeAO(g,PREVIEW):null; curAO=ao;
+      if(S.lit) renderLit(sctx,PREVIEW,g,ao,litLight); else renderMap(sctx,PREVIEW,g,S.omode,ao);
+      paintView();
+      $("badge").textContent = S.lit ? "Lit preview" : mapLabel(S.omode);
       var err=seamCheck(g,PREVIEW);
       $("seamNote").textContent = "seam Δ "+err.toFixed(4)+(err<0.02?" · tiles seamlessly ✓":" · check seams");
       writeHash();
@@ -528,6 +590,7 @@
     ["warpoct","warpOct",function(v){return v;},"vWarpOct"],
     ["con","con",function(v){return v.toFixed(2);},"vCon"],
     ["bri","bri",function(v){return v.toFixed(2);},"vBri"],
+    ["gamma","gamma",function(v){return v.toFixed(2);},"vGamma"],
     ["steps","steps",function(v){return v===0?"off":v;},"vSteps"],
     ["nstr","nstr",function(v){return v.toFixed(1);},"vNstr"],
     ["roughlo","roughLo",function(v){return v.toFixed(2);},"vRoughLo"],
@@ -542,12 +605,29 @@
     i.addEventListener("input",function(){ S[s[1]]=parseFloat(i.value); var o=$(s[3]); if(o)o.textContent=s[2](S[s[1]]); rerender(); });
   });
 
-  var SELECTS=[["ntype","type"],["typeB","typeB"],["bmode","bmode"],["ramp","ramp"],["mirror","mirror"]];
+  var SELECTS=[["ntype","type"],["typeB","typeB"],["bmode","bmode"],["mirror","mirror"],["nfmt","normalDir"]];
   SELECTS.forEach(function(s){ var el=$(s[0]); el.addEventListener("change",function(){ S[s[1]]=el.value; rerender(); }); });
+  function updateRampPanel(){ $("customRamp").hidden = S.ramp!=="custom"; }
+  $("ramp").addEventListener("change",function(){ S.ramp=this.value; updateRampPanel(); rerender(); });
+  $("rampA").addEventListener("input",function(){ S.rampA=this.value; rerender(); });
+  $("rampB").addEventListener("input",function(){ S.rampB=this.value; rerender(); });
 
   var CHECKS=[["invert","invert"],["roughInv","roughInv"],["metalInv","metalInv"]];
   CHECKS.forEach(function(s){ var el=$(s[0]); el.addEventListener("change",function(){ S[s[1]]=el.checked; rerender(); }); });
   $("blendOn").addEventListener("change",function(){ S.blend=this.checked; $("layerB").hidden=!this.checked; rerender(); });
+  $("litOn").addEventListener("change",function(){ S.lit=this.checked; rerender(); });
+
+  // draggable light for the lit preview
+  function setLightFromScreen(mx,my){ var lx=(mx-0.5)*2, ly=-(my-0.5)*2, q=lx*lx+ly*ly;
+    if(q>0.95){ var s0=Math.sqrt(0.95/q); lx*=s0; ly*=s0; q=0.95; }
+    var lz=Math.sqrt(1-q), l=Math.sqrt(lx*lx+ly*ly+lz*lz); litLight={x:lx/l,y:ly/l,z:lz/l}; }
+  var litRaf=null;
+  function scheduleLit(){ if(litRaf)return; litRaf=requestAnimationFrame(function(){ litRaf=null;
+    if(S.lit&&curGrid){ renderLit(sctx,PREVIEW,curGrid,curAO||computeAO(curGrid,PREVIEW),litLight); paintView(); } }); }
+  function litMove(e){ if(!S.lit||!curGrid)return; var r=view.getBoundingClientRect();
+    var pt=(e.touches&&e.touches[0])?e.touches[0]:e; setLightFromScreen((pt.clientX-r.left)/r.width,(pt.clientY-r.top)/r.height); scheduleLit(); if(e.touches)e.preventDefault(); }
+  view.addEventListener("mousemove",litMove);
+  view.addEventListener("touchmove",litMove,{passive:false});
 
   function setSeg(id,v){ document.querySelectorAll("#"+id+" button").forEach(function(b){ b.classList.toggle("on", b.dataset.v===v); }); }
   document.querySelectorAll("#shape button").forEach(function(b){ b.addEventListener("click",function(){ setSeg("shape",b.dataset.v); S.shape=b.dataset.v; rerender(); }); });
@@ -567,18 +647,19 @@
 
   function syncUIFromState(){
     SLIDERS.forEach(function(s){ var i=$(s[0]); if(!i)return; i.value=S[s[1]]; var o=$(s[3]); if(o)o.textContent=s[2](S[s[1]]); });
-    $("ntype").value=S.type; $("typeB").value=S.typeB; $("bmode").value=S.bmode; $("ramp").value=S.ramp; $("mirror").value=S.mirror;
+    $("ntype").value=S.type; $("typeB").value=S.typeB; $("bmode").value=S.bmode; $("ramp").value=S.ramp;
+    $("mirror").value=S.mirror; $("nfmt").value=S.normalDir; $("rampA").value=S.rampA; $("rampB").value=S.rampB;
     $("invert").checked=S.invert; $("roughInv").checked=S.roughInv; $("metalInv").checked=S.metalInv;
-    $("blendOn").checked=S.blend; $("layerB").hidden=!S.blend;
+    $("blendOn").checked=S.blend; $("layerB").hidden=!S.blend; $("litOn").checked=!!S.lit;
     $("seed").value=S.seed;
     setSeg("shape",S.shape); setSeg("omode",S.omode);
-    updateModePanels(); rerender();
+    updateModePanels(); updateRampPanel(); rerender();
   }
 
   // ---------- share link (URL hash) ----------
-  var SHAREKEYS=["type","shape","scale","oct","gain","lac","warp","warpOct","con","bri","invert","steps","mirror",
-    "blend","typeB","scaleB","octB","bmode","bamount","omode","nstr","ramp","roughInv","roughLo","roughHi","aoStr","metalThr","metalInv","seed"];
-  var BOOLKEYS=["invert","blend","roughInv","metalInv"], STRKEYS=["type","shape","mirror","typeB","bmode","omode","ramp"];
+  var SHAREKEYS=["type","shape","scale","oct","gain","lac","warp","warpOct","con","bri","gamma","invert","steps","mirror",
+    "blend","typeB","scaleB","octB","bmode","bamount","omode","nstr","normalDir","ramp","rampA","rampB","roughInv","roughLo","roughHi","aoStr","metalThr","metalInv","seed"];
+  var BOOLKEYS=["invert","blend","roughInv","metalInv"], STRKEYS=["type","shape","mirror","typeB","bmode","omode","normalDir","ramp","rampA","rampB"];
   function encodeState(){ var p=[]; SHAREKEYS.forEach(function(k){ var v=S[k]; if(typeof v==="boolean")v=v?1:0; p.push(k+"="+encodeURIComponent(v)); }); return p.join("&"); }
   var hashT=null;
   function writeHash(){ clearTimeout(hashT); hashT=setTimeout(function(){ try{ history.replaceState(null,"","#"+encodeState()); }catch(e){} },120); }
@@ -657,6 +738,41 @@
     });
   });
 
+  // ---------- surprise me (randomize everything) ----------
+  function pick(a){ return a[(Math.random()*a.length)|0]; }
+  function rr(a,b,dp){ var v=a+Math.random()*(b-a); return dp!=null?+v.toFixed(dp):v; }
+  function surprise(){
+    var types=["perlin","value","worF1","worF2","worEdge"], shapes=["normal","ridged","billow"];
+    var p={ type:pick(types), shape:pick(shapes), scale:2+((Math.random()*12)|0), oct:3+((Math.random()*5)|0),
+      gain:rr(0.42,0.6,2), lac:rr(1.8,2.4,1), warp:rr(0,0.5,2), warpOct:1+((Math.random()*3)|0),
+      con:rr(0.85,1.6,2), bri:0, gamma:rr(0.7,1.5,2), steps:0, mirror:pick(["none","none","none","x","y","xy"]),
+      omode:S.omode, ramp:S.ramp, rampA:S.rampA, rampB:S.rampB, seed:(Math.random()*99999)|0,
+      blend:Math.random()<0.4, typeB:pick(types), scaleB:4+((Math.random()*16)|0), octB:1+((Math.random()*3)|0),
+      bmode:pick(["mix","multiply","max","overlay","diff"]), bamount:rr(0.25,0.8,2) };
+    if(p.omode==="color" && (p.ramp==="none")) p.ramp=pick(["rock","lava","sand","moss","ice","terrain","ember","rust","copper","toxic"]);
+    S=Object.assign({},DEF,p); syncUIFromState();
+    document.querySelectorAll("#presets button").forEach(function(x){x.classList.remove("on");});
+  }
+  $("surprise").addEventListener("click",surprise);
+
+  // ---------- save-your-own presets (localStorage) ----------
+  var MYKEY="mb.noise.presets.v1";
+  function loadMy(){ try{ return JSON.parse(localStorage.getItem(MYKEY))||[]; }catch(e){ return []; } }
+  function saveMy(a){ try{ localStorage.setItem(MYKEY,JSON.stringify(a)); }catch(e){} }
+  function currentRecipe(){ var o={}; SHAREKEYS.forEach(function(k){ o[k]=S[k]; }); return o; }
+  function renderMyPresets(){ var arr=loadMy(), host=$("myPresets"); host.innerHTML="";
+    $("myPresetsEmpty").style.display=arr.length?"none":"";
+    arr.forEach(function(it,idx){ var b=document.createElement("button"); b.textContent=it.name; b.title='Load "'+it.name+'"';
+      b.addEventListener("click",function(){ S=Object.assign({},DEF,it.state); syncUIFromState();
+        document.querySelectorAll("#presets button").forEach(function(x){x.classList.remove("on");}); });
+      var x=document.createElement("span"); x.textContent=" ✕"; x.title="Delete"; x.style.cssText="margin-left:7px;color:var(--bad);font-weight:800";
+      x.addEventListener("click",function(e){ e.stopPropagation(); var a=loadMy(); a.splice(idx,1); saveMy(a); renderMyPresets(); });
+      b.appendChild(x); host.appendChild(b); });
+  }
+  $("savePreset").addEventListener("click",function(){ var nm=($("presetName").value||"").trim()||("Recipe "+(loadMy().length+1));
+    var a=loadMy(); a.push({name:nm.slice(0,40), state:currentRecipe()}); saveMy(a); $("presetName").value=""; renderMyPresets(); });
+  $("presetName").addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); $("savePreset").click(); } });
+
   // ---------- Texture Library (shared IndexedDB on this origin) ----------
   var MBLib=(function(){ var DB="mbTextureLib",STORE="items",_db=null;
     function open(){return new Promise(function(res,rej){ if(_db)return res(_db); var r=indexedDB.open(DB,1);
@@ -688,12 +804,14 @@
     if(e.metaKey||e.ctrlKey||e.altKey) return;
     var k=e.key.toLowerCase();
     if(k==="r"){ $("rnd").click(); }
+    else if(k==="s"){ surprise(); }
     else if(k==="e"){ $("exp").click(); }
     else if(k==="z"){ $("expzip").click(); }
     else if(k==="l"){ if(!$("lib").hidden) $("lib").click(); }
   });
 
   // ---------- boot ----------
+  renderMyPresets();
   if(readHash()){ syncUIFromState(); }
   else { var fp=document.querySelector('#presets button[data-p="clouds"]'); if(fp) fp.click(); else syncUIFromState(); }
 })();
