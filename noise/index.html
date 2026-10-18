@@ -351,6 +351,7 @@
         <label class="chk" style="margin:0"><input type="checkbox" id="d3On"> 🧊 3D</label>
       </div>
       <div class="note" id="seamNote" style="margin-top:6px"></div>
+      <div class="field" id="dispWrap" hidden style="margin-top:10px"><label>3D displacement <span class="val" id="vDisp">0.12</span></label><input type="range" id="disp" min="0" max="0.6" step="0.01" value="0.12"></div>
       <div class="divider"></div>
       <div class="row" style="align-items:flex-end">
         <div class="field" style="margin:0;flex:1.2"><label for="eres">Size</label>
@@ -379,7 +380,7 @@
   var DEF={ type:"perlin", shape:"normal", scale:6, oct:5, gain:0.5, lac:2, warp:0, warpOct:1,
             con:1, bri:0, gamma:1, blur:0, levLo:0, levHi:1, offX:0, offY:0, invert:false, steps:0, mirror:"none",
             omode:"height", nstr:2, normalDir:"gl", ramp:"none", rampA:"#1b2a4a", rampB:"#e8f1ff",
-            hue:0, sat:1, cval:1, roughInv:false, roughLo:0.2, roughHi:0.9, aoStr:2, metalThr:0.6, metalInv:false, seed:1337,
+            hue:0, sat:1, cval:1, disp:0.12, roughInv:false, roughLo:0.2, roughHi:0.9, aoStr:2, metalThr:0.6, metalInv:false, seed:1337,
             blend:false, typeB:"worF1", scaleB:12, octB:2, bmode:"mix", bamount:0.5 };
   var S=Object.assign({},DEF);
   var tileN=1, litLight={x:-0.45,y:0.55,z:0.70}, curAO=null, efmt="png";
@@ -690,8 +691,10 @@
     T3.maps.map=new THREE.CanvasTexture(document.createElement("canvas"));
     T3.maps.normal=new THREE.CanvasTexture(document.createElement("canvas"));
     T3.maps.rough=new THREE.CanvasTexture(document.createElement("canvas"));
-    var mat=new THREE.MeshStandardMaterial({ map:T3.maps.map, normalMap:T3.maps.normal, roughnessMap:T3.maps.rough, metalness:0.0, roughness:1.0 });
-    T3.mesh=new THREE.Mesh(new THREE.SphereGeometry(1,96,96),mat); T3.scene.add(T3.mesh);
+    T3.maps.disp=new THREE.CanvasTexture(document.createElement("canvas"));
+    var mat=new THREE.MeshStandardMaterial({ map:T3.maps.map, normalMap:T3.maps.normal, roughnessMap:T3.maps.rough,
+      displacementMap:T3.maps.disp, displacementScale:S.disp, metalness:0.0, roughness:1.0 });
+    T3.mesh=new THREE.Mesh(new THREE.SphereGeometry(1,192,192),mat); T3.scene.add(T3.mesh);
     cv.addEventListener("mousedown",function(e){ T3.drag=true; T3.px=e.clientX; T3.py=e.clientY; cv.style.cursor="grabbing"; });
     window.addEventListener("mouseup",function(){ T3.drag=false; if(T3.ren)cv.style.cursor="grab"; });
     window.addEventListener("mousemove",function(e){ if(!T3.drag)return; T3.rot.y+=(e.clientX-T3.px)*0.01; T3.rot.x+=(e.clientY-T3.py)*0.01; T3.px=e.clientX; T3.py=e.clientY; draw3D(); });
@@ -707,9 +710,14 @@
     T3.maps.map.image=mapCanvas(g,albedo); T3.maps.map.needsUpdate=true;
     T3.maps.normal.image=mapCanvas(g,"normal"); T3.maps.normal.needsUpdate=true;
     T3.maps.rough.image=mapCanvas(g,"rough"); T3.maps.rough.needsUpdate=true;
+    T3.maps.disp.image=mapCanvas(g,"height"); T3.maps.disp.needsUpdate=true;
+    T3.mesh.material.displacementScale=S.disp;
     draw3D();
   }
   function draw3D(){ if(!T3.ok)return; T3.mesh.rotation.x=T3.rot.x; T3.mesh.rotation.y=T3.rot.y; T3.ren.render(T3.scene,T3.cam); }
+  // displacement strength only changes the mesh scale — no texture rebuild needed
+  $("disp").addEventListener("input",function(){ S.disp=parseFloat(this.value); $("vDisp").textContent=S.disp.toFixed(2);
+    if(T3.ok&&T3.mesh){ T3.mesh.material.displacementScale=S.disp; draw3D(); } record(); });
 
   // ---------- drag-to-pan the 2D preview ----------
   var panning=false, panPX=0, panPY=0;
@@ -784,7 +792,7 @@
   $("blendOn").addEventListener("change",function(){ S.blend=this.checked; $("layerB").hidden=!this.checked; rerender(); });
   $("litOn").addEventListener("change",function(){ S.lit=this.checked; if(S.lit){ S.d3=false; $("d3On").checked=false; $("view3d").hidden=true; $("view").style.visibility="visible"; } rerender(); });
   $("d3On").addEventListener("change",function(){ S.d3=this.checked; $("view3d").hidden=!S.d3; $("view").style.visibility=S.d3?"hidden":"visible";
-    if(S.d3){ S.lit=false; $("litOn").checked=false; } rerender(); });
+    $("dispWrap").hidden=!S.d3; if(S.d3){ S.lit=false; $("litOn").checked=false; } rerender(); });
 
   // draggable light for the lit preview
   function setLightFromScreen(mx,my){ var lx=(mx-0.5)*2, ly=-(my-0.5)*2, q=lx*lx+ly*ly;
@@ -821,6 +829,7 @@
     $("invert").checked=S.invert; $("roughInv").checked=S.roughInv; $("metalInv").checked=S.metalInv;
     $("blendOn").checked=S.blend; $("layerB").hidden=!S.blend; $("litOn").checked=!!S.lit;
     $("d3On").checked=!!S.d3; $("view3d").hidden=!S.d3; $("view").style.visibility=S.d3?"hidden":"visible";
+    $("dispWrap").hidden=!S.d3; $("disp").value=S.disp; $("vDisp").textContent=Number(S.disp).toFixed(2);
     $("seed").value=S.seed;
     setSeg("shape",S.shape); setSeg("omode",S.omode);
     updateModePanels(); updateRampPanel(); rerender();
@@ -828,7 +837,7 @@
 
   // ---------- share link (URL hash) ----------
   var SHAREKEYS=["type","shape","scale","oct","gain","lac","warp","warpOct","con","bri","gamma","blur","levLo","levHi","offX","offY","invert","steps","mirror",
-    "blend","typeB","scaleB","octB","bmode","bamount","omode","nstr","normalDir","ramp","rampA","rampB","hue","sat","cval","roughInv","roughLo","roughHi","aoStr","metalThr","metalInv","seed"];
+    "blend","typeB","scaleB","octB","bmode","bamount","omode","nstr","normalDir","ramp","rampA","rampB","hue","sat","cval","disp","roughInv","roughLo","roughHi","aoStr","metalThr","metalInv","seed"];
   var BOOLKEYS=["invert","blend","roughInv","metalInv"], STRKEYS=["type","shape","mirror","typeB","bmode","omode","normalDir","ramp","rampA","rampB"];
   function encodeState(){ var p=[]; SHAREKEYS.forEach(function(k){ var v=S[k]; if(typeof v==="boolean")v=v?1:0; p.push(k+"="+encodeURIComponent(v)); }); return p.join("&"); }
   var hashT=null;
