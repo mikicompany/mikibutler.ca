@@ -30,6 +30,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   /* Same dark studio-tool identity as the UV Toolkit, so the kit reads as one family. */
   :root{
@@ -141,11 +142,22 @@
       <div class="field">
         <label for="ntype">Type</label>
         <select id="ntype" class="mono">
-          <option value="perlin" selected>Perlin (gradient)</option>
-          <option value="value">Value (lattice)</option>
-          <option value="worF1">Worley · F1 (cells)</option>
-          <option value="worF2">Worley · F2 (rounded)</option>
-          <option value="worEdge">Worley · F2−F1 (edges)</option>
+          <optgroup label="Noise">
+            <option value="perlin" selected>Perlin (gradient)</option>
+            <option value="value">Value (lattice)</option>
+            <option value="worF1">Worley · F1 (cells)</option>
+            <option value="worF2">Worley · F2 (rounded)</option>
+            <option value="worEdge">Worley · F2−F1 (edges)</option>
+            <option value="marble">Marble (veined)</option>
+          </optgroup>
+          <optgroup label="Patterns">
+            <option value="brick">Brick</option>
+            <option value="checker">Checker</option>
+            <option value="hex">Hex grid</option>
+            <option value="dots">Dot grid</option>
+            <option value="weave">Weave</option>
+            <option value="gradient">Gradient (radial)</option>
+          </optgroup>
         </select>
       </div>
       <div class="field">
@@ -182,11 +194,22 @@
         <div class="field">
           <label for="typeB">Layer B type</label>
           <select id="typeB" class="mono">
-            <option value="perlin">Perlin (gradient)</option>
-            <option value="value">Value (lattice)</option>
-            <option value="worF1" selected>Worley · F1 (cells)</option>
-            <option value="worF2">Worley · F2 (rounded)</option>
-            <option value="worEdge">Worley · F2−F1 (edges)</option>
+            <optgroup label="Noise">
+              <option value="perlin">Perlin (gradient)</option>
+              <option value="value">Value (lattice)</option>
+              <option value="worF1" selected>Worley · F1 (cells)</option>
+              <option value="worF2">Worley · F2 (rounded)</option>
+              <option value="worEdge">Worley · F2−F1 (edges)</option>
+              <option value="marble">Marble (veined)</option>
+            </optgroup>
+            <optgroup label="Patterns">
+              <option value="brick">Brick</option>
+              <option value="checker">Checker</option>
+              <option value="hex">Hex grid</option>
+              <option value="dots">Dot grid</option>
+              <option value="weave">Weave</option>
+              <option value="gradient">Gradient (radial)</option>
+            </optgroup>
           </select>
         </div>
         <div class="row">
@@ -219,6 +242,11 @@
         <div class="field"><label>Gamma <span class="val" id="vGamma">1.00</span></label><input type="range" id="gamma" min="0.3" max="3" step="0.05" value="1"></div>
         <div class="field"><label>Posterize <span class="val" id="vSteps">off</span></label><input type="range" id="steps" min="0" max="12" step="1" value="0"></div>
       </div>
+      <div class="field"><label>Blur ↔ Sharpen <span class="val" id="vBlur">0.00</span></label><input type="range" id="blur" min="-1" max="1" step="0.05" value="0"></div>
+      <div class="row">
+        <div class="field"><label>Level black <span class="val" id="vLevLo">0.00</span></label><input type="range" id="levlo" min="0" max="0.5" step="0.02" value="0"></div>
+        <div class="field"><label>Level white <span class="val" id="vLevHi">1.00</span></label><input type="range" id="levhi" min="0.5" max="1" step="0.02" value="1"></div>
+      </div>
       <label class="chk"><input type="checkbox" id="invert"> Invert</label>
 
       <div class="divider"></div>
@@ -230,6 +258,7 @@
           <button data-v="rough">Rough</button>
           <button data-v="ao">AO</button>
           <button data-v="metal">Metal</button>
+          <button data-v="curv">Curv</button>
           <button data-v="color">Colour</button>
         </div>
       </div>
@@ -271,6 +300,11 @@
           <div class="field"><label>Low colour</label><input type="color" id="rampA" value="#1b2a4a" style="width:100%;height:36px;padding:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;cursor:pointer"></div>
           <div class="field"><label>High colour</label><input type="color" id="rampB" value="#e8f1ff" style="width:100%;height:36px;padding:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;cursor:pointer"></div>
         </div>
+        <div class="field"><label>Hue shift <span class="val" id="vHue">0</span></label><input type="range" id="hue" min="-180" max="180" step="2" value="0"></div>
+        <div class="row">
+          <div class="field"><label>Saturation <span class="val" id="vSat">1.00</span></label><input type="range" id="sat" min="0" max="2" step="0.05" value="1"></div>
+          <div class="field"><label>Value <span class="val" id="vCval">1.00</span></label><input type="range" id="cval" min="0.3" max="2" step="0.05" value="1"></div>
+        </div>
       </div>
 
       <div class="divider"></div>
@@ -281,6 +315,10 @@
       <div class="row" style="margin-top:10px">
         <button class="btn" id="surprise">✨ Surprise me</button>
         <button class="btn" id="copylink">🔗 Copy link</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn ghost" id="undo" title="Undo (Ctrl+Z)">↶ Undo</button>
+        <button class="btn ghost" id="redo" title="Redo (Ctrl+Y)">↷ Redo</button>
       </div>
       <div class="hintline">Shortcuts: <b>R</b> random · <b>S</b> surprise · <b>E</b> export PNG · <b>Z</b> material ZIP · <b>L</b> library</div>
 
@@ -300,23 +338,28 @@
       <h2>Preview</h2>
       <div class="stage">
         <canvas id="view" width="512" height="512"></canvas>
+        <canvas id="view3d" width="512" height="512" hidden style="position:absolute;inset:0;width:100%;height:100%;cursor:grab"></canvas>
         <span class="badge" id="badge">Height</span>
       </div>
       <div class="pvfoot">
-        <div class="seg" id="tile" style="max-width:180px">
+        <div class="seg" id="tile" style="max-width:160px">
           <button data-v="1" class="on">1×</button>
           <button data-v="2">2×2</button>
           <button data-v="3">3×3</button>
         </div>
-        <label class="chk" style="margin:0"><input type="checkbox" id="litOn"> 💡 Lit preview</label>
+        <label class="chk" style="margin:0"><input type="checkbox" id="litOn"> 💡 Lit</label>
+        <label class="chk" style="margin:0"><input type="checkbox" id="d3On"> 🧊 3D</label>
       </div>
       <div class="note" id="seamNote" style="margin-top:6px"></div>
       <div class="divider"></div>
       <div class="row" style="align-items:flex-end">
-        <div class="field" style="margin:0"><label for="eres">Export size</label>
-          <select id="eres" class="mono"><option>256</option><option>512</option><option selected>1024</option><option>2048</option><option>4096</option></select>
+        <div class="field" style="margin:0;flex:1.2"><label for="eres">Size</label>
+          <select id="eres" class="mono"><option>256</option><option>512</option><option selected>1024</option><option>2048</option><option>4096</option><option>8192</option></select>
         </div>
-        <button class="btn primary" id="exp" style="margin-bottom:0">⬇ Export PNG</button>
+        <div class="field" style="margin:0"><label for="efmt">Format</label>
+          <select id="efmt" class="mono"><option value="png" selected>PNG</option><option value="jpg">JPG</option><option value="webp">WebP</option></select>
+        </div>
+        <button class="btn primary" id="exp" style="margin-bottom:0">⬇ Export</button>
       </div>
       <button class="btn" id="expzip" style="margin-top:8px">📦 Export material pack (ZIP)</button>
       <button class="btn" id="lib" style="margin-top:8px">＋ Send to Library</button>
@@ -334,12 +377,12 @@
 
   // ---------- defaults + state ----------
   var DEF={ type:"perlin", shape:"normal", scale:6, oct:5, gain:0.5, lac:2, warp:0, warpOct:1,
-            con:1, bri:0, gamma:1, invert:false, steps:0, mirror:"none",
+            con:1, bri:0, gamma:1, blur:0, levLo:0, levHi:1, offX:0, offY:0, invert:false, steps:0, mirror:"none",
             omode:"height", nstr:2, normalDir:"gl", ramp:"none", rampA:"#1b2a4a", rampB:"#e8f1ff",
-            roughInv:false, roughLo:0.2, roughHi:0.9, aoStr:2, metalThr:0.6, metalInv:false, seed:1337,
+            hue:0, sat:1, cval:1, roughInv:false, roughLo:0.2, roughHi:0.9, aoStr:2, metalThr:0.6, metalInv:false, seed:1337,
             blend:false, typeB:"worF1", scaleB:12, octB:2, bmode:"mix", bamount:0.5 };
   var S=Object.assign({},DEF);
-  var tileN=1, litLight={x:-0.45,y:0.55,z:0.70}, curAO=null;
+  var tileN=1, litLight={x:-0.45,y:0.55,z:0.70}, curAO=null, efmt="png";
 
   // ---------- seeded hash / prng ----------
   function hashCell(i,j,s){ var h=(i*374761393 + j*668265263 + s*362437)|0;
@@ -388,6 +431,36 @@
   }
 
   function tri(c){ c=c-Math.floor(c); return 1-Math.abs(2*c-1); }
+  function fr(x){ return x-Math.floor(x); }
+
+  // ---------- geometric / procedural patterns (tileable; input u,v in [0,1], s = cells) ----------
+  var GEOM={checker:1,brick:1,hex:1,dots:1,weave:1,gradient:1};
+  function evn(s){ return 2*Math.max(1,Math.round(s/2)); }               // nearest even >=2 → seamless geo tiling
+  function patChecker(u,v,s){ s=evn(s); return ((Math.floor(u*s)+Math.floor(v*s))&1)?1:0; }
+  function patBrick(u,v,s,seed){ var per=evn(s), iy=Math.floor(v*per), off=(iy&1)*0.5;
+    var bx=u*per+off, ix=Math.floor(bx), fx=fr(bx), fy=fr(v*per), m=0.08;
+    if(fx<m||fy<m) return 0.12;
+    var h=hashCell(((ix%per)+per)%per, ((iy%per)+per)%per, seed);
+    return 0.62+0.38*h; }
+  function patDots(u,v,s){ s=Math.max(1,Math.round(s)); var fx=fr(u*s)-0.5, fy=fr(v*s)-0.5, d=Math.sqrt(fx*fx+fy*fy), r=0.42;
+    return d<r ? (1-d/r) : 0; }
+  function patWeave(u,v,s){ s=evn(s); var cx=Math.floor(u*s), cy=Math.floor(v*s);
+    return ((cx+cy)&1) ? Math.sin(fr(v*s)*Math.PI) : Math.sin(fr(u*s)*Math.PI); }
+  function patGradient(u,v){ var dx=(u-0.5)*2, dy=(v-0.5)*2; return Math.max(0,1-Math.sqrt(dx*dx+dy*dy)); }
+  // hex-ish cells: Voronoi over an offset lattice, periodic (even period → seamless)
+  function patHex(u,v,s,edge){ var per=evn(s), x=u*per, y=v*per, iy0=Math.floor(y), f1=9,f2=9;
+    for(var oy=-1;oy<=1;oy++)for(var ox=-1;ox<=1;ox++){ var cy=iy0+oy, off=(((cy%2)+2)%2)*0.5, cx=Math.floor(x-off)+ox;
+      var ctrx=cx+off+0.5, ctry=cy+0.5, dx=ctrx-x, dy=ctry-y, d=Math.sqrt(dx*dx+dy*dy);
+      if(d<f1){f2=f1;f1=d;}else if(d<f2){f2=d;} }
+    return edge ? Math.min(1,(f2-f1)*1.3) : (1-Math.min(1,f1)); }
+  function geomPattern(type,u,v,s,seed){
+    if(type==="checker") return patChecker(u,v,s);
+    if(type==="brick")   return patBrick(u,v,s,seed);
+    if(type==="dots")    return patDots(u,v,s);
+    if(type==="weave")   return patWeave(u,v,s);
+    if(type==="gradient")return patGradient(u,v);
+    return patHex(u,v,s, S.shape==="ridged");
+  }
 
   // one fractal layer -> [0,1]
   function fractal(u,v, type, scale, oct, seed){
@@ -401,6 +474,15 @@
       }
       u = u + (wx/wmax)*S.warp/scale; v = v + (wy/wmax)*S.warp/scale;
     }
+    if(type==="marble"){ var turb=0,ta=1,tf=scale,tp=scale,tm=0,to2;
+      for(to2=0;to2<oct;to2++){ turb+=Math.abs(perlin(u*tf,v*tf,Math.max(1,Math.round(tp))))*ta; tm+=ta; ta*=S.gain; tf*=S.lac; tp*=S.lac; }
+      turb/=tm;
+      var mv=0.5+0.5*Math.sin((u*scale + turb*2.2)*Math.PI*2);
+      if(S.shape==="ridged") mv=1-Math.abs(mv*2-1); else if(S.shape==="billow") mv=Math.abs(mv*2-1);
+      return mv; }
+    if(GEOM[type]){ var gv=geomPattern(type,u,v,scale,seed);
+      if(type!=="hex"){ if(S.shape==="ridged") gv=1-Math.abs(gv*2-1); else if(S.shape==="billow") gv=Math.abs(gv*2-1); }
+      return gv; }
     for(var o=0;o<oct;o++){
       var n;
       if(type==="perlin"){ n=perlin(u*f, v*f, Math.max(1,Math.round(per))); n=n*0.5+0.5; }
@@ -431,6 +513,7 @@
     return a+(r-a)*t;
   }
   function sample(u,v){
+    if(S.offX||S.offY){ u=fr(u+S.offX); v=fr(v+S.offY); }
     if(S.mirror==="x"||S.mirror==="xy") u=tri(u);
     if(S.mirror==="y"||S.mirror==="xy") v=tri(v);
     var a=fractal(u,v, S.type, S.scale, S.oct, S.seed), val;
@@ -447,8 +530,17 @@
     if(permReady!==(S.seed>>>0)) buildPerm(S.seed);
     var g=new Float32Array(res*res), k=0;
     for(var y=0;y<res;y++){ var v=y/res; for(var x=0;x<res;x++){ g[k++]=sample(x/res, v); } }
+    if(S.blur!==0) g=blurSharpen(g,res,S.blur);
+    if(S.levLo!==0||S.levHi!==1) g=levelsRemap(g,S.levLo,S.levHi);
     return g;
   }
+  function blurSharpen(g,res,amt){
+    if(amt>0){ return boxBlur(g,res,Math.max(1,Math.round(amt*res/40))); }
+    var b=boxBlur(g,res,Math.max(1,Math.round(res/180))), out=new Float32Array(g.length), k=-amt*2.2, i,vv;
+    for(i=0;i<g.length;i++){ vv=g[i]+(g[i]-b[i])*k; out[i]=vv<0?0:vv>1?1:vv; } return out;
+  }
+  function levelsRemap(g,lo,hi){ var out=new Float32Array(g.length), d=(hi-lo)||1e-4, i,vv;
+    for(i=0;i<g.length;i++){ vv=(g[i]-lo)/d; out[i]=vv<0?0:vv>1?1:vv; } return out; }
 
   // ---------- derived material maps ----------
   function roughVal(h){ var r=S.roughInv?1-h:h; return S.roughLo + r*(S.roughHi-S.roughLo); }
@@ -493,6 +585,15 @@
     for(var i=0;i<s.length-1;i++){ if(t<=s[i+1][0]){ var a=s[i],b=s[i+1],k=(t-a[0])/((b[0]-a[0])||1);
       return [a[1][0]+(b[1][0]-a[1][0])*k, a[1][1]+(b[1][1]-a[1][1])*k, a[1][2]+(b[1][2]-a[1][2])*k]; } }
     return s[s.length-1][1].slice(); }
+  function applyHSV(rgb){ if(S.hue===0&&S.sat===1&&S.cval===1) return rgb;
+    var r=rgb[0]/255,g2=rgb[1]/255,b=rgb[2]/255, mx=Math.max(r,g2,b),mn=Math.min(r,g2,b),h=0,s=mx===0?0:(mx-mn)/mx,vv=mx,dd=mx-mn;
+    if(dd>0){ if(mx===r)h=((g2-b)/dd)%6; else if(mx===g2)h=(b-r)/dd+2; else h=(r-g2)/dd+4; h*=60; if(h<0)h+=360; }
+    h=(h+S.hue)%360; if(h<0)h+=360; s=Math.max(0,Math.min(1,s*S.sat)); vv=Math.max(0,Math.min(1,vv*S.cval));
+    var c2=vv*s, xx=c2*(1-Math.abs((h/60)%2-1)), m=vv-c2, rr,gg,bb;
+    if(h<60){rr=c2;gg=xx;bb=0;}else if(h<120){rr=xx;gg=c2;bb=0;}else if(h<180){rr=0;gg=c2;bb=xx;}
+    else if(h<240){rr=0;gg=xx;bb=c2;}else if(h<300){rr=xx;gg=0;bb=c2;}else{rr=c2;gg=0;bb=xx;}
+    return [(rr+m)*255,(gg+m)*255,(bb+m)*255]; }
+  function albedoColor(t){ return applyHSV(rampColor(t,S.ramp)); }
 
   // render one map into ctx
   function renderMap(ctx,res,g,mode,ao){
@@ -502,8 +603,10 @@
         var dx=(g[y*res+xr]-g[y*res+xl])*str, dy=(g[yd*res+x]-g[yu*res+x])*str, inv=1/Math.sqrt(dx*dx+dy*dy+1); o=(y*res+x)*4;
         d[o]=((-dx*inv)*0.5+0.5)*255; d[o+1]=((dy*inv*gy)*0.5+0.5)*255; d[o+2]=((inv)*0.5+0.5)*255; d[o+3]=255; }
     } else if(mode==="color"){ var A=ao||computeAO(g,res);
-      for(i=0;i<g.length;i++){ var col=rampColor(g[i],S.ramp), sh=0.5+0.5*A[i]; o=i*4;
+      for(i=0;i<g.length;i++){ var col=albedoColor(g[i]), sh=0.5+0.5*A[i]; o=i*4;
         d[o]=col[0]*sh; d[o+1]=col[1]*sh; d[o+2]=col[2]*sh; d[o+3]=255; }
+    } else if(mode==="curv"){ var cb=boxBlur(g,res,Math.max(1,Math.round(res/160)));
+      for(i=0;i<g.length;i++){ var cc=0.5+(g[i]-cb[i])*6; c=(cc<0?0:cc>1?1:cc)*255; o=i*4; d[o]=d[o+1]=d[o+2]=c; d[o+3]=255; }
     } else {
       var A2=(mode==="ao")?(ao||computeAO(g,res)):null;
       for(i=0;i<g.length;i++){
@@ -529,7 +632,7 @@
       var diff=nx*L.x+ny*L.y+nz*L.z; if(diff<0)diff=0;
       var spec=nx*hx+ny*hy+nz*hz; spec=spec>0?Math.pow(spec,22)*0.28:0;
       var sh=(amb+diff*0.92)*(0.55+0.45*ao[i]);
-      var col=useRamp?rampColor(g[i],S.ramp):[194,196,200];
+      var col=useRamp?albedoColor(g[i]):[194,196,200];
       var o=i*4, sp=spec*255;
       d[o]  =Math.min(255,col[0]*sh+sp); d[o+1]=Math.min(255,col[1]*sh+sp); d[o+2]=Math.min(255,col[2]*sh+sp); d[o+3]=255;
     }
@@ -562,20 +665,78 @@
       var ao=needAO?computeAO(g,PREVIEW):null; curAO=ao;
       if(S.lit) renderLit(sctx,PREVIEW,g,ao,litLight); else renderMap(sctx,PREVIEW,g,S.omode,ao);
       paintView();
-      $("badge").textContent = S.lit ? "Lit preview" : mapLabel(S.omode);
-      var err=seamCheck(g,PREVIEW);
-      $("seamNote").textContent = "seam Δ "+err.toFixed(4)+(err<0.02?" · tiles seamlessly ✓":" · check seams");
-      writeHash();
+      if(S.d3) update3D(g);
+      $("badge").textContent = S.d3 ? "3D preview" : (S.lit ? "Lit preview" : mapLabel(S.omode));
+      if(GEOM[S.type]){ $("seamNote").textContent = "tiles seamlessly ✓ (even grid)"; }
+      else { var err=seamCheck(g,PREVIEW); $("seamNote").textContent = "seam Δ "+err.toFixed(4)+(err<0.02?" · tiles seamlessly ✓":" · check seams"); }
+      writeHash(); record();
     },16);
   }
 
+  // ---------- 3D preview (Three.js) ----------
+  var T3={ren:null,scene:null,cam:null,mesh:null,maps:{},rot:{x:-0.35,y:0.5},drag:false,px:0,py:0,inited:false,ok:false};
+  function init3D(){
+    if(T3.inited) return T3.ok;
+    T3.inited=true; if(!window.THREE) return false;
+    var cv=$("view3d");
+    try{ T3.ren=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true}); }catch(e){ return false; }
+    T3.ren.setPixelRatio(1); T3.ren.setSize(PREVIEW,PREVIEW,false);
+    if(THREE.sRGBEncoding) T3.ren.outputEncoding=THREE.sRGBEncoding;
+    T3.scene=new THREE.Scene();
+    T3.cam=new THREE.PerspectiveCamera(40,1,0.1,100); T3.cam.position.set(0,0,3.4);
+    T3.scene.add(new THREE.AmbientLight(0xffffff,0.38));
+    var key=new THREE.DirectionalLight(0xffffff,1.1); key.position.set(2,2.5,3); T3.scene.add(key);
+    var rim=new THREE.DirectionalLight(0x88aaff,0.4); rim.position.set(-2,-1,-2); T3.scene.add(rim);
+    T3.maps.map=new THREE.CanvasTexture(document.createElement("canvas"));
+    T3.maps.normal=new THREE.CanvasTexture(document.createElement("canvas"));
+    T3.maps.rough=new THREE.CanvasTexture(document.createElement("canvas"));
+    var mat=new THREE.MeshStandardMaterial({ map:T3.maps.map, normalMap:T3.maps.normal, roughnessMap:T3.maps.rough, metalness:0.0, roughness:1.0 });
+    T3.mesh=new THREE.Mesh(new THREE.SphereGeometry(1,96,96),mat); T3.scene.add(T3.mesh);
+    cv.addEventListener("mousedown",function(e){ T3.drag=true; T3.px=e.clientX; T3.py=e.clientY; cv.style.cursor="grabbing"; });
+    window.addEventListener("mouseup",function(){ T3.drag=false; if(T3.ren)cv.style.cursor="grab"; });
+    window.addEventListener("mousemove",function(e){ if(!T3.drag)return; T3.rot.y+=(e.clientX-T3.px)*0.01; T3.rot.x+=(e.clientY-T3.py)*0.01; T3.px=e.clientX; T3.py=e.clientY; draw3D(); });
+    cv.addEventListener("touchstart",function(e){ var t=e.touches[0]; T3.drag=true; T3.px=t.clientX; T3.py=t.clientY; },{passive:true});
+    cv.addEventListener("touchmove",function(e){ if(!T3.drag)return; var t=e.touches[0]; T3.rot.y+=(t.clientX-T3.px)*0.01; T3.rot.x+=(t.clientY-T3.py)*0.01; T3.px=t.clientX; T3.py=t.clientY; draw3D(); e.preventDefault(); },{passive:false});
+    T3.ok=true; return true;
+  }
+  function mapCanvas(g,mode){ var c=document.createElement("canvas"); c.width=c.height=PREVIEW;
+    renderMap(c.getContext("2d"),PREVIEW,g,mode,(mode==="color"||mode==="ao")?computeAO(g,PREVIEW):null); return c; }
+  function update3D(g){
+    if(!init3D()){ $("status").textContent="3D preview needs WebGL — not available here."; return; }
+    var albedo=(S.ramp!=="none"||S.omode==="color")?"color":"height";
+    T3.maps.map.image=mapCanvas(g,albedo); T3.maps.map.needsUpdate=true;
+    T3.maps.normal.image=mapCanvas(g,"normal"); T3.maps.normal.needsUpdate=true;
+    T3.maps.rough.image=mapCanvas(g,"rough"); T3.maps.rough.needsUpdate=true;
+    draw3D();
+  }
+  function draw3D(){ if(!T3.ok)return; T3.mesh.rotation.x=T3.rot.x; T3.mesh.rotation.y=T3.rot.y; T3.ren.render(T3.scene,T3.cam); }
+
+  // ---------- drag-to-pan the 2D preview ----------
+  var panning=false, panPX=0, panPY=0;
+  view.addEventListener("mousedown",function(e){ if(S.lit||S.d3)return; panning=true; panPX=e.clientX; panPY=e.clientY; view.style.cursor="grabbing"; });
+  window.addEventListener("mouseup",function(){ if(panning){ panning=false; view.style.cursor=""; } });
+  window.addEventListener("mousemove",function(e){ if(!panning)return; var r=view.getBoundingClientRect();
+    S.offX=fr(S.offX-(e.clientX-panPX)/r.width); S.offY=fr(S.offY-(e.clientY-panPY)/r.height); panPX=e.clientX; panPY=e.clientY; rerender(); });
+  view.addEventListener("dblclick",function(){ if(S.lit||S.d3)return; S.offX=0; S.offY=0; rerender(); });
+
+  // ---------- undo / redo ----------
+  var hist=[], hi=-1, undoT=null, applying=false;
+  function snapshot(){ var o={}; SHAREKEYS.forEach(function(k){ o[k]=S[k]; }); return JSON.stringify(o); }
+  function record(){ if(applying)return; clearTimeout(undoT); undoT=setTimeout(function(){
+    var s=snapshot(); if(hi>=0 && s===hist[hi]) return; hist=hist.slice(0,hi+1); hist.push(s); hi=hist.length-1;
+    if(hist.length>60){ hist.shift(); hi--; } },500); }
+  function applySnap(s){ var o=JSON.parse(s); applying=true; Object.keys(o).forEach(function(k){ S[k]=o[k]; }); syncUIFromState(); applying=false; }
+  function undo(){ if(hi>0){ hi--; applySnap(hist[hi]); } }
+  function redo(){ if(hi<hist.length-1){ hi++; applySnap(hist[hi]); } }
+  $("undo").addEventListener("click",undo); $("redo").addEventListener("click",redo);
+
   // ---------- names ----------
-  function mapLabel(mode){ return ({height:"Height",normal:"Normal Map",rough:"Roughness",ao:"Ambient Occlusion",metal:"Metalness",color:"Colour"})[mode]||"Texture"; }
+  function mapLabel(mode){ return ({height:"Height",normal:"Normal Map",rough:"Roughness",ao:"Ambient Occlusion",metal:"Metalness",color:"Colour",curv:"Curvature"})[mode]||"Texture"; }
   function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
   function noiseName(res,label){
-    var base=({perlin:"Perlin Cloud Noise",value:"Value Noise",worF1:"Worley Cellular Noise",worF2:"Worley Rounded Cell Noise",worEdge:"Worley Edge Noise"})[S.type]||"Noise";
+    var base=({perlin:"Perlin Cloud Noise",value:"Value Noise",worF1:"Worley Cellular Noise",worF2:"Worley Rounded Cell Noise",worEdge:"Worley Edge Noise",marble:"Marble",brick:"Brick",checker:"Checker",hex:"Hex Grid",dots:"Dot Grid",weave:"Weave",gradient:"Gradient"})[S.type]||"Pattern";
     var sh=({ridged:"Ridged ",billow:"Billow "})[S.shape]||"";
-    var bl=S.blend?(" + "+({perlin:"Perlin",value:"Value",worF1:"Cells",worF2:"Cells",worEdge:"Edges"})[S.typeB]):"";
+    var bl=S.blend?(" + "+(({perlin:"Perlin",value:"Value",worF1:"Cells",worF2:"Cells",worEdge:"Edges",marble:"Marble",brick:"Brick",checker:"Checker",hex:"Hex",dots:"Dots",weave:"Weave",gradient:"Gradient"})[S.typeB]||"Pattern")):"";
     var lab=(label!=null)?label:mapLabel(S.omode);
     return ("Seamless "+sh+base+bl+" "+lab+" "+res+"px").replace(/\s+/g," ").trim();
   }
@@ -597,6 +758,12 @@
     ["roughhi","roughHi",function(v){return v.toFixed(2);},"vRoughHi"],
     ["aostr","aoStr",function(v){return v.toFixed(1);},"vAoStr"],
     ["metalthr","metalThr",function(v){return v.toFixed(2);},"vMetalThr"],
+    ["blur","blur",function(v){return v.toFixed(2);},"vBlur"],
+    ["levlo","levLo",function(v){return v.toFixed(2);},"vLevLo"],
+    ["levhi","levHi",function(v){return v.toFixed(2);},"vLevHi"],
+    ["hue","hue",function(v){return v;},"vHue"],
+    ["sat","sat",function(v){return v.toFixed(2);},"vSat"],
+    ["cval","cval",function(v){return v.toFixed(2);},"vCval"],
     ["scaleB","scaleB",function(v){return v;},"vScaleB"],
     ["octB","octB",function(v){return v;},"vOctB"],
     ["bamount","bamount",function(v){return v.toFixed(2);},"vBamount"]
@@ -615,7 +782,9 @@
   var CHECKS=[["invert","invert"],["roughInv","roughInv"],["metalInv","metalInv"]];
   CHECKS.forEach(function(s){ var el=$(s[0]); el.addEventListener("change",function(){ S[s[1]]=el.checked; rerender(); }); });
   $("blendOn").addEventListener("change",function(){ S.blend=this.checked; $("layerB").hidden=!this.checked; rerender(); });
-  $("litOn").addEventListener("change",function(){ S.lit=this.checked; rerender(); });
+  $("litOn").addEventListener("change",function(){ S.lit=this.checked; if(S.lit){ S.d3=false; $("d3On").checked=false; $("view3d").hidden=true; $("view").style.visibility="visible"; } rerender(); });
+  $("d3On").addEventListener("change",function(){ S.d3=this.checked; $("view3d").hidden=!S.d3; $("view").style.visibility=S.d3?"hidden":"visible";
+    if(S.d3){ S.lit=false; $("litOn").checked=false; } rerender(); });
 
   // draggable light for the lit preview
   function setLightFromScreen(mx,my){ var lx=(mx-0.5)*2, ly=-(my-0.5)*2, q=lx*lx+ly*ly;
@@ -651,14 +820,15 @@
     $("mirror").value=S.mirror; $("nfmt").value=S.normalDir; $("rampA").value=S.rampA; $("rampB").value=S.rampB;
     $("invert").checked=S.invert; $("roughInv").checked=S.roughInv; $("metalInv").checked=S.metalInv;
     $("blendOn").checked=S.blend; $("layerB").hidden=!S.blend; $("litOn").checked=!!S.lit;
+    $("d3On").checked=!!S.d3; $("view3d").hidden=!S.d3; $("view").style.visibility=S.d3?"hidden":"visible";
     $("seed").value=S.seed;
     setSeg("shape",S.shape); setSeg("omode",S.omode);
     updateModePanels(); updateRampPanel(); rerender();
   }
 
   // ---------- share link (URL hash) ----------
-  var SHAREKEYS=["type","shape","scale","oct","gain","lac","warp","warpOct","con","bri","gamma","invert","steps","mirror",
-    "blend","typeB","scaleB","octB","bmode","bamount","omode","nstr","normalDir","ramp","rampA","rampB","roughInv","roughLo","roughHi","aoStr","metalThr","metalInv","seed"];
+  var SHAREKEYS=["type","shape","scale","oct","gain","lac","warp","warpOct","con","bri","gamma","blur","levLo","levHi","offX","offY","invert","steps","mirror",
+    "blend","typeB","scaleB","octB","bmode","bamount","omode","nstr","normalDir","ramp","rampA","rampB","hue","sat","cval","roughInv","roughLo","roughHi","aoStr","metalThr","metalInv","seed"];
   var BOOLKEYS=["invert","blend","roughInv","metalInv"], STRKEYS=["type","shape","mirror","typeB","bmode","omode","normalDir","ramp","rampA","rampB"];
   function encodeState(){ var p=[]; SHAREKEYS.forEach(function(k){ var v=S[k]; if(typeof v==="boolean")v=v?1:0; p.push(k+"="+encodeURIComponent(v)); }); return p.join("&"); }
   var hashT=null;
@@ -687,13 +857,15 @@
     document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500);
     $("status").textContent="Saved "+name;
   }
+  function mimeFor(f){ return f==="jpg"?"image/jpeg":f==="webp"?"image/webp":"image/png"; }
+  $("efmt").addEventListener("change",function(){ efmt=this.value; });
   $("exp").addEventListener("click",function(){
     var res=parseInt($("eres").value,10); $("status").textContent="Rendering "+res+"×"+res+"…";
     setTimeout(function(){
       var c=document.createElement("canvas"); c.width=c.height=res; var cx=c.getContext("2d");
       var g=buildHeight(res), ao=(S.omode==="ao"||S.omode==="color")?computeAO(g,res):null;
       renderMap(cx,res,g,S.omode,ao);
-      c.toBlob(function(b){ if(b) saveBlob(b,slug(noiseName(res,mapLabel(S.omode)))+".png"); else $("status").textContent="Export failed."; },"image/png");
+      c.toBlob(function(b){ if(b) saveBlob(b,slug(noiseName(res,mapLabel(S.omode)))+"."+efmt); else $("status").textContent="Export failed."; }, mimeFor(efmt), 0.92);
     },30);
   });
 
@@ -801,8 +973,9 @@
   // ---------- keyboard shortcuts ----------
   document.addEventListener("keydown",function(e){
     var t=(e.target&&e.target.tagName)||""; if(t==="INPUT"||t==="SELECT"||t==="TEXTAREA") return;
-    if(e.metaKey||e.ctrlKey||e.altKey) return;
     var k=e.key.toLowerCase();
+    if(e.metaKey||e.ctrlKey){ if(k==="z"){ e.preventDefault(); if(e.shiftKey) redo(); else undo(); } else if(k==="y"){ e.preventDefault(); redo(); } return; }
+    if(e.altKey) return;
     if(k==="r"){ $("rnd").click(); }
     else if(k==="s"){ surprise(); }
     else if(k==="e"){ $("exp").click(); }
@@ -814,6 +987,7 @@
   renderMyPresets();
   if(readHash()){ syncUIFromState(); }
   else { var fp=document.querySelector('#presets button[data-p="clouds"]'); if(fp) fp.click(); else syncUIFromState(); }
+  hist=[snapshot()]; hi=0;
 })();
 </script>
 </body>
