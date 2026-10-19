@@ -97,10 +97,10 @@ function revealArcade() {
       '.sidebar-logo.nm-on img{opacity:0}' +
       '.nmface{position:absolute;left:50%;top:50%;width:155%;height:155%;' +
         'transform:translate(-50%,-50%) scale(.55);opacity:0;pointer-events:none;z-index:3;' +
-        'background:linear-gradient(180deg,#ffbe4a 0%,#ff8a1e 44%,#ff5a00 100%);' +
+        'background:radial-gradient(circle at 50% 44%,#fff6d8 0%,#ffe27a 16%,#ffb63a 38%,#ff8a1e 60%,#ff5e06 82%,#dc3f00 100%);' +
         '-webkit-mask:url(/images/nightmare-face.svg) center/contain no-repeat;' +
         'mask:url(/images/nightmare-face.svg) center/contain no-repeat;' +
-        'filter:drop-shadow(0 0 5px #ff8a1e) drop-shadow(0 0 13px #ff5a00);' +
+        'filter:drop-shadow(0 0 3px #ffe08a) drop-shadow(0 0 9px #ff9a2e) drop-shadow(0 0 20px #ff5a00) drop-shadow(0 0 34px #ff4800);' +
         'transition:opacity .5s ease,transform .6s cubic-bezier(.34,1.56,.64,1)}' +
       '.nmface.on{opacity:1;transform:translate(-50%,-50%) scale(1)}' +
       '@keyframes nmFlick{0%,100%{opacity:1}46%{opacity:.8}70%{opacity:1}}' +
