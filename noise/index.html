@@ -133,6 +133,7 @@
     <button data-p="moss">🌿 Moss</button>
     <button data-p="ice">❄️ Ice</button>
     <button data-p="terrain">🗺️ Terrain</button>
+    <button data-p="waffle">🧇 Waffle</button>
   </div>
 
   <div class="grid">
@@ -151,6 +152,7 @@
             <option value="marble">Marble (veined)</option>
           </optgroup>
           <optgroup label="Patterns">
+            <option value="grid">Grid / waffle</option>
             <option value="brick">Brick</option>
             <option value="checker">Checker</option>
             <option value="hex">Hex grid</option>
@@ -186,6 +188,26 @@
           <option value="y">Mirror Y</option>
           <option value="xy">Mirror XY (quad)</option>
         </select>
+      </div>
+
+      <div id="gridWrap" hidden>
+        <div class="divider"></div>
+        <div class="note" style="margin-bottom:10px">Waffle cells — raise <b>Scale</b> for more cells, then shape each pad below.</div>
+        <div class="row">
+          <div class="field"><label>Groove width <span class="val" id="vGroove">0.18</span></label><input type="range" id="groove" min="0.02" max="0.6" step="0.01" value="0.18"></div>
+          <div class="field"><label>Corner round <span class="val" id="vRound">0.30</span></label><input type="range" id="round" min="0" max="0.5" step="0.01" value="0.3"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Bevel <span class="val" id="vBevel">0.28</span></label><input type="range" id="bevel" min="0.02" max="0.6" step="0.01" value="0.28"></div>
+          <div class="field"><label>Dome <span class="val" id="vDome">0.60</span></label><input type="range" id="dome" min="0" max="1" step="0.02" value="0.6"></div>
+        </div>
+        <div class="field"><label>Centre dimple <span class="val" id="vDimple">off</span></label><input type="range" id="dimple" min="0" max="0.8" step="0.02" value="0"></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="row">
+        <div class="field"><label>Surface grain <span class="val" id="vGrain">off</span></label><input type="range" id="grain" min="0" max="0.6" step="0.02" value="0"></div>
+        <div class="field"><label>Grain scale <span class="val" id="vGrainSc">70</span></label><input type="range" id="grainsc" min="20" max="200" step="2" value="70"></div>
       </div>
 
       <div class="divider"></div>
@@ -381,7 +403,8 @@
             con:1, bri:0, gamma:1, blur:0, levLo:0, levHi:1, offX:0, offY:0, invert:false, steps:0, mirror:"none",
             omode:"height", nstr:2, normalDir:"gl", ramp:"none", rampA:"#1b2a4a", rampB:"#e8f1ff",
             hue:0, sat:1, cval:1, disp:0.12, roughInv:false, roughLo:0.2, roughHi:0.9, aoStr:2, metalThr:0.6, metalInv:false, seed:1337,
-            blend:false, typeB:"worF1", scaleB:12, octB:2, bmode:"mix", bamount:0.5 };
+            blend:false, typeB:"worF1", scaleB:12, octB:2, bmode:"mix", bamount:0.5,
+            groove:0.18, round:0.3, bevel:0.28, dome:0.6, dimple:0, grain:0, grainSc:70 };
   var S=Object.assign({},DEF);
   var tileN=1, litLight={x:-0.45,y:0.55,z:0.70}, curAO=null, efmt="png";
 
@@ -435,7 +458,7 @@
   function fr(x){ return x-Math.floor(x); }
 
   // ---------- geometric / procedural patterns (tileable; input u,v in [0,1], s = cells) ----------
-  var GEOM={checker:1,brick:1,hex:1,dots:1,weave:1,gradient:1};
+  var GEOM={grid:1,checker:1,brick:1,hex:1,dots:1,weave:1,gradient:1};
   function evn(s){ return 2*Math.max(1,Math.round(s/2)); }               // nearest even >=2 → seamless geo tiling
   function patChecker(u,v,s){ s=evn(s); return ((Math.floor(u*s)+Math.floor(v*s))&1)?1:0; }
   function patBrick(u,v,s,seed){ var per=evn(s), iy=Math.floor(v*per), off=(iy&1)*0.5;
@@ -454,7 +477,23 @@
       var ctrx=cx+off+0.5, ctry=cy+0.5, dx=ctrx-x, dy=ctry-y, d=Math.sqrt(dx*dx+dy*dy);
       if(d<f1){f2=f1;f1=d;}else if(d<f2){f2=d;} }
     return edge ? Math.min(1,(f2-f1)*1.3) : (1-Math.min(1,f1)); }
+  // waffle: tileable grid of rounded-box pads with bevel/dome/dimple
+  function patGrid(u,v,s){
+    var per=Math.max(1,Math.round(s));
+    var fx=fr(u*per)-0.5, fy=fr(v*per)-0.5;        // cell-local coords in [-0.5,0.5]
+    var b=Math.max(0.03, 0.5 - S.groove*0.5);      // pad half-size (groove is the gap)
+    var rad=Math.min(S.round*b, b);                // corner radius
+    var qx=Math.abs(fx)-b+rad, qy=Math.abs(fy)-b+rad;
+    var mx=Math.max(qx,0), my=Math.max(qy,0);
+    var d=Math.sqrt(mx*mx+my*my)+Math.min(Math.max(qx,qy),0)-rad;  // <0 inside pad
+    var bev=Math.max(0.01,S.bevel);
+    var h=(-d)/bev; h=h<0?0:h>1?1:h;               // 0 in groove, ramps to 1 plateau
+    if(S.dome>0){ var hs=h*h*(3-2*h); h=h+(hs-h)*S.dome; }        // smoothstep → pillow
+    if(S.dimple>0){ var rr=Math.sqrt(fx*fx+fy*fy)/b, dip=1-rr; if(dip<0)dip=0; h-=S.dimple*dip*dip; if(h<0)h=0; }
+    return h;
+  }
   function geomPattern(type,u,v,s,seed){
+    if(type==="grid")    return patGrid(u,v,s);
     if(type==="checker") return patChecker(u,v,s);
     if(type==="brick")   return patBrick(u,v,s,seed);
     if(type==="dots")    return patDots(u,v,s);
@@ -482,7 +521,7 @@
       if(S.shape==="ridged") mv=1-Math.abs(mv*2-1); else if(S.shape==="billow") mv=Math.abs(mv*2-1);
       return mv; }
     if(GEOM[type]){ var gv=geomPattern(type,u,v,scale,seed);
-      if(type!=="hex"){ if(S.shape==="ridged") gv=1-Math.abs(gv*2-1); else if(S.shape==="billow") gv=Math.abs(gv*2-1); }
+      if(type!=="hex"&&type!=="grid"){ if(S.shape==="ridged") gv=1-Math.abs(gv*2-1); else if(S.shape==="billow") gv=Math.abs(gv*2-1); }
       return gv; }
     for(var o=0;o<oct;o++){
       var n;
@@ -521,6 +560,7 @@
     if(S.blend){ var b=fractal(u,v, S.typeB, S.scaleB, S.octB, S.seed+1000);
       val=blendVal(a,b,S.bmode,S.bamount); } else val=a;
     val = (val-0.5)*S.con + 0.5 + S.bri;
+    if(S.grain>0){ var gn=valueNoise(u*S.grainSc, v*S.grainSc, Math.max(1,Math.round(S.grainSc)), S.seed+777); val += (gn-0.5)*S.grain; }
     if(S.gamma!==1){ var cv=val<0?0:val>1?1:val; val=Math.pow(cv,S.gamma); }
     if(S.steps>0){ var st=S.steps; val=Math.round(val*(st-1))/(st-1); }
     if(S.invert) val = 1-val;
@@ -668,7 +708,7 @@
       paintView();
       if(S.d3) update3D(g);
       $("badge").textContent = S.d3 ? "3D preview" : (S.lit ? "Lit preview" : mapLabel(S.omode));
-      if(GEOM[S.type]){ $("seamNote").textContent = "tiles seamlessly ✓ (even grid)"; }
+      if(GEOM[S.type]){ $("seamNote").textContent = "tiles seamlessly ✓" + (S.type==="grid"?" (grid cells)":" (even grid)"); }
       else { var err=seamCheck(g,PREVIEW); $("seamNote").textContent = "seam Δ "+err.toFixed(4)+(err<0.02?" · tiles seamlessly ✓":" · check seams"); }
       writeHash(); record();
     },16);
@@ -742,7 +782,7 @@
   function mapLabel(mode){ return ({height:"Height",normal:"Normal Map",rough:"Roughness",ao:"Ambient Occlusion",metal:"Metalness",color:"Colour",curv:"Curvature"})[mode]||"Texture"; }
   function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
   function noiseName(res,label){
-    var base=({perlin:"Perlin Cloud Noise",value:"Value Noise",worF1:"Worley Cellular Noise",worF2:"Worley Rounded Cell Noise",worEdge:"Worley Edge Noise",marble:"Marble",brick:"Brick",checker:"Checker",hex:"Hex Grid",dots:"Dot Grid",weave:"Weave",gradient:"Gradient"})[S.type]||"Pattern";
+    var base=({perlin:"Perlin Cloud Noise",value:"Value Noise",worF1:"Worley Cellular Noise",worF2:"Worley Rounded Cell Noise",worEdge:"Worley Edge Noise",marble:"Marble",grid:"Waffle Grid",brick:"Brick",checker:"Checker",hex:"Hex Grid",dots:"Dot Grid",weave:"Weave",gradient:"Gradient"})[S.type]||"Pattern";
     var sh=({ridged:"Ridged ",billow:"Billow "})[S.shape]||"";
     var bl=S.blend?(" + "+(({perlin:"Perlin",value:"Value",worF1:"Cells",worF2:"Cells",worEdge:"Edges",marble:"Marble",brick:"Brick",checker:"Checker",hex:"Hex",dots:"Dots",weave:"Weave",gradient:"Gradient"})[S.typeB]||"Pattern")):"";
     var lab=(label!=null)?label:mapLabel(S.omode);
@@ -774,14 +814,21 @@
     ["cval","cval",function(v){return v.toFixed(2);},"vCval"],
     ["scaleB","scaleB",function(v){return v;},"vScaleB"],
     ["octB","octB",function(v){return v;},"vOctB"],
-    ["bamount","bamount",function(v){return v.toFixed(2);},"vBamount"]
+    ["bamount","bamount",function(v){return v.toFixed(2);},"vBamount"],
+    ["groove","groove",function(v){return v.toFixed(2);},"vGroove"],
+    ["round","round",function(v){return v.toFixed(2);},"vRound"],
+    ["bevel","bevel",function(v){return v.toFixed(2);},"vBevel"],
+    ["dome","dome",function(v){return v.toFixed(2);},"vDome"],
+    ["dimple","dimple",function(v){return v===0?"off":v.toFixed(2);},"vDimple"],
+    ["grain","grain",function(v){return v===0?"off":v.toFixed(2);},"vGrain"],
+    ["grainsc","grainSc",function(v){return v;},"vGrainSc"]
   ];
   SLIDERS.forEach(function(s){ var i=$(s[0]); if(!i) return;
     i.addEventListener("input",function(){ S[s[1]]=parseFloat(i.value); var o=$(s[3]); if(o)o.textContent=s[2](S[s[1]]); rerender(); });
   });
 
   var SELECTS=[["ntype","type"],["typeB","typeB"],["bmode","bmode"],["mirror","mirror"],["nfmt","normalDir"]];
-  SELECTS.forEach(function(s){ var el=$(s[0]); el.addEventListener("change",function(){ S[s[1]]=el.value; rerender(); }); });
+  SELECTS.forEach(function(s){ var el=$(s[0]); el.addEventListener("change",function(){ S[s[1]]=el.value; if(s[0]==="ntype")updateTypePanels(); rerender(); }); });
   function updateRampPanel(){ $("customRamp").hidden = S.ramp!=="custom"; }
   $("ramp").addEventListener("change",function(){ S.ramp=this.value; updateRampPanel(); rerender(); });
   $("rampA").addEventListener("input",function(){ S.rampA=this.value; rerender(); });
@@ -821,6 +868,7 @@
     $("metalWrap").hidden = S.omode!=="metal";
     $("colorWrap").hidden = S.omode!=="color";
   }
+  function updateTypePanels(){ $("gridWrap").hidden = S.type!=="grid"; }
 
   function syncUIFromState(){
     SLIDERS.forEach(function(s){ var i=$(s[0]); if(!i)return; i.value=S[s[1]]; var o=$(s[3]); if(o)o.textContent=s[2](S[s[1]]); });
@@ -832,12 +880,13 @@
     $("dispWrap").hidden=!S.d3; $("disp").value=S.disp; $("vDisp").textContent=Number(S.disp).toFixed(2);
     $("seed").value=S.seed;
     setSeg("shape",S.shape); setSeg("omode",S.omode);
-    updateModePanels(); updateRampPanel(); rerender();
+    updateModePanels(); updateTypePanels(); updateRampPanel(); rerender();
   }
 
   // ---------- share link (URL hash) ----------
   var SHAREKEYS=["type","shape","scale","oct","gain","lac","warp","warpOct","con","bri","gamma","blur","levLo","levHi","offX","offY","invert","steps","mirror",
-    "blend","typeB","scaleB","octB","bmode","bamount","omode","nstr","normalDir","ramp","rampA","rampB","hue","sat","cval","disp","roughInv","roughLo","roughHi","aoStr","metalThr","metalInv","seed"];
+    "blend","typeB","scaleB","octB","bmode","bamount","omode","nstr","normalDir","ramp","rampA","rampB","hue","sat","cval","disp","roughInv","roughLo","roughHi","aoStr","metalThr","metalInv","seed",
+    "groove","round","bevel","dome","dimple","grain","grainSc"];
   var BOOLKEYS=["invert","blend","roughInv","metalInv"], STRKEYS=["type","shape","mirror","typeB","bmode","omode","normalDir","ramp","rampA","rampB"];
   function encodeState(){ var p=[]; SHAREKEYS.forEach(function(k){ var v=S[k]; if(typeof v==="boolean")v=v?1:0; p.push(k+"="+encodeURIComponent(v)); }); return p.join("&"); }
   var hashT=null;
@@ -909,7 +958,8 @@
     sand:   {type:"perlin",shape:"ridged",scale:3,oct:5,gain:0.5, lac:2.2,warp:0.1, con:1.1,          omode:"color",ramp:"sand",seed:808},
     moss:   {type:"worF1", shape:"normal",scale:10,oct:3,gain:0.5,lac:2,  warp:0.15,con:1.1,          omode:"color",ramp:"moss",aoStr:3,seed:44},
     ice:    {type:"perlin",shape:"ridged",scale:5,oct:6,gain:0.5, lac:2.2,warp:0.2, con:1.3,          omode:"color",ramp:"ice",seed:256},
-    terrain:{type:"perlin",shape:"normal",scale:4,oct:7,gain:0.5, lac:2,  warp:0.2, warpOct:2,con:1.1,omode:"color",ramp:"terrain",seed:1024}
+    terrain:{type:"perlin",shape:"normal",scale:4,oct:7,gain:0.5, lac:2,  warp:0.2, warpOct:2,con:1.1,omode:"color",ramp:"terrain",seed:1024},
+    waffle: {type:"grid",  shape:"normal",scale:7,oct:1,          warp:0,  con:1,            omode:"height",groove:0.2,round:0.32,bevel:0.26,dome:0.65,dimple:0.15,grain:0.12,grainSc:90,aoStr:3,seed:7}
   };
   function applyPreset(p){ S=Object.assign({},DEF,p); syncUIFromState(); }
   document.querySelectorAll("#presets button").forEach(function(b){
