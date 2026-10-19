@@ -93,8 +93,11 @@ function revealArcade() {
     var css = document.createElement('style');
     css.textContent =
       '.sidebar-logo{position:relative}' +
-      '.sidebar-logo img{transition:opacity .5s ease}' +
-      '.sidebar-logo.nm-on img{opacity:0}' +
+      '.sidebar-logo img{transition:opacity .45s ease,transform .45s ease}' +
+      '.sidebar-logo.nm-on img{opacity:0;transform:scale(.72)}' +
+      '.nmbloom{position:absolute;left:50%;top:50%;width:210%;height:210%;transform:translate(-50%,-50%) scale(.2);' +
+        'opacity:0;pointer-events:none;z-index:2;border-radius:50%;' +
+        'background:radial-gradient(circle,#e4ffae 0%,#a0ff00 34%,rgba(160,255,0,0) 70%)}' +
       '.nmface{position:absolute;left:50%;top:50%;width:155%;height:155%;' +
         'transform:translate(-50%,-50%) scale(.55);opacity:0;pointer-events:none;z-index:3;' +
         'background:radial-gradient(circle at 50% 44%,#f6ffe0 0%,#e2ff98 15%,#bcff3a 37%,#a0ff00 57%,#7cc800 80%,#4e8c00 100%);' +
@@ -116,34 +119,48 @@ function revealArcade() {
     face.setAttribute('aria-hidden', 'true');
     logo.appendChild(face);
 
-    var busy = false, emitT = null;
+    var bl = document.createElement('div');
+    bl.className = 'nmbloom'; bl.setAttribute('aria-hidden', 'true');
+    logo.appendChild(bl);
+
+    var busy = false;
+    function bloom() {
+      if (reduce) return;
+      bl.animate([
+        { opacity: 0, transform: 'translate(-50%,-50%) scale(.2)' },
+        { opacity: 0.85, transform: 'translate(-50%,-50%) scale(1)', offset: 0.35 },
+        { opacity: 0, transform: 'translate(-50%,-50%) scale(1.7)' }
+      ], { duration: 560, easing: 'cubic-bezier(.2,.7,.3,1)' });
+    }
+    // one upward "fountain" ember that fades fully before it's removed
     function spark() {
       var s = document.createElement('span'); s.className = 'nmspark';
-      var sz = (3 + Math.random() * 5).toFixed(1);
-      s.style.width = s.style.height = sz + 'px';
-      s.style.left = (22 + Math.random() * 56) + '%';
-      s.style.top  = (34 + Math.random() * 48) + '%';
+      s.style.width = s.style.height = (2.5 + Math.random() * 4.5).toFixed(1) + 'px';
+      s.style.left = '50%'; s.style.top = '55%';
       logo.appendChild(s);
-      var dx = ((Math.random() - 0.5) * 48).toFixed(1),
-          dy = (-(14 + Math.random() * 44)).toFixed(1),
-          rot = ((Math.random() - 0.5) * 140).toFixed(0);
+      var sx = ((Math.random() - 0.5) * 14).toFixed(1), sy = ((Math.random() - 0.5) * 10).toFixed(1),
+          ex = ((Math.random() - 0.5) * 56).toFixed(1), ey = (-(24 + Math.random() * 54)).toFixed(1);
       var a = s.animate([
-        { opacity: 0, transform: 'translate(-50%,-50%) scale(.3) rotate(0deg)' },
-        { opacity: 1, offset: 0.18 },
-        { opacity: 0, transform: 'translate(calc(-50% + ' + dx + 'px),calc(-50% + ' + dy + 'px)) scale(1) rotate(' + rot + 'deg)' }
-      ], { duration: 700 + Math.random() * 700, easing: 'cubic-bezier(.2,.7,.3,1)' });
+        { opacity: 0, transform: 'translate(calc(-50% + ' + sx + 'px),calc(-50% + ' + sy + 'px)) scale(.4)' },
+        { opacity: 1, offset: 0.15 },
+        { opacity: 1, offset: 0.55 },
+        { opacity: 0, transform: 'translate(calc(-50% + ' + ex + 'px),calc(-50% + ' + ey + 'px)) scale(.9)' }
+      ], { duration: 850 + Math.random() * 500, easing: 'ease-out' });
       a.onfinish = function () { s.remove(); };
     }
-    function burst(n) { for (var i = 0; i < n; i++) spark(); }
+    function burst(n) { if (reduce) return; for (var i = 0; i < n; i++) spark(); }
     function flash(hold) {
       if (busy) return; busy = true;
-      logo.classList.add('nm-on'); face.classList.add('on');
-      if (!reduce) { burst(11); emitT = setInterval(function () { spark(); if (Math.random() < 0.5) spark(); }, 340); }
+      // transition IN: M shrinks away, green bloom pops, embers fountain up, face emerges from the bloom
+      bloom(); burst(14);
+      logo.classList.add('nm-on');
+      setTimeout(function () { face.classList.add('on'); }, 130);
       setTimeout(function () {
-        if (emitT) { clearInterval(emitT); emitT = null; }
-        if (!reduce) burst(7);
-        logo.classList.remove('nm-on'); face.classList.remove('on');
-        setTimeout(function () { busy = false; }, 800);
+        // transition OUT: bloom + embers again, face recedes, M returns
+        bloom(); burst(10);
+        face.classList.remove('on');
+        setTimeout(function () { logo.classList.remove('nm-on'); }, 130);
+        setTimeout(function () { busy = false; }, 950);
       }, hold || (reduce ? 2600 : 3600));
     }
     setTimeout(function () { flash(); }, 5000);                     // first run a few seconds in
