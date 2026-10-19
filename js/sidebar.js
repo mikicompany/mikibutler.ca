@@ -108,9 +108,12 @@ function revealArcade() {
       '.nmface.on{opacity:1;transform:translate(-50%,-50%) scale(1)}' +
       '@keyframes nmFlick{0%,100%{opacity:1}46%{opacity:.8}70%{opacity:1}}' +
       '.nmface.on{animation:nmFlick 1.3s ease-in-out infinite}' +
-      '.nmspark{position:absolute;border-radius:50%;pointer-events:none;z-index:4;will-change:transform,opacity;' +
-        'background:radial-gradient(circle,#f4ffd4 0%,#a0ff00 55%,rgba(160,255,0,0) 72%);' +
-        'box-shadow:0 0 6px #a0ff00,0 0 12px #7ad600}' +
+      '.nmbat{position:absolute;left:50%;top:55%;pointer-events:none;z-index:4;will-change:transform,opacity}' +
+      '.nmbat i{display:block;width:100%;height:100%;transform-origin:50% 50%;' +
+        'background:radial-gradient(circle at 50% 42%,#f6ffe0 0%,#c9ff6a 30%,#a0ff00 55%,#6fbf00 100%);' +
+        '-webkit-mask:url(/images/bat.svg) center/contain no-repeat;mask:url(/images/bat.svg) center/contain no-repeat;' +
+        'filter:drop-shadow(0 0 2px #a0ff00) drop-shadow(0 0 5px #6fbf00);animation:batflap .26s ease-in-out infinite}' +
+      '@keyframes batflap{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.62)}}' +
       '@media (prefers-reduced-motion: reduce){.nmface{transition:opacity .5s ease}.nmface.on{animation:none}}';
     document.head.appendChild(css);
 
@@ -132,20 +135,22 @@ function revealArcade() {
         { opacity: 0, transform: 'translate(-50%,-50%) scale(1.7)' }
       ], { duration: 560, easing: 'cubic-bezier(.2,.7,.3,1)' });
     }
-    // one upward "fountain" ember that fades fully before it's removed
+    // a little bat (the Mikicompany mark) that flaps as it flutters up and out, then fades
     function spark() {
-      var s = document.createElement('span'); s.className = 'nmspark';
-      s.style.width = s.style.height = (2.5 + Math.random() * 4.5).toFixed(1) + 'px';
-      s.style.left = '50%'; s.style.top = '55%';
+      var s = document.createElement('span'); s.className = 'nmbat';
+      var w = 16 + Math.random() * 14; s.style.width = w.toFixed(1) + 'px'; s.style.height = (w * 0.695).toFixed(1) + 'px';
+      var wing = document.createElement('i');
+      wing.style.animationDuration = (0.2 + Math.random() * 0.14).toFixed(2) + 's';
+      s.appendChild(wing);
       logo.appendChild(s);
-      var sx = ((Math.random() - 0.5) * 14).toFixed(1), sy = ((Math.random() - 0.5) * 10).toFixed(1),
-          ex = ((Math.random() - 0.5) * 56).toFixed(1), ey = (-(24 + Math.random() * 54)).toFixed(1);
+      var ex = ((Math.random() - 0.5) * 78).toFixed(1), ey = (-(26 + Math.random() * 62)).toFixed(1),
+          rot = ((Math.random() - 0.5) * 48).toFixed(0);
       var a = s.animate([
-        { opacity: 0, transform: 'translate(calc(-50% + ' + sx + 'px),calc(-50% + ' + sy + 'px)) scale(.4)' },
-        { opacity: 1, offset: 0.15 },
-        { opacity: 1, offset: 0.55 },
-        { opacity: 0, transform: 'translate(calc(-50% + ' + ex + 'px),calc(-50% + ' + ey + 'px)) scale(.9)' }
-      ], { duration: 850 + Math.random() * 500, easing: 'ease-out' });
+        { opacity: 0, transform: 'translate(-50%,-50%) scale(.3) rotate(0deg)' },
+        { opacity: 1, offset: 0.18 },
+        { opacity: 1, offset: 0.62 },
+        { opacity: 0, transform: 'translate(calc(-50% + ' + ex + 'px),calc(-50% + ' + ey + 'px)) scale(1) rotate(' + rot + 'deg)' }
+      ], { duration: 1000 + Math.random() * 700, easing: 'ease-out' });
       a.onfinish = function () { s.remove(); };
     }
     function burst(n) { if (reduce) return; for (var i = 0; i < n; i++) spark(); }
