@@ -105,6 +105,9 @@ function revealArcade() {
       '.nmface.on{opacity:1;transform:translate(-50%,-50%) scale(1)}' +
       '@keyframes nmFlick{0%,100%{opacity:1}46%{opacity:.8}70%{opacity:1}}' +
       '.nmface.on{animation:nmFlick 1.3s ease-in-out infinite}' +
+      '.nmspark{position:absolute;border-radius:50%;pointer-events:none;z-index:4;will-change:transform,opacity;' +
+        'background:radial-gradient(circle,#f4ffd4 0%,#a0ff00 55%,rgba(160,255,0,0) 72%);' +
+        'box-shadow:0 0 6px #a0ff00,0 0 12px #7ad600}' +
       '@media (prefers-reduced-motion: reduce){.nmface{transition:opacity .5s ease}.nmface.on{animation:none}}';
     document.head.appendChild(css);
 
@@ -113,11 +116,32 @@ function revealArcade() {
     face.setAttribute('aria-hidden', 'true');
     logo.appendChild(face);
 
-    var busy = false;
+    var busy = false, emitT = null;
+    function spark() {
+      var s = document.createElement('span'); s.className = 'nmspark';
+      var sz = (3 + Math.random() * 5).toFixed(1);
+      s.style.width = s.style.height = sz + 'px';
+      s.style.left = (22 + Math.random() * 56) + '%';
+      s.style.top  = (34 + Math.random() * 48) + '%';
+      logo.appendChild(s);
+      var dx = ((Math.random() - 0.5) * 48).toFixed(1),
+          dy = (-(14 + Math.random() * 44)).toFixed(1),
+          rot = ((Math.random() - 0.5) * 140).toFixed(0);
+      var a = s.animate([
+        { opacity: 0, transform: 'translate(-50%,-50%) scale(.3) rotate(0deg)' },
+        { opacity: 1, offset: 0.18 },
+        { opacity: 0, transform: 'translate(calc(-50% + ' + dx + 'px),calc(-50% + ' + dy + 'px)) scale(1) rotate(' + rot + 'deg)' }
+      ], { duration: 700 + Math.random() * 700, easing: 'cubic-bezier(.2,.7,.3,1)' });
+      a.onfinish = function () { s.remove(); };
+    }
+    function burst(n) { for (var i = 0; i < n; i++) spark(); }
     function flash(hold) {
       if (busy) return; busy = true;
       logo.classList.add('nm-on'); face.classList.add('on');
+      if (!reduce) { burst(11); emitT = setInterval(function () { spark(); if (Math.random() < 0.5) spark(); }, 340); }
       setTimeout(function () {
+        if (emitT) { clearInterval(emitT); emitT = null; }
+        if (!reduce) burst(7);
         logo.classList.remove('nm-on'); face.classList.remove('on');
         setTimeout(function () { busy = false; }, 800);
       }, hold || (reduce ? 2600 : 3600));
