@@ -157,12 +157,12 @@ function revealArcade() {
     function flash(hold) {
       if (busy) return; busy = true;
       // transition IN: M shrinks away, green bloom pops, embers fountain up, face emerges from the bloom
-      bloom(); burst(14);
+      bloom(); burst(6);
       logo.classList.add('nm-on');
       setTimeout(function () { face.classList.add('on'); }, 130);
       setTimeout(function () {
         // transition OUT: bloom + embers again, face recedes, M returns
-        bloom(); burst(10);
+        bloom(); burst(4);
         face.classList.remove('on');
         setTimeout(function () { logo.classList.remove('nm-on'); }, 130);
         setTimeout(function () { busy = false; }, 950);
