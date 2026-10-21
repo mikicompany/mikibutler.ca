@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Core Board — Reference Board for Artists</title>
+<meta name="description" content="Core Board is a small, fast reference board for images. Drop images on an infinite canvas, arrange and study them — value & notan views, composition guides, color picker, palettes and folder watching. Free, open source, for Windows, macOS and Linux." />
+<link rel="canonical" href="https://mikibutler.ca/coreboard/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Core Board — Reference Board for Artists" />
+<meta property="og:description" content="A small, fast reference board for images. Infinite canvas, study views, composition guides, palettes and more. Free & open source." />
+<meta property="og:url" content="https://mikibutler.ca/coreboard/" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0d0f0c; --bg-2:#121511; --surface:#161a14; --surface-2:#1c2119;
+    --border:#2a311f; --text:#f3f6ee; --muted:#9aa390; --faint:#6c7362;
+    --accent:#a0ff00; --accent-2:#c7ff5f; --accent-deep:#6fbf00;
+    --radius:16px; --maxw:1120px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Inter','Helvetica Neue',Arial,sans-serif; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(60% 50% at 50% -10%, rgba(160,255,0,.08), transparent 70%),
+      radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size:auto, 26px 26px;
+    background-attachment:fixed;
+  }
+  a{color:inherit}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 22px}
+  .eyebrow{font-size:12.5px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-weight:700}
+
+  /* top bar */
+  .top{position:sticky; top:0; z-index:40; backdrop-filter:blur(10px);
+    background:rgba(13,15,12,.72); border-bottom:1px solid var(--border)}
+  .top .wrap{display:flex; align-items:center; justify-content:space-between; height:62px}
+  .brandmark{display:flex; align-items:center; gap:11px; font-weight:800; letter-spacing:-.01em; text-decoration:none}
+  .brandmark .glyph{width:30px; height:30px; border-radius:8px; display:grid; place-items:center;
+    background:linear-gradient(145deg,#1e2418,#0f120d); border:1px solid var(--border); box-shadow:0 0 0 1px rgba(160,255,0,.08) inset}
+  .brandmark .glyph svg{width:18px; height:18px}
+  .top nav{display:flex; align-items:center; gap:22px; font-size:14px; font-weight:600}
+  .top nav a{color:var(--muted); text-decoration:none; transition:color .15s}
+  .top nav a:hover{color:var(--text)}
+  .top .ghbtn{color:var(--text)}
+  @media(max-width:680px){ .top nav a.navlink{display:none} }
+
+  /* buttons */
+  .btn{display:inline-flex; align-items:center; gap:9px; font-weight:700; font-size:15px;
+    padding:13px 20px; border-radius:12px; text-decoration:none; border:1px solid transparent; cursor:pointer; transition:transform .12s, box-shadow .2s, background .2s}
+  .btn svg{width:18px; height:18px}
+  .btn.primary{background:var(--accent); color:#0c1200; box-shadow:0 10px 30px rgba(160,255,0,.22)}
+  .btn.primary:hover{transform:translateY(-2px); box-shadow:0 16px 40px rgba(160,255,0,.32)}
+  .btn.ghost{background:var(--surface); color:var(--text); border-color:var(--border)}
+  .btn.ghost:hover{border-color:var(--accent); color:var(--accent); transform:translateY(-2px)}
+
+  /* hero */
+  .hero{padding:72px 0 40px}
+  .hero-grid{display:grid; grid-template-columns:1.15fr .85fr; gap:52px; align-items:center}
+  @media(max-width:900px){ .hero-grid{grid-template-columns:1fr; gap:38px} }
+  h1{font-size:clamp(38px,6vw,62px); line-height:1.02; letter-spacing:-.03em; font-weight:800; margin:.35em 0 .3em}
+  h1 .hl{color:var(--accent)}
+  .lede{font-size:clamp(17px,2.2vw,20px); color:var(--muted); max-width:38ch; margin:0 0 26px}
+  .cta-row{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
+  .meta-row{display:flex; flex-wrap:wrap; gap:18px 24px; margin-top:24px; color:var(--faint); font-size:13.5px; font-weight:600}
+  .meta-row span{display:inline-flex; align-items:center; gap:7px}
+  .meta-row svg{width:15px; height:15px; color:var(--accent-deep)}
+
+  /* promo video placeholder (vertical / TikTok 9:16) */
+  .promo{position:relative; margin:0 auto; width:100%; max-width:316px}
+  .promo .phone{position:relative; aspect-ratio:9/16; border-radius:28px; overflow:hidden;
+    border:1px solid var(--border); background:
+      radial-gradient(120% 80% at 50% 0%, #18200f 0%, #0f130c 55%, #0b0e09 100%);
+    box-shadow:0 30px 70px rgba(0,0,0,.55), 0 0 0 1px rgba(160,255,0,.06) inset}
+  .promo .label{position:absolute; left:14px; top:14px; z-index:3; font-size:11px; font-weight:800;
+    letter-spacing:.14em; text-transform:uppercase; color:#0c1200; background:var(--accent);
+    padding:5px 10px; border-radius:999px}
+  .promo .ph-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; text-align:center; padding:24px}
+  .promo .play{width:72px; height:72px; border-radius:50%; display:grid; place-items:center;
+    background:rgba(160,255,0,.12); border:1.5px solid rgba(160,255,0,.5); color:var(--accent);
+    box-shadow:0 0 40px rgba(160,255,0,.18)}
+  .promo .play svg{width:30px; height:30px; margin-left:4px}
+  .promo .ph-title{font-weight:800; font-size:17px; letter-spacing:-.01em}
+  .promo .ph-sub{font-size:13px; color:var(--muted); max-width:22ch}
+  .promo .scan{position:absolute; left:0; right:0; height:38%; top:-40%; z-index:2; pointer-events:none;
+    background:linear-gradient(180deg, transparent, rgba(160,255,0,.08), transparent);
+    animation:sweep 5.5s ease-in-out infinite}
+  @keyframes sweep{0%{top:-40%}60%,100%{top:100%}}
+  .promo .caption{text-align:center; margin-top:14px; font-size:12.5px; color:var(--faint); font-weight:600}
+  @media(prefers-reduced-motion:reduce){ .promo .scan{display:none} }
+
+  /* sections */
+  section{padding:46px 0}
+  .sec-head{max-width:640px; margin-bottom:30px}
+  .sec-head h2{font-size:clamp(26px,3.4vw,36px); line-height:1.1; letter-spacing:-.02em; margin:.3em 0 .35em; font-weight:800}
+  .sec-head p{color:var(--muted); margin:0; font-size:16.5px}
+
+  .features{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+  @media(max-width:860px){ .features{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:560px){ .features{grid-template-columns:1fr} }
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px 20px; transition:border-color .2s, transform .15s}
+  .card:hover{border-color:rgba(160,255,0,.4); transform:translateY(-3px)}
+  .card .ic{width:40px; height:40px; border-radius:10px; display:grid; place-items:center; margin-bottom:14px;
+    background:linear-gradient(145deg,#1d2416,#121710); border:1px solid var(--border); color:var(--accent)}
+  .card .ic svg{width:21px; height:21px}
+  .card h3{margin:0 0 6px; font-size:16.5px; font-weight:700; letter-spacing:-.01em}
+  .card p{margin:0; color:var(--muted); font-size:14px}
+
+  /* install */
+  .install{display:grid; grid-template-columns:1fr 1fr; gap:22px}
+  @media(max-width:780px){ .install{grid-template-columns:1fr} }
+  .panel{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px}
+  .panel h3{margin:0 0 6px; font-size:18px; font-weight:800; letter-spacing:-.01em}
+  .panel p{margin:0 0 16px; color:var(--muted); font-size:14.5px}
+  .code{background:#0a0d08; border:1px solid var(--border); border-radius:11px; padding:14px 15px;
+    font-family:'JetBrains Mono',ui-monospace,monospace; font-size:13px; color:#d7e8bf; overflow-x:auto; white-space:pre; line-height:1.7}
+  .code .c{color:var(--faint)}
+  .steps{list-style:none; margin:0; padding:0; counter-reset:s}
+  .steps li{counter-increment:s; position:relative; padding:0 0 14px 38px; color:var(--muted); font-size:14.5px}
+  .steps li::before{content:counter(s); position:absolute; left:0; top:-1px; width:26px; height:26px; border-radius:50%;
+    display:grid; place-items:center; background:var(--surface-2); border:1px solid var(--border); color:var(--accent); font-weight:800; font-size:13px; font-family:'JetBrains Mono',monospace}
+  .steps li b{color:var(--text); font-weight:600}
+  .platforms{display:flex; gap:10px; flex-wrap:wrap; margin-top:4px}
+  .platforms span{font-size:12.5px; font-weight:700; color:var(--muted); background:var(--surface-2); border:1px solid var(--border); padding:6px 12px; border-radius:999px}
+
+  /* shortcuts */
+  .short{display:grid; grid-template-columns:repeat(2,1fr); gap:10px 28px}
+  @media(max-width:640px){ .short{grid-template-columns:1fr} }
+  .short .row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:11px 2px; border-bottom:1px dashed var(--border)}
+  .short .row span{color:var(--muted); font-size:14.5px}
+  kbd{font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:var(--accent-2);
+    background:#0a0d08; border:1px solid var(--border); border-bottom-width:2px; border-radius:6px; padding:3px 8px; white-space:nowrap}
+
+  /* cta band */
+  .band{border:1px solid var(--border); border-radius:22px; padding:44px; text-align:center;
+    background:
+      radial-gradient(80% 120% at 50% 0%, rgba(160,255,0,.1), transparent 70%),
+      var(--surface)}
+  .band h2{font-size:clamp(26px,3.6vw,38px); margin:0 0 10px; letter-spacing:-.02em; font-weight:800}
+  .band p{color:var(--muted); margin:0 auto 24px; max-width:46ch}
+  .band .cta-row{justify-content:center}
+
+  footer{border-top:1px solid var(--border); margin-top:40px; padding:30px 0 50px; color:var(--faint); font-size:13.5px}
+  footer .wrap{display:flex; flex-wrap:wrap; gap:14px; align-items:center; justify-content:space-between}
+  footer a{color:var(--muted); text-decoration:none; font-weight:600}
+  footer a:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brandmark" href="#top">
+      <span class="glyph" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#a0ff00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><rect x="6" y="7" width="6" height="5" rx="1"/><path d="M14 8h4M14 12h4M6 15h12"/></svg>
+      </span>
+      Core Board
+    </a>
+    <nav>
+      <a class="navlink" href="#features">Features</a>
+      <a class="navlink" href="#promo">Promo</a>
+      <a class="navlink" href="#install">Get it</a>
+      <a class="ghbtn" href="https://github.com/TaikoGames/Coreboard" target="_blank" rel="noopener" title="View on GitHub" aria-label="GitHub">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.57.1.78-.25.78-.55v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.66.79.55A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<a id="top"></a>
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">Reference tool · Free &amp; open source</span>
+        <h1>The reference board that <span class="hl">stays out of your way</span>.</h1>
+        <p class="lede">Core Board is a small, fast desktop app for images. Drop references onto an infinite canvas, arrange and study them — and it all saves itself.</p>
+        <div class="cta-row">
+          <a class="btn primary" href="https://github.com/TaikoGames/Coreboard/archive/refs/heads/main.zip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            Download
+          </a>
+          <a class="btn ghost" href="https://github.com/TaikoGames/Coreboard" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.57.1.78-.25.78-.55v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.66.79.55A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+            View source
+          </a>
+        </div>
+        <div class="meta-row">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Windows · macOS · Linux</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Native &amp; instant</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Built in Rust</span>
+        </div>
+      </div>
+
+      <!-- PROMO PLACEHOLDER -->
+      <div id="promo">
+        <div class="promo">
+          <div class="phone">
+            <span class="label">Promo</span>
+            <div class="scan"></div>
+            <!-- ▼▼▼ REPLACE THIS BLOCK WITH THE PROMO VIDEO ▼▼▼
+                 Vertical 9:16. For a self-hosted clip:
+                   <video src="/coreboard/promo.mp4" autoplay muted loop playsinline
+                          style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+                 Or paste a TikTok embed <blockquote class="tiktok-embed" …> + their embed.js.
+                 Keep the .label chip or remove it as you like. -->
+            <div class="ph-center">
+              <div class="play" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+              <div>
+                <div class="ph-title">Promo video coming soon</div>
+                <div class="ph-sub">A quick tour of Core Board drops here.</div>
+              </div>
+            </div>
+            <!-- ▲▲▲ END PROMO VIDEO BLOCK ▲▲▲ -->
+          </div>
+          <div class="caption">Vertical · made for TikTok / Reels / Shorts</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">What it does</span>
+        <h2>Everything a reference board should, nothing it shouldn't.</h2>
+        <p>An infinite canvas with the study tools painters and artists actually reach for — and it autosaves after every change.</p>
+      </div>
+      <div class="features">
+        <div class="card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 15V6a1 1 0 0 1 1-1h9"/><rect x="8" y="9" width="13" height="10" rx="2"/></svg></div>
+          <h3>Infinite canvas</h3>
+          <p>Drag &amp; drop or paste images, zoom and pan freely, move and resize — layout saves itself.</p>
+        </div>
+        <div class="card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z"/></svg></div>
+          <h3>Study views</h3>
+          <p>Notan value steps (3 or 5 tones), saturation and detail maps, squint and grayscale — per image.</p>
+        </div>
+        <div class="card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg></div>
+          <h3>Composition guides</h3>
+          <p>Rule of thirds, phi grid, golden spiral, dynamic-symmetry diagonals and center cross, over any image.</p>
+        </div>
+        <div class="card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21a9 9 0 1 1 0-18 7 5 0 0 1 0 10h-2a2 2 0 0 0 0 4 2 2 0 0 1 0 4z"/><circle cx="7.5" cy="10.5" r="1.2" fill="currentColor"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor"/><circle cx="16.5" cy="10.5" r="1.2" fill="currentColor"/></svg></div>
+          <h3>Color &amp; palettes</h3>
+          <p>Eyedrop any pixel (hex, HSV, perceptual L*) and pull the 6–10 dominant colors under each image.</p>
+        </div>
+        <div class="card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 8.5 12 3 3.4 8.5M4 10v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6h6v6"/></svg></div>
+          <h3>Watch a folder</h3>
+          <p>Point a board at your render output or screenshots folder — new images appear on the board by themselves.</p>
+        </div>
+        <div class="card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+          <h3>Tags, search &amp; frames</h3>
+          <p>Tag items, fuzzy-search to fade everything but matches, and wrap sections in titled frames with notes.</p>
+        </div>
+        <div class="card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div>
+          <h3>Export with watermark</h3>
+          <p>Render a selection or the whole board to one full-quality PNG, with an optional watermark.</p>
+        </div>
+        <div class="card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M8 21h8"/></svg></div>
+          <h3>Overlay mode</h3>
+          <p>Lower the window opacity and pin it always-on-top to trace or color-match against other apps.</p>
+        </div>
+        <div class="card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+          <h3>Align &amp; grid pack</h3>
+          <p>Snapping guides, align/distribute tools, and one-key grid packing that scales a selection to one height.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section id="install">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Get it running</span>
+        <h2>Grab the source and build.</h2>
+        <p>Core Board is open source and builds with Cargo. Clone the repo (or download the ZIP) and run it — the first launch creates a fresh board.</p>
+      </div>
+      <div class="install">
+        <div class="panel">
+          <h3>Build from source</h3>
+          <p>You'll need the <a href="https://rustup.rs" target="_blank" rel="noopener" style="color:var(--accent-2)">Rust toolchain</a>. Then:</p>
+          <div class="code"><span class="c"># clone and run</span>
+git clone https://github.com/TaikoGames/Coreboard
+cd Coreboard
+cargo run --release
+
+<span class="c"># or open a board in any folder</span>
+cargo run --release -- ~/boards/moodboard</div>
+          <div class="platforms" style="margin-top:16px">
+            <span>Windows</span><span>macOS</span><span>Linux</span>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>First steps</h3>
+          <p>Once it's open:</p>
+          <ol class="steps">
+            <li><b>Drop images</b> onto the canvas (or <kbd>Ctrl</kbd>+<kbd>V</kbd> to paste).</li>
+            <li><b>Arrange</b> — drag to move, corner handle to resize, scroll to zoom.</li>
+            <li>Press <kbd>Ctrl</kbd>+<kbd>O</kbd> to <b>create or switch boards</b>, or watch a folder.</li>
+            <li>Hit <kbd>V</kbd> for <b>study views</b>, <kbd>P</kbd> for a <b>palette</b>, <kbd>H</kbd> for the help overlay.</li>
+          </ol>
+          <a class="btn ghost" style="margin-top:6px" href="https://github.com/TaikoGames/Coreboard#readme" target="_blank" rel="noopener">Full docs &amp; shortcuts →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHORTCUTS -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Keyboard-first</span>
+        <h2>A shortcut for everything.</h2>
+      </div>
+      <div class="short">
+        <div class="row"><span>Add images</span><kbd>Drag &amp; drop · Ctrl+V</kbd></div>
+        <div class="row"><span>Pan the canvas</span><kbd>Space + drag</kbd></div>
+        <div class="row"><span>Study views (value / sat / squint)</span><kbd>V</kbd></div>
+        <div class="row"><span>Composition guide</span><kbd>C</kbd></div>
+        <div class="row"><span>Color picker</span><kbd>I</kbd></div>
+        <div class="row"><span>Extract palette</span><kbd>P</kbd></div>
+        <div class="row"><span>Crop (non-destructive)</span><kbd>X</kbd></div>
+        <div class="row"><span>Add a note</span><kbd>N</kbd></div>
+        <div class="row"><span>Frame a selection</span><kbd>Ctrl+G</kbd></div>
+        <div class="row"><span>Radial menu (find similar…)</span><kbd>Hold Q</kbd></div>
+        <div class="row"><span>Export PNG</span><kbd>Ctrl+E</kbd></div>
+        <div class="row"><span>Help overlay</span><kbd>H</kbd></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BAND -->
+  <section>
+    <div class="wrap">
+      <div class="band">
+        <span class="eyebrow">Free forever</span>
+        <h2>Start your board.</h2>
+        <p>No account, no cloud, no subscription. Your boards are plain folders on your disk.</p>
+        <div class="cta-row">
+          <a class="btn primary" href="https://github.com/TaikoGames/Coreboard/archive/refs/heads/main.zip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            Download ZIP
+          </a>
+          <a class="btn ghost" href="https://github.com/TaikoGames/Coreboard" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.57.1.78-.25.78-.55v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.66.79.55A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+            github.com/TaikoGames/Coreboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Core Board by <a href="https://github.com/TaikoGames" target="_blank" rel="noopener">TaikoGames</a> · open source</span>
+    <span><a href="https://mikibutler.ca/">← mikibutler.ca</a></span>
+  </div>
+</footer>
+
+</body>
+</html>
