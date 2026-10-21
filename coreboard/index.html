@@ -103,6 +103,13 @@
   .sec-head h2{font-size:clamp(26px,3.4vw,36px); line-height:1.1; letter-spacing:-.02em; margin:.3em 0 .35em; font-weight:800}
   .sec-head p{color:var(--muted); margin:0; font-size:16.5px}
 
+  /* screenshots */
+  .shots{display:flex; flex-direction:column; gap:26px}
+  .shots figure{margin:0}
+  .shots img{width:100%; display:block; border-radius:14px; border:1px solid var(--border); box-shadow:0 30px 64px rgba(0,0,0,.5)}
+  .shots figcaption{color:var(--muted); font-size:14.5px; margin-top:13px; font-weight:500}
+  .shots figcaption b{color:var(--text); font-weight:700}
+
   .features{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
   @media(max-width:860px){ .features{grid-template-columns:repeat(2,1fr)} }
   @media(max-width:560px){ .features{grid-template-columns:1fr} }
@@ -165,6 +172,7 @@
       Core Board
     </a>
     <nav>
+      <a class="navlink" href="#look">Look inside</a>
       <a class="navlink" href="#features">Features</a>
       <a class="navlink" href="#promo">Promo</a>
       <a class="navlink" href="#install">Get it</a>
@@ -227,6 +235,27 @@
           </div>
           <div class="caption">Vertical · made for TikTok / Reels / Shorts</div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOOK INSIDE -->
+  <section id="look">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Look inside</span>
+        <h2>A calm canvas — with the study tools built in.</h2>
+        <p>Arrange references on an infinite board, then flip any image into a value, grayscale or squint study without leaving the app.</p>
+      </div>
+      <div class="shots">
+        <figure>
+          <img src="shot-board.png" alt="Core Board canvas: reference textures arranged in a titled frame, a colour palette strip, a sticky note, and a selected image with a rule-of-thirds composition guide and resize handles." loading="lazy" />
+          <figcaption><b>The board.</b> Drop references on an infinite canvas — group them in titled frames, pull a colour palette from any image, leave notes, and snap things into place.</figcaption>
+        </figure>
+        <figure>
+          <img src="shot-study.png" alt="Core Board study views: the same reference shown as original with a composition guide and colour picker, a high-contrast value notan, a grayscale value check, and a squinted big-shapes blur." loading="lazy" />
+          <figcaption><b>Study views.</b> Cycle any image through value, grayscale and squint, drop composition guides over it, and eyedrop exact colours (hex, HSV and perceptual L*).</figcaption>
+        </figure>
       </div>
     </div>
   </section>
