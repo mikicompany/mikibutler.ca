@@ -178,7 +178,7 @@
       <a class="navlink" href="#features">Features</a>
       <a class="navlink" href="#promo">Promo</a>
       <a class="navlink" href="#install">Get it</a>
-      <a class="btn primary" style="padding:9px 16px; font-size:13.5px" href="downloads/CoreBoard-0.1.0-linux-x86_64.tar.gz" download>Download</a>
+      <a class="btn primary" style="padding:9px 16px; font-size:13.5px" href="downloads/CoreBoard-0.1.0-windows-x86_64.zip" download>Download</a>
     </nav>
   </div>
 </header>
@@ -194,16 +194,16 @@
         <h1>The reference board that <span class="hl">stays out of your way</span>.</h1>
         <p class="lede">Core Board is a small, fast desktop app for images. Drop references onto an infinite canvas, arrange and study them — and it all saves itself.</p>
         <div class="cta-row">
-          <a class="btn primary" href="downloads/CoreBoard-0.1.0-linux-x86_64.tar.gz" download>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-            Download for Linux
+          <a class="btn primary" href="downloads/CoreBoard-0.1.0-windows-x86_64.zip" download>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.5 4v7.6H3zM10.5 12.4V20L3 18.9v-6.5zM11.6 3.85 21 2.5v9.1h-9.4zM21 12.4v9.1l-9.4-1.35v-7.75z"/></svg>
+            Download for Windows
           </a>
-          <a class="btn ghost" href="#install">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m0 8v3a2 2 0 0 0 2 2h3m8-18h3a2 2 0 0 1 2 2v3m0 8v3a2 2 0 0 1-2 2h-3"/></svg>
-            How to run
+          <a class="btn ghost" href="downloads/CoreBoard-0.1.0-linux-x86_64.tar.gz" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            Linux
           </a>
         </div>
-        <div class="dlnote">Linux x86_64 · v0.1.0 · ~10&nbsp;MB tar.gz &nbsp;·&nbsp; <span>Windows &amp; macOS builds coming soon</span></div>
+        <div class="dlnote">Windows x86_64 · portable&nbsp;.zip &nbsp;·&nbsp; Linux x86_64 · .tar.gz &nbsp;·&nbsp; v0.1.0 &nbsp;·&nbsp; <span>macOS coming soon · <a href="#install" style="color:var(--accent-2);text-decoration:none">how to run ↓</a></span></div>
         <div class="meta-row">
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Windows · macOS · Linux</span>
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Native &amp; instant</span>
@@ -333,8 +333,9 @@
       </div>
       <div class="install">
         <div class="panel">
-          <h3>Run it (Linux x86_64)</h3>
-          <p>Unpack the <code style="color:var(--accent-2)">.tar.gz</code> and run the binary:</p>
+          <h3>Run it</h3>
+          <p><b style="color:var(--text)">Windows</b> — unzip and double-click <code style="color:var(--accent-2)">coreboard.exe</code>. If SmartScreen warns, choose <b>More info → Run anyway</b> (not code-signed yet). Boards save under <code>%APPDATA%\coreboard\</code>.</p>
+          <p style="margin-top:12px"><b style="color:var(--text)">Linux</b> — unpack the <code style="color:var(--accent-2)">.tar.gz</code> and run the binary:</p>
           <div class="code"><span class="c"># unpack &amp; launch</span>
 tar -xzf CoreBoard-0.1.0-linux-x86_64.tar.gz
 cd CoreBoard-0.1.0-linux-x86_64
@@ -342,9 +343,9 @@ cd CoreBoard-0.1.0-linux-x86_64
 
 <span class="c"># or open a board in any folder</span>
 ./coreboard ~/boards/moodboard</div>
-          <p style="margin:14px 0 0; font-size:13px">Needs a desktop with the usual windowing libraries (<code>libxkbcommon-x11</code>, a GL/Vulkan driver) and <code>xdg-desktop-portal</code> for the folder picker — any standard desktop already has these.</p>
+          <p style="margin:14px 0 0; font-size:13px">Linux needs the usual windowing libraries (<code>libxkbcommon-x11</code>, a GL/Vulkan driver) and <code>xdg-desktop-portal</code> for the folder picker — any standard desktop already has these.</p>
           <div class="platforms" style="margin-top:16px">
-            <span>Linux x86_64 ✓</span><span>Windows · soon</span><span>macOS · soon</span>
+            <span>Windows x86_64 ✓</span><span>Linux x86_64 ✓</span><span>macOS · soon</span>
           </div>
         </div>
         <div class="panel">
@@ -394,16 +395,16 @@ cd CoreBoard-0.1.0-linux-x86_64
         <h2>Start your board.</h2>
         <p>No account, no cloud, no subscription. Your boards are plain folders on your disk.</p>
         <div class="cta-row">
-          <a class="btn primary" href="downloads/CoreBoard-0.1.0-linux-x86_64.tar.gz" download>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-            Download for Linux
+          <a class="btn primary" href="downloads/CoreBoard-0.1.0-windows-x86_64.zip" download>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.5 4v7.6H3zM10.5 12.4V20L3 18.9v-6.5zM11.6 3.85 21 2.5v9.1h-9.4zM21 12.4v9.1l-9.4-1.35v-7.75z"/></svg>
+            Download for Windows
           </a>
-          <a class="btn ghost" href="#install">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m0 8v3a2 2 0 0 0 2 2h3m8-18h3a2 2 0 0 1 2 2v3m0 8v3a2 2 0 0 1-2 2h-3"/></svg>
-            How to run
+          <a class="btn ghost" href="downloads/CoreBoard-0.1.0-linux-x86_64.tar.gz" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            Linux
           </a>
         </div>
-        <div class="dlnote" style="margin-top:18px">Linux x86_64 · v0.1.0 · <span>Windows &amp; macOS builds coming soon</span></div>
+        <div class="dlnote" style="margin-top:18px">Windows &amp; Linux · x86_64 · v0.1.0 · <span>macOS coming soon</span></div>
       </div>
     </div>
   </section>
