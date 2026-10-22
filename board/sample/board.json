@@ -1,0 +1,14 @@
+{
+  "items": [
+    { "id": 1, "file": "", "pos": [0, 0], "size": [900, 640], "kind": { "type": "Frame", "title": "Lighting & mood" } },
+    { "id": 2, "file": "sanxian-01.jpg", "pos": [40, 70], "size": [400, 250], "kind": { "type": "Image" }, "tags": ["dusk", "hero"] },
+    { "id": 3, "file": "sanxian-02.jpg", "pos": [470, 90], "size": [390, 244], "kind": { "type": "Image" }, "tags": ["wires"] },
+    { "id": 4, "file": "sanxian-01.jpg", "pos": [60, 360], "size": [360, 225], "grayscale": true, "kind": { "type": "Image" }, "tags": ["value-study"] },
+    { "id": 5, "file": "", "pos": [470, 360], "size": [310, 150], "kind": { "type": "Note", "text": "Warm key, cool shadow — keep the dusk read. Squint this group.", "color": 0 } },
+    { "id": 6, "file": "", "pos": [470, 540], "size": [360, 46], "kind": { "type": "Palette", "colors": [[36, 28, 21], [74, 54, 38], [122, 90, 58], [169, 131, 87], [210, 177, 131], [239, 226, 196]] } },
+    { "id": 7, "file": "sanxian-02.jpg", "pos": [980, 70], "size": [430, 268], "kind": { "type": "Image" }, "tags": ["roofline", "ref"] },
+    { "id": 8, "file": "", "pos": [980, 380], "size": [300, 128], "kind": { "type": "Note", "text": "To do: block in big shapes, then colour pass.", "color": 3 } }
+  ],
+  "view": { "offset": [0, 0], "zoom": 1 },
+  "next_id": 9
+}
