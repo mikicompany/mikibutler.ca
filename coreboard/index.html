@@ -70,7 +70,9 @@
   h1 .hl{color:var(--accent)}
   .lede{font-size:clamp(17px,2.2vw,20px); color:var(--muted); max-width:38ch; margin:0 0 26px}
   .cta-row{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
-  .meta-row{display:flex; flex-wrap:wrap; gap:18px 24px; margin-top:24px; color:var(--faint); font-size:13.5px; font-weight:600}
+  .dlnote{margin-top:14px; color:var(--muted); font-size:13px; font-weight:600}
+  .dlnote span{color:var(--faint); font-weight:500}
+  .meta-row{display:flex; flex-wrap:wrap; gap:18px 24px; margin-top:20px; color:var(--faint); font-size:13.5px; font-weight:600}
   .meta-row span{display:inline-flex; align-items:center; gap:7px}
   .meta-row svg{width:15px; height:15px; color:var(--accent-deep)}
 
@@ -176,9 +178,7 @@
       <a class="navlink" href="#features">Features</a>
       <a class="navlink" href="#promo">Promo</a>
       <a class="navlink" href="#install">Get it</a>
-      <a class="ghbtn" href="https://github.com/TaikoGames/Coreboard" target="_blank" rel="noopener" title="View on GitHub" aria-label="GitHub">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.57.1.78-.25.78-.55v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.66.79.55A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
-      </a>
+      <a class="btn primary" style="padding:9px 16px; font-size:13.5px" href="downloads/CoreBoard-0.1.0-linux-x86_64.tar.gz" download>Download</a>
     </nav>
   </div>
 </header>
@@ -190,19 +190,20 @@
   <section class="hero">
     <div class="wrap hero-grid">
       <div>
-        <span class="eyebrow">Reference tool · Free &amp; open source</span>
+        <span class="eyebrow">Reference tool · Free native app</span>
         <h1>The reference board that <span class="hl">stays out of your way</span>.</h1>
         <p class="lede">Core Board is a small, fast desktop app for images. Drop references onto an infinite canvas, arrange and study them — and it all saves itself.</p>
         <div class="cta-row">
-          <a class="btn primary" href="https://github.com/TaikoGames/Coreboard/archive/refs/heads/main.zip">
+          <a class="btn primary" href="downloads/CoreBoard-0.1.0-linux-x86_64.tar.gz" download>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-            Download
+            Download for Linux
           </a>
-          <a class="btn ghost" href="https://github.com/TaikoGames/Coreboard" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.57.1.78-.25.78-.55v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.66.79.55A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
-            View source
+          <a class="btn ghost" href="#install">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m0 8v3a2 2 0 0 0 2 2h3m8-18h3a2 2 0 0 1 2 2v3m0 8v3a2 2 0 0 1-2 2h-3"/></svg>
+            How to run
           </a>
         </div>
+        <div class="dlnote">Linux x86_64 · v0.1.0 · ~10&nbsp;MB tar.gz &nbsp;·&nbsp; <span>Windows &amp; macOS builds coming soon</span></div>
         <div class="meta-row">
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Windows · macOS · Linux</span>
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Native &amp; instant</span>
@@ -327,22 +328,23 @@
     <div class="wrap">
       <div class="sec-head">
         <span class="eyebrow">Get it running</span>
-        <h2>Grab the source and build.</h2>
-        <p>Core Board is open source and builds with Cargo. Clone the repo (or download the ZIP) and run it — the first launch creates a fresh board.</p>
+        <h2>Download and run.</h2>
+        <p>Grab the Linux build, unpack it and launch — the first run creates a fresh board. No installer, no account.</p>
       </div>
       <div class="install">
         <div class="panel">
-          <h3>Build from source</h3>
-          <p>You'll need the <a href="https://rustup.rs" target="_blank" rel="noopener" style="color:var(--accent-2)">Rust toolchain</a>. Then:</p>
-          <div class="code"><span class="c"># clone and run</span>
-git clone https://github.com/TaikoGames/Coreboard
-cd Coreboard
-cargo run --release
+          <h3>Run it (Linux x86_64)</h3>
+          <p>Unpack the <code style="color:var(--accent-2)">.tar.gz</code> and run the binary:</p>
+          <div class="code"><span class="c"># unpack &amp; launch</span>
+tar -xzf CoreBoard-0.1.0-linux-x86_64.tar.gz
+cd CoreBoard-0.1.0-linux-x86_64
+./coreboard
 
 <span class="c"># or open a board in any folder</span>
-cargo run --release -- ~/boards/moodboard</div>
+./coreboard ~/boards/moodboard</div>
+          <p style="margin:14px 0 0; font-size:13px">Needs a desktop with the usual windowing libraries (<code>libxkbcommon-x11</code>, a GL/Vulkan driver) and <code>xdg-desktop-portal</code> for the folder picker — any standard desktop already has these.</p>
           <div class="platforms" style="margin-top:16px">
-            <span>Windows</span><span>macOS</span><span>Linux</span>
+            <span>Linux x86_64 ✓</span><span>Windows · soon</span><span>macOS · soon</span>
           </div>
         </div>
         <div class="panel">
@@ -354,14 +356,14 @@ cargo run --release -- ~/boards/moodboard</div>
             <li>Press <kbd>Ctrl</kbd>+<kbd>O</kbd> to <b>create or switch boards</b>, or watch a folder.</li>
             <li>Hit <kbd>V</kbd> for <b>study views</b>, <kbd>P</kbd> for a <b>palette</b>, <kbd>H</kbd> for the help overlay.</li>
           </ol>
-          <a class="btn ghost" style="margin-top:6px" href="https://github.com/TaikoGames/Coreboard#readme" target="_blank" rel="noopener">Full docs &amp; shortcuts →</a>
+          <a class="btn ghost" style="margin-top:6px" href="#shortcuts">All shortcuts ↓</a>
         </div>
       </div>
     </div>
   </section>
 
   <!-- SHORTCUTS -->
-  <section>
+  <section id="shortcuts">
     <div class="wrap">
       <div class="sec-head">
         <span class="eyebrow">Keyboard-first</span>
@@ -392,15 +394,16 @@ cargo run --release -- ~/boards/moodboard</div>
         <h2>Start your board.</h2>
         <p>No account, no cloud, no subscription. Your boards are plain folders on your disk.</p>
         <div class="cta-row">
-          <a class="btn primary" href="https://github.com/TaikoGames/Coreboard/archive/refs/heads/main.zip">
+          <a class="btn primary" href="downloads/CoreBoard-0.1.0-linux-x86_64.tar.gz" download>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-            Download ZIP
+            Download for Linux
           </a>
-          <a class="btn ghost" href="https://github.com/TaikoGames/Coreboard" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.57.1.78-.25.78-.55v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.66.79.55A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
-            github.com/TaikoGames/Coreboard
+          <a class="btn ghost" href="#install">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m0 8v3a2 2 0 0 0 2 2h3m8-18h3a2 2 0 0 1 2 2v3m0 8v3a2 2 0 0 1-2 2h-3"/></svg>
+            How to run
           </a>
         </div>
+        <div class="dlnote" style="margin-top:18px">Linux x86_64 · v0.1.0 · <span>Windows &amp; macOS builds coming soon</span></div>
       </div>
     </div>
   </section>
@@ -409,7 +412,7 @@ cargo run --release -- ~/boards/moodboard</div>
 
 <footer>
   <div class="wrap">
-    <span>Core Board by <a href="https://github.com/TaikoGames" target="_blank" rel="noopener">TaikoGames</a> · open source</span>
+    <span>Core Board by TaikoGames</span>
     <span><a href="https://mikibutler.ca/">← mikibutler.ca</a></span>
   </div>
 </footer>
