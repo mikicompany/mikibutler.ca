@@ -215,26 +215,11 @@
       <div id="promo">
         <div class="promo">
           <div class="phone">
-            <span class="label">Promo</span>
-            <div class="scan"></div>
-            <!-- ▼▼▼ REPLACE THIS BLOCK WITH THE PROMO VIDEO ▼▼▼
-                 Vertical 9:16. For a self-hosted clip:
-                   <video src="/coreboard/promo.mp4" autoplay muted loop playsinline
-                          style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
-                 Or paste a TikTok embed <blockquote class="tiktok-embed" …> + their embed.js.
-                 Keep the .label chip or remove it as you like. -->
-            <div class="ph-center">
-              <div class="play" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-              </div>
-              <div>
-                <div class="ph-title">Promo video coming soon</div>
-                <div class="ph-sub">A quick tour of Core Board drops here.</div>
-              </div>
-            </div>
-            <!-- ▲▲▲ END PROMO VIDEO BLOCK ▲▲▲ -->
+            <video src="/coreboard/promo.mp4" autoplay muted loop playsinline preload="metadata"
+                   aria-label="Core Board feature tour"
+                   style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"></video>
           </div>
-          <div class="caption">Vertical · made for TikTok / Reels / Shorts</div>
+          <div class="caption">Watch the 20-second tour · made for Reels / TikTok / Shorts</div>
         </div>
       </div>
     </div>
