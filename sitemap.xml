@@ -23,11 +23,11 @@
     <image:image><image:loc>https://mikibutler.ca/textures/seamless-terrain-material.png</image:loc><image:title>Seamless Terrain Material</image:title></image:image>
     <image:image><image:loc>https://mikibutler.ca/textures/seamless-terrain-normal-map.png</image:loc><image:title>Seamless Terrain Normal Map</image:title></image:image>
   </url>
-  <url><loc>https://mikibutler.ca/uvTool</loc><lastmod>2026-10-10</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://mikibutler.ca/noise</loc><lastmod>2026-10-10</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://mikibutler.ca/normal</loc><lastmod>2026-10-10</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://mikibutler.ca/scale</loc><lastmod>2026-10-10</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://mikibutler.ca/tribudget</loc><lastmod>2026-10-10</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mikibutler.ca/uvTool</loc><lastmod>2026-10-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mikibutler.ca/noise</loc><lastmod>2026-10-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mikibutler.ca/normal</loc><lastmod>2026-10-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mikibutler.ca/scale</loc><lastmod>2026-10-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mikibutler.ca/tribudget</loc><lastmod>2026-10-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://mikibutler.ca/flipbook.html</loc><lastmod>2026-10-10</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://mikibutler.ca/kaleidoscope</loc><lastmod>2026-10-10</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://mikibutler.ca/reef</loc><lastmod>2026-10-10</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
