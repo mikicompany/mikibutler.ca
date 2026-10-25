@@ -1,5 +1,5 @@
 // Pocket Sculpt offline cache. Bump VERSION when the app changes.
-const VERSION = 'pocket-sculpt-v1';
+const VERSION = 'pocket-sculpt-v2';
 const CORE = [
   '/sculpt/',
   '/sculpt/manifest.webmanifest',
