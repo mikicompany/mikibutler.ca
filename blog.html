@@ -26,9 +26,9 @@
   <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png" />
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
   <title>Blog — Miki Butler</title>
-  <!-- Not linked in the nav yet; keep it out of search until it's ready. -->
-  <meta name="robots" content="noindex, nofollow" />
-  <meta name="description" content="Notes, breakdowns and process from Miki Butler — environment artist." />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="description" content="Notes, breakdowns and process from Miki Butler — a 3D environment artist in Vancouver. Sculpting in Blender, trim sheets, breaking into games, and more." />
+  <link id="canonical" rel="canonical" href="https://mikibutler.ca/blog.html" />
   <meta id="og-type" property="og:type" content="website" />
   <meta property="og:site_name" content="Miki Butler" />
   <meta id="og-title" property="og:title" content="Blog — Miki Butler" />
@@ -252,7 +252,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         var cov = coverOf(p);
         var cover = cov
           ? '<img class="cover" src="' + esc(cov) + '" alt="" loading="lazy" />' : '';
-        return '<a class="post-card' + (cov ? ' has-cover' : '') + '" href="?post=' + encodeURIComponent(p.slug) + '">' +
+        return '<a class="post-card' + (cov ? ' has-cover' : '') + '" href="blog/' + encodeURIComponent(p.slug) + '/">' +
           cover +
           '<div>' +
             '<div class="post-meta">' + fmtDate(p.date) + ' · ' + readingTime(p.body) + '</div>' +
@@ -324,12 +324,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
 
     // ── Router ──
+    // Posts now live as static, indexable pages at /blog/<slug>/. Forward any
+    // legacy ?post=<slug> link there so old shares keep working and search
+    // engines see one canonical URL per post.
+    var legacySlug = new URLSearchParams(location.search).get('post');
+    if (legacySlug) { location.replace('blog/' + encodeURIComponent(legacySlug) + '/'); }
     fetch('blog.json?t=' + Date.now()).then(function (r) { return r.ok ? r.json() : { posts: [] }; })
       .then(function (data) {
+        if (legacySlug) return; // redirecting away; don't flash the list
         var posts = (data.posts || []).slice().sort(function (a, b) { return (a.date < b.date) ? 1 : -1; });
-        var slug = new URLSearchParams(location.search).get('post');
-        var post = slug && posts.find(function (p) { return p.slug === slug; });
-        if (post) renderPost(post); else renderList(posts);
+        renderList(posts);
       })
       .catch(function () {
         wrap.innerHTML = '<div class="blog-head"><h1>Blog<span class="dot">.</span></h1></div>' +
