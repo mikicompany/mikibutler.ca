@@ -1,0 +1,15 @@
+{
+  "name": "Pocket Sculpt",
+  "short_name": "Sculpt",
+  "description": "Touch-first digital clay sculpting by Miki Butler.",
+  "start_url": "/sculpt/",
+  "scope": "/sculpt/",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#14161a",
+  "theme_color": "#14161a",
+  "icons": [
+    { "src": "/sculpt/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/sculpt/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
