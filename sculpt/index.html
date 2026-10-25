@@ -20,13 +20,21 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="Pocket Sculpt — a free touch-first 3D sculpting app by Miki Butler. Draw, smooth, inflate, grab and flatten digital clay with mirror symmetry, right in your phone's browser. Installable on Android." />
+  <meta name="description" content="Pocket Sculpt is a free online 3D sculpting tool — no download, no sign-up. Sculpt digital clay with draw, smooth, inflate, grab and flatten brushes, mirror symmetry and 13 materials, right in your browser on phone or desktop." />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
   <link rel="canonical" href="https://mikibutler.ca/sculpt" />
-  <meta property="og:title" content="Pocket Sculpt — Miki Butler" />
-  <meta property="og:description" content="Touch-first digital clay sculpting in the browser. Install it to your Android home screen." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Miki Butler" />
+  <meta property="og:title" content="Pocket Sculpt — Free 3D Sculpting Tool in Your Browser" />
+  <meta property="og:description" content="A free, no-download 3D sculpting tool. Sculpt digital clay in your browser — phone or desktop — then render and share a PNG." />
   <meta property="og:url" content="https://mikibutler.ca/sculpt" />
   <meta property="og:image" content="https://mikibutler.ca/sculpt/icon-512.png" />
-<title>Pocket Sculpt — Miki Butler</title>
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Pocket Sculpt — Free 3D Sculpting Tool in Your Browser" />
+  <meta name="twitter:description" content="A free, no-download 3D sculpting tool you use right in your browser — phone or desktop." />
+  <meta name="twitter:image" content="https://mikibutler.ca/sculpt/icon-512.png" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Pocket Sculpt","alternateName":"Pocket Sculpt — Free 3D Sculpting Tool","applicationCategory":"DesignApplication","operatingSystem":"Web browser (Android, iOS, Windows, macOS)","url":"https://mikibutler.ca/sculpt","description":"A free online 3D sculpting tool that runs in your browser — no download or sign-up. Sculpt digital clay with draw, smooth, inflate, grab and flatten brushes, mirror symmetry and 13 materials, then render and share a PNG.","image":"https://mikibutler.ca/sculpt/icon-512.png","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Miki Butler","url":"https://mikibutler.ca/"},"featureList":["Draw, smooth, inflate, grab and flatten brushes","Mirror / symmetry sculpting","13 matcap materials","Render and share as a PNG","Installable web app that works offline"]}</script>
+<title>Pocket Sculpt — Free 3D Sculpting Tool in Your Browser</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -133,12 +141,32 @@ button:focus-visible,.vslider:focus-visible{outline:2px solid var(--accent);outl
 #ring{position:fixed;left:0;top:0;border:1.5px solid rgba(255,255,255,.75);border-radius:50%;pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.35);transform:translate(-50%,-50%)}
 #ring.sub{border-color:#8fc6ff}
 
+/* Visually-hidden but crawlable/screen-reader page heading (keeps the app full-bleed while giving search engines a real <h1>). */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* About & feedback sheet */
+.info-body{font-size:14px;line-height:1.5;color:var(--fg);overflow-y:auto;-webkit-user-select:text;user-select:text}
+.info-body h2{font-size:17px;margin:2px 0 4px;font-weight:600}
+.info-body p{margin:6px 0}
+.info-body ul{margin:6px 0;padding-left:18px;color:var(--muted)}
+.info-body li{margin:3px 0}
+.info-body a{color:var(--accent);text-decoration:none}
+.fb{display:flex;flex-direction:column;gap:8px}
+.fb .flab{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.fb textarea,.fb input{font:inherit;font-size:15px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;-webkit-user-select:text;user-select:text;font-family:var(--f-ui)}
+.fb textarea{min-height:82px;resize:vertical}
+.fb input:focus,.fb textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.fb .rate{display:flex;gap:6px}
+.fb .rate button{flex:1;height:38px;border-radius:10px;border:1px solid var(--line);color:var(--muted);font-size:20px;line-height:1}
+.fb .rate button[aria-pressed="true"]{background:rgba(242,180,90,.16);border-color:var(--accent)}
+
 @media (max-width:380px){ .br{width:56px;font-size:12px} .ib{width:35px;height:35px} }
 @media (prefers-reduced-motion:reduce){ .hint{transition:none} }
 </style>
 
 </head>
 <body>
+<h1 class="sr-only">Pocket Sculpt — a free 3D sculpting tool you use right in your browser</h1>
 <canvas id="view" tabindex="0" aria-label="Sculpting viewport"></canvas>
 <div id="ring" hidden></div>
 
@@ -146,6 +174,7 @@ button:focus-visible,.vslider:focus-visible{outline:2px solid var(--accent);outl
   <div class="group">
     <button class="ib" id="undo" title="Undo" aria-label="Undo" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
     <button class="ib" id="redo" title="Redo" aria-label="Redo" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+    <button class="ib" id="info" title="About &amp; feedback" aria-label="About and feedback" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></button>
   </div>
   <div class="group">
     <button class="ib" id="sym" title="Mirror X" aria-label="Mirror X" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18" stroke-dasharray="2 3"/><path d="M8 7 3 12l5 5V7z"/><path d="m16 7 5 5-5 5V7z"/></svg></button>
@@ -184,6 +213,43 @@ button:focus-visible,.vslider:focus-visible{outline:2px solid var(--accent);outl
       <button class="btn" id="shot-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Save PNG</button>
     </div>
     <p class="sheet-note" id="shot-note" aria-live="polite"></p>
+  </div>
+</div>
+
+<div class="sheet-wrap" id="info-sheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="info-title">
+    <div class="sheet-head">
+      <b id="info-title">About &amp; feedback</b>
+      <button class="ib" id="info-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="info-body">
+      <h2>Pocket Sculpt — a free 3D sculpting tool</h2>
+      <p><b>Pocket Sculpt</b> is a free, no-download 3D sculpting tool that runs right in your browser. Push digital clay around with draw, smooth, inflate, grab and flatten brushes, work symmetrically with mirror&nbsp;X, try 13 materials, then render and share a PNG. It installs to your home screen and works offline. Made by <a href="https://mikibutler.ca/" target="_blank" rel="noopener">Miki Butler</a>, a 3D environment artist.</p>
+      <ul>
+        <li>Drag on the clay to sculpt; drag empty space to orbit; pinch to zoom and pan.</li>
+        <li>Keys: <b>1–5</b> pick a brush, <b>X</b> toggles mirror, <b>Ctrl/⌘+Z</b> undo.</li>
+      </ul>
+      <h2 style="margin-top:12px">Send feedback</h2>
+      <p>Found a bug, or have an idea for the tool? Tell me — it genuinely shapes what gets built next.</p>
+    </div>
+    <form class="fb" id="fb-form" novalidate>
+      <div class="fb" style="gap:6px">
+        <span class="flab">How's it feeling?</span>
+        <div class="rate" id="fb-rate" role="group" aria-label="Rating">
+          <button type="button" data-v="1" aria-pressed="false" aria-label="Rough">😖</button>
+          <button type="button" data-v="2" aria-pressed="false" aria-label="Meh">😕</button>
+          <button type="button" data-v="3" aria-pressed="false" aria-label="Okay">🙂</button>
+          <button type="button" data-v="4" aria-pressed="false" aria-label="Good">😀</button>
+          <button type="button" data-v="5" aria-pressed="false" aria-label="Love it">🤩</button>
+        </div>
+      </div>
+      <label class="flab" for="fb-msg">Your feedback</label>
+      <textarea id="fb-msg" name="message" placeholder="What worked, what didn't, what you'd love to see…" required></textarea>
+      <label class="flab" for="fb-email">Email (optional, if you'd like a reply)</label>
+      <input id="fb-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" />
+      <button class="btn primary" id="fb-send" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>Send feedback</button>
+    </form>
+    <p class="sheet-note" id="fb-note" aria-live="polite">Opens your email to <a href="mailto:hello@mikicompany.com">hello@mikicompany.com</a>.</p>
   </div>
 </div>
 
@@ -632,7 +698,32 @@ shareBtn.addEventListener('click',async()=>{
     else{saveShot();shotNote.textContent='Sharing isn\'t available in this browser, so the image was saved instead.';}
   }catch(err){if(err&&err.name!=='AbortError')shotNote.textContent='Couldn\'t open the share menu. Use Save PNG instead.';}
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){shotWrap.hidden=true;mcPop.hidden=true;}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){shotWrap.hidden=true;mcPop.hidden=true;infoSheet.hidden=true;}});
+
+/* ---------- About & feedback ---------- */
+const infoBtn=document.getElementById('info'),infoSheet=document.getElementById('info-sheet'),infoClose=document.getElementById('info-close');
+const fbForm=document.getElementById('fb-form'),fbMsg=document.getElementById('fb-msg'),fbEmail=document.getElementById('fb-email'),fbNote=document.getElementById('fb-note'),fbRate=document.getElementById('fb-rate');
+let fbRating=0;
+infoBtn.addEventListener('click',()=>{mcPop.hidden=true;infoSheet.hidden=false;});
+infoClose.addEventListener('click',()=>{infoSheet.hidden=true;});
+infoSheet.addEventListener('click',e=>{if(e.target===infoSheet)infoSheet.hidden=true;});
+fbRate.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  fbRating=+b.dataset.v;
+  fbRate.querySelectorAll('button').forEach(o=>o.setAttribute('aria-pressed',String(o===b)));
+}));
+fbForm.addEventListener('submit',e=>{
+  e.preventDefault();
+  const msg=fbMsg.value.trim();
+  if(!msg){fbMsg.focus();fbNote.textContent='Please add a short note first.';return;}
+  const email=fbEmail.value.trim();
+  const lines=[msg,'','— — —','Rating: '+(fbRating?fbRating+'/5':'not rated')];
+  if(email)lines.push('Reply to: '+email);
+  lines.push('Page: https://mikibutler.ca/sculpt','Browser: '+navigator.userAgent);
+  const href='mailto:hello@mikicompany.com?subject='+encodeURIComponent('Pocket Sculpt feedback')+'&body='+encodeURIComponent(lines.join('\n'));
+  try{gtag('event','feedback_submit',{app:'pocket-sculpt',rating:fbRating||0});}catch(_){}
+  fbNote.textContent='Opening your email app… if nothing happens, email hello@mikicompany.com directly.';
+  window.location.href=href;
+});
 document.getElementById('frame').addEventListener('click',()=>{orbit.theta=.35;orbit.phi=1.25;orbit.target.set(0,0,0);orbit.dist=fitDist();updateCamera();});
 document.getElementById('reset').addEventListener('click',()=>{pushUndo();pos.set(base);refreshAll();});
 
