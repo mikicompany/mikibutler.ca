@@ -20,7 +20,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="Pocket Sculpt is a free online 3D sculpting tool — no download, no sign-up. Sculpt digital clay with draw, smooth, inflate, grab and flatten brushes, mirror symmetry and 13 materials, right in your browser on phone or desktop." />
+  <meta name="description" content="Pocket Sculpt is a free online 3D sculpting tool — no download, no sign-up. Sculpt digital clay in your browser, then export to OBJ, STL or GLB for Blender, 3D printing or games. Brushes, mirror symmetry and 13 materials, on phone or desktop." />
   <meta name="robots" content="index, follow, max-image-preview:large" />
   <link rel="canonical" href="https://mikibutler.ca/sculpt" />
   <meta property="og:type" content="website" />
@@ -33,7 +33,7 @@
   <meta name="twitter:title" content="Pocket Sculpt — Free 3D Sculpting Tool in Your Browser" />
   <meta name="twitter:description" content="A free, no-download 3D sculpting tool you use right in your browser — phone or desktop." />
   <meta name="twitter:image" content="https://mikibutler.ca/sculpt/icon-512.png" />
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Pocket Sculpt","alternateName":"Pocket Sculpt — Free 3D Sculpting Tool","applicationCategory":"DesignApplication","operatingSystem":"Web browser (Android, iOS, Windows, macOS)","url":"https://mikibutler.ca/sculpt","description":"A free online 3D sculpting tool that runs in your browser — no download or sign-up. Sculpt digital clay with draw, smooth, inflate, grab and flatten brushes, mirror symmetry and 13 materials, then render and share a PNG.","image":"https://mikibutler.ca/sculpt/icon-512.png","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Miki Butler","url":"https://mikibutler.ca/"},"featureList":["Draw, smooth, inflate, grab and flatten brushes","Mirror / symmetry sculpting","13 matcap materials","Render and share as a PNG","Installable web app that works offline"]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Pocket Sculpt","alternateName":"Pocket Sculpt — Free 3D Sculpting Tool","applicationCategory":"DesignApplication","operatingSystem":"Web browser (Android, iOS, Windows, macOS)","url":"https://mikibutler.ca/sculpt","description":"A free online 3D sculpting tool that runs in your browser — no download or sign-up. Sculpt digital clay with draw, smooth, inflate, grab and flatten brushes, mirror symmetry and 13 materials, then render a PNG or export your model to OBJ, STL or GLB.","image":"https://mikibutler.ca/sculpt/icon-512.png","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Miki Butler","url":"https://mikibutler.ca/"},"featureList":["Draw, smooth, inflate, grab and flatten brushes","Mirror / symmetry sculpting","13 matcap materials","Render and share as a PNG","Export to OBJ, STL or GLB","Installable web app that works offline"]}</script>
 <title>Pocket Sculpt — Free 3D Sculpting Tool in Your Browser</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -160,6 +160,13 @@ button:focus-visible,.vslider:focus-visible{outline:2px solid var(--accent);outl
 .fb .rate button{flex:1;height:38px;border-radius:10px;border:1px solid var(--line);color:var(--muted);font-size:20px;line-height:1}
 .fb .rate button[aria-pressed="true"]{background:rgba(242,180,90,.16);border-color:var(--accent)}
 
+/* 3D model export */
+.exp{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);margin-top:2px;padding-top:12px}
+.exp .flab{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.exp-row{display:flex;gap:8px}
+.exp-row .btn{font-size:14.5px;gap:6px}
+.exp-note{margin:0;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.45}
+
 @media (max-width:380px){ .br{width:56px;font-size:12px} .ib{width:35px;height:35px} }
 @media (prefers-reduced-motion:reduce){ .hint{transition:none} }
 </style>
@@ -199,7 +206,7 @@ button:focus-visible,.vslider:focus-visible{outline:2px solid var(--accent);outl
 <div class="sheet-wrap" id="shot" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="shot-title">
     <div class="sheet-head">
-      <b id="shot-title">Render</b>
+      <b id="shot-title">Render &amp; export</b>
       <button class="ib" id="shot-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="shot-frame"><img id="shot-img" alt="Rendered image of your sculpt"></div>
@@ -211,6 +218,15 @@ button:focus-visible,.vslider:focus-visible{outline:2px solid var(--accent);outl
     <div class="sheet-actions">
       <button class="btn primary" id="shot-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></svg>Share</button>
       <button class="btn" id="shot-save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Save PNG</button>
+    </div>
+    <div class="exp">
+      <span class="flab">Export 3D model</span>
+      <div class="exp-row" id="exp-row">
+        <button class="btn" type="button" data-exp="obj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>OBJ</button>
+        <button class="btn" type="button" data-exp="stl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>STL</button>
+        <button class="btn" type="button" data-exp="glb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>GLB</button>
+      </div>
+      <p class="exp-note">OBJ for Blender &amp; Maya · STL for 3D printing · GLB for web &amp; games.<br>Watertight mesh, ~100&nbsp;mm, geometry only.</p>
     </div>
     <p class="sheet-note" id="shot-note" aria-live="polite"></p>
   </div>
@@ -224,7 +240,7 @@ button:focus-visible,.vslider:focus-visible{outline:2px solid var(--accent);outl
     </div>
     <div class="info-body">
       <h2>Pocket Sculpt — a free 3D sculpting tool</h2>
-      <p><b>Pocket Sculpt</b> is a free, no-download 3D sculpting tool that runs right in your browser. Push digital clay around with draw, smooth, inflate, grab and flatten brushes, work symmetrically with mirror&nbsp;X, try 13 materials, then render and share a PNG. It installs to your home screen and works offline. Made by <a href="https://mikibutler.ca/" target="_blank" rel="noopener">Miki Butler</a>, a 3D environment artist.</p>
+      <p><b>Pocket Sculpt</b> is a free, no-download 3D sculpting tool that runs right in your browser. Push digital clay around with draw, smooth, inflate, grab and flatten brushes, work symmetrically with mirror&nbsp;X, try 13 materials, then render a PNG or export your model to <b>OBJ, STL or GLB</b> for Blender, 3D printing or games. It installs to your home screen and works offline. Made by <a href="https://mikibutler.ca/" target="_blank" rel="noopener">Miki Butler</a>, a 3D environment artist.</p>
       <ul>
         <li>Drag on the clay to sculpt; drag empty space to orbit; pinch to zoom and pan.</li>
         <li>Keys: <b>1–5</b> pick a brush, <b>X</b> toggles mirror, <b>Ctrl/⌘+Z</b> undo.</li>
@@ -689,6 +705,90 @@ document.getElementById('shot-close').addEventListener('click',()=>{shotWrap.hid
 shotWrap.addEventListener('click',e=>{if(e.target===shotWrap)shotWrap.hidden=true;});
 document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{shotBg=b.dataset.bg;updateShot();}));
 document.getElementById('shot-save').addEventListener('click',saveShot);
+
+/* ---------- 3D model export (OBJ / STL / GLB) ---------- */
+function dlBlob(blob,name){const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);}
+function fileStamp(){return new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');}
+// Centre on the bounding-box centre and scale the longest axis to 100 (mm for
+// printing / units for DCC apps) so exports land at a sensible, consistent size.
+function exportXform(){
+  let mnx=Infinity,mny=Infinity,mnz=Infinity,mxx=-Infinity,mxy=-Infinity,mxz=-Infinity;
+  for(let i=0,p=0;i<N;i++,p+=3){const x=pos[p],y=pos[p+1],z=pos[p+2];
+    if(x<mnx)mnx=x;if(y<mny)mny=y;if(z<mnz)mnz=z;if(x>mxx)mxx=x;if(y>mxy)mxy=y;if(z>mxz)mxz=z;}
+  const span=Math.max(mxx-mnx,mxy-mny,mxz-mnz)||1;
+  return {cx:(mnx+mxx)/2,cy:(mny+mxy)/2,cz:(mnz+mxz)/2,s:100/span};
+}
+function buildOBJ(){
+  const t=exportXform(),L=['# Pocket Sculpt — mikibutler.ca/sculpt','# '+N+' vertices, '+F+' triangles','o PocketSculpt'];
+  for(let i=0,p=0;i<N;i++,p+=3)L.push('v '+((pos[p]-t.cx)*t.s).toFixed(4)+' '+((pos[p+1]-t.cy)*t.s).toFixed(4)+' '+((pos[p+2]-t.cz)*t.s).toFixed(4));
+  for(let i=0,p=0;i<N;i++,p+=3)L.push('vn '+nrm[p].toFixed(4)+' '+nrm[p+1].toFixed(4)+' '+nrm[p+2].toFixed(4));
+  for(let f=0;f<idx.length;f+=3){const a=idx[f]+1,b=idx[f+1]+1,c=idx[f+2]+1;L.push('f '+a+'//'+a+' '+b+'//'+b+' '+c+'//'+c);}
+  return new Blob([L.join('\n')+'\n'],{type:'model/obj'});
+}
+function buildSTL(){
+  const t=exportXform(),buf=new ArrayBuffer(84+50*F),dv=new DataView(buf);
+  const sig='Pocket Sculpt - mikibutler.ca/sculpt';for(let i=0;i<sig.length&&i<80;i++)dv.setUint8(i,sig.charCodeAt(i));
+  dv.setUint32(80,F,true);let o=84;
+  for(let f=0;f<idx.length;f+=3){
+    const a=idx[f]*3,b=idx[f+1]*3,c=idx[f+2]*3;
+    const ax=(pos[a]-t.cx)*t.s,ay=(pos[a+1]-t.cy)*t.s,az=(pos[a+2]-t.cz)*t.s;
+    const bx=(pos[b]-t.cx)*t.s,by=(pos[b+1]-t.cy)*t.s,bz=(pos[b+2]-t.cz)*t.s;
+    const px=(pos[c]-t.cx)*t.s,py=(pos[c+1]-t.cy)*t.s,pz=(pos[c+2]-t.cz)*t.s;
+    let ux=bx-ax,uy=by-ay,uz=bz-az,vx=px-ax,vy=py-ay,vz=pz-az;
+    let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;const l=Math.hypot(nx,ny,nz)||1;nx/=l;ny/=l;nz/=l;
+    dv.setFloat32(o,nx,true);dv.setFloat32(o+4,ny,true);dv.setFloat32(o+8,nz,true);o+=12;
+    dv.setFloat32(o,ax,true);dv.setFloat32(o+4,ay,true);dv.setFloat32(o+8,az,true);o+=12;
+    dv.setFloat32(o,bx,true);dv.setFloat32(o+4,by,true);dv.setFloat32(o+8,bz,true);o+=12;
+    dv.setFloat32(o,px,true);dv.setFloat32(o+4,py,true);dv.setFloat32(o+8,pz,true);o+=12;
+    dv.setUint16(o,0,true);o+=2;
+  }
+  return new Blob([buf],{type:'model/stl'});
+}
+function buildGLB(){
+  const t=exportXform(),posA=new Float32Array(N*3),nrmA=new Float32Array(N*3);
+  let mnx=Infinity,mny=Infinity,mnz=Infinity,mxx=-Infinity,mxy=-Infinity,mxz=-Infinity;
+  for(let i=0,p=0;i<N;i++,p+=3){
+    const x=(pos[p]-t.cx)*t.s,y=(pos[p+1]-t.cy)*t.s,z=(pos[p+2]-t.cz)*t.s;
+    posA[p]=x;posA[p+1]=y;posA[p+2]=z;nrmA[p]=nrm[p];nrmA[p+1]=nrm[p+1];nrmA[p+2]=nrm[p+2];
+    if(x<mnx)mnx=x;if(y<mny)mny=y;if(z<mnz)mnz=z;if(x>mxx)mxx=x;if(y>mxy)mxy=y;if(z>mxz)mxz=z;
+  }
+  const align=v=>(v+3)&~3;
+  const posOff=0,nrmOff=posA.byteLength,idxOff=nrmOff+nrmA.byteLength,binLen=idxOff+idx.byteLength;
+  const bin=new Uint8Array(align(binLen));
+  bin.set(new Uint8Array(posA.buffer),posOff);bin.set(new Uint8Array(nrmA.buffer),nrmOff);bin.set(new Uint8Array(idx.buffer),idxOff);
+  const gltf={asset:{version:'2.0',generator:'Pocket Sculpt — mikibutler.ca/sculpt'},scene:0,scenes:[{nodes:[0]}],
+    nodes:[{mesh:0,name:'PocketSculpt'}],meshes:[{name:'PocketSculpt',primitives:[{attributes:{POSITION:0,NORMAL:1},indices:2,mode:4}]}],
+    buffers:[{byteLength:bin.length}],
+    bufferViews:[{buffer:0,byteOffset:posOff,byteLength:posA.byteLength,target:34962},
+      {buffer:0,byteOffset:nrmOff,byteLength:nrmA.byteLength,target:34962},
+      {buffer:0,byteOffset:idxOff,byteLength:idx.byteLength,target:34963}],
+    accessors:[{bufferView:0,componentType:5126,count:N,type:'VEC3',min:[mnx,mny,mnz],max:[mxx,mxy,mxz]},
+      {bufferView:1,componentType:5126,count:N,type:'VEC3'},
+      {bufferView:2,componentType:5125,count:idx.length,type:'SCALAR'}]};
+  let jb=new TextEncoder().encode(JSON.stringify(gltf));
+  const jpad=align(jb.length)-jb.length;
+  if(jpad){const q=new Uint8Array(jb.length+jpad);q.set(jb);for(let i=0;i<jpad;i++)q[jb.length+i]=0x20;jb=q;}
+  const total=12+8+jb.length+8+bin.length,out=new ArrayBuffer(total),dv=new DataView(out);let o=0;
+  dv.setUint32(o,0x46546C67,true);o+=4;dv.setUint32(o,2,true);o+=4;dv.setUint32(o,total,true);o+=4;
+  dv.setUint32(o,jb.length,true);o+=4;dv.setUint32(o,0x4E4F534A,true);o+=4;new Uint8Array(out,o,jb.length).set(jb);o+=jb.length;
+  dv.setUint32(o,bin.length,true);o+=4;dv.setUint32(o,0x004E4942,true);o+=4;new Uint8Array(out,o,bin.length).set(bin);
+  return new Blob([out],{type:'model/gltf-binary'});
+}
+const EXPORTERS={obj:buildOBJ,stl:buildSTL,glb:buildGLB};
+document.getElementById('exp-row').addEventListener('click',e=>{
+  const b=e.target.closest('[data-exp]');if(!b)return;
+  const fmt=b.dataset.exp;
+  shotNote.textContent='Exporting '+fmt.toUpperCase()+'…';
+  // let the note paint before the (synchronous) build on big meshes
+  setTimeout(()=>{
+    try{
+      flushNormals();
+      dlBlob(EXPORTERS[fmt](),'pocket-sculpt-'+fileStamp()+'.'+fmt);
+      shotNote.textContent=fmt.toUpperCase()+' saved to your downloads.';
+      try{gtag('event','model_export',{app:'pocket-sculpt',format:fmt});}catch(_){}
+    }catch(err){shotNote.textContent='Export failed — please try again.';}
+  },20);
+});
 shareBtn.addEventListener('click',async()=>{
   const file=shotFile();
   const data={files:[file],title:'Pocket Sculpt',text:'Sculpted on my phone with Pocket Sculpt — https://mikibutler.ca/sculpt'};
