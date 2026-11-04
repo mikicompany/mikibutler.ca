@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-W7JWP3TR');</script>
+  <!-- End Google Tag Manager -->
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D8B37WL1GZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D8B37WL1GZ');
+  </script>
+  <!-- End Google Analytics -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0e0f12" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16.png" />
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+  <title>Pocket Bake — Free Online Normal / AO / Curvature Map Baker</title>
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="description" content="Pocket Bake is a free online texture baker — drop a low-poly and a high-poly OBJ and bake normal, ambient occlusion and curvature maps right in your browser. No download, no sign-up. By Miki Butler." />
+  <link rel="canonical" href="https://mikibutler.ca/bake" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Miki Butler" />
+  <meta property="og:title" content="Pocket Bake — Free Online Normal / AO / Curvature Baker" />
+  <meta property="og:description" content="Drop a low-poly and a high-poly OBJ and bake normal, AO and curvature maps in your browser. Free, no download." />
+  <meta property="og:url" content="https://mikibutler.ca/bake" />
+  <meta property="og:image" content="https://mikibutler.ca/images/og-card.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Pocket Bake — Free Online Normal / AO / Curvature Baker" />
+  <meta name="twitter:description" content="Drop a low-poly + high-poly OBJ and bake normal, AO and curvature maps in your browser. Free." />
+  <meta name="twitter:image" content="https://mikibutler.ca/images/og-card.jpg" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Pocket Bake","alternateName":"Pocket Bake — Free Online Map Baker","applicationCategory":"DesignApplication","operatingSystem":"Web browser (Windows, macOS, Linux)","url":"https://mikibutler.ca/bake","description":"A free online texture-map baker that projects a high-poly mesh onto a low-poly mesh's UVs and extracts normal, ambient occlusion and curvature maps — entirely in the browser, no download or sign-up.","image":"https://mikibutler.ca/images/og-card.jpg","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Miki Butler","url":"https://mikibutler.ca/"},"featureList":["Bake tangent-space normal maps (OpenGL or DirectX)","Bake ambient occlusion","Bake curvature","Drag-and-drop OBJ, runs locally in the browser","Download PNG maps"]}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#0e0f12; --panel:#15171c; --panel-2:#1b1e24; --line:#2a2e36;
+      --fg:#e9ead0; --muted:#8b9099; --accent:#a0ff00; --accent-ink:#0c1400;
+      --f-ui:"Inter",system-ui,-apple-system,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+      color-scheme:dark;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{background:var(--bg);color:var(--fg);font-family:var(--f-ui);line-height:1.5;
+      padding:clamp(18px,4vw,40px) clamp(16px,4vw,40px) 64px;max-width:1120px;margin:0 auto}
+    a{color:var(--accent);text-decoration:none}
+    h1{font-size:clamp(28px,5vw,40px);font-weight:800;letter-spacing:-.02em;margin:0}
+    h1 .dot{color:var(--accent)}
+    .sub{color:var(--muted);margin:8px 0 0;max-width:62ch;font-size:15px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px}
+    .home{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-weight:600;font-size:13px}
+    .home img{width:30px;height:30px;border-radius:7px;display:block}
+    .home:hover{color:var(--fg)}
+
+    .grid{display:grid;grid-template-columns:minmax(0,360px) 1fr;gap:22px;align-items:start}
+    @media (max-width:760px){ .grid{grid-template-columns:1fr} }
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
+    .card + .card{margin-top:16px}
+    .lab{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 10px}
+
+    /* drop zones */
+    .drop{border:1.5px dashed var(--line);border-radius:12px;padding:18px 14px;text-align:center;cursor:pointer;
+      transition:border-color .15s ease,background .15s ease;position:relative;display:block}
+    .drop + .drop{margin-top:12px}
+    .drop:hover,.drop.over{border-color:var(--accent);background:rgba(160,255,0,.05)}
+    .drop.has{border-style:solid;border-color:rgba(160,255,0,.5)}
+    .drop .k{font-weight:700;font-size:14px}
+    .drop .k b{color:var(--accent)}
+    .drop .fn{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-top:4px;word-break:break-all}
+    .drop .fn.ok{color:var(--fg)}
+    .drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:11px 0}
+    .row label{font-size:14px}
+    .maps{display:flex;flex-direction:column;gap:2px}
+    .chk{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:var(--panel-2)}
+    .chk + .chk{margin-top:7px}
+    .chk input{accent-color:var(--accent);width:17px;height:17px}
+    .chk .nm{font-weight:600;font-size:14px}
+    .chk .ds{color:var(--muted);font-size:12px}
+    select,.seg{font:inherit;color:var(--fg);background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:7px 10px;font-size:13.5px}
+    input[type=range]{accent-color:var(--accent);width:150px}
+    .val{font-family:var(--f-mono);font-size:12px;color:var(--fg);min-width:52px;text-align:right}
+    details{border-top:1px solid var(--line);margin-top:14px;padding-top:6px}
+    summary{cursor:pointer;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;list-style:none;padding:6px 0}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:" ▾";color:var(--accent)}
+    details[open] summary::after{content:" ▴"}
+
+    .bake{width:100%;margin-top:16px;padding:14px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);
+      font:inherit;font-weight:800;font-size:16px;letter-spacing:.01em;cursor:pointer;transition:filter .15s ease,opacity .15s}
+    .bake:hover{filter:brightness(1.07)}
+    .bake:disabled{opacity:.4;cursor:not-allowed}
+    .prog{height:8px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden;margin-top:12px}
+    .prog .fill{height:100%;width:0;background:var(--accent);transition:width .18s ease}
+    .status{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-top:8px;min-height:1.1em}
+    .status.err{color:#ff8a7a}
+
+    /* results */
+    .results{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+    .empty{color:var(--muted);font-size:14px;border:1.5px dashed var(--line);border-radius:14px;padding:40px 20px;text-align:center}
+    .mapcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+    .mapcard .frame{aspect-ratio:1;background:repeating-conic-gradient(#202329 0 25%,#1a1d22 0 50%) 0 0/20px 20px;display:grid;place-items:center}
+    .mapcard canvas{width:100%;height:100%;display:block;image-rendering:auto}
+    .mapcard .meta{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;gap:8px}
+    .mapcard .meta .t{font-weight:700;font-size:13.5px}
+    .mapcard .meta .t span{color:var(--muted);font-weight:500;font-family:var(--f-mono);font-size:11px;margin-left:6px}
+    .dlbtn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:12.5px;font-weight:700;color:var(--accent);
+      background:transparent;border:1px solid rgba(160,255,0,.4);border-radius:999px;padding:6px 12px;cursor:pointer}
+    .dlbtn:hover{background:rgba(160,255,0,.12)}
+    .dlbtn svg{width:14px;height:14px}
+    .dlall{margin-bottom:14px}
+
+    footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;
+      display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+    footer a{color:var(--muted)} footer a:hover{color:var(--accent)}
+    .note{color:var(--muted);font-size:12.5px;margin-top:10px;line-height:1.5}
+  </style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W7JWP3TR" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+  <div class="topbar">
+    <a class="home" href="/index.html"><img src="/images/logo512.jpg" alt="Miki Butler" /> Miki Butler</a>
+    <a class="home" href="/sculpt">Pocket Sculpt →</a>
+  </div>
+
+  <header>
+    <h1>Pocket Bake<span class="dot">.</span></h1>
+    <p class="sub">The simplest texture baker. Drop a <b>low-poly</b> and a <b>high-poly</b> OBJ, pick your maps, and bake <b>normal</b>, <b>ambient occlusion</b> and <b>curvature</b> — right in your browser. Nothing is uploaded; it all runs on your machine.</p>
+  </header>
+
+  <main class="grid" style="margin-top:24px">
+    <!-- INPUTS -->
+    <section>
+      <div class="card">
+        <p class="lab">Meshes (.obj)</p>
+        <label class="drop" id="drop-low">
+          <div class="k"><b>Low-poly</b> — needs UVs</div>
+          <div class="fn" id="fn-low">drop or click to choose .obj</div>
+          <input type="file" accept=".obj" id="file-low" />
+        </label>
+        <label class="drop" id="drop-high">
+          <div class="k"><b>High-poly</b> — the detailed mesh</div>
+          <div class="fn" id="fn-high">drop or click to choose .obj</div>
+          <input type="file" accept=".obj" id="file-high" />
+        </label>
+        <p class="note">Tip: you can drop both files here at once — anything with <code>low</code>/<code>lp</code> in the name goes to low-poly, the other to high.</p>
+      </div>
+
+      <div class="card">
+        <p class="lab">Maps to bake</p>
+        <div class="maps">
+          <label class="chk"><input type="checkbox" id="m-normal" checked><span><span class="nm">Normal</span> <span class="ds">· tangent space</span></span></label>
+          <label class="chk"><input type="checkbox" id="m-ao" checked><span><span class="nm">Ambient occlusion</span></span></label>
+          <label class="chk"><input type="checkbox" id="m-curv" checked><span><span class="nm">Curvature</span> <span class="ds">· convex / concave</span></span></label>
+        </div>
+
+        <details>
+          <summary>Settings</summary>
+          <div class="row"><label for="res">Resolution</label>
+            <select id="res"><option value="512">512</option><option value="1024" selected>1024</option><option value="2048">2048</option></select></div>
+          <div class="row"><label for="ss">Anti-alias</label>
+            <select id="ss"><option value="1">Off</option><option value="2" selected>2× supersample</option></select></div>
+          <div class="row"><label for="fmt">Normal green</label>
+            <select id="fmt"><option value="gl" selected>OpenGL (+Y)</option><option value="dx">DirectX (−Y)</option></select></div>
+          <div class="row"><label for="ray">Ray distance</label><input type="range" id="ray" min="0.25" max="4" step="0.05" value="1"><span class="val" id="ray-v">1.00×</span></div>
+          <div class="row"><label for="aos">AO samples</label><input type="range" id="aos" min="8" max="64" step="4" value="24"><span class="val" id="aos-v">24</span></div>
+          <div class="row"><label for="aod">AO distance</label><input type="range" id="aod" min="0.1" max="2" step="0.05" value="1"><span class="val" id="aod-v">1.00×</span></div>
+        </details>
+
+        <button class="bake" id="bake" disabled>Bake maps</button>
+        <div class="prog" hidden id="prog"><div class="fill" id="prog-fill"></div></div>
+        <div class="status" id="status"></div>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section>
+      <button class="dlbtn dlall" id="dlall" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg> Download all</button>
+      <div class="results" id="results"><div class="empty">Your baked maps will appear here.</div></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Pocket Bake — a free tool by <a href="/index.html">Miki Butler</a></span>
+    <span><a href="/sculpt">Pocket Sculpt</a> · <a href="/noise">Noise Forge</a> · <a href="/index.html">mikibutler.ca</a></span>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  var lowText=null, highText=null, lowName='', highName='';
+  var $=function(id){return document.getElementById(id);};
+  var statusEl=$('status'), bakeBtn=$('bake'), results=$('results'), dlall=$('dlall');
+  var baked={}; // name -> {blob,url}
+
+  // ---- range value labels ----
+  function wireRange(id,fmt){var el=$(id),v=$(id+'-v');var up=function(){v.textContent=fmt(+el.value);};el.addEventListener('input',up);up();}
+  wireRange('ray',function(x){return x.toFixed(2)+'×';});
+  wireRange('aos',function(x){return String(x);});
+  wireRange('aod',function(x){return x.toFixed(2)+'×';});
+
+  // ---- file handling ----
+  function setFile(which,file){
+    var r=new FileReader();
+    r.onload=function(){
+      if(which==='low'){lowText=r.result;lowName=file.name;$('fn-low').textContent=file.name;$('fn-low').classList.add('ok');$('drop-low').classList.add('has');}
+      else{highText=r.result;highName=file.name;$('fn-high').textContent=file.name;$('fn-high').classList.add('ok');$('drop-high').classList.add('has');}
+      refresh();
+    };
+    r.readAsText(file);
+  }
+  function guess(name){return /(^|[^a-z])(low|lp)([^a-z]|\.obj$|$)/i.test(name);}
+  function handleFiles(files,prefer){
+    var arr=[].slice.call(files).filter(function(f){return /\.obj$/i.test(f.name);});
+    if(!arr.length)return;
+    if(arr.length>=2){
+      var lo=arr.find(guess), hi=arr.find(function(f){return f!==lo;});
+      if(!lo){lo=arr[0];hi=arr[1];}
+      setFile('low',lo);setFile('high',hi);return;
+    }
+    if(prefer){setFile(prefer,arr[0]);}
+    else{ setFile(guess(arr[0].name)?'low':'high',arr[0]); }
+  }
+  ['low','high'].forEach(function(which){
+    var zone=$('drop-'+which);
+    $('file-'+which).addEventListener('change',function(e){if(e.target.files[0])setFile(which,e.target.files[0]);});
+    ['dragenter','dragover'].forEach(function(ev){zone.addEventListener(ev,function(e){e.preventDefault();zone.classList.add('over');});});
+    ['dragleave','drop'].forEach(function(ev){zone.addEventListener(ev,function(e){e.preventDefault();zone.classList.remove('over');});});
+    zone.addEventListener('drop',function(e){e.preventDefault();handleFiles(e.dataTransfer.files,which);});
+  });
+  // page-wide drop (auto-sort)
+  ['dragover','drop'].forEach(function(ev){document.addEventListener(ev,function(e){if(e.target.closest('.drop'))return;e.preventDefault();if(ev==='drop')handleFiles(e.dataTransfer.files);});});
+
+  function anyMap(){return $('m-normal').checked||$('m-ao').checked||$('m-curv').checked;}
+  function refresh(){bakeBtn.disabled=!(lowText&&highText&&anyMap());}
+  ['m-normal','m-ao','m-curv'].forEach(function(id){$(id).addEventListener('change',refresh);});
+
+  // ---- bake ----
+  var worker=null, t0=0;
+  bakeBtn.addEventListener('click',function(){
+    if(bakeBtn.disabled)return;
+    var maps={normal:$('m-normal').checked,ao:$('m-ao').checked,curv:$('m-curv').checked};
+    var opts={
+      res:+$('res').value, ss:+$('ss').value, maps:maps,
+      flipGreen:$('fmt').value==='dx',
+      rayScale:+$('ray').value, aoSamples:+$('aos').value, aoScale:+$('aod').value
+    };
+    bakeBtn.disabled=true; bakeBtn.textContent='Baking…';
+    $('prog').hidden=false; $('prog-fill').style.width='2%'; statusEl.className='status'; statusEl.textContent='Starting…';
+    t0=performance.now();
+    if(worker)worker.terminate();
+    worker=new Worker('/bake/worker.js');
+    worker.onmessage=function(e){
+      var m=e.data;
+      if(m.type==='progress'){ $('prog-fill').style.width=Math.round(m.pct*100)+'%'; statusEl.textContent=phaseLabel(m.phase)+' — '+Math.round(m.pct*100)+'%'; }
+      else if(m.type==='done'){ finish(m,m.res); }
+      else if(m.type==='error'){ fail(m.message); }
+    };
+    worker.onerror=function(err){ fail(err.message||'Worker error'); };
+    worker.postMessage({type:'bake',low:lowText,high:highText,opts:opts});
+    try{gtag('event','bake_run',{res:opts.res});}catch(_){}
+  });
+  function phaseLabel(p){return {parse:'Reading meshes',bvh:'Building BVH',bake:'Projecting rays',pack:'Packing maps',done:'Done'}[p]||'Working';}
+
+  function fail(msg){
+    statusEl.className='status err'; statusEl.textContent=msg; $('prog').hidden=true;
+    bakeBtn.disabled=false; bakeBtn.textContent='Bake maps'; if(worker){worker.terminate();worker=null;}
+  }
+  function baseName(){
+    var b=(lowName||'bake').replace(/\.obj$/i,'').replace(/[_\-\s]?(low|lp|lowpoly)$/i,'');
+    return (b||'bake').replace(/[^\w\-]+/g,'_');
+  }
+  var MAPS=[['normal','Normal'],['ao','Ambient occlusion'],['curv','Curvature']];
+  function finish(m,res){
+    var secs=((performance.now()-t0)/1000).toFixed(1);
+    statusEl.className='status'; statusEl.textContent='Baked '+res+'×'+res+' in '+secs+'s';
+    $('prog-fill').style.width='100%'; setTimeout(function(){$('prog').hidden=true;},600);
+    bakeBtn.disabled=false; bakeBtn.textContent='Bake maps';
+    results.innerHTML=''; baked={};
+    MAPS.forEach(function(pair){
+      var key=pair[0]; if(!m[key])return;
+      var img=new ImageData(new Uint8ClampedArray(m[key]),res,res);
+      var cv=document.createElement('canvas');cv.width=res;cv.height=res;cv.getContext('2d').putImageData(img,0,0);
+      var name=baseName()+'_'+key+'.png';
+      var card=document.createElement('div');card.className='mapcard';
+      var frame=document.createElement('div');frame.className='frame';frame.appendChild(cv);
+      var meta=document.createElement('div');meta.className='meta';
+      meta.innerHTML='<div class="t">'+pair[1]+' <span>'+res+'px</span></div>';
+      var btn=document.createElement('button');btn.className='dlbtn';
+      btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>PNG';
+      meta.appendChild(btn);card.appendChild(frame);card.appendChild(meta);results.appendChild(card);
+      cv.toBlob(function(blob){
+        var url=URL.createObjectURL(blob); baked[name]=url;
+        btn.addEventListener('click',function(){dl(url,name);});
+      },'image/png');
+    });
+    dlall.hidden=false;
+    if(worker){worker.terminate();worker=null;}
+  }
+  function dl(url,name){var a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();}
+  dlall.addEventListener('click',function(){var i=0;Object.keys(baked).forEach(function(n){setTimeout(function(){dl(baked[n],n);},i*250);i++;});});
+})();
+</script>
+</body>
+</html>
