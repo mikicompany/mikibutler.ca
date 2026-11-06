@@ -412,9 +412,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       slides.forEach((item, i) => {
         const slide = document.createElement('div');
         slide.className = 'slide';
+        // Media is lazy: only the visible slide (and its neighbours) actually
+        // fetches, via the data-src → src swap in goTo(). Without this a phone
+        // tries to pull all ~60 slides (and every autoplay iframe) at once.
         const media = item.video
-          ? `<div class="slide-video"><iframe class="slide-video-frame" src="https://www.youtube.com/embed/${item.video}?autoplay=1&mute=1&loop=1&playlist=${item.video}&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1" title="${item.title}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>`
-          : `<img src="${(item.img || '').replace('/4k/', '/large/')}" alt="${item.title}" />`;
+          ? `<div class="slide-video"><iframe class="slide-video-frame" data-src="https://www.youtube.com/embed/${item.video}?autoplay=1&mute=1&loop=1&playlist=${item.video}&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1" title="${item.title}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>`
+          : `<img data-src="${(item.img || '').replace('/4k/', '/large/')}" alt="${item.title}" decoding="async" />`;
         slide.innerHTML = `
           ${media}
           <div class="slide-overlay"></div>
@@ -444,17 +447,41 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       setTimeout(() => { window.location.href = dest; }, 260);
     }
 
+    // ── Lazy slide media ──
+    // Load a slide's <img> on demand; start an iframe only when it's the
+    // active slide (so off-screen videos don't autoplay or burn data).
+    function loadImg(slide) {
+      const img = slide && slide.querySelector('img[data-src]');
+      if (img) { img.src = img.dataset.src; img.removeAttribute('data-src'); }
+    }
+    function startVideo(slide) {
+      const f = slide && slide.querySelector('iframe[data-src]');
+      if (f && !f.src) f.src = f.dataset.src;
+    }
+    function stopVideo(slide) {
+      const f = slide && slide.querySelector('iframe');
+      if (f && f.src) f.src = '';   // halt autoplay + free the connection
+    }
+
     function goTo(index) {
       const allSlides = document.querySelectorAll('.slide');
       const allDots = document.querySelectorAll('.slide-dot');
 
       allSlides[current]?.classList.remove('active');
       allDots[current]?.classList.remove('active');
+      stopVideo(allSlides[current]);
 
       current = (index + slides.length) % slides.length;
 
       allSlides[current]?.classList.add('active');
       allDots[current]?.classList.add('active');
+
+      // Load the visible slide and preload its two neighbours for smooth nav.
+      const n = slides.length;
+      loadImg(allSlides[current]);
+      loadImg(allSlides[(current + 1) % n]);
+      loadImg(allSlides[(current - 1 + n) % n]);
+      startVideo(allSlides[current]);
 
       const counter = document.getElementById('slide-counter');
       if (counter) counter.textContent = (current + 1) + ' / ' + slides.length;
