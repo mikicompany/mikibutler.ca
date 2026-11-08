@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0a0c08" />
+<title>CANDELA — The Night of the Dead</title>
+<meta name="description" content="CANDELA — a tiny trading-card game by Miki Butler. Tend your ofrenda of candles through the Night of the Dead: summon guardian dead, snuff your rival's light, outlast the dark until dawn." />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0a0c08; --bg2:#10140b; --panel:#15190f; --line:#2a331b;
+    --fg:#e9ead0; --muted:#8c9470; --accent:#a0ff00; --accent-ink:#0c1400;
+    --cal:#ff5db1; --and:#ffb43c; --nest:#7bd0ff; --bat:#c9ff57; --rite:#d7a0ff;
+    --flame:#ffd24a;
+    --f-ui:"Inter",system-ui,sans-serif; --f-px:"Press Start 2P",monospace;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{background:radial-gradient(130% 90% at 50% 0%,var(--bg2),var(--bg) 70%);color:var(--fg);
+    font-family:var(--f-ui);overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+
+  /* ── layout ── */
+  #game{position:fixed;inset:0;display:flex;flex-direction:column;padding:8px;gap:6px}
+  .row{display:flex;align-items:center;gap:8px}
+  .hud{justify-content:space-between;font-family:var(--f-px);font-size:10px}
+  .hud .dawn{color:var(--accent);text-shadow:0 0 10px rgba(160,255,0,.5)}
+  .side{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 10px;flex:1}
+  .side .who{font-family:var(--f-px);font-size:9px;color:var(--muted);white-space:nowrap}
+  .side.me .who{color:var(--accent)}
+  .luz{display:flex;align-items:center;gap:3px;font-size:12px;color:var(--accent);font-weight:700}
+  .candles{display:flex;gap:5px;align-items:flex-end;height:30px;margin-left:auto}
+  .candle{width:12px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:30px}
+  .candle .fl{width:9px;border-radius:50% 50% 45% 45%;background:radial-gradient(circle at 50% 35%,#fff,var(--flame) 55%,#ff7a1a 100%);
+    box-shadow:0 0 8px var(--flame),0 0 16px rgba(255,140,0,.6);transition:height .25s ease,opacity .25s}
+  .candle .wx{width:7px;background:linear-gradient(#e9ead0,#b9bb96);border-radius:1px}
+  .candle.out .fl{opacity:0;height:0!important}
+  .candle.out .wx{background:#3a3f2a}
+  .lightnum{font-size:11px;color:var(--muted);min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
+
+  .board{flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px;min-height:0}
+  .lane{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;min-height:84px;
+    border-radius:12px;transition:background .15s,box-shadow .15s}
+  .lane.enemy{align-items:flex-start} .lane.mine{align-items:flex-end}
+  .lane.tgt{background:rgba(160,255,0,.06);box-shadow:inset 0 0 0 1px rgba(160,255,0,.4)}
+  .midline{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);position:relative}
+  .midline span{position:absolute;left:50%;top:-9px;transform:translateX(-50%);background:var(--bg);padding:0 10px;
+    font-family:var(--f-px);font-size:7px;color:var(--muted);letter-spacing:1px}
+
+  /* ── cards ── */
+  .unit{width:62px;height:80px;border-radius:9px;background:linear-gradient(180deg,#1b2012,#10140b);
+    border:1px solid var(--line);position:relative;display:flex;flex-direction:column;align-items:center;
+    padding-top:16px;transition:transform .12s,box-shadow .12s,opacity .2s;cursor:default}
+  .unit .g{font-size:22px;line-height:1}
+  .unit .nm{font-size:7.5px;font-weight:700;text-align:center;line-height:1.05;padding:2px 3px 0;color:#e9ead0}
+  .unit .cost{position:absolute;top:-6px;left:-6px;width:18px;height:18px;border-radius:50%;background:var(--accent);
+    color:var(--accent-ink);font-size:10px;font-weight:800;display:grid;place-items:center;box-shadow:0 0 8px rgba(160,255,0,.5)}
+  .unit .lt,.unit .gd{position:absolute;bottom:-6px;width:18px;height:18px;border-radius:50%;font-size:10px;font-weight:800;
+    display:grid;place-items:center;color:#0a0c08}
+  .unit .lt{left:-5px;background:#ff9b3d} .unit .gd{right:-5px;background:#8fd0ff}
+  .unit[data-f="calaca"]{border-color:var(--cal)} .unit[data-f="andino"]{border-color:var(--and)}
+  .unit[data-f="nest"]{border-color:var(--nest)} .unit[data-f="bat"]{border-color:var(--bat)}
+  .unit.sick{opacity:.72;filter:grayscale(.3)}
+  .unit.ready{box-shadow:0 0 0 1px rgba(160,255,0,.35)}
+  .unit.ready:hover{transform:translateY(-4px)}
+  .unit.sel{box-shadow:0 0 0 2px var(--accent),0 0 16px rgba(160,255,0,.5);transform:translateY(-4px)}
+  .unit.canhit{cursor:pointer;box-shadow:0 0 0 1px rgba(255,93,93,.6)}
+  .unit.hurt{animation:hurt .3s}
+  @keyframes hurt{0%,100%{transform:translateY(0)}25%{transform:translate(3px,2px)}75%{transform:translate(-3px,2px)}}
+  .kw{position:absolute;top:1px;right:2px;font-size:6.5px;font-weight:800;letter-spacing:.04em;color:var(--accent)}
+
+  /* hand */
+  .hand{display:flex;justify-content:center;align-items:flex-end;gap:-6px;min-height:118px;padding:0 6px}
+  .card{width:84px;height:112px;border-radius:11px;background:linear-gradient(180deg,#1d2314,#0d1009);
+    border:1px solid var(--line);margin:0 -8px;position:relative;display:flex;flex-direction:column;align-items:center;
+    padding:18px 5px 6px;transition:transform .14s,margin .14s,box-shadow .14s;cursor:pointer;flex:0 0 auto}
+  .card:hover{transform:translateY(-16px) scale(1.04);margin:0 2px;z-index:5;box-shadow:0 10px 26px rgba(0,0,0,.6)}
+  .card[data-f="calaca"]{border-color:var(--cal)} .card[data-f="andino"]{border-color:var(--and)}
+  .card[data-f="nest"]{border-color:var(--nest)} .card[data-f="bat"]{border-color:var(--bat)} .card[data-f="rite"]{border-color:var(--rite)}
+  .card .g{font-size:30px;line-height:1}
+  .card .nm{font-size:9px;font-weight:800;text-align:center;line-height:1.08;margin-top:2px}
+  .card .tx{font-size:7.5px;color:var(--muted);text-align:center;line-height:1.15;margin-top:3px;padding:0 1px}
+  .card .cost{position:absolute;top:-7px;left:-7px;width:22px;height:22px;border-radius:50%;background:var(--accent);
+    color:var(--accent-ink);font-size:12px;font-weight:800;display:grid;place-items:center;box-shadow:0 0 10px rgba(160,255,0,.5)}
+  .card .lt,.card .gd{position:absolute;bottom:-6px;width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:800;display:grid;place-items:center;color:#0a0c08}
+  .card .lt{left:-5px;background:#ff9b3d} .card .gd{right:-5px;background:#8fd0ff}
+  .card.cantplay{opacity:.45;filter:grayscale(.5)}
+  .card.cantplay:hover{transform:none;margin:0 -8px}
+
+  /* bar */
+  .bar{justify-content:space-between;gap:8px}
+  .log{flex:1;font-size:11px;color:var(--muted);height:16px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .end{font-family:var(--f-px);font-size:10px;background:var(--accent);color:var(--accent-ink);padding:10px 16px;border-radius:10px;
+    box-shadow:0 0 16px rgba(160,255,0,.35);white-space:nowrap}
+  .end:disabled{opacity:.4;box-shadow:none}
+  .end.enemyturn{background:#2a331b;color:var(--muted)}
+
+  /* overlays */
+  .ov{position:fixed;inset:0;z-index:40;background:rgba(6,8,4,.82);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+  .ov[hidden]{display:none}
+  .panel{max-width:440px;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px 24px;text-align:center}
+  .panel h1{font-family:var(--f-px);font-size:26px;color:var(--accent);margin:0 0 4px;text-shadow:0 0 18px rgba(160,255,0,.5);letter-spacing:1px}
+  .panel .sub{font-family:var(--f-px);font-size:8px;color:var(--cal);letter-spacing:2px;margin-bottom:18px}
+  .panel p{font-size:13.5px;color:#cfd3c0;line-height:1.55;text-align:left;margin:10px 0}
+  .panel p b{color:var(--accent)} .panel .em{color:var(--flame)}
+  .panel .start{font-family:var(--f-px);font-size:12px;background:var(--accent);color:var(--accent-ink);padding:14px 26px;border-radius:12px;margin-top:16px;box-shadow:0 0 18px rgba(160,255,0,.4)}
+  .panel .by{margin-top:14px;font-size:11px;color:var(--muted)} .panel .by a{color:var(--accent);text-decoration:none}
+  .res h1{font-size:30px}
+  @media (max-width:420px){ .card{width:74px;height:100px} .unit{width:56px;height:72px} }
+</style>
+</head>
+<body>
+<div id="game" hidden>
+  <div class="row hud">
+    <span class="dawn" id="dawn">DAWN IN 14</span>
+    <span id="turnlbl" style="color:var(--muted)">YOUR NIGHT</span>
+  </div>
+
+  <div class="row">
+    <div class="side" id="side-ai">
+      <span class="who">RIVAL</span>
+      <span class="luz"><span id="ai-luz">0</span>/<span id="ai-maxluz">0</span> ✦</span>
+      <span style="font-size:10px;color:var(--muted)">hand <b id="ai-hand">0</b> · deck <b id="ai-deck">0</b></span>
+      <div class="candles" id="ai-candles"></div><span class="lightnum" id="ai-light"></span>
+    </div>
+  </div>
+
+  <div class="board">
+    <div class="lane enemy" id="lane-ai"></div>
+    <div class="midline"><span>THE VEIL</span></div>
+    <div class="lane mine" id="lane-me"></div>
+  </div>
+
+  <div class="row">
+    <div class="side me" id="side-me">
+      <span class="who">YOU</span>
+      <span class="luz"><span id="me-luz">0</span>/<span id="me-maxluz">0</span> ✦</span>
+      <span style="font-size:10px;color:var(--muted)">deck <b id="me-deck">0</b></span>
+      <div class="candles" id="me-candles"></div><span class="lightnum" id="me-light"></span>
+    </div>
+  </div>
+
+  <div class="hand" id="hand"></div>
+
+  <div class="row bar">
+    <div class="log" id="log">Tend your light…</div>
+    <button class="end" id="end">END NIGHT</button>
+  </div>
+</div>
+
+<div class="ov" id="title">
+  <div class="panel">
+    <h1>CANDELA</h1>
+    <div class="sub">THE NIGHT OF THE DEAD</div>
+    <p>Tend your <b>ofrenda</b> of candles through the longest night. Spend <b>Luz ✦</b> to summon the guardian dead — sugar-skull saints, Andean gods, your own bats — to defend your flames and <span class="em">snuff your rival's</span>.</p>
+    <p><b>Win</b> by snuffing every rival candle — or, when <b>dawn</b> breaks, hold more light than they do.</p>
+    <p style="font-size:12px;color:var(--muted)">Tap a card to summon · tap your guardian, then a target, to strike · <b>END NIGHT</b> to pass.</p>
+    <button class="start" id="go">LIGHT THE FIRST CANDLE</button>
+    <div class="by">a tiny TCG by <a href="/index.html">Miki Butler</a></div>
+  </div>
+</div>
+
+<div class="ov" id="result" hidden>
+  <div class="panel res">
+    <h1 id="res-title">DAWN</h1>
+    <p id="res-text" style="text-align:center"></p>
+    <button class="start" id="again">PLAY AGAIN</button>
+    <div class="by"><a href="/arcade.html">← back to the arcade</a></div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const rnd=n=>Math.floor(Math.random()*n);
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+// ── card templates ──  cost / light(attack) / guard(hp) / kw
+const DB={
+  bat   :{n:"Lantern-Bat",   f:"bat",    g:"🦇", c:1,l:1,d:1, kw:["echo"],  t:"Echo: draw a card"},
+  acol  :{n:"Marigold Acolyte",f:"calaca",g:"🌼", c:2,l:2,d:2, t:"Guards the altar"},
+  skull :{n:"Sugar Skull",   f:"calaca", g:"💀", c:2,l:3,d:1, t:"Fragile, fierce"},
+  hatch :{n:"Brood Hatchling",f:"nest",  g:"🥚", c:1,l:1,d:1, kw:["brood"], t:"Brood: hatch a 1/1 Bug"},
+  condor:{n:"Condor of the Sun",f:"andino",g:"🦅",c:4,l:4,d:4, kw:["swift"], t:"Swift: strikes at once"},
+  mat   :{n:"Calaca Mat",    f:"calaca", g:"🎭", c:3,l:3,d:3, kw:["relight"],t:"Relight: on death, +3 light"},
+  nest  :{n:"The Hollow Nest",f:"nest",  g:"🕳️", c:4,l:2,d:5, kw:["broodmother"],t:"Each dawn: hatch a Bug"},
+  gourd :{n:"Nightmare Gourd",f:"calaca",g:"🎃", c:6,l:6,d:6, t:"The heart of the night"},
+  tumi  :{n:"El Tumi, Rite", f:"rite",   g:"🗡️", c:2, rite:"buff", t:"A guardian gains +2/+2"},
+  light :{n:"Ofrenda Light", f:"rite",   g:"🕯️", c:2, rite:"heal", t:"Restore 4 light"},
+  bug   :{n:"Bug",           f:"nest",   g:"🐛", c:0,l:1,d:1, token:true}
+};
+const KWL={echo:"ECHO",brood:"+BUG",swift:"SWIFT",relight:"LIGHT",broodmother:"BROOD"};
+const DECK=["bat","bat","bat","acol","acol","acol","skull","skull","hatch","hatch",
+            "condor","condor","mat","nest","gourd","tumi","tumi","light","light","acol"];
+
+let uid=1;
+function inst(id){const t=DB[id];return {id,...t,uid:uid++,cost:t.c,d:t.d,maxd:t.d,l:t.l,sick:!(t.kw&&t.kw.includes("swift")),acted:false};}
+function newPlayer(ai){return {ai,deck:shuffle(DECK.map(inst)),hand:[],board:[],luz:0,maxluz:0,light:15,maxlight:15};}
+
+let me,ai,dawn,turn,active,sel,over;
+
+function start(){
+  uid=1; me=newPlayer(false); ai=newPlayer(true);
+  dawn=14; turn=0; sel=null; over=false; active=me;
+  for(let i=0;i<3;i++){draw(me);draw(ai);} draw(ai); // AI on the draw gets +1
+  $('title').hidden=true; $('result').hidden=true; $('game').hidden=false;
+  startTurn(me,true);
+}
+function draw(p){ if(p.deck.length) p.hand.push(p.deck.pop()); }
+
+function startTurn(p,first){
+  active=p;
+  if(!first){ dawn--; }
+  if(dawn<=0){ return resolveDawn(); }
+  p.maxluz=Math.min(10,p.maxluz+1); p.luz=p.maxluz;
+  p.board.forEach(u=>{u.sick=false;u.acted=false;});
+  // broodmother
+  p.board.filter(u=>u.kw&&u.kw.includes("broodmother")).forEach(()=>summon(p,inst("bug")));
+  if(!first) draw(p);
+  log(p.ai?"The rival stirs…":"Your night. Tend the light.");
+  render();
+  if(p.ai){ setTimeout(aiTurn,650); }
+}
+
+function summon(p,card){ if(p.board.length<6){ p.board.push(card); return true;} return false; }
+
+function playFromHand(idx){
+  if(active!==me||over) return;
+  const c=me.hand[idx]; if(!c||c.cost>me.luz) return;
+  if(c.rite){
+    if(c.rite==="buff"){
+      const t=me.board.filter(u=>true);
+      if(!t.length){ log("No guardian to bless."); return; }
+      beginRite(idx); return;
+    }
+    if(c.rite==="heal"){ me.luz-=c.cost; me.hand.splice(idx,1); heal(me,4); log("Ofrenda relit — +4 light."); render(); checkEnd(); return; }
+  }
+  me.luz-=c.cost; me.hand.splice(idx,1);
+  resolveSummon(me,c);
+  render(); checkEnd();
+}
+function resolveSummon(p,c){
+  const u=inst(c.id); // fresh instance keeps sickness rules
+  summon(p,u);
+  if(c.kw&&c.kw.includes("echo")){ draw(p); log((p.ai?"Rival ":"")+ "Echo — a card is drawn."); }
+  if(c.kw&&c.kw.includes("brood")){ summon(p,inst("bug")); log("A Bug hatches."); }
+}
+let ritePending=null;
+function beginRite(idx){ ritePending=idx; log("Choose a guardian to bless (+2/+2)."); render(); }
+function applyRite(u){
+  if(ritePending==null) return;
+  const c=me.hand[ritePending]; me.luz-=c.cost; me.hand.splice(ritePending,1); ritePending=null;
+  u.l+=2; u.d+=2; u.maxd+=2; log("El Tumi blesses "+u.n+".");
+  render(); checkEnd();
+}
+
+function clickUnit(side,u){
+  if(active!==me||over) return;
+  if(ritePending!=null){ if(side==="me") applyRite(u); return; }
+  if(side==="me"){
+    if(u.sick||u.acted) return;
+    sel=(sel===u)?null:u; render(); return;
+  }
+  // clicking enemy unit = attack it
+  if(sel){ attack(sel,u); }
+}
+function clickFace(side){
+  if(active!==me||over||!sel) return;
+  if(side==="ai") attack(sel,null);
+}
+
+function attack(att,target){ // target=null → face
+  if(att.acted||att.sick) return;
+  const def = active===me?ai:me;
+  if(target){
+    target.d-=att.l; att.d-=target.l;
+    flash(target); flash(att);
+    log(att.n+" clashes with "+target.n+".");
+    deaths();
+  } else {
+    def.light=Math.max(0,def.light-att.l);
+    log(att.n+" snuffs the rival's light ("+att.l+").");
+  }
+  att.acted=true; att.sick=true; sel=null;
+  render(); checkEnd();
+}
+function deaths(){
+  [me,ai].forEach(p=>{
+    for(let i=p.board.length-1;i>=0;i--){ const u=p.board[i];
+      if(u.d<=0){
+        if(u.kw&&u.kw.includes("relight")){ heal(p,3); log(u.n+" dies — Relight, +3 light."); }
+        p.board.splice(i,1);
+      }
+    }
+  });
+}
+function heal(p,n){ p.light=Math.min(p.maxlight,p.light+n); }
+
+// ── AI ──
+function aiTurn(){
+  if(over) return;
+  // play phase: spend luz greedily on best affordable
+  let guard=0;
+  (function playLoop(){
+    if(over) return;
+    const opts=ai.hand.map((c,i)=>({c,i})).filter(o=>o.c.cost<=ai.luz);
+    // prefer creatures when board has room; rites situationally
+    let pick=null;
+    const creatures=opts.filter(o=>!o.c.rite).sort((a,b)=>b.c.cost-a.c.cost);
+    if(ai.board.length<6 && creatures.length) pick=creatures[0];
+    else {
+      const heal=opts.find(o=>o.c.rite==="heal" && ai.light<=8);
+      const buff=opts.find(o=>o.c.rite==="buff" && ai.board.length);
+      pick=heal||buff||null;
+    }
+    if(pick && guard++<12){
+      const c=ai.hand[pick.i]; ai.luz-=c.cost; ai.hand.splice(pick.i,1);
+      if(c.rite==="heal"){ heal(ai,4); log("Rival relights its ofrenda."); }
+      else if(c.rite==="buff"){ const t=ai.board.slice().sort((a,b)=>b.l-a.l)[0]; if(t){t.l+=2;t.d+=2;t.maxd+=2;log("Rival blesses "+t.n+".");} }
+      else resolveSummon(ai,c);
+      render(); checkEnd(); if(over) return;
+      setTimeout(playLoop,420); return;
+    }
+    setTimeout(aiAttack,420);
+  })();
+}
+function aiAttack(){
+  if(over) return;
+  const ready=ai.board.filter(u=>!u.sick&&!u.acted);
+  (function atkLoop(){
+    if(over) return;
+    const a=ai.board.find(u=>!u.sick&&!u.acted);
+    if(!a){ setTimeout(()=>{ endForAI(); },400); return; }
+    // find a kill it survives
+    let tgt=me.board.filter(e=>a.l>=e.d && e.l<a.d).sort((x,y)=>y.l-x.l)[0];
+    if(!tgt){ // trade into biggest threat if it would die to it anyway? else face
+      const bigThreat=me.board.filter(e=>e.l>=4).sort((x,y)=>y.l-x.l)[0];
+      if(bigThreat && a.d<=bigThreat.l && a.l>=bigThreat.d) tgt=bigThreat;
+    }
+    if(tgt) attackAI(a,tgt); else attackAI(a,null);
+    setTimeout(atkLoop,460);
+  })();
+}
+function attackAI(att,target){
+  const def=me;
+  if(target){ target.d-=att.l; att.d-=target.l; flash(target);flash(att); log("Rival's "+att.n+" strikes "+target.n+"."); deaths(); }
+  else { def.light=Math.max(0,def.light-att.l); log("Rival's "+att.n+" snuffs your light ("+att.l+")."); }
+  att.acted=true; att.sick=true; render(); checkEnd();
+}
+function endForAI(){ if(over) return; startTurn(me); }
+
+// ── turn / end ──
+$('end').onclick=()=>{ if(active===me&&!over&&ritePending==null){ sel=null; startTurn(ai); } };
+
+function checkEnd(){
+  if(over) return;
+  if(ai.light<=0){ return finish(true,"You snuffed the rival's last candle."); }
+  if(me.light<=0){ return finish(false,"Your ofrenda went dark."); }
+}
+function resolveDawn(){
+  if(over) return;
+  if(me.light>ai.light) finish(true,"Dawn breaks — you held more light ("+me.light+" vs "+ai.light+").");
+  else if(ai.light>me.light) finish(false,"Dawn breaks — the rival held more light ("+ai.light+" vs "+me.light+").");
+  else finish(false,"Dawn breaks in a tie — the dark takes it ("+me.light+" each).");
+}
+function finish(win,txt){
+  over=true;
+  $('res-title').textContent=win?"DAWN WINS":"THE DARK WINS";
+  $('res-title').style.color=win?"var(--accent)":"var(--cal)";
+  $('res-text').textContent=txt;
+  render(); $('result').hidden=false;
+}
+
+// ── render ──
+function unitEl(side,u){
+  const e=document.createElement('div'); e.className='unit'+(u.sick?' sick':'')+(!u.sick&&!u.acted&&side==='me'?' ready':'')+(sel===u?' sel':'');
+  e.dataset.f=u.f; e.dataset.uid=u.uid;
+  if(side==='ai'&&sel) e.classList.add('canhit');
+  if(ritePending!=null&&side==='me') e.classList.add('canhit');
+  e.innerHTML=`<span class="cost">${u.c}</span>${u.kw&&u.kw.length&&KWL[u.kw[0]]?`<span class="kw">${KWL[u.kw[0]]}</span>`:''}
+    <div class="g">${u.g}</div><div class="nm">${u.n}</div>
+    <span class="lt">${u.l}</span><span class="gd">${u.d}</span>`;
+  e.onclick=()=>clickUnit(side,u);
+  return e;
+}
+function candleEls(host,light,max){
+  host.innerHTML=''; const n=3, per=max/n;
+  for(let i=0;i<n;i++){ const lit=Math.max(0,Math.min(per,light-i*per));
+    const c=document.createElement('div'); c.className='candle'+(lit<=0?' out':'');
+    const h=4+ (lit/per)*16;
+    c.innerHTML=`<div class="fl" style="height:${lit<=0?0:h}px"></div><div class="wx" style="height:${8+(lit/per)*14}px"></div>`;
+    host.appendChild(c);
+  }
+}
+function render(){
+  $('dawn').textContent="DAWN IN "+Math.max(0,dawn);
+  $('turnlbl').textContent=active===me?"YOUR NIGHT":"RIVAL'S NIGHT";
+  $('me-luz').textContent=me.luz; $('me-maxluz').textContent=me.maxluz; $('me-deck').textContent=me.deck.length;
+  $('ai-luz').textContent=ai.luz; $('ai-maxluz').textContent=ai.maxluz; $('ai-deck').textContent=ai.deck.length; $('ai-hand').textContent=ai.hand.length;
+  $('me-light').textContent=me.light; $('ai-light').textContent=ai.light;
+  candleEls($('me-candles'),me.light,me.maxlight); candleEls($('ai-candles'),ai.light,ai.maxlight);
+  const la=$('lane-ai'),lm=$('lane-me'); la.innerHTML=''; lm.innerHTML='';
+  ai.board.forEach(u=>la.appendChild(unitEl('ai',u)));
+  me.board.forEach(u=>lm.appendChild(unitEl('me',u)));
+  la.classList.toggle('tgt',!!sel); la.onclick=e=>{ if(e.target===la) clickFace('ai'); };
+  // hand
+  const h=$('hand'); h.innerHTML='';
+  me.hand.forEach((c,i)=>{
+    const can=active===me&&!over&&c.cost<=me.luz&&ritePending==null;
+    const el=document.createElement('div'); el.className='card'+(can?'':' cantplay'); el.dataset.f=c.f;
+    el.innerHTML=`<span class="cost">${c.cost}</span><div class="g">${c.g}</div><div class="nm">${c.n}</div><div class="tx">${c.t||''}</div>
+      ${c.rite?'':`<span class="lt">${c.l}</span><span class="gd">${c.d}</span>`}`;
+    el.onclick=()=>playFromHand(i);
+    h.appendChild(el);
+  });
+  const end=$('end'); end.disabled=active!==me||over; end.classList.toggle('enemyturn',active!==me);
+  end.textContent=active===me?"END NIGHT":"RIVAL…";
+}
+function flash(u){ const el=document.querySelector('.unit[data-uid="'+u.uid+'"]'); if(el){el.classList.add('hurt'); setTimeout(()=>el&&el.classList.remove('hurt'),300);} }
+function log(t){ $('log').textContent=t; }
+
+$('go').onclick=start; $('again').onclick=start;
+// expose for headless playtest
+window.__candela={get me(){return me;},get ai(){return ai;},get over(){return over;},start,playFromHand,endTurn:()=>$('end').onclick(),
+  _faceTest(){ const u=inst("skull"); u.sick=false; me.board.push(u); const before=ai.light; sel=u; clickFace('ai'); return {before,after:ai.light}; },
+  _tradeTest(){ const a=inst("condor"); a.sick=false; me.board.push(a); const d=inst("acol"); ai.board.push(d); const aiB=ai.board.length,meB=me.board.length; sel=a; clickUnit('ai',d); return {aiBoardAfter:ai.board.length,meBoardAfter:me.board.length,aiB,meB}; } };
+})();
+</script>
+</body>
+</html>

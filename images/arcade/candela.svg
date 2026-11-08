@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" width="400" height="600" role="img" aria-label="CANDELA — The Night of the Dead">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="32%" r="80%">
+      <stop offset="0%" stop-color="#16200c"/><stop offset="70%" stop-color="#0a0c08"/><stop offset="100%" stop-color="#05060a"/>
+    </radialGradient>
+    <radialGradient id="flame" cx="50%" cy="38%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="35%" stop-color="#eaffb0"/>
+      <stop offset="62%" stop-color="#a0ff00"/><stop offset="100%" stop-color="#3f8a00"/>
+    </radialGradient>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a0ff00" stop-opacity=".55"/><stop offset="100%" stop-color="#a0ff00" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <rect width="400" height="600" fill="url(#bg)"/>
+  <!-- faint dot grid -->
+  <g fill="#1b2410" opacity=".5">
+    <circle cx="60" cy="90" r="2"/><circle cx="150" cy="60" r="2"/><circle cx="330" cy="100" r="2"/>
+    <circle cx="300" cy="200" r="2"/><circle cx="70" cy="240" r="2"/><circle cx="350" cy="320" r="2"/>
+  </g>
+
+  <!-- bats -->
+  <g fill="#c9ff57" opacity=".9" filter="url(#glow)">
+    <path d="M78 150c6-8 10-3 12 1 2-4 6-9 12-1-3-1-7 0-9 4-1-3-3-4-6-4 0 0-1 1 0 0-3 0-5 1-9 0z"/>
+    <path d="M300 118c7-9 12-3 14 2 3-5 8-10 14-2-4-1-8 0-10 5-2-4-4-5-7-5-4 0-6 1-11 0z" opacity=".75"/>
+    <path d="M330 250c5-7 9-2 11 1 2-4 6-8 11-1-3-1-6 0-8 4-1-3-3-3-5-3-3 0-5 1-9-1z" opacity=".6"/>
+  </g>
+
+  <!-- candle -->
+  <circle cx="200" cy="300" r="120" fill="url(#halo)"/>
+  <g>
+    <!-- wax -->
+    <rect x="178" y="300" width="44" height="150" rx="6" fill="#e9ead0"/>
+    <rect x="178" y="300" width="14" height="150" rx="6" fill="#ffffff" opacity=".35"/>
+    <rect x="178" y="300" width="44" height="12" rx="6" fill="#fff" opacity=".2"/>
+    <!-- drips -->
+    <path d="M186 312c-6 14 0 26 0 26s7-12 2-26z" fill="#d8d9bf"/>
+    <!-- wick -->
+    <rect x="198" y="286" width="4" height="18" fill="#2a2a1c"/>
+    <!-- flame -->
+    <path d="M200 232c22 26 26 44 10 58-10 9-30 8-38-6-8-13-1-30 12-40 2 12 10 14 10 14-2-9 0-18 6-26z" fill="url(#flame)" filter="url(#glow)"/>
+  </g>
+
+  <!-- title -->
+  <g text-anchor="middle" font-family="'Arial Black',Impact,sans-serif">
+    <text x="200" y="508" font-size="58" font-weight="900" letter-spacing="2" fill="#a0ff00" filter="url(#glow)">CANDELA</text>
+    <text x="200" y="534" font-size="13.5" font-weight="700" letter-spacing="5" fill="#ff5db1">THE NIGHT OF THE DEAD</text>
+    <text x="200" y="566" font-size="12" letter-spacing="2" fill="#8c9470">a tiny TCG · Miki Butler</text>
+  </g>
+</svg>
