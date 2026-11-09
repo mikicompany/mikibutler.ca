@@ -81,6 +81,14 @@
     }
     .type-badge.digital { background: rgba(160,255,0,.9); color: #0a0b08; }
     .type-badge.physical { background: rgba(20,20,20,.82); color: #fff; border: 1px solid rgba(255,255,255,.25); }
+    .type-badge.addon { left: auto; right: 10px; background: rgba(160,255,0,.14); color: #d7f3a6; border: 1px solid rgba(160,255,0,.55); backdrop-filter: blur(4px); }
+
+    /* Empty state (e.g. the Add-ons shelf before it fills) */
+    .store-empty { border: 1px dashed #2f3a1e; border-radius: 16px; padding: 52px 24px; text-align: center; color: var(--text-muted); }
+    .store-empty .se-ico { font-size: 34px; color: var(--accent); }
+    .store-empty h3 { color: #e9ead0; font-size: 19px; margin: 12px 0 6px; font-weight: 800; }
+    .store-empty p { font-size: 14px; max-width: 48ch; margin: 0 auto; line-height: 1.6; }
+    .store-empty a { color: var(--accent); }
     .product-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
     .product-body h2 { font-size: 16px; font-weight: 700; line-height: 1.25; }
     .product-card:hover .product-body h2 { color: var(--accent); }
@@ -323,15 +331,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     function typeBadge(t){ return '<span class="type-badge '+t+'">'+(t==='digital'?'⬇ Digital':'📦 Physical')+'</span>'; }
 
     // ── Views ──
+    function emptyMsg(filter){
+      if(filter==='addon') return '<div class="se-ico">✦</div><h3>Add-ons land here</h3>'+
+        '<p>Expansions, card &amp; texture packs, presets and extras for the tools and games — download instantly. First drops coming soon.</p>';
+      return '<div class="se-ico">🗃️</div><h3>Nothing here yet</h3><p>Check back soon.</p>';
+    }
     function renderList(filter){
-      var items = STORE.products.filter(function(p){ return filter==='all' ? true : p.type===filter; });
-      var tabs = ['all','digital','physical'].map(function(f){
-        var lbl = f==='all'?'All':(f==='digital'?'⬇ Digital':'📦 Physical');
+      var items = STORE.products.filter(function(p){
+        if(filter==='all') return true;
+        if(filter==='addon') return p.category==='addon';
+        return p.type===filter;
+      });
+      var tabs = ['all','digital','addon','physical'].map(function(f){
+        var lbl = f==='all'?'All':f==='digital'?'⬇ Digital':f==='addon'?'✦ Add-ons':'📦 Physical';
         return '<button class="store-tab'+(f===filter?' active':'')+'" data-filter="'+f+'">'+lbl+'</button>';
       }).join('');
       var cards = items.map(function(p){
         return '<a class="product-card '+p.type+'" href="?item='+encodeURIComponent(p.slug)+'">'+
-          '<div class="thumb">'+typeBadge(p.type)+'<img src="'+esc(p.image)+'" alt="'+esc(p.title)+'" loading="lazy" /></div>'+
+          '<div class="thumb">'+typeBadge(p.type)+(p.category==='addon'?'<span class="type-badge addon">✦ Add-on</span>':'')+'<img src="'+esc(p.image)+'" alt="'+esc(p.title)+'" loading="lazy" /></div>'+
           '<div class="product-body">'+
             '<h2>'+esc(p.title)+'</h2>'+
             '<div class="excerpt">'+esc(p.excerpt||'')+'</div>'+
@@ -343,11 +360,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       wrap.innerHTML =
         '<div class="store-head">'+
           '<h1>Store<span class="dot">.</span></h1>'+
-          '<p>Digital packs you download instantly, and physical prints &amp; goods shipped worldwide.</p>'+
+          '<p>Digital packs &amp; add-ons you download instantly, and physical prints &amp; goods shipped worldwide.</p>'+
         '</div>'+
         (STORE.note ? '<div class="sketch-banner">🚧 '+esc(STORE.note)+'</div>' : '')+
         '<div class="store-tabs">'+tabs+'</div>'+
-        '<div class="product-grid">'+cards+'</div>';
+        (items.length ? '<div class="product-grid">'+cards+'</div>' : '<div class="store-empty">'+emptyMsg(filter)+'</div>');
       wrap.querySelectorAll('.store-tab').forEach(function(b){
         b.addEventListener('click', function(){
           history.replaceState(null,'', b.dataset.filter==='all'?'store.html':'?type='+b.dataset.filter);
@@ -597,7 +614,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       var slug = params.get('item');
       var type = params.get('type');
       if(slug && byslug[slug]) renderDetail(byslug[slug]);
-      else renderList(['digital','physical'].indexOf(type)>=0 ? type : 'all');
+      else renderList(['digital','addon','physical'].indexOf(type)>=0 ? type : 'all');
       refreshCart();
     }).catch(function(){
       wrap.innerHTML = '<div class="store-head"><h1>Store<span class="dot">.</span></h1></div>'+

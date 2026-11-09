@@ -4,6 +4,28 @@
   "note": "",
   "products": [
     {
+      "slug": "candela-pnp",
+      "title": "CANDELA — Print & Play Deck",
+      "type": "digital",
+      "category": "addon",
+      "price": 9,
+      "image": "images/store-candela.svg",
+      "tags": [
+        "candela",
+        "tcg",
+        "print-and-play",
+        "add-on"
+      ],
+      "excerpt": "The full CANDELA card set as a print-and-play PDF — all four factions, two starter decks, tokens.",
+      "formats": [
+        ".pdf",
+        "Letter + A4",
+        "Tabletop Simulator"
+      ],
+      "gumroad": "",
+      "body": "**CANDELA — Print & Play Deck.** The full card set from the [browser game](/candela): all four factions — Calaca, Andino, La Nidada and Murciélago — two ready-to-shuffle starter decks, tokens and a one-page rules sheet.\n\n**What you get**\n- A print-ready **PDF** (US Letter + A4), nine cards per sheet, with cut and fold guides.\n- A **Tabletop Simulator** mod to play online with friends.\n- The rules reference and a two-minute quick-start.\n\n_To sell it: add your Gumroad permalink as `\"gumroad\"` on this product in `store.json` — checkout then opens right here on the page. Until then it shows as coming soon._"
+    },
+    {
       "slug": "blender-themes",
       "title": "Blender Themes",
       "type": "digital",
