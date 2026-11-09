@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="Environment Texture Pack Vol. 1">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="34%" r="80%">
+      <stop offset="0%" stop-color="#16200c"/><stop offset="70%" stop-color="#0a0c08"/><stop offset="100%" stop-color="#05060a"/>
+    </radialGradient>
+    <filter id="n1"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="4"/><feColorMatrix values="0 0 0 0 0.10  0 0 0 0 0.22  0 0 0 0 0.04  0 0 0 1 0"/></filter>
+    <filter id="n2"><feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2" seed="9"/><feColorMatrix values="0 0 0 0 0.18  0 0 0 0 0.30  0 0 0 0 0.05  0 0 0 1 0"/></filter>
+    <filter id="n3"><feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="1"/><feColorMatrix values="0 0 0 0 0.28  0 0 0 0 0.42  0 0 0 0 0.10  0 0 0 1 0"/></filter>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <clipPath id="tile"><rect x="0" y="0" width="150" height="150" rx="14"/></clipPath>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+
+  <!-- 3x3 swatch grid -->
+  <g transform="translate(175 70)">
+    <g transform="translate(0 0)"><g clip-path="url(#tile)"><rect width="150" height="150" filter="url(#n1)"/></g><rect width="150" height="150" rx="14" fill="none" stroke="#2a331b"/></g>
+    <g transform="translate(165 0)"><g clip-path="url(#tile)"><rect width="150" height="150" filter="url(#n2)"/></g><rect width="150" height="150" rx="14" fill="none" stroke="#2a331b"/></g>
+    <g transform="translate(330 0)"><g clip-path="url(#tile)"><rect width="150" height="150" filter="url(#n3)"/></g><rect width="150" height="150" rx="14" fill="none" stroke="#2a331b"/></g>
+    <g transform="translate(0 165)"><g clip-path="url(#tile)"><rect width="150" height="150" filter="url(#n3)"/></g><rect width="150" height="150" rx="14" fill="none" stroke="#2a331b"/></g>
+    <g transform="translate(165 165)"><g clip-path="url(#tile)"><rect width="150" height="150" filter="url(#n1)"/></g><rect width="150" height="150" rx="14" fill="none" stroke="#a0ff00" stroke-opacity=".5"/></g>
+    <g transform="translate(330 165)"><g clip-path="url(#tile)"><rect width="150" height="150" filter="url(#n2)"/></g><rect width="150" height="150" rx="14" fill="none" stroke="#2a331b"/></g>
+  </g>
+
+  <rect width="800" height="600" fill="#0a0c08" opacity="0"/>
+  <g text-anchor="middle" font-family="'Arial Black',Impact,sans-serif">
+    <text x="400" y="480" font-size="52" font-weight="900" letter-spacing="1" fill="#a0ff00" filter="url(#glow)">ENVIRONMENT TEXTURES</text>
+    <text x="400" y="512" font-size="17" font-weight="700" letter-spacing="6" fill="#d7f3a6">PACK · VOL. 1</text>
+    <text x="400" y="542" font-size="13" letter-spacing="2" fill="#8c9470">seamless PBR maps · colour · normal · height</text>
+  </g>
+</svg>
