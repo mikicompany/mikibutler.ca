@@ -25,6 +25,13 @@
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png" />
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+  <!-- Installable PWA: add Miki's Arcade to the home screen -->
+  <link rel="manifest" href="/arcade.webmanifest" />
+  <meta name="theme-color" content="#0a0c0f" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Arcade" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Arcade — Miki Butler</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta name="description" content="Miki Butler's arcade — browser games I've worked on, a Game Boy of Instagram reels and a pixel-art telly. Come play." />
@@ -954,6 +961,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <a class="ext-tool" href="/sculpt">
           <span class="ext-ico">🗿</span>
           <span class="ext-txt"><b>Pocket Sculpt</b><span>Touch-first digital clay — draw, smooth, inflate, grab &amp; flatten with mirror symmetry. Installs on Android</span></span>
+          <span class="ext-arrow">↗</span>
+        </a>
+        <a class="ext-tool" href="/bake">
+          <span class="ext-ico">🔥</span>
+          <span class="ext-txt"><b>Pocket Bake</b><span>Drop a low-poly &amp; high-poly OBJ and bake normal, AO &amp; curvature maps — right in your browser</span></span>
           <span class="ext-arrow">↗</span>
         </a>
         <a class="ext-tool" href="/kaleidoscope">
@@ -4625,6 +4637,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
       wireShare();
     })();
+  </script>
+  <!-- Register the arcade's service worker so it installs & works offline -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/arcade-sw.js').catch(function () {});
+      });
+    }
   </script>
 </body>
 </html>
