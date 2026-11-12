@@ -105,6 +105,31 @@
   .sec-head h2{font-size:clamp(26px,3.4vw,36px); line-height:1.1; letter-spacing:-.02em; margin:.3em 0 .35em; font-weight:800}
   .sec-head p{color:var(--muted); margin:0; font-size:16.5px}
 
+  /* showcase: new in this version */
+  .alive{position:relative; border:1px solid rgba(160,255,0,.35); border-radius:24px; padding:34px;
+    background:
+      radial-gradient(70% 90% at 85% 10%, rgba(160,255,0,.12), transparent 70%),
+      linear-gradient(180deg, var(--surface), var(--bg-2));
+    box-shadow:0 30px 80px rgba(0,0,0,.45), 0 0 0 1px rgba(160,255,0,.06) inset}
+  .alive-grid{display:grid; grid-template-columns:.9fr 1.1fr; gap:38px; align-items:center}
+  @media(max-width:900px){ .alive-grid{grid-template-columns:1fr; gap:26px} .alive{padding:24px} }
+  .alive h2{font-size:clamp(28px,4vw,42px); line-height:1.05; letter-spacing:-.025em; margin:.35em 0 .4em; font-weight:800}
+  .alive h2 .hl{color:var(--accent)}
+  .alive .intro{color:var(--muted); margin:0 0 20px; font-size:16.5px}
+  .alive-list{list-style:none; margin:0 0 18px; padding:0; display:grid; gap:12px}
+  .alive-list li{display:flex; gap:12px; align-items:flex-start; color:var(--muted); font-size:15px}
+  .alive-list li b{color:var(--text); font-weight:700}
+  .alive-list .ic{flex:none; width:32px; height:32px; border-radius:9px; display:grid; place-items:center;
+    background:linear-gradient(145deg,#1d2416,#121710); border:1px solid var(--border); color:var(--accent)}
+  .alive-list .ic svg{width:17px; height:17px}
+  .alive .small{color:var(--faint); font-size:13px; margin:0}
+  .alive figure{margin:0}
+  .alive figure img{width:100%; height:auto; display:block; border-radius:14px; border:1px solid var(--border);
+    box-shadow:0 26px 60px rgba(0,0,0,.55)}
+  .alive figcaption{color:var(--faint); font-size:12.5px; margin-top:10px; text-align:center; font-weight:600}
+  .badge-new{display:inline-flex; align-items:center; gap:8px}
+  .badge-new .pill{font-size:10.5px}
+
   /* screenshots */
   .shots{display:flex; flex-direction:column; gap:26px}
   .shots figure{margin:0}
@@ -197,6 +222,7 @@
       Core Board
     </a>
     <nav>
+      <a class="navlink" href="#alive">What's new</a>
       <a class="navlink" href="#look">Look inside</a>
       <a class="navlink" href="#features">Features</a>
       <a class="navlink" href="#promo">Promo</a>
@@ -218,20 +244,20 @@
         <h1>The reference board that <span class="hl">stays out of your way</span>.</h1>
         <p class="lede">Core Board is a small, fast desktop app for images. Drop references onto an infinite canvas, arrange and study them — and it all saves itself.</p>
         <div class="cta-row">
-          <a class="btn primary" href="downloads/0.4.0/CoreBoard-Setup-0.4.0.exe" download>
+          <a class="btn primary" href="downloads/0.3.1/CoreBoard-Setup-0.3.1.exe" download>
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.5 4v7.6H3zM10.5 12.4V20L3 18.9v-6.5zM11.6 3.85 21 2.5v9.1h-9.4zM21 12.4v9.1l-9.4-1.35v-7.75z"/></svg>
             Download for Windows
           </a>
-          <a class="btn ghost" href="downloads/0.4.0/CoreBoard-0.4.0-macos.dmg" download>
+          <a class="btn ghost" href="downloads/0.3.1/CoreBoard-0.3.1-macos.dmg" download>
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9s-1.9-.9-3.2-.8c-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.1-1.2 2.9-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.9zM14 5.5c.7-.8 1.1-1.9 1-3-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.5 2.8-1.3z"/></svg>
             macOS
           </a>
-          <a class="btn ghost" href="downloads/0.4.0/coreboard_0.4.0_amd64.deb" download>
+          <a class="btn ghost" href="downloads/0.3.1/coreboard_0.3.1_amd64.deb" download>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
             Linux
           </a>
         </div>
-        <div class="dlnote">v0.4.0 &nbsp;·&nbsp; Windows installer &nbsp;·&nbsp; macOS (Apple&nbsp;Silicon &amp; Intel) &nbsp;·&nbsp; Linux .deb &nbsp;·&nbsp; <span><a href="#releases" style="color:var(--accent-2);text-decoration:none">all versions &amp; downloads ↓</a></span></div>
+        <div class="dlnote">v0.3.1 &nbsp;·&nbsp; Windows installer &nbsp;·&nbsp; macOS (Apple&nbsp;Silicon &amp; Intel) &nbsp;·&nbsp; Linux .deb &nbsp;·&nbsp; <span><a href="#releases" style="color:var(--accent-2);text-decoration:none">all versions &amp; downloads ↓</a></span></div>
         <div class="meta-row">
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Windows · macOS · Linux</span>
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Native &amp; instant</span>
@@ -248,6 +274,32 @@
                    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"></video>
           </div>
           <div class="caption">Watch the 20-second tour · made for Reels / TikTok / Shorts</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEW IN THIS VERSION: FEELS ALIVE -->
+  <section id="alive">
+    <div class="wrap">
+      <div class="alive">
+        <div class="alive-grid">
+          <div>
+            <span class="badge-new"><span class="pill">New in v0.3.1</span><span class="eyebrow">Feels alive</span></span>
+            <h2>A board that <span class="hl">moves like the real thing</span>.</h2>
+            <p class="intro">Referencing should be fun. Core Board now glides, pops and swings, so arranging references feels like playing with prints on a table.</p>
+            <ul class="alive-list">
+              <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12h12"/><path d="m12 8 4 4-4 4"/><path d="M20 5v14"/></svg></span><span><b>Glide</b> · arrange, align, undo and fit view slide things into place instead of jumping.</span></li>
+              <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M3 9V5a2 2 0 0 1 2-2h4M21 15v4a2 2 0 0 1-2 2h-4" stroke-linecap="round"/></svg></span><span><b>Pop</b> · new images, notes and copies bounce in.</span></li>
+              <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="12" height="13" rx="2" transform="rotate(-8 12 10)"/><path d="M7 21h10" stroke-linecap="round" opacity=".6"/></svg></span><span><b>Lift &amp; swing</b> · a dragged image lifts off the board with a shadow and leans into your motion.</span></li>
+              <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18 16 6"/><path d="M10 6h6v6"/><path d="M4 9h3M4 13h2" opacity=".6"/></svg></span><span><b>Flick</b> · throw an image, or the whole board, and it coasts to a stop.</span></li>
+            </ul>
+            <p class="small">Prefer a still board? Untick <b>Animations</b> in the Boards window (<kbd>Ctrl+O</kbd>).</p>
+          </div>
+          <figure>
+            <img src="feels-alive.gif" width="800" height="500" alt="Core Board in motion: a cover art image swings and lifts as it's dragged, a lava texture is flicked and coasts to a stop, grid arrange glides every reference into rows, the view flies in to fit, and a duplicate pops onto the board." />
+            <figcaption>Recorded in Core Board v0.3.1</figcaption>
+          </figure>
         </div>
       </div>
     </div>
@@ -363,11 +415,11 @@
         <div class="panel">
           <h3>Install it</h3>
           <ol class="steps">
-            <li><b>Windows</b> · download <a href="downloads/0.4.0/CoreBoard-Setup-0.4.0.exe" download style="color:var(--accent-2)">CoreBoard-Setup-0.4.0.exe</a>, double-click it and click <b>Install</b>. Core Board opens when it's done and lands in the Start menu and on your desktop. If Windows says <i>"Windows protected your PC"</i>, click <b>More info → Run anyway</b> (it isn't code-signed yet).</li>
-            <li><b>macOS</b> · open <a href="downloads/0.4.0/CoreBoard-0.4.0-macos.dmg" download style="color:var(--accent-2)">the .dmg</a> and drag <b>Core Board</b> onto <b>Applications</b>. The first time, right-click the app → <b>Open</b> (or System Settings → Privacy &amp; Security → <b>Open Anyway</b>), since it isn't notarized yet.</li>
-            <li><b>Linux</b> · double-click <a href="downloads/0.4.0/coreboard_0.4.0_amd64.deb" download style="color:var(--accent-2)">the .deb</a> (Ubuntu, Debian, Mint…), or use the <a href="downloads/0.4.0/CoreBoard-0.4.0-linux.tar.gz" download style="color:var(--accent-2)">.tar.gz</a> and run <code>./coreboard</code>.</li>
+            <li><b>Windows</b> · download <a href="downloads/0.3.1/CoreBoard-Setup-0.3.1.exe" download style="color:var(--accent-2)">CoreBoard-Setup-0.3.1.exe</a>, double-click it and click <b>Install</b>. Core Board opens when it's done and lands in the Start menu and on your desktop. If Windows says <i>"Windows protected your PC"</i>, click <b>More info → Run anyway</b> (it isn't code-signed yet).</li>
+            <li><b>macOS</b> · open <a href="downloads/0.3.1/CoreBoard-0.3.1-macos.dmg" download style="color:var(--accent-2)">the .dmg</a> and drag <b>Core Board</b> onto <b>Applications</b>. The first time, right-click the app → <b>Open</b> (or System Settings → Privacy &amp; Security → <b>Open Anyway</b>), since it isn't notarized yet.</li>
+            <li><b>Linux</b> · double-click <a href="downloads/0.3.1/coreboard_0.3.1_amd64.deb" download style="color:var(--accent-2)">the .deb</a> (Ubuntu, Debian, Mint…), or use the <a href="downloads/0.3.1/CoreBoard-0.3.1-linux.tar.gz" download style="color:var(--accent-2)">.tar.gz</a> and run <code>./coreboard</code>.</li>
           </ol>
-          <p style="margin:4px 0 0; font-size:13px">Prefer no installer on Windows? The <a href="downloads/0.4.0/CoreBoard-0.4.0-windows-portable.zip" download style="color:var(--accent-2)">portable .zip</a> runs from anywhere: unzip and double-click <code>coreboard.exe</code>.</p>
+          <p style="margin:4px 0 0; font-size:13px">Prefer no installer on Windows? The <a href="downloads/0.3.1/CoreBoard-0.3.1-windows-portable.zip" download style="color:var(--accent-2)">portable .zip</a> runs from anywhere: unzip and double-click <code>coreboard.exe</code>.</p>
           <div class="platforms" style="margin-top:16px">
             <span>Windows 10/11 ✓</span><span>macOS 11+ ✓</span><span>Linux x86_64 ✓</span>
           </div>
@@ -398,7 +450,7 @@
       <div class="releases">
 
         <article class="rel latest">
-          <header><h3>v0.4.0</h3><span class="pill">Latest</span><time datetime="2026-11-12">November 12, 2026</time></header>
+          <header><h3>v0.3.1</h3><span class="pill">Latest</span><time datetime="2026-11-12">November 12, 2026</time></header>
           <div class="rel-body">
             <div>
               <h4>What's new</h4>
@@ -410,11 +462,11 @@
               </ul>
             </div>
             <div class="dl-list">
-              <a class="dl" href="downloads/0.4.0/CoreBoard-Setup-0.4.0.exe" download><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.5 4v7.6H3zM10.5 12.4V20L3 18.9v-6.5zM11.6 3.85 21 2.5v9.1h-9.4zM21 12.4v9.1l-9.4-1.35v-7.75z"/></svg><span class="os">Windows installer</span><span class="kind">.exe · 7.3 MB</span></a>
-              <a class="dl" href="downloads/0.4.0/CoreBoard-0.4.0-windows-portable.zip" download><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.5 4v7.6H3zM10.5 12.4V20L3 18.9v-6.5zM11.6 3.85 21 2.5v9.1h-9.4zM21 12.4v9.1l-9.4-1.35v-7.75z"/></svg><span class="os">Windows portable</span><span class="kind">.zip · 7.8 MB</span></a>
-              <a class="dl" href="downloads/0.4.0/CoreBoard-0.4.0-macos.dmg" download><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9s-1.9-.9-3.2-.8c-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.1-1.2 2.9-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.9zM14 5.5c.7-.8 1.1-1.9 1-3-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.5 2.8-1.3z"/></svg><span class="os">macOS</span><span class="kind">.dmg · 16.5 MB</span></a>
-              <a class="dl" href="downloads/0.4.0/coreboard_0.4.0_amd64.deb" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg><span class="os">Linux (Ubuntu / Debian)</span><span class="kind">.deb · 6.7 MB</span></a>
-              <a class="dl" href="downloads/0.4.0/CoreBoard-0.4.0-linux.tar.gz" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg><span class="os">Linux (any)</span><span class="kind">.tar.gz · 11.2 MB</span></a>
+              <a class="dl" href="downloads/0.3.1/CoreBoard-Setup-0.3.1.exe" download><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.5 4v7.6H3zM10.5 12.4V20L3 18.9v-6.5zM11.6 3.85 21 2.5v9.1h-9.4zM21 12.4v9.1l-9.4-1.35v-7.75z"/></svg><span class="os">Windows installer</span><span class="kind">.exe · 7.3 MB</span></a>
+              <a class="dl" href="downloads/0.3.1/CoreBoard-0.3.1-windows-portable.zip" download><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.5 4v7.6H3zM10.5 12.4V20L3 18.9v-6.5zM11.6 3.85 21 2.5v9.1h-9.4zM21 12.4v9.1l-9.4-1.35v-7.75z"/></svg><span class="os">Windows portable</span><span class="kind">.zip · 7.8 MB</span></a>
+              <a class="dl" href="downloads/0.3.1/CoreBoard-0.3.1-macos.dmg" download><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9s-1.9-.9-3.2-.8c-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.1-1.2 2.9-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.9zM14 5.5c.7-.8 1.1-1.9 1-3-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.5 2.8-1.3z"/></svg><span class="os">macOS</span><span class="kind">.dmg · 16.5 MB</span></a>
+              <a class="dl" href="downloads/0.3.1/coreboard_0.3.1_amd64.deb" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg><span class="os">Linux (Ubuntu / Debian)</span><span class="kind">.deb · 6.7 MB</span></a>
+              <a class="dl" href="downloads/0.3.1/CoreBoard-0.3.1-linux.tar.gz" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg><span class="os">Linux (any)</span><span class="kind">.tar.gz · 11.2 MB</span></a>
             </div>
           </div>
         </article>
@@ -524,20 +576,20 @@
         <h2>Start your board.</h2>
         <p>No account, no cloud, no subscription. Your boards are plain folders on your disk.</p>
         <div class="cta-row">
-          <a class="btn primary" href="downloads/0.4.0/CoreBoard-Setup-0.4.0.exe" download>
+          <a class="btn primary" href="downloads/0.3.1/CoreBoard-Setup-0.3.1.exe" download>
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.5 4v7.6H3zM10.5 12.4V20L3 18.9v-6.5zM11.6 3.85 21 2.5v9.1h-9.4zM21 12.4v9.1l-9.4-1.35v-7.75z"/></svg>
             Download for Windows
           </a>
-          <a class="btn ghost" href="downloads/0.4.0/CoreBoard-0.4.0-macos.dmg" download>
+          <a class="btn ghost" href="downloads/0.3.1/CoreBoard-0.3.1-macos.dmg" download>
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9s-1.9-.9-3.2-.8c-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.1-1.2 2.9-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.9zM14 5.5c.7-.8 1.1-1.9 1-3-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.5 2.8-1.3z"/></svg>
             macOS
           </a>
-          <a class="btn ghost" href="downloads/0.4.0/coreboard_0.4.0_amd64.deb" download>
+          <a class="btn ghost" href="downloads/0.3.1/coreboard_0.3.1_amd64.deb" download>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
             Linux
           </a>
         </div>
-        <div class="dlnote" style="margin-top:18px">v0.4.0 · Windows, macOS &amp; Linux · <span><a href="#releases" style="color:var(--accent-2);text-decoration:none">older versions</a></span></div>
+        <div class="dlnote" style="margin-top:18px">v0.3.1 · Windows, macOS &amp; Linux · <span><a href="#releases" style="color:var(--accent-2);text-decoration:none">older versions</a></span></div>
       </div>
     </div>
   </section>
