@@ -74,24 +74,25 @@
       "title": "Lava Material",
       "type": "digital",
       "category": "addon",
-      "price": 8,
+      "price": 0,
+      "free": true,
       "image": "images/store-lava.svg",
       "tags": [
         "lava",
         "material",
         "pbr",
         "substance",
-        "game-art",
+        "free",
         "add-on"
       ],
-      "excerpt": "A hero molten-lava material — cracked basalt crust over glowing flow. Seamless, parameter-driven PBR.",
+      "excerpt": "Free molten-lava material — cracked basalt crust over glowing flow. Seamless, parameter-driven PBR.",
       "formats": [
         ".sbsar",
         "2K PBR (.png)",
         "Unreal-ready"
       ],
-      "gumroad": "",
-      "body": "**Lava Material.** A hero molten-lava material — cracked basalt crust over a glowing flow — built procedurally in **Substance Designer** and tuned for Unreal. Fully seamless and parameter-driven.\n\n**What you get**\n- The **.sbsar** — tweak colour, crack density and glow live in Substance.\n- Baked **2K PBR maps**: base colour, normal, roughness, metallic, emissive and height.\n- A short Unreal setup note for the emissive flow.\n\nSee it in motion in my [portfolio](/work.html).\n\n_Placeholder — set the final price and add your `\"gumroad\"` permalink to this product in `store.json` to sell it._"
+      "download": "",
+      "body": "**Lava Material — free.** A hero molten-lava material — cracked basalt crust over a glowing flow — built procedurally in **Substance Designer** and tuned for Unreal. Fully seamless and parameter-driven, and yours for nothing.\n\n**What you get**\n- The **.sbsar** — tweak colour, crack density and glow live in Substance.\n- Baked **2K PBR maps**: base colour, normal, roughness, metallic, emissive and height.\n- A short Unreal setup note for the emissive flow.\n\nSee it in motion in my [portfolio](/work.html). If you use it, a tag on socials is always appreciated.\n\n_Free — add the file link as `\"download\"` on this product in `store.json` to enable the button. Until then it shows as coming soon._"
     },
     {
       "slug": "blender-themes",
