@@ -29,52 +29,6 @@ function buildSidebar(data) {
   // Keep the contact page's social row identical to the footer.
   const contactSocials = document.getElementById('contact-socials');
   if (contactSocials && socialLinks) contactSocials.innerHTML = socialLinks;
-
-  buildFooter(socialLinks);
-}
-
-// ── SITE FOOTER ──
-// A real <footer> appended to the bottom of <main> on every content page, so
-// pages have a proper footing (the sidebar's copyright line is hidden on
-// mobile) and every tool/arcade/store page is linked from each main page.
-function buildFooter(socialLinks) {
-  const main = document.querySelector('main');
-  // Skip pages without a <main> (the full-bleed homepage hero) and never
-  // double up where a footer already exists.
-  if (!main || document.querySelector('.site-footer')) return;
-
-  const col = (title, links) =>
-    `<div class="sf-col"><h3>${title}</h3>` +
-    links.map(l => `<a href="${l[1]}">${l[0]}</a>`).join('') + '</div>';
-
-  const footer = document.createElement('footer');
-  footer.className = 'site-footer';
-  footer.innerHTML =
-    '<div class="sf-inner">' +
-      '<div class="sf-col sf-brand">' +
-        '<a class="sf-logo" href="/">Miki<span>Butler</span></a>' +
-        '<p class="sf-tag">Senior 3D Environment Artist in Vancouver. 18+ years building AAA game worlds in Unreal Engine &amp; Blender.</p>' +
-        `<div class="sf-socials">${socialLinks || ''}</div>` +
-      '</div>' +
-      col('Explore', [
-        ['Home', '/'], ['Work', '/work.html'], ['About', '/resume.html'],
-        ['Blog', '/blog.html'], ['Contact', '/contact.html']
-      ]) +
-      col('Tools', [
-        ['Pocket Sculpt', '/sculpt'], ['Pocket Bake', '/bake'],
-        ['Noise Forge', '/noise'], ['Normal Baker', '/normal'],
-        ['Texel Density', '/uvTool'], ['Blender Theme Maker', '/blendertheme']
-      ]) +
-      col('Play', [
-        ['Arcade', '/arcade.html'], ['Store', '/store.html']
-      ]) +
-    '</div>' +
-    '<div class="sf-base">' +
-      `<span>© ${new Date().getFullYear()} Miki Butler · Mikicompany</span>` +
-      '<a href="/">mikibutler.ca</a>' +
-    '</div>';
-
-  main.appendChild(footer);
 }
 
 fetch('data.json').then(r => r.json()).then(buildSidebar);
