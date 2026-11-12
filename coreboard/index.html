@@ -244,20 +244,20 @@
         <h1>The reference board that <span class="hl">stays out of your way</span>.</h1>
         <p class="lede">Core Board is a small, fast desktop app for images. Drop references onto an infinite canvas, arrange and study them — and it all saves itself.</p>
         <div class="cta-row">
-          <a class="btn primary" href="downloads/0.3.1/CoreBoard-Setup-0.3.1.exe" download>
+          <a class="btn primary" href="downloads/0.3.2/CoreBoard-Setup-0.3.2.exe" download>
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.5 4v7.6H3zM10.5 12.4V20L3 18.9v-6.5zM11.6 3.85 21 2.5v9.1h-9.4zM21 12.4v9.1l-9.4-1.35v-7.75z"/></svg>
             Download for Windows
           </a>
-          <a class="btn ghost" href="downloads/0.3.1/CoreBoard-0.3.1-macos.dmg" download>
+          <a class="btn ghost" href="downloads/0.3.2/CoreBoard-0.3.2-macos.dmg" download>
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9s-1.9-.9-3.2-.8c-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.1-1.2 2.9-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.9zM14 5.5c.7-.8 1.1-1.9 1-3-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.5 2.8-1.3z"/></svg>
             macOS
           </a>
-          <a class="btn ghost" href="downloads/0.3.1/coreboard_0.3.1_amd64.deb" download>
+          <a class="btn ghost" href="downloads/0.3.2/coreboard_0.3.2_amd64.deb" download>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
             Linux
           </a>
         </div>
-        <div class="dlnote">v0.3.1 &nbsp;·&nbsp; Windows installer &nbsp;·&nbsp; macOS (Apple&nbsp;Silicon &amp; Intel) &nbsp;·&nbsp; Linux .deb &nbsp;·&nbsp; <span><a href="#releases" style="color:var(--accent-2);text-decoration:none">all versions &amp; downloads ↓</a></span></div>
+        <div class="dlnote">v0.3.2 &nbsp;·&nbsp; Windows installer &nbsp;·&nbsp; macOS (Apple&nbsp;Silicon &amp; Intel) &nbsp;·&nbsp; Linux .deb &nbsp;·&nbsp; <span><a href="#releases" style="color:var(--accent-2);text-decoration:none">all versions &amp; downloads ↓</a></span></div>
         <div class="meta-row">
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Windows · macOS · Linux</span>
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Native &amp; instant</span>
@@ -325,6 +325,10 @@
         <figure>
           <img src="shot-radial.webp" alt="Core Board radial menu: holding Q over an environment reference opens a ring of options — Find similar, Search web, Palette, Study view, Guide, Crop and Note — with a Find more panel ranking visually similar images by value." loading="lazy" />
           <figcaption><b>Hold&nbsp;Q.</b> Point at any image and a radial menu fans out — <b>Find similar</b> ranks the rest of your boards by value or palette (offline), or jump to palette, study views, guides, crop, notes and web search.</figcaption>
+        </figure>
+        <figure>
+          <img src="shot-focus.webp" alt="Core Board focus view: an environment-kit render shown big and centered on a dark backdrop with a rule-of-thirds guide over it, its caption and an image 5 of 7 counter underneath, and arrows at the sides for stepping to the next image." loading="lazy" />
+          <figcaption><b>Focus view.</b> Press <kbd>Enter</kbd> and an image grows out of the board to fill the window. Step through every reference with <kbd>←</kbd> <kbd>→</kbd>, scroll into details, and study it with value views and guides; <kbd>Esc</kbd> drops you back where you were.</figcaption>
         </figure>
       </div>
     </div>
@@ -399,6 +403,11 @@
           <h3>Lock &amp; pin</h3>
           <p>Lock items so they can't be nudged, or pin a reference to the screen while the board moves underneath.</p>
         </div>
+        <div class="card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg></div>
+          <h3>Focus view</h3>
+          <p>One image big on a dark backdrop. Arrow through the whole board like a slideshow, zoom into details, study it, and pop back.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -415,11 +424,11 @@
         <div class="panel">
           <h3>Install it</h3>
           <ol class="steps">
-            <li><b>Windows</b> · download <a href="downloads/0.3.1/CoreBoard-Setup-0.3.1.exe" download style="color:var(--accent-2)">CoreBoard-Setup-0.3.1.exe</a>, double-click it and click <b>Install</b>. Core Board opens when it's done and lands in the Start menu and on your desktop. If Windows says <i>"Windows protected your PC"</i>, click <b>More info → Run anyway</b> (it isn't code-signed yet).</li>
-            <li><b>macOS</b> · open <a href="downloads/0.3.1/CoreBoard-0.3.1-macos.dmg" download style="color:var(--accent-2)">the .dmg</a> and drag <b>Core Board</b> onto <b>Applications</b>. The first time, right-click the app → <b>Open</b> (or System Settings → Privacy &amp; Security → <b>Open Anyway</b>), since it isn't notarized yet.</li>
-            <li><b>Linux</b> · double-click <a href="downloads/0.3.1/coreboard_0.3.1_amd64.deb" download style="color:var(--accent-2)">the .deb</a> (Ubuntu, Debian, Mint…), or use the <a href="downloads/0.3.1/CoreBoard-0.3.1-linux.tar.gz" download style="color:var(--accent-2)">.tar.gz</a> and run <code>./coreboard</code>.</li>
+            <li><b>Windows</b> · download <a href="downloads/0.3.2/CoreBoard-Setup-0.3.2.exe" download style="color:var(--accent-2)">CoreBoard-Setup-0.3.2.exe</a>, double-click it and click <b>Install</b>. Core Board opens when it's done and lands in the Start menu and on your desktop. If Windows says <i>"Windows protected your PC"</i>, click <b>More info → Run anyway</b> (it isn't code-signed yet).</li>
+            <li><b>macOS</b> · open <a href="downloads/0.3.2/CoreBoard-0.3.2-macos.dmg" download style="color:var(--accent-2)">the .dmg</a> and drag <b>Core Board</b> onto <b>Applications</b>. The first time, right-click the app → <b>Open</b> (or System Settings → Privacy &amp; Security → <b>Open Anyway</b>), since it isn't notarized yet.</li>
+            <li><b>Linux</b> · double-click <a href="downloads/0.3.2/coreboard_0.3.2_amd64.deb" download style="color:var(--accent-2)">the .deb</a> (Ubuntu, Debian, Mint…), or use the <a href="downloads/0.3.2/CoreBoard-0.3.2-linux.tar.gz" download style="color:var(--accent-2)">.tar.gz</a> and run <code>./coreboard</code>.</li>
           </ol>
-          <p style="margin:4px 0 0; font-size:13px">Prefer no installer on Windows? The <a href="downloads/0.3.1/CoreBoard-0.3.1-windows-portable.zip" download style="color:var(--accent-2)">portable .zip</a> runs from anywhere: unzip and double-click <code>coreboard.exe</code>.</p>
+          <p style="margin:4px 0 0; font-size:13px">Prefer no installer on Windows? The <a href="downloads/0.3.2/CoreBoard-0.3.2-windows-portable.zip" download style="color:var(--accent-2)">portable .zip</a> runs from anywhere: unzip and double-click <code>coreboard.exe</code>.</p>
           <div class="platforms" style="margin-top:16px">
             <span>Windows 10/11 ✓</span><span>macOS 11+ ✓</span><span>Linux x86_64 ✓</span>
           </div>
@@ -450,7 +459,29 @@
       <div class="releases">
 
         <article class="rel latest">
-          <header><h3>v0.3.1</h3><span class="pill">Latest</span><time datetime="2026-11-12">November 12, 2026</time></header>
+          <header><h3>v0.3.2</h3><span class="pill">Latest</span><time datetime="2026-11-12">November 12, 2026</time></header>
+          <div class="rel-body">
+            <div>
+              <h4>What's new</h4>
+              <ul>
+                <li><b>Focus view</b>: press <kbd>Enter</kbd> and the selected image (or the one under the cursor) grows out of the board, big on a dark backdrop.</li>
+                <li>Step through every image on the board with <kbd>←</kbd> <kbd>→</kbd>, like a slideshow, with its caption and an "image 3 of 7" counter.</li>
+                <li>Scroll to zoom into details, drag to pan, double-click to fit. Study keys (<kbd>V</kbd> <kbd>C</kbd> <kbd>B</kbd> <kbd>M</kbd> <kbd>R</kbd>) work on the image you're looking at.</li>
+                <li><kbd>Esc</kbd> shrinks it back into the board, with that image selected.</li>
+              </ul>
+            </div>
+            <div class="dl-list">
+              <a class="dl" href="downloads/0.3.2/CoreBoard-Setup-0.3.2.exe" download><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.5 4v7.6H3zM10.5 12.4V20L3 18.9v-6.5zM11.6 3.85 21 2.5v9.1h-9.4zM21 12.4v9.1l-9.4-1.35v-7.75z"/></svg><span class="os">Windows installer</span><span class="kind">.exe · 7.3 MB</span></a>
+              <a class="dl" href="downloads/0.3.2/CoreBoard-0.3.2-windows-portable.zip" download><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.5 4v7.6H3zM10.5 12.4V20L3 18.9v-6.5zM11.6 3.85 21 2.5v9.1h-9.4zM21 12.4v9.1l-9.4-1.35v-7.75z"/></svg><span class="os">Windows portable</span><span class="kind">.zip · 7.8 MB</span></a>
+              <a class="dl" href="downloads/0.3.2/CoreBoard-0.3.2-macos.dmg" download><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9s-1.9-.9-3.2-.8c-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.1-1.2 2.9-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.9zM14 5.5c.7-.8 1.1-1.9 1-3-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.5 2.8-1.3z"/></svg><span class="os">macOS</span><span class="kind">.dmg · 16.5 MB</span></a>
+              <a class="dl" href="downloads/0.3.2/coreboard_0.3.2_amd64.deb" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg><span class="os">Linux (Ubuntu / Debian)</span><span class="kind">.deb · 6.7 MB</span></a>
+              <a class="dl" href="downloads/0.3.2/CoreBoard-0.3.2-linux.tar.gz" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg><span class="os">Linux (any)</span><span class="kind">.tar.gz · 11.3 MB</span></a>
+            </div>
+          </div>
+        </article>
+
+        <article class="rel">
+          <header><h3>v0.3.1</h3><time datetime="2026-11-12">November 12, 2026</time></header>
           <div class="rel-body">
             <div>
               <h4>What's new</h4>
@@ -558,6 +589,7 @@
         <div class="row"><span>Draw on images</span><kbd>D</kbd></div>
         <div class="row"><span>Empty image slot</span><kbd>E</kbd></div>
         <div class="row"><span>Caption an image</span><kbd>Double-click</kbd></div>
+        <div class="row"><span>Focus view (← → to step)</span><kbd>Enter</kbd></div>
         <div class="row"><span>Duplicate</span><kbd>Ctrl+D</kbd></div>
         <div class="row"><span>Whole board in values</span><kbd>Shift+B</kbd></div>
         <div class="row"><span>Frame a selection</span><kbd>Ctrl+G</kbd></div>
@@ -576,20 +608,20 @@
         <h2>Start your board.</h2>
         <p>No account, no cloud, no subscription. Your boards are plain folders on your disk.</p>
         <div class="cta-row">
-          <a class="btn primary" href="downloads/0.3.1/CoreBoard-Setup-0.3.1.exe" download>
+          <a class="btn primary" href="downloads/0.3.2/CoreBoard-Setup-0.3.2.exe" download>
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.5 4v7.6H3zM10.5 12.4V20L3 18.9v-6.5zM11.6 3.85 21 2.5v9.1h-9.4zM21 12.4v9.1l-9.4-1.35v-7.75z"/></svg>
             Download for Windows
           </a>
-          <a class="btn ghost" href="downloads/0.3.1/CoreBoard-0.3.1-macos.dmg" download>
+          <a class="btn ghost" href="downloads/0.3.2/CoreBoard-0.3.2-macos.dmg" download>
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9s-1.9-.9-3.2-.8c-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.1-1.2 2.9-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.9zM14 5.5c.7-.8 1.1-1.9 1-3-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.5 2.8-1.3z"/></svg>
             macOS
           </a>
-          <a class="btn ghost" href="downloads/0.3.1/coreboard_0.3.1_amd64.deb" download>
+          <a class="btn ghost" href="downloads/0.3.2/coreboard_0.3.2_amd64.deb" download>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
             Linux
           </a>
         </div>
-        <div class="dlnote" style="margin-top:18px">v0.3.1 · Windows, macOS &amp; Linux · <span><a href="#releases" style="color:var(--accent-2);text-decoration:none">older versions</a></span></div>
+        <div class="dlnote" style="margin-top:18px">v0.3.2 · Windows, macOS &amp; Linux · <span><a href="#releases" style="color:var(--accent-2);text-decoration:none">older versions</a></span></div>
       </div>
     </div>
   </section>
