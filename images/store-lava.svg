@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="Lava Material">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="Lava — Blender sculpting add-on">
   <defs>
     <radialGradient id="heat" cx="50%" cy="42%" r="70%">
       <stop offset="0%" stop-color="#ffd23a"/><stop offset="30%" stop-color="#ff7a1a"/><stop offset="62%" stop-color="#b52a05"/><stop offset="100%" stop-color="#2a0b04"/>
@@ -41,8 +41,8 @@
   <!-- title band -->
   <rect y="360" width="800" height="240" fill="url(#fade)"/>
   <g text-anchor="middle" font-family="'Arial Black',Impact,sans-serif">
-    <text x="400" y="500" font-size="72" font-weight="900" letter-spacing="2" fill="#a0ff00" filter="url(#glow)">LAVA MATERIAL</text>
-    <text x="400" y="534" font-size="15" font-weight="700" letter-spacing="5" fill="#ff9b3d">SEAMLESS PBR · SUBSTANCE + UNREAL</text>
-    <text x="400" y="566" font-size="13" letter-spacing="2" fill="#9a9276">colour · normal · roughness · emissive · height</text>
+    <text x="400" y="498" font-size="104" font-weight="900" letter-spacing="4" fill="#a0ff00" filter="url(#glow)">LAVA</text>
+    <text x="400" y="532" font-size="15" font-weight="700" letter-spacing="5" fill="#ff9b3d">A BLENDER SCULPTING ADD-ON</text>
+    <text x="400" y="564" font-size="13" letter-spacing="2" fill="#9a9276">free · install-ready .zip for Blender</text>
   </g>
 </svg>

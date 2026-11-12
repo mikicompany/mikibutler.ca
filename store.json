@@ -70,29 +70,27 @@
       "body": "**Environment Texture Pack — Vol. 1.** Twenty-four hand-tuned seamless materials for game art and 3D work — rock, moss, cracked earth, sand, lava and more. Each ships as **colour + normal + height** at 2K, fully tileable.\n\nMade with [Noise Forge](/noise) and [Pocket Bake](/bake). Want a taste first? The [free textures](/textures) are always there.\n\n_Placeholder — set the final map count and price, then add your `\"gumroad\"` permalink to go live._"
     },
     {
-      "slug": "lava-material",
-      "title": "Lava Material",
+      "slug": "lava",
+      "title": "Lava — Blender Sculpting Add-on",
       "type": "digital",
       "category": "addon",
       "price": 0,
       "free": true,
       "image": "images/store-lava.svg",
       "tags": [
-        "lava",
-        "material",
-        "pbr",
-        "substance",
+        "blender",
+        "sculpting",
+        "add-on",
         "free",
-        "add-on"
+        "3d"
       ],
-      "excerpt": "Free molten-lava material — cracked basalt crust over glowing flow. Seamless, parameter-driven PBR.",
+      "excerpt": "A free Blender add-on for sculpting — install the .zip and go.",
       "formats": [
-        ".sbsar",
-        "2K PBR (.png)",
-        "Unreal-ready"
+        "Blender add-on (.zip)",
+        "Blender 4.x"
       ],
       "download": "",
-      "body": "**Lava Material — free.** A hero molten-lava material — cracked basalt crust over a glowing flow — built procedurally in **Substance Designer** and tuned for Unreal. Fully seamless and parameter-driven, and yours for nothing.\n\n**What you get**\n- The **.sbsar** — tweak colour, crack density and glow live in Substance.\n- Baked **2K PBR maps**: base colour, normal, roughness, metallic, emissive and height.\n- A short Unreal setup note for the emissive flow.\n\nSee it in motion in my [portfolio](/work.html). If you use it, a tag on socials is always appreciated.\n\n_Free — add the file link as `\"download\"` on this product in `store.json` to enable the button. Until then it shows as coming soon._"
+      "body": "**Lava — a Blender sculpting add-on.** A free sculpting add-on for Blender. *(Tell me what Lava does and I'll flesh out this description — brushes, workflow, what makes it yours.)*\n\n**Install**\n1. Download the `.zip`.\n2. In Blender: **Edit ▸ Preferences ▸ Add-ons ▸ Install…**\n3. Pick the `.zip` and tick **Lava** to enable it.\n\nNo strings — just hit Download. If you like it, a tag on socials is always appreciated. Prefer the browser? Try [Pocket Sculpt](/sculpt) — touch-first digital clay.\n\n_Free — add the `.zip` link as `\"download\"` on this product in `store.json` to enable the button. Until then it shows as coming soon._"
     },
     {
       "slug": "blender-themes",
