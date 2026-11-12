@@ -71,26 +71,26 @@
     },
     {
       "slug": "lava",
-      "title": "Lava — Blender Sculpting Add-on",
+      "title": "Lava — Sculpt Layers for Blender",
       "type": "digital",
       "category": "addon",
       "price": 0,
       "free": true,
-      "image": "images/store-lava.svg",
+      "image": "images/lava-sculpt-layers.webp",
       "tags": [
         "blender",
         "sculpting",
+        "sculpt layers",
         "add-on",
-        "free",
-        "3d"
+        "free"
       ],
-      "excerpt": "A free Blender add-on for sculpting — install the .zip and go.",
+      "excerpt": "Free Blender add-on — non-destructive sculpt layers. Record strokes to named layers, blend, lock & merge, from the N sidebar.",
       "formats": [
         "Blender add-on (.zip)",
         "Blender 4.x"
       ],
       "download": "",
-      "body": "**Lava — a Blender sculpting add-on.** A free sculpting add-on for Blender. *(Tell me what Lava does and I'll flesh out this description — brushes, workflow, what makes it yours.)*\n\n**Install**\n1. Download the `.zip`.\n2. In Blender: **Edit ▸ Preferences ▸ Add-ons ▸ Install…**\n3. Pick the `.zip` and tick **Lava** to enable it.\n\nNo strings — just hit Download. If you like it, a tag on socials is always appreciated. Prefer the browser? Try [Pocket Sculpt](/sculpt) — touch-first digital clay.\n\n_Free — add the `.zip` link as `\"download\"` on this product in `store.json` to enable the button. Until then it shows as coming soon._"
+      "body": "**Lava — sculpt layers for Blender.** A free add-on that brings **non-destructive layers to Blender's sculpt mode**. Record your strokes onto named layers — *Base Pass*, *Big Forms*, *Wrinkles* — then blend, hide, lock, reorder or merge them without disturbing the work underneath.\n\n**What it does**\n- **Record strokes to a layer** — hit *Record Strokes* and everything you sculpt lands on the active layer.\n- **Per-layer opacity, visibility & lock** — dial a layer's strength, toggle its eye, lock it to protect it.\n- **Merge Down · Clear Layer · reorder** — the layer housekeeping you'd expect, right in the sculpt.\n- **Lives in the N sidebar** — one keypress from the brush and beside the model, so checking a layer never costs you your place in the sculpt.\n\n**Install**\n1. Download the `.zip`.\n2. In Blender: **Edit ▸ Preferences ▸ Add-ons ▸ Install…**\n3. Pick the `.zip` and enable **Lava** — the panel appears in Sculpt Mode's **N** sidebar under *Layers*.\n\nNo strings — just hit Download. If you like it, a tag on socials is always appreciated. Prefer the browser? Try [Pocket Sculpt](/sculpt) — touch-first digital clay.\n\n_Free — add the `.zip` link as `\"download\"` on this product in `store.json` to enable the button. Until then it shows as coming soon._"
     },
     {
       "slug": "blender-themes",
