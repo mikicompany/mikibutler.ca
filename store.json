@@ -70,6 +70,30 @@
       "body": "**Environment Texture Pack — Vol. 1.** Twenty-four hand-tuned seamless materials for game art and 3D work — rock, moss, cracked earth, sand, lava and more. Each ships as **colour + normal + height** at 2K, fully tileable.\n\nMade with [Noise Forge](/noise) and [Pocket Bake](/bake). Want a taste first? The [free textures](/textures) are always there.\n\n_Placeholder — set the final map count and price, then add your `\"gumroad\"` permalink to go live._"
     },
     {
+      "slug": "lava-material",
+      "title": "Lava Material",
+      "type": "digital",
+      "category": "addon",
+      "price": 8,
+      "image": "images/store-lava.svg",
+      "tags": [
+        "lava",
+        "material",
+        "pbr",
+        "substance",
+        "game-art",
+        "add-on"
+      ],
+      "excerpt": "A hero molten-lava material — cracked basalt crust over glowing flow. Seamless, parameter-driven PBR.",
+      "formats": [
+        ".sbsar",
+        "2K PBR (.png)",
+        "Unreal-ready"
+      ],
+      "gumroad": "",
+      "body": "**Lava Material.** A hero molten-lava material — cracked basalt crust over a glowing flow — built procedurally in **Substance Designer** and tuned for Unreal. Fully seamless and parameter-driven.\n\n**What you get**\n- The **.sbsar** — tweak colour, crack density and glow live in Substance.\n- Baked **2K PBR maps**: base colour, normal, roughness, metallic, emissive and height.\n- A short Unreal setup note for the emissive flow.\n\nSee it in motion in my [portfolio](/work.html).\n\n_Placeholder — set the final price and add your `\"gumroad\"` permalink to this product in `store.json` to sell it._"
+    },
+    {
       "slug": "blender-themes",
       "title": "Blender Themes",
       "type": "digital",
