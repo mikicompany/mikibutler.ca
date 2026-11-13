@@ -40,12 +40,94 @@
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    {"@type": "Question", "name": "Is Core Board a free alternative to PureRef?",
-     "acceptedAnswer": {"@type": "Answer", "text": "Yes. Core Board is a free reference board app for Windows, macOS and Linux. It has the basics you know from PureRef, like an infinite canvas, drag and drop, always on top and opacity, plus study tools built in: value and notan views, composition guides, palettes and a color picker."}},
-    {"@type": "Question", "name": "Can Core Board open PureRef (.pur) files?",
-     "acceptedAnswer": {"@type": "Answer", "text": "Not yet. Drag your reference images onto a Core Board board, or point Watch folder at the folder where you keep them."}},
-    {"@type": "Question", "name": "Does Core Board work offline?",
-     "acceptedAnswer": {"@type": "Answer", "text": "Yes. Boards are plain folders on your computer and everything works offline. Only pasting a web link or searching the web needs the internet."}}
+    {
+      "@type": "Question",
+      "name": "Is Core Board really free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, completely. No price, no subscription, no account, no ads and no watermark on your exports unless you add your own."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is it a good PureRef alternative?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "If you use PureRef to collect and arrange references, Core Board does the same basics: an infinite canvas, drag and drop or paste, always on top, window opacity, flip, rotate, grayscale and crop. On top of that it has study tools built in: value, notan and saturation views, composition guides, color palettes, focus view and drawing on images."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can it open my PureRef (.pur) boards?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Not yet. For now, drag your reference images onto a Core Board board, or point Watch folder at the folder where you keep them and they'll appear by themselves."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which computers does it run on?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Windows 10 and 11, macOS 11 or newer (Apple Silicon and Intel Macs), and 64-bit Linux (a .deb for Ubuntu, Debian and Mint, or a .tar.gz for other distributions)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Windows or macOS warns me when I open it. Is it safe?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The warning appears because Core Board isn't code-signed yet, which costs money every year. On Windows, click More info, then Run anyway. On a Mac, right-click the app and choose Open, or go to System Settings, Privacy & Security, and click Open Anyway. You only need to do this once."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it change my original images?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Images are copied into the board, and crops, flips, rotations, study views and drawings are all saved separately, so you can undo or reset them at any time."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where are my boards saved?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Each board is a normal folder with your images and a small board file inside, so it's easy to back up or copy to another computer. Boards save themselves after every change. Press Ctrl+O to create, open and switch boards."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it work offline?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Everything works offline. Only pasting a web link and searching the web for more pictures need an internet connection, and Core Board doesn't send anything about you or your boards anywhere."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I keep it on top of Photoshop, Krita or Blender?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Press T to keep the board always on top, and [ and ] to make the window more see-through, so your references float over the app you're working in."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I update to a new version?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Download the latest version from this page and install it over the old one. Your boards are kept. Every past version stays available under Releases."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "I found a bug or have an idea. Where do I send it?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Through the contact page. Bug reports and feature ideas are very welcome."
+      }
+    }
   ]
 }
 </script>
@@ -174,6 +256,14 @@
   .shots figcaption{color:var(--muted); font-size:14.5px; margin-top:13px; font-weight:500}
   .shots figcaption b{color:var(--text); font-weight:700}
 
+  .faq{display:flex; flex-direction:column; gap:10px; max-width:860px}
+  .qa{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:0 20px}
+  .qa[open]{border-color:rgba(160,255,0,.35)}
+  .qa summary{cursor:pointer; list-style:none; padding:17px 28px 17px 0; font-weight:700; position:relative}
+  .qa summary::-webkit-details-marker{display:none}
+  .qa summary::after{content:"+"; position:absolute; right:0; top:50%; transform:translateY(-50%); color:var(--accent); font-size:22px; font-weight:500; transition:transform .2s}
+  .qa[open] summary::after{transform:translateY(-50%) rotate(45deg)}
+  .qa p{color:var(--muted); margin:0 0 18px; line-height:1.65}
   .vs{display:grid; grid-template-columns:1fr 1fr; gap:16px}
   @media(max-width:760px){ .vs{grid-template-columns:1fr} }
   .vs .card ul{margin:10px 0 0; padding-left:20px; color:var(--muted); line-height:1.7}
@@ -271,6 +361,7 @@
       <a class="navlink" href="#promo">Promo</a>
       <a class="navlink" href="#install">Get it</a>
       <a class="navlink" href="#releases">Releases</a>
+      <a class="navlink" href="#faq">FAQ</a>
       <a class="btn primary" style="padding:9px 16px; font-size:13.5px" href="#install">Download</a>
     </nav>
   </div>
@@ -715,6 +806,62 @@
         <div class="row"><span>Radial menu (find similar…)</span><kbd>Hold Q</kbd></div>
         <div class="row"><span>Export PNG</span><kbd>Ctrl+E</kbd></div>
         <div class="row"><span>Help overlay</span><kbd>H</kbd></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Questions</span>
+        <h2>Frequently asked questions</h2>
+      </div>
+      <div class="faq">
+        <details class="qa">
+          <summary>Is Core Board really free?</summary>
+          <p>Yes, completely. No price, no subscription, no account, no ads and no watermark on your exports unless you add your own.</p>
+        </details>
+        <details class="qa">
+          <summary>Is it a good PureRef alternative?</summary>
+          <p>If you use PureRef to collect and arrange references, Core Board does the same basics: an infinite canvas, drag and drop or paste, always on top, window opacity, flip, rotate, grayscale and crop. On top of that it has study tools built in: value, notan and saturation views, composition guides, color palettes, focus view and drawing on images.</p>
+        </details>
+        <details class="qa">
+          <summary>Can it open my PureRef (.pur) boards?</summary>
+          <p>Not yet. For now, drag your reference images onto a Core Board board, or point Watch folder at the folder where you keep them and they&#x27;ll appear by themselves.</p>
+        </details>
+        <details class="qa">
+          <summary>Which computers does it run on?</summary>
+          <p>Windows 10 and 11, macOS 11 or newer (Apple Silicon and Intel Macs), and 64-bit Linux (a .deb for Ubuntu, Debian and Mint, or a .tar.gz for other distributions).</p>
+        </details>
+        <details class="qa">
+          <summary>Windows or macOS warns me when I open it. Is it safe?</summary>
+          <p>The warning appears because Core Board isn&#x27;t code-signed yet, which costs money every year. On Windows, click More info, then Run anyway. On a Mac, right-click the app and choose Open, or go to System Settings, Privacy &amp; Security, and click Open Anyway. You only need to do this once.</p>
+        </details>
+        <details class="qa">
+          <summary>Does it change my original images?</summary>
+          <p>No. Images are copied into the board, and crops, flips, rotations, study views and drawings are all saved separately, so you can undo or reset them at any time.</p>
+        </details>
+        <details class="qa">
+          <summary>Where are my boards saved?</summary>
+          <p>Each board is a normal folder with your images and a small board file inside, so it&#x27;s easy to back up or copy to another computer. Boards save themselves after every change. Press Ctrl+O to create, open and switch boards.</p>
+        </details>
+        <details class="qa">
+          <summary>Does it work offline?</summary>
+          <p>Yes. Everything works offline. Only pasting a web link and searching the web for more pictures need an internet connection, and Core Board doesn&#x27;t send anything about you or your boards anywhere.</p>
+        </details>
+        <details class="qa">
+          <summary>Can I keep it on top of Photoshop, Krita or Blender?</summary>
+          <p>Yes. Press T to keep the board always on top, and [ and ] to make the window more see-through, so your references float over the app you&#x27;re working in.</p>
+        </details>
+        <details class="qa">
+          <summary>How do I update to a new version?</summary>
+          <p>Download the latest version from this page and install it over the old one. Your boards are kept. Every past version stays available under Releases.</p>
+        </details>
+        <details class="qa">
+          <summary>I found a bug or have an idea. Where do I send it?</summary>
+          <p>Through <a href="/contact.html" style="color:var(--accent-2)">the contact page</a>. Bug reports and feature ideas are very welcome.</p>
+        </details>
       </div>
     </div>
   </section>
