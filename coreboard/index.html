@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Core Board — Free Reference Board App for Artists (Windows, Mac, Linux)</title>
-<meta name="description" content="Core Board is a small, fast reference board for images. Drop images on an infinite canvas, arrange and study them — value & notan views, composition guides, color picker, palettes, image slots, drawing and folder watching. Free, for Windows, macOS and Linux." />
+<title>Core Board — Free PureRef Alternative · Reference Board for Artists</title>
+<meta name="description" content="Core Board is a free PureRef alternative for artists: a fast reference board app for Windows, macOS and Linux. Drop images on an infinite canvas and study them with value and notan views, composition guides, palettes and a color picker built in." />
 <meta name="robots" content="index, follow, max-image-preview:large" />
 <link rel="canonical" href="https://mikibutler.ca/coreboard/" />
 <meta property="og:type" content="website" />
-<meta property="og:title" content="Core Board — Reference Board for Artists" />
+<meta property="og:title" content="Core Board — Free PureRef Alternative for Artists" />
 <meta property="og:description" content="A small, fast reference board for images. Infinite canvas, study views, composition guides, palettes and more. Free for Windows, macOS and Linux." />
 <meta property="og:url" content="https://mikibutler.ca/coreboard/" />
 <meta property="og:image" content="https://mikibutler.ca/images/og-coreboard.jpg" />
@@ -23,7 +23,7 @@
   "@type": "SoftwareApplication",
   "name": "Core Board",
   "alternateName": "Coreboard",
-  "description": "A free, fast reference board app for artists: drop images on an infinite canvas, arrange them, and study them with value and notan views, composition guides, a color picker and palettes.",
+  "description": "A free PureRef alternative: a fast reference board app for artists that lets you drop images on an infinite canvas, arrange them, and study them with value and notan views, composition guides, a color picker and palettes.",
   "applicationCategory": "DesignApplication",
   "operatingSystem": "Windows, macOS, Linux",
   "softwareVersion": "0.3.3",
@@ -33,6 +33,20 @@
   "screenshot": ["https://mikibutler.ca/coreboard/shot-board.webp", "https://mikibutler.ca/coreboard/shot-study.webp", "https://mikibutler.ca/coreboard/shot-focus.webp"],
   "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CAD"},
   "author": {"@type": "Person", "name": "Miki Butler", "url": "https://mikibutler.ca/"}
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Is Core Board a free alternative to PureRef?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Yes. Core Board is a free reference board app for Windows, macOS and Linux. It has the basics you know from PureRef, like an infinite canvas, drag and drop, always on top and opacity, plus study tools built in: value and notan views, composition guides, palettes and a color picker."}},
+    {"@type": "Question", "name": "Can Core Board open PureRef (.pur) files?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Not yet. Drag your reference images onto a Core Board board, or point Watch folder at the folder where you keep them."}},
+    {"@type": "Question", "name": "Does Core Board work offline?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Yes. Boards are plain folders on your computer and everything works offline. Only pasting a web link or searching the web needs the internet."}}
+  ]
 }
 </script>
 <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -160,6 +174,11 @@
   .shots figcaption{color:var(--muted); font-size:14.5px; margin-top:13px; font-weight:500}
   .shots figcaption b{color:var(--text); font-weight:700}
 
+  .vs{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  @media(max-width:760px){ .vs{grid-template-columns:1fr} }
+  .vs .card ul{margin:10px 0 0; padding-left:20px; color:var(--muted); line-height:1.7}
+  .vs .card li b{color:var(--text)}
+  .vs-note{color:var(--faint); font-size:13px; margin-top:18px}
   .features{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
   @media(max-width:860px){ .features{grid-template-columns:repeat(2,1fr)} }
   @media(max-width:560px){ .features{grid-template-columns:1fr} }
@@ -248,6 +267,7 @@
       <a class="navlink" href="#alive">What's new</a>
       <a class="navlink" href="#look">Look inside</a>
       <a class="navlink" href="#features">Features</a>
+      <a class="navlink" href="#pureref">vs PureRef</a>
       <a class="navlink" href="#promo">Promo</a>
       <a class="navlink" href="#install">Get it</a>
       <a class="navlink" href="#releases">Releases</a>
@@ -263,9 +283,9 @@
   <section class="hero">
     <div class="wrap hero-grid">
       <div>
-        <span class="eyebrow">Reference tool · Free native app</span>
+        <span class="eyebrow">Free PureRef alternative · Native app</span>
         <h1>The reference board that <span class="hl">stays out of your way</span>.</h1>
-        <p class="lede">Core Board is a small, fast desktop app for images. Drop references onto an infinite canvas, arrange and study them — and it all saves itself.</p>
+        <p class="lede">Core Board is a free, fast alternative to PureRef. Drop references onto an infinite canvas and arrange them like you're used to — then study them with value views, composition guides and palettes built in. It all saves itself.</p>
         <div class="cta-row">
           <a class="btn primary" href="downloads/0.3.3/CoreBoard-Setup-0.3.3.exe" download>
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.5 4v7.6H3zM10.5 12.4V20L3 18.9v-6.5zM11.6 3.85 21 2.5v9.1h-9.4zM21 12.4v9.1l-9.4-1.35v-7.75z"/></svg>
@@ -451,6 +471,40 @@
           <p>Press S for a random reference from any of your boards. Rediscover old finds or pick a warm-up study.</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- VS PUREREF -->
+  <section id="pureref">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Coming from PureRef?</span>
+        <h2>A free PureRef alternative, with study tools built in.</h2>
+        <p>If you've used PureRef, you'll feel at home in a minute. Then Core Board goes further: it helps you <em>study</em> your references, not just pin them up.</p>
+      </div>
+      <div class="vs">
+        <div class="card">
+          <h3>Feels familiar</h3>
+          <ul>
+            <li><b>Infinite canvas</b>: drag &amp; drop or paste images, pan and zoom</li>
+            <li><b>Always on top</b> and <b>window opacity</b> over your painting or 3D app</li>
+            <li><b>Flip, rotate, grayscale and crop</b>, without changing your files</li>
+            <li><b>Notes, frames and grid arrange</b> to keep boards tidy</li>
+            <li><b>Saves itself</b> after every change; several boards, one click apart</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Then goes further</h3>
+          <ul>
+            <li><b>Value, notan, saturation and squint views</b> on any image (<kbd>V</kbd>)</li>
+            <li><b>Composition guides</b>: thirds, golden spiral, diagonals (<kbd>C</kbd>)</li>
+            <li><b>Color palettes</b> pulled from images, and a picker that shows value</li>
+            <li><b>Focus view</b>, <b>drawing on images</b>, <b>captions</b> and <b>image slots</b></li>
+            <li><b>Find similar</b> pictures, <b>watch a folder</b>, and <b>paste web links</b></li>
+          </ul>
+        </div>
+      </div>
+      <p class="vs-note">Core Board can't open PureRef (.pur) files yet: drag your images in, or point Watch folder at your reference folder. PureRef is a trademark of its owner; Core Board is an independent app and isn't affiliated with or endorsed by PureRef.</p>
     </div>
   </section>
 
