@@ -1,0 +1,10 @@
+{
+  "version": "0.3.3",
+  "page": "https://mikibutler.ca/coreboard/#install",
+  "notes": [
+    "Paste a web link to download its picture",
+    "Mini-map while part of the board is off screen",
+    "Surprise me: press S for a random reference"
+  ],
+  "windows_installer": "https://mikibutler.ca/coreboard/downloads/0.3.3/CoreBoard-Setup-0.3.3.exe"
+}
