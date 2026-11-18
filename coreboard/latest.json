@@ -1,13 +1,11 @@
 {
-  "version": "0.3.6",
+  "version": "0.3.7",
   "page": "https://mikibutler.ca/coreboard/#install",
   "notes": [
-    "Link previews",
-    "Core Board en español"
+    "New app icon"
   ],
-  "windows_installer": "https://mikibutler.ca/coreboard/downloads/0.3.6/CoreBoard-Setup-0.3.6.exe",
+  "windows_installer": "https://mikibutler.ca/coreboard/downloads/0.3.7/CoreBoard-Setup-0.3.7.exe",
   "notes_es": [
-    "Vista previa en las tarjetas de enlace",
-    "Core Board en español"
+    "Nuevo icono de la aplicación"
   ]
 }
