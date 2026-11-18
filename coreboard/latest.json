@@ -1,10 +1,10 @@
 {
-  "version": "0.3.7",
+  "version": "0.3.8",
   "page": "https://mikibutler.ca/coreboard/#install",
   "notes": [
     "New app icon"
   ],
-  "windows_installer": "https://mikibutler.ca/coreboard/downloads/0.3.7/CoreBoard-Setup-0.3.7.exe",
+  "windows_installer": "https://mikibutler.ca/coreboard/downloads/0.3.8/CoreBoard-Setup-0.3.8.exe",
   "notes_es": [
     "Nuevo icono de la aplicación"
   ]
