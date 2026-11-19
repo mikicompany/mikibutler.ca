@@ -1,11 +1,15 @@
 {
-  "version": "0.3.8",
+  "version": "0.3.9",
   "page": "https://mikibutler.ca/coreboard/#install",
   "notes": [
-    "New app icon"
+    "YouTube video cards",
+    "Smarter radial menu",
+    "Export message"
   ],
-  "windows_installer": "https://mikibutler.ca/coreboard/downloads/0.3.8/CoreBoard-Setup-0.3.8.exe",
+  "windows_installer": "https://mikibutler.ca/coreboard/downloads/0.3.9/CoreBoard-Setup-0.3.9.exe",
   "notes_es": [
-    "Nuevo icono de la aplicación"
+    "Tarjetas de vídeo de YouTube",
+    "Menú radial más inteligente",
+    "Lupa: mantén Z"
   ]
 }
