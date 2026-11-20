@@ -403,7 +403,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             '<div class="buy-actions">'+
               (p.free
                 ? (dlUrl(p)
-                    ? '<a class="btn-primary" id="dl-now" href="'+esc(dlUrl(p))+'" download>Download free ▸</a>'
+                    ? (/(\/|#[^\/]*)$/.test(dlUrl(p))
+                        // A page (e.g. an app's download page) opens; a file downloads.
+                        ? '<a class="btn-primary" id="dl-now" href="'+esc(dlUrl(p))+'">Get it free ▸</a>'
+                        : '<a class="btn-primary" id="dl-now" href="'+esc(dlUrl(p))+'" download>Download free ▸</a>')
                     : hasBuy(p.slug)
                       ? '<button class="btn-primary" id="buy-now" type="button">Get it free ▸</button>'
                       : '<span class="buy-hint">Download link coming soon.</span>')

@@ -4,6 +4,28 @@
   "note": "",
   "products": [
     {
+      "slug": "coreboard",
+      "title": "Core Board — reference board app",
+      "type": "digital",
+      "price": 0,
+      "free": true,
+      "image": "images/store-coreboard.png",
+      "tags": [
+        "reference board",
+        "pureref alternative",
+        "free",
+        "app"
+      ],
+      "excerpt": "A free reference board app for artists: drop images, arrange them and study values, colors and composition. Windows, macOS & Linux.",
+      "formats": [
+        "Windows",
+        "macOS",
+        "Linux"
+      ],
+      "download": "/coreboard/#install",
+      "body": "**Core Board** is a free **reference board** app for artists, a fast **PureRef alternative** with study tools built in.\n\nDrop images on an infinite canvas, arrange them, and study them with **value and notan views, composition guides, color palettes and a color picker**. Paste web links, YouTube videos and PDFs, draw on the board, and export everything as one PNG. It saves itself, works offline and updates itself.\n\nFree for **Windows, macOS and Linux**, in English and Spanish.\n\n**Get it:** [mikibutler.ca/coreboard](/coreboard/)"
+    },
+    {
       "slug": "candela-pnp",
       "title": "CANDELA — Print & Play Deck",
       "type": "digital",
