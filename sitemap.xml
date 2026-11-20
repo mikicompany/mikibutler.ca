@@ -28,6 +28,7 @@
     <image:image><image:loc>https://mikibutler.ca/coreboard/shot-study.webp</image:loc><image:title>Core Board study views: value, notan, grayscale and squint</image:title></image:image>
     <image:image><image:loc>https://mikibutler.ca/coreboard/shot-focus.webp</image:loc><image:title>Core Board focus view</image:title></image:image>
   </url>
+  <url><loc>https://mikibutler.ca/coreboard/ca/</loc><lastmod>2026-11-20</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://mikibutler.ca/coreboard/es/</loc><lastmod>2026-11-20</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://mikibutler.ca/uvTool</loc><lastmod>2026-10-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://mikibutler.ca/noise</loc><lastmod>2026-10-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
