@@ -1,15 +1,13 @@
 {
-  "version": "0.3.10",
+  "version": "0.3.11",
   "page": "https://mikibutler.ca/coreboard/#install",
   "notes": [
-    "Copy a picture",
-    "Import PDFs",
-    "Groups"
+    "Zoom buttons",
+    "Smoother mini-map"
   ],
-  "windows_installer": "https://mikibutler.ca/coreboard/downloads/0.3.10/CoreBoard-Setup-0.3.10.exe",
+  "windows_installer": "https://mikibutler.ca/coreboard/downloads/0.3.11/CoreBoard-Setup-0.3.11.exe",
   "notes_es": [
-    "Copiar una imagen (Ctrl+C)",
-    "Importar PDFs",
-    "Grupos"
+    "Botones de zoom",
+    "Minimapa más suave"
   ]
 }
