@@ -1,15 +1,15 @@
 {
-  "version": "0.3.9",
+  "version": "0.3.10",
   "page": "https://mikibutler.ca/coreboard/#install",
   "notes": [
-    "YouTube video cards",
-    "Smarter radial menu",
-    "Export message"
+    "Copy a picture",
+    "Import PDFs",
+    "Groups"
   ],
-  "windows_installer": "https://mikibutler.ca/coreboard/downloads/0.3.9/CoreBoard-Setup-0.3.9.exe",
+  "windows_installer": "https://mikibutler.ca/coreboard/downloads/0.3.10/CoreBoard-Setup-0.3.10.exe",
   "notes_es": [
-    "Tarjetas de vídeo de YouTube",
-    "Menú radial más inteligente",
-    "Lupa: mantén Z"
+    "Copiar una imagen (Ctrl+C)",
+    "Importar PDFs",
+    "Grupos"
   ]
 }
